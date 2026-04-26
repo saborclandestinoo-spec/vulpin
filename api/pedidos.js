@@ -1,17 +1,8 @@
 const https = require('https');
-const http = require('http');
  
-function request(url, headers, redirects = 0) {
+function request(url, headers) {
   return new Promise((resolve, reject) => {
-    if (redirects > 5) return reject(new Error('Too many redirects'));
-    const lib = url.startsWith('https') ? https : http;
-    lib.get(url, { headers }, (r) => {
-      if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location) {
-        const next = r.headers.location.startsWith('http')
-          ? r.headers.location
-          : `https://api.cardapioweb.com${r.headers.location}`;
-        return resolve(request(next, headers, redirects + 1));
-      }
+    https.get(url, { headers }, (r) => {
       let body = '';
       r.on('data', c => body += c);
       r.on('end', () => resolve({ status: r.statusCode, body }));
@@ -24,18 +15,17 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
  
-  const { storeCode, token, status, limit = 100 } = req.query;
-  if (!storeCode || !token) return res.status(400).json({ error: 'storeCode e token obrigatórios' });
+  const { token, status } = req.query;
+  if (!token) return res.status(400).json({ error: 'token obrigatório' });
  
   const headers = {
-    'Companyid': storeCode,
-    'Authorization': `Bearer ${token}`,
+    'X-API-KEY': token,
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
  
-  const statusParam = status ? `&status=${status}` : '';
-  const url = `https://api.cardapioweb.com/api/v1/company/orders?limit=${limit}${statusParam}`;
+  const statusParam = status ? `?status[]=${status}` : '';
+  const url = `https://integracao.cardapioweb.com/api/partner/v1/orders${statusParam}`;
  
   try {
     const r = await request(url, headers);
