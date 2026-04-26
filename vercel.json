@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/pedidos.js": {
+      "runtime": "node@18"
+    }
+  }
+}
