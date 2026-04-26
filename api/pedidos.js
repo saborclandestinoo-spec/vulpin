@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
  
-  const { storeCode, token, status = 'PENDING,CONFIRMED,DELIVERED', limit = 100 } = req.query;
+  const { storeCode, token, status, limit = 100 } = req.query;
   if (!storeCode || !token) return res.status(400).json({ error: 'storeCode e token obrigatórios' });
  
   const headers = {
@@ -34,11 +34,11 @@ export default async function handler(req, res) {
     'Accept': 'application/json',
   };
  
+  const statusParam = status ? `&status=${status}` : '';
+  const url = `https://api.cardapioweb.com/api/v1/company/orders?limit=${limit}${statusParam}`;
+ 
   try {
-    const r = await request(
-      `https://api.cardapioweb.com/orders?status=${status}&limit=${limit}`,
-      headers
-    );
+    const r = await request(url, headers);
     try { return res.status(r.status).json(JSON.parse(r.body)); }
     catch(e) { return res.status(r.status).json({ error: r.body.slice(0, 500) }); }
   } catch (err) {
