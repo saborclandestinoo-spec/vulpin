@@ -4576,17 +4576,22 @@ function verPedido(id){
   const pedidos=getPedidosCache();
   const p=pedidos.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
   if(!p)return;
-  const num=p.displayId||p.id||'—';
+  const num=p.display_id||p.displayId||p.id||'—';
   document.getElementById('mpd-title').textContent=`Pedido #${num}`;
   const itens=(p.items||p.itens||[]);
   const total=p.total||p.totalAmount||p.valor||0;
   const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
   const tel=p.customer?.phone||p.cliente?.telefone||'—';
-  const end=p.deliveryAddress||p.endereco;
-  const endTxt=end?(end.formattedAddress||`${end.street||''} ${end.number||''}, ${end.neighborhood||''}, ${end.city||''}`).trim():'Retirada';
-  const obs=p.observations||p.observacao||'';
-  const pag=p.payment?.name||p.pagamento||p.formaPagamento||'—';
-  const troco=p.payment?.changeFor||p.troco||0;
+  const end=p.delivery_address||p.deliveryAddress||p.endereco;
+  const endTxt=end?(end.formattedAddress||`${end.street||''} ${end.number||''}, ${end.neighborhood||''}, ${end.city||''}`).trim():(p.order_type==='takeout'?'Retirada':p.order_type==='onsite'?'Consumo no local':'Retirada');
+  const obs=p.observation||p.observations||p.observacao||'';
+  // pagamentos — array
+  const pags=(p.payments||[]);
+  const pagTxt=pags.length?pags.map(pg=>{
+    const metodos={'money':'Dinheiro','credit_card':'Cartão Crédito','debit_card':'Cartão Débito','pix':'Pix','pix_auto':'Pix Automático','meal_voucher':'Vale Refeição','food_voucher':'Vale Alimentação','online_credit_card':'Crédito Online','ifood':'iFood'};
+    return(metodos[pg.payment_method]||pg.payment_method||'—')+(pg.change_for?` (troco p/ R$${fmtN(pg.change_for)})`:'');
+  }).join(' + '):'—';
+  const dataHora=p.created_at||p.createdAt;
 
   document.getElementById('mpd-body').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -4607,9 +4612,9 @@ function verPedido(id){
     <div style="background:#fff;border:1px solid var(--bor);border-radius:10px;margin-bottom:12px">
       <div style="padding:10px 14px;border-bottom:1px solid var(--bor2);font-size:11px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.3px">Itens do Pedido</div>
       ${itens.length?itens.map(i=>{
-        const subTotal=(i.price||i.preco||0)*(i.quantity||i.qtd||1);
-        const obs2=i.observations||i.observacao||'';
-        const comps=(i.options||i.complementos||[]).map(c=>`<div style="font-size:10px;color:var(--t3);padding-left:8px">+ ${c.name||c.nome||c} ${c.price?('+R$'+fmtN(c.price)):''}</div>`).join('');
+        const subTotal=i.total_price||i.totalPrice||(i.price||i.unit_price||0)*(i.quantity||i.qtd||1);
+        const obs2=i.observation||i.observations||i.observacao||'';
+        const comps=(i.options||i.complementos||[]).map(c=>`<div style="font-size:10px;color:var(--t3);padding-left:8px">+ ${c.name||c.nome||c}${c.unit_price?' +R$'+fmtN(c.unit_price):''}</div>`).join('');
         return`<div style="padding:10px 14px;border-bottom:1px solid var(--bor2)">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
@@ -4630,19 +4635,20 @@ function verPedido(id){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:${obs?'12px':'0'}">
       <div style="background:var(--bg2);border-radius:10px;padding:12px">
         <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Pagamento</div>
-        <div style="font-size:12px;font-weight:600;color:var(--t)">${pag}</div>
-        ${troco?`<div style="font-size:11px;color:var(--t3)">Troco: R$ ${fmtN(troco)}</div>`:''}
+        <div style="font-size:12px;font-weight:600;color:var(--t)">${pagTxt}</div>
       </div>
       <div style="background:var(--bg2);border-radius:10px;padding:12px">
         <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Data/Hora</div>
-        <div style="font-size:12px;color:var(--t)">${p.createdAt?new Date(p.createdAt).toLocaleString('pt-BR'):'—'}</div>
+        <div style="font-size:12px;color:var(--t)">${dataHora?new Date(dataHora).toLocaleString('pt-BR'):'—'}</div>
       </div>
     </div>
-    ${obs?`<div style="background:var(--amber-bg);border-radius:10px;padding:12px;border:1px solid rgba(230,126,34,.2)">
+    ${obs?`<div style="background:var(--amber-bg);border-radius:10px;padding:12px;border:1px solid rgba(230,126,34,.2);margin-top:12px">
       <div style="font-size:10px;color:var(--amber);font-weight:700;margin-bottom:4px">OBSERVAÇÃO</div>
       <div style="font-size:12px;color:var(--t)">${obs}</div>
     </div>`:''}
   `;
+  openM('modal-pedido-det');
+}
   openM('modal-pedido-det');
 }
 
