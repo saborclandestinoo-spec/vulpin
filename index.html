@@ -4352,12 +4352,12 @@ function cwSalvarConfig(){
 // Base: dashboard.cardapioweb.com
 // Auth: Bearer token (API de Integração)
 // ═══════════════════════════════════════════
-const CW_BASE='https://dashboard.cardapioweb.com';
+const CW_BASE='https://integracao.cardapioweb.com';
 
 async function cwFetch(path,cfg){
   // Usa API route do Vercel — sem CORS
   try{
-    const url=`/api/pedidos?storeCode=${encodeURIComponent(cfg.storeCode)}&token=${encodeURIComponent(cfg.token)}&limit=100`;
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}`;
     const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
     return r;
   }catch(e){}
