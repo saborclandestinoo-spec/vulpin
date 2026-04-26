@@ -10,13 +10,19 @@ function request(url, headers) {
   });
 }
  
+async function fetchJSON(url, headers) {
+  const r = await request(url, headers);
+  try { return { status: r.status, data: JSON.parse(r.body) }; }
+  catch(e) { return { status: r.status, data: null }; }
+}
+ 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
  
-  const { token, status } = req.query;
-  if (!token) return res.status(400).json({ error: 'token obrigatório' });
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ error: 'token obrigatorio' });
  
   const headers = {
     'X-API-KEY': token,
@@ -24,13 +30,31 @@ export default async function handler(req, res) {
     'Accept': 'application/json',
   };
  
-  const statusParam = status ? `?status[]=${status}` : '';
-  const url = `https://integracao.cardapioweb.com/api/partner/v1/orders${statusParam}`;
+  const BASE = 'https://integracao.cardapioweb.com';
  
   try {
-    const r = await request(url, headers);
-    try { return res.status(r.status).json(JSON.parse(r.body)); }
-    catch(e) { return res.status(r.status).json({ error: r.body.slice(0, 500) }); }
+    // 1. Busca lista resumida
+    const listRes = await fetchJSON(`${BASE}/api/partner/v1/orders`, headers);
+    if (listRes.status !== 200) {
+      return res.status(listRes.status).json({ error: 'Erro ao buscar pedidos', status: listRes.status });
+    }
+ 
+    const list = Array.isArray(listRes.data) ? listRes.data : [];
+ 
+    // 2. Busca detalhes de cada pedido (max 20)
+    const limited = list.slice(0, 20);
+    const detailed = await Promise.all(
+      limited.map(async (p) => {
+        try {
+          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
+          return det.status === 200 && det.data ? det.data : p;
+        } catch(e) {
+          return p;
+        }
+      })
+    );
+ 
+    return res.status(200).json(detailed);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
