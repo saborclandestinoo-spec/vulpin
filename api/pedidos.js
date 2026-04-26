@@ -28,8 +28,8 @@ export default async function handler(req, res) {
   if (!storeCode || !token) return res.status(400).json({ error: 'storeCode e token obrigatórios' });
  
   const headers = {
-    'store-code': storeCode,
-    'token': token,
+    'Companyid': storeCode,
+    'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
