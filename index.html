@@ -735,7 +735,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-mp">
-            <thead><tr><th>Cód</th><th>Insumo</th><th>Categoria</th><th>Un.</th><th>Qtd Embalagem</th><th>Valor NF (R$)</th><th>Valor/g (R$)</th><th>Estoque Mín</th><th></th></tr></thead>
+            <thead><tr><th>Insumo</th><th>Categoria</th><th>Un.</th><th>Qtd Embalagem</th><th>Valor NF (R$)</th><th>Valor/g (R$)</th><th>Estoque Mín</th><th></th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -754,7 +754,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-produtos">
-            <thead><tr><th>Cód</th><th>Produto</th><th>Categoria</th><th>Cód. PDV</th><th>Custo Unit (R$)</th><th>Preço Venda (R$)</th><th>Lucro (R$)</th><th>Margem</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Produto</th><th>Categoria</th><th>Cód. PDV</th><th>Custo Unit (R$)</th><th>Preço Venda (R$)</th><th>Lucro (R$)</th><th>Margem</th><th>Status</th><th></th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -1584,6 +1584,8 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       </div>
       <div><label class="fl">Saldo Inicial (R$)</label><input class="fi" id="mbank-saldo" type="number" step="0.01" placeholder="0,00"></div>
     </div>
+    <label class="fl">Data Inicial <span style="font-weight:400;color:var(--t3)">(contagem a partir desta data)</span></label>
+    <input class="fi" id="mbank-data-inicial" type="date">
     <div class="modal-actions">
       <button class="btn-danger modal-del" id="mbank-del" onclick="deleteBank()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-banco')">Cancelar</button>
@@ -3793,6 +3795,7 @@ function openBanco(id){
       document.getElementById('mbank-nome').value=b.nome;
       document.getElementById('mbank-tipo').value=b.tipo;
       document.getElementById('mbank-saldo').value=b.saldoInicial||0;
+      document.getElementById('mbank-data-inicial').value=b.dataInicial||'';
       document.getElementById('mbank-del').style.display='block';
     }
   } else {
@@ -3800,6 +3803,7 @@ function openBanco(id){
     document.getElementById('mbank-nome').value='';
     document.getElementById('mbank-tipo').value='caixa';
     document.getElementById('mbank-saldo').value='0';
+    document.getElementById('mbank-data-inicial').value='';
     document.getElementById('mbank-del').style.display='none';
   }
   openM('modal-banco');
@@ -3807,7 +3811,7 @@ function openBanco(id){
 function saveBank(){
   const nome=document.getElementById('mbank-nome').value.trim();
   if(!nome){alert('Informe o nome');return;}
-  const obj={id:editBancoId||uid(),nome,tipo:document.getElementById('mbank-tipo').value,saldoInicial:parseFloat(document.getElementById('mbank-saldo').value)||0};
+  const obj={id:editBancoId||uid(),nome,tipo:document.getElementById('mbank-tipo').value,saldoInicial:parseFloat(document.getElementById('mbank-saldo').value)||0,dataInicial:document.getElementById('mbank-data-inicial').value||''};
   let data=getBancos();
   if(editBancoId)data=data.map(x=>x.id===editBancoId?obj:x);
   else data.push(obj);
@@ -3836,11 +3840,10 @@ function renderMP(){
   const s=(document.getElementById('mp-search')||{}).value?.toLowerCase()||'';
   const ct=catV||'';
   let filtered=mp;
-  if(s)filtered=filtered.filter(m=>m.nome.toLowerCase().includes(s)||m.cod.toString().includes(s));
+  if(s)filtered=filtered.filter(m=>m.nome.toLowerCase().includes(s));
   if(ct)filtered=filtered.filter(m=>m.cat===ct);
   const tbody=document.querySelector('#tbl-mp tbody');
   tbody.innerHTML=filtered.map(m=>`<tr>
-    <td>${m.cod}</td>
     <td style="font-weight:500;color:var(--t)">${m.nome}</td>
     <td>${m.cat}</td>
     <td>${m.un}</td>
@@ -4049,14 +4052,13 @@ function renderProdutos(){
   const s=(document.getElementById('prod-s')||{}).value?.toLowerCase()||'';
   const ct=fv||'';
   let filtered=prods;
-  if(s)filtered=filtered.filter(p=>p.nome.toLowerCase().includes(s)||p.cod.toString().includes(s));
+  if(s)filtered=filtered.filter(p=>p.nome.toLowerCase().includes(s));
   if(ct)filtered=filtered.filter(p=>p.cat===ct);
   const tbody=document.querySelector('#tbl-produtos tbody');
   tbody.innerHTML=filtered.map(p=>{
     const lucro=(p.preco||0)-(p.custo||0);
     const margem=p.preco?(lucro/p.preco*100).toFixed(1):0;
     return`<tr>
-      <td>${p.cod}</td>
       <td style="font-weight:500;color:var(--t)">${p.nome}</td>
       <td>${p.cat}</td>
       <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span></td>
