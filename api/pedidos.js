@@ -1,62 +1,46 @@
 const https = require('https');
- 
-function request(url, headers) {
+const http = require('http');
+
+function request(url, headers, redirects = 0) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers }, (r) => {
+    if (redirects > 5) return reject(new Error('Too many redirects'));
+    const lib = url.startsWith('https') ? https : http;
+    lib.get(url, { headers }, (r) => {
+      if (r.statusCode >= 300 && r.statusCode < 400 && r.headers.location) {
+        const next = r.headers.location.startsWith('http')
+          ? r.headers.location
+          : `https://integracao.cardapioweb.com${r.headers.location}`;
+        return resolve(request(next, headers, redirects + 1));
+      }
       let body = '';
       r.on('data', c => body += c);
       r.on('end', () => resolve({ status: r.statusCode, body }));
     }).on('error', reject);
   });
 }
- 
-async function fetchJSON(url, headers) {
-  const r = await request(url, headers);
-  try { return { status: r.status, data: JSON.parse(r.body) }; }
-  catch(e) { return { status: r.status, data: null }; }
-}
- 
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
- 
-  const { token } = req.query;
-  if (!token) return res.status(400).json({ error: 'token obrigatorio' });
- 
+
+  const { storeCode, token } = req.query;
+  if (!storeCode || !token) return res.status(400).json({ error: 'storeCode e token obrigatórios' });
+
   const headers = {
-    'X-API-KEY': token,
+    'x-api-key': token,
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
- 
-  const BASE = 'https://integracao.cardapioweb.com';
- 
+
+  // Endpoint oficial: GET /orders (polling de pedidos)
+  const url = `https://integracao.cardapioweb.com/orders`;
+
   try {
-    // 1. Busca lista resumida
-    const listRes = await fetchJSON(`${BASE}/api/partner/v1/orders`, headers);
-    if (listRes.status !== 200) {
-      return res.status(listRes.status).json({ error: 'Erro ao buscar pedidos', status: listRes.status });
-    }
- 
-    const list = Array.isArray(listRes.data) ? listRes.data : [];
- 
-    // 2. Busca detalhes de cada pedido (max 20)
-    const limited = list.slice(0, 20);
-    const detailed = await Promise.all(
-      limited.map(async (p) => {
-        try {
-          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
-          return det.status === 200 && det.data ? det.data : p;
-        } catch(e) {
-          return p;
-        }
-      })
-    );
- 
-    return res.status(200).json(detailed);
+    const r = await request(url, headers);
+    try { return res.status(r.status).json(JSON.parse(r.body)); }
+    catch(e) { return res.status(r.status).json({ error: r.body.slice(0, 500) }); }
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 }
- 
