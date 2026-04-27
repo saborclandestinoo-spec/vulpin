@@ -449,83 +449,137 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
     <!-- PEDIDOS -->
     <div class="pg" id="pg-pedidos">
-      <!-- Status bar -->
-      <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('')" id="pf-todos">
-          <span style="color:var(--t2)">Todos</span><span id="pc-todos" style="color:var(--t);font-weight:700">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('PENDING')" id="pf-pendente">
-          <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;display:inline-block"></span>
-          <span style="color:var(--t2)">Pendentes</span><span id="pc-pendente" style="color:var(--amber);font-weight:700">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CONFIRMED')" id="pf-confirmado">
-          <span style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>
-          <span style="color:var(--t2)">Confirmados</span><span id="pc-confirmado" style="color:var(--blue);font-weight:700">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('DELIVERED')" id="pf-entregue">
-          <span style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>
-          <span style="color:var(--t2)">Entregues</span><span id="pc-entregue" style="color:var(--green);font-weight:700">0</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CANCELLED')" id="pf-cancelado">
-          <span style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;display:inline-block"></span>
-          <span style="color:var(--t2)">Cancelados</span><span id="pc-cancelado" style="color:var(--red);font-weight:700">0</span>
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-          <div id="ped-sync-status" style="font-size:10px;color:var(--t3)"></div>
-          <button class="btn-o" onclick="syncPedidos()" id="btn-sync-ped" style="font-size:11px">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Sincronizar
-          </button>
-          <div style="position:relative" id="custom-date-wrap">
-            <button onclick="toggleDatePicker()" id="date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;transition:all .15s" onmouseover="this.style.borderColor='var(--fox)'" onmouseout="this.style.borderColor=document.getElementById('ped-date-filter').value?'var(--fox)':'var(--bor)'">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <span id="date-btn-label">Filtrar por data</span>
-              <span id="date-btn-clear" onclick="event.stopPropagation();clearDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
+      <!-- Tabs: Pedidos do Dia / Histórico -->
+      <div style="background:#fff;border-bottom:1px solid var(--bor);padding:0 18px;display:flex;align-items:center;gap:0;flex-shrink:0">
+        <div id="ped-tab-hoje" onclick="pedTab('hoje')" style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;transition:all .15s">Pedidos do Dia</div>
+        <div id="ped-tab-historico" onclick="pedTab('historico')" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Histórico</div>
+      </div>
+
+      <!-- ── ABA HOJE ── -->
+      <div id="ped-panel-hoje" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+        <!-- Status bar -->
+        <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('')" id="pf-todos">
+            <span style="color:var(--t2)">Todos</span><span id="pc-todos" style="color:var(--t);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('PENDING')" id="pf-pendente">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Pendentes</span><span id="pc-pendente" style="color:var(--amber);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CONFIRMED')" id="pf-confirmado">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Confirmados</span><span id="pc-confirmado" style="color:var(--blue);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('DELIVERED')" id="pf-entregue">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Entregues</span><span id="pc-entregue" style="color:var(--green);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CANCELLED')" id="pf-cancelado">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Cancelados</span><span id="pc-cancelado" style="color:var(--red);font-weight:700">0</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div id="ped-sync-status" style="font-size:10px;color:var(--t3)"></div>
+            <button class="btn-o" onclick="syncPedidos()" id="btn-sync-ped" style="font-size:11px">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Sincronizar
             </button>
-            <input type="hidden" id="ped-date-filter">
-            <div id="date-picker-drop" style="display:none;position:absolute;top:38px;left:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                <button onclick="datePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">‹</button>
-                <span id="dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                <button onclick="datePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">›</button>
-              </div>
-              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:6px">
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">D</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">T</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">Q</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">Q</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
-                <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
-              </div>
-              <div id="dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
-              <div style="display:flex;justify-content:space-between;margin-top:10px;border-top:1px solid var(--bor2);padding-top:10px">
-                <button onclick="clearDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
-                <button onclick="selectDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
+            <div style="position:relative" id="custom-date-wrap">
+              <button onclick="toggleDatePicker()" id="date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;transition:all .15s" onmouseover="this.style.borderColor='var(--fox)'" onmouseout="this.style.borderColor=document.getElementById('ped-date-filter').value?'var(--fox)':'var(--bor)'">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span id="date-btn-label">Filtrar por data</span>
+                <span id="date-btn-clear" onclick="event.stopPropagation();clearDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
+              </button>
+              <input type="hidden" id="ped-date-filter">
+              <div id="date-picker-drop" style="display:none;position:absolute;top:38px;left:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+                  <button onclick="datePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">‹</button>
+                  <span id="dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                  <button onclick="datePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">›</button>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:6px">
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">D</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">T</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">Q</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">Q</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
+                  <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
+                </div>
+                <div id="dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+                <div style="display:flex;justify-content:space-between;margin-top:10px;border-top:1px solid var(--bor2);padding-top:10px">
+                  <button onclick="clearDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
+                  <button onclick="selectDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
+                </div>
               </div>
             </div>
+            <div class="search-wrap" style="max-width:200px">
+              <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <input class="search-in" id="ped-search" placeholder="Buscar cliente/nº..." oninput="renderPedidos()">
+            </div>
           </div>
-          <div class="search-wrap" style="max-width:200px">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="ped-search" placeholder="Buscar cliente/nº..." oninput="renderPedidos()">
+        </div>
+        <!-- Config aviso se não configurado -->
+        <div id="ped-config-aviso" style="display:none;margin:20px 18px;background:var(--amber-bg);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:16px 20px">
+          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">⚙️ Configure a integração Cardápio Web</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Acesse <b>Configurações → Cardápio Web</b> e informe o Código da Loja e o Token para sincronizar pedidos.</div>
+          <button class="btn-p" style="background:var(--amber);font-size:11px" onclick="go('config',document.querySelector('.ni:last-of-type'))">Ir para Configurações</button>
+        </div>
+        <div class="scroll">
+          <div class="card">
+            <div class="tbl-wrap">
+              <table class="tbl" id="tbl-pedidos">
+                <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <tbody id="tbody-pedidos">
+                  <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Clique em <b>Sincronizar</b> para carregar pedidos do Cardápio Web</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Config aviso se não configurado -->
-      <div id="ped-config-aviso" style="display:none;margin:20px 18px;background:var(--amber-bg);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:16px 20px">
-        <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">⚙️ Configure a integração Cardápio Web</div>
-        <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Acesse <b>Configurações → Cardápio Web</b> e informe o Código da Loja e o Token para sincronizar pedidos.</div>
-        <button class="btn-p" style="background:var(--amber);font-size:11px" onclick="go('config',document.querySelector('.ni:last-of-type'))">Ir para Configurações</button>
-      </div>
-      <div class="scroll">
-        <div class="card">
-          <div class="tbl-wrap">
-            <table class="tbl" id="tbl-pedidos">
-              <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
-              <tbody id="tbody-pedidos">
-                <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Clique em <b>Sincronizar</b> para carregar pedidos do Cardápio Web</td></tr>
-              </tbody>
-            </table>
+
+      <!-- ── ABA HISTÓRICO ── -->
+      <div id="ped-panel-historico" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+        <!-- Toolbar histórico -->
+        <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+          <!-- Resumo acumulado -->
+          <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
+            Total: R$ 0,00 · 0 pedidos
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <!-- Sync mês inteiro -->
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="month" id="hist-sync-month" class="filter-sel" style="font-size:11px;padding:6px 10px">
+              <button class="btn-p" onclick="syncMes()" id="btn-sync-mes" style="font-size:11px;white-space:nowrap">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Sincronizar Mês
+              </button>
+              <div id="hist-sync-status" style="font-size:10px;color:var(--t3);min-width:80px"></div>
+            </div>
+            <!-- Filtro mês visualização -->
+            <select class="filter-sel" id="hist-mes-filter" onchange="renderHistorico()" style="font-size:11px">
+              <option value="">Todos os meses</option>
+            </select>
+            <!-- Busca -->
+            <div class="search-wrap" style="max-width:200px">
+              <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <input class="search-in" id="hist-search" placeholder="Buscar cliente/nº..." oninput="renderHistorico()">
+            </div>
+            <!-- Limpar histórico -->
+            <button class="btn-o" onclick="limparHistorico()" style="font-size:11px;color:var(--red);border-color:rgba(231,76,60,.3)">Limpar</button>
+          </div>
+        </div>
+        <div class="scroll">
+          <div class="card">
+            <div class="tbl-wrap">
+              <table class="tbl" id="tbl-historico">
+                <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <tbody id="tbody-historico">
+                  <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Nenhum pedido salvo. Use "Sincronizar" na aba <b>Pedidos do Dia</b> ou <b>Sincronizar Mês</b> para acumular histórico.</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4463,8 +4517,11 @@ async function syncPedidos(){
       return;
     }
     const list=await res.json();
-    S.set('pedidos_cache',Array.isArray(list)?list:[]);
+    const arr=Array.isArray(list)?list:[];
+    S.set('pedidos_cache',arr);
     S.set('pedidos_last_sync',new Date().toISOString());
+    // ── SALVA NO HISTÓRICO PERSISTENTE ──
+    if(typeof mergeNaHistoria==='function')mergeNaHistoria(arr);
     if(st){
       const now=new Date();
       st.textContent=`Atualizado ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -4801,6 +4858,183 @@ document.addEventListener('click',e=>{
   // init auto-sync on load
   cwScheduleAuto();
 })();
+
+// ═══════════════════════════════════════════
+// HISTÓRICO DE PEDIDOS — PERSISTÊNCIA
+// Armazena em localStorage['pedidos_historico'] = array acumulado
+// Merge por id: não duplica, atualiza status
+// ═══════════════════════════════════════════
+
+function getHistorico(){
+  try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
+}
+function setHistorico(arr){
+  try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}catch(e){alert('localStorage cheio: '+e.message);}
+}
+
+function mergeNaHistoria(novos){
+  if(!novos||!novos.length)return;
+  const hist=getHistorico();
+  const mapa=Object.fromEntries(hist.map(p=>[p.id,p]));
+  novos.forEach(p=>{
+    if(p.id)mapa[p.id]=p; // upsert — sempre atualiza com versão mais nova
+  });
+  setHistorico(Object.values(mapa));
+  renderHistoricoMesesFilter();
+}
+
+function renderHistoricoMesesFilter(){
+  const hist=getHistorico();
+  const meses=[...new Set(hist.map(p=>{
+    const dt=p.created_at||p.createdAt||'';
+    return dt?dt.slice(0,7):'';
+  }).filter(Boolean))].sort().reverse();
+  const sel=document.getElementById('hist-mes-filter');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>{
+    const [y,mo]=m.split('-');
+    const label=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)-1]+' '+y;
+    return`<option value="${m}">${label}</option>`;
+  }).join('');
+  sel.value=cur;
+}
+
+function renderHistorico(){
+  let hist=getHistorico();
+  const mes=(document.getElementById('hist-mes-filter')||{}).value||'';
+  const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
+
+  if(mes)hist=hist.filter(p=>(p.created_at||p.createdAt||'').startsWith(mes));
+  if(search)hist=hist.filter(p=>{
+    const cliente=(p.customer?.name||p.cliente?.nome||p.clienteNome||'').toLowerCase();
+    const num=String(p.displayId||p.display_id||p.id||'').toLowerCase();
+    return cliente.includes(search)||num.includes(search);
+  });
+
+  // sort desc
+  hist.sort((a,b)=>new Date(b.created_at||b.createdAt||0)-new Date(a.created_at||a.createdAt||0));
+
+  // total badge
+  const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const badge=document.getElementById('hist-total-badge');
+  if(badge)badge.textContent=`Total: R$ ${fmtN(total)} · ${hist.length} pedido${hist.length!==1?'s':''}`;
+
+  const tbody=document.getElementById('tbody-historico');
+  if(!tbody)return;
+  if(!hist.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum pedido encontrado no histórico</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=hist.map(p=>{
+    const num=p.display_id||p.displayId||p.id||'—';
+    const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
+    const dt=p.created_at||p.createdAt||p.criadoEm||p.data||'';
+    const dtFmt=dt?new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const itens=(p.items||p.itens||[]);
+    const itensTxt=itens.length?itens.map(i=>`${i.quantity||i.qtd||1}x ${i.name||i.nome||'?'}`).join(', ').slice(0,40)+(itens.length>2?'…':''):`${itens.length} item(s)`;
+    const _pags=(p.payments||[]);const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pag=_pags.length?(_pm[_pags[0].payment_method]||_pags[0].payment_method||'—'):'—';
+    const total2=p.total||p.totalAmount||p.valor||0;
+    const status=p.status||p.situacao||'';
+    const canal=p.sales_channel||'';
+    const canalBadge=canal==='ifood'?`<span style="display:inline-block;background:#EA1D2C;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">iF</span>`:canal==='whatsapp_extension'?`<span style="display:inline-block;background:#25D366;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">WPP</span>`:'';
+    return`<tr style="cursor:pointer" onclick="verPedidoHist('${p.id||p.display_id}')">
+      <td style="font-weight:600;color:var(--t)">#${num}${canalBadge}</td>
+      <td style="color:var(--t)">${cliente}</td>
+      <td>${dtFmt}</td>
+      <td style="font-size:11px;color:var(--t3);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${itensTxt}</td>
+      <td>${pag}</td>
+      <td style="font-weight:600;color:var(--fox)">R$ ${fmtN(total2)}</td>
+      <td>${fmtPedStatus(status)}</td>
+      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();verPedidoHist('${p.id||p.display_id}')">Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function verPedidoHist(id){
+  // reusar verPedido mas buscando no histórico
+  const hist=getHistorico();
+  const orig=getPedidosCache();
+  // inject temporariamente no cache para usar verPedido
+  const p=hist.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
+  if(!p)return;
+  // add to cache temporarily if not present
+  if(!orig.find(x=>x.id===p.id)){
+    const tmp=[...orig,p];
+    S.set('pedidos_cache',tmp);
+    verPedido(id);
+    S.set('pedidos_cache',orig);
+  } else {
+    verPedido(id);
+  }
+}
+
+function limparHistorico(){
+  showConfirm('Limpar Histórico','Apagar todos os pedidos salvos no histórico? Esta ação não pode ser desfeita.','🗑️',()=>{
+    setHistorico([]);
+    renderHistorico();
+    renderHistoricoMesesFilter();
+  });
+}
+
+// ── TABS PEDIDOS ──
+let _pedTabAtual='hoje';
+function pedTab(tab){
+  _pedTabAtual=tab;
+  ['hoje','historico'].forEach(t=>{
+    const el=document.getElementById('ped-tab-'+t);
+    const panel=document.getElementById('ped-panel-'+t);
+    const on=t===tab;
+    if(el){el.style.color=on?'var(--fox)':'var(--t3)';el.style.borderBottomColor=on?'var(--fox)':'transparent';el.style.fontWeight=on?'600':'500';}
+    if(panel)panel.style.display=on?'flex':'none';
+  });
+  if(tab==='historico'){
+    renderHistoricoMesesFilter();
+    renderHistorico();
+    // default sync month = current
+    const sm=document.getElementById('hist-sync-month');
+    if(sm&&!sm.value){const now=new Date();sm.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;}
+  }
+}
+
+// ── SYNC MÊS INTEIRO ──
+async function syncMes(){
+  const cfg=getCWConfig();
+  if(!cfg.storeCode||!cfg.token){alert('Configure o Cardápio Web em Configurações primeiro.');return;}
+  const monthVal=document.getElementById('hist-sync-month').value;
+  if(!monthVal){alert('Selecione o mês para sincronizar.');return;}
+  const [y,m]=monthVal.split('-').map(Number);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const btn=document.getElementById('btn-sync-mes');
+  const st=document.getElementById('hist-sync-status');
+  if(btn)btn.disabled=true;
+
+  let totalNovos=0;
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if(st)st.textContent=`${d}/${daysInMonth}...`;
+    try{
+      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&date=${dateStr}`;
+      const res=await fetch(url,{signal:AbortSignal.timeout(12000)});
+      if(res.ok){
+        const list=await res.json();
+        if(Array.isArray(list)&&list.length){
+          mergeNaHistoria(list);
+          totalNovos+=list.length;
+        }
+      }
+    }catch(e){/* ignora dia com erro */}
+    // pequena pausa para não sobrecarregar API
+    await new Promise(r=>setTimeout(r,200));
+  }
+
+  if(btn)btn.disabled=false;
+  if(st)st.textContent=`✓ ${totalNovos} pedidos`;
+  renderHistorico();
+  renderHistoricoMesesFilter();
+}
+
+// ── PATCH syncPedidos: já incorporado na função original acima ──
 
 </script>
 </body>
