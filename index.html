@@ -1971,8 +1971,20 @@ function renderDashboard(){
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const lancMes=lancs.filter(l=>(l.data&&l.data.startsWith(mes))||(l.dataPag&&l.dataPag.startsWith(mes)));
-  const receitas=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const receitasLanc=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
   const despesas=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+
+  // Pedidos do histórico do mês atual (status entregue/concluído)
+  const statusOk=new Set(['DELIVERED','CONCLUDED','COMPLETED','CLOSED','FINISHED']);
+  const hist=getHistorico();
+  const receitasPedidos=hist.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';
+    const dtMes=dt?new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7):'';
+    const statusOkp=statusOk.has(p.status)||p.status==='DELIVERED';
+    return dtMes===mes&&statusOkp;
+  }).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+
+  const receitas=receitasLanc+receitasPedidos;
   const lucro=receitas-despesas;
   const producoes=getProducao();
   const prodMes=producoes.filter(p=>p.data&&p.data.startsWith(mes));
@@ -1986,7 +1998,7 @@ function renderDashboard(){
   }).length;
 
   document.getElementById('dash-metrics').innerHTML=`
-    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Mês atual</div></div>
+    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Pedidos + Lançamentos</div></div>
     <div class="metric"><div class="metric-l">Despesas — Mês</div><div class="metric-v">R$ ${fmtN(despesas)}</div><div class="metric-d ${despesas>receitas?'dn':'warn'}">Mês atual</div></div>
     <div class="metric"><div class="metric-l">Saldo Líquido</div><div class="metric-v" style="color:${lucro>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(lucro)}</div><div class="metric-d ${lucro>=0?'up':'dn'}">${lucro>=0?'Positivo':'Negativo'}</div></div>
     <div class="metric"><div class="metric-l">Produzido — Mês</div><div class="metric-v">${totalProd} un</div><div class="metric-d ${criticos>0?'dn':'up'}">${criticos} insumos críticos</div></div>
