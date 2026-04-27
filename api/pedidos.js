@@ -32,35 +32,26 @@ export default async function handler(req, res) {
 
   const BASE = 'https://integracao.cardapioweb.com';
 
+  // Se não veio date, usa hoje (fuso BR)
+  const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+
   try {
     let allOrders = [];
     const seenIds = new Set();
 
-    // 1. Pedidos ATIVOS (sem date = modo polling ao vivo)
-    if (!date) {
-      for (let page = 1; page <= 5; page++) {
-        const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
-        if (r.status !== 200 || !r.data) break;
-        const list = Array.isArray(r.data) ? r.data : [];
-        if (!list.length) break;
-        list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-        if (list.length < 50) break;
-      }
-      // sem date: busca detalhes (lista pequena, ok)
-      const detailed = await Promise.all(
-        allOrders.map(async (p) => {
-          try {
-            const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
-            return (det.status === 200 && det.data) ? det.data : p;
-          } catch(e) { return p; }
-        })
-      );
-      return res.status(200).json(detailed);
+    // 1. Pedidos ATIVOS (polling) — sempre busca pra pegar pendentes em tempo real
+    for (let page = 1; page <= 5; page++) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
+      if (r.status !== 200 || !r.data) break;
+      const list = Array.isArray(r.data) ? r.data : [];
+      if (!list.length) break;
+      list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
+      if (list.length < 50) break;
     }
 
-    // 2. Histórico COM PAGINAÇÃO — retorna direto sem buscar detalhe individual
-    const start = `${date}T00:00:00-03:00`;
-    const end   = `${date}T23:59:59-03:00`;
+    // 2. Histórico do dia (paginado) — pega fechados/cancelados
+    const start = `${targetDate}T00:00:00-03:00`;
+    const end   = `${targetDate}T23:59:59-03:00`;
 
     for (let page = 1; page <= 20; page++) {
       const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&page=${page}`;
@@ -78,13 +69,35 @@ export default async function handler(req, res) {
         if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); }
       });
 
-      if (list.length < 100) break; // última página
+      if (list.length < 100) break;
     }
 
-    // Filtrar pelo dia exato
-    allOrders = allOrders.filter(p => (p.created_at || '').startsWith(date));
+    // 3. Filtrar pelo dia alvo
+    allOrders = allOrders.filter(p => (p.created_at || '').startsWith(targetDate));
 
-    return res.status(200).json(allOrders);
+    // 4. Busca detalhes individuais SÓ pra ativos (lista pequena)
+    //    Histórico já vem com dados suficientes — não busca detalhe pra não dar timeout
+    const activeIds = new Set();
+    for (let page = 1; page <= 5; page++) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
+      if (r.status !== 200 || !r.data) break;
+      const list = Array.isArray(r.data) ? r.data : [];
+      if (!list.length) break;
+      list.forEach(p => activeIds.add(p.id));
+      if (list.length < 50) break;
+    }
+
+    const detailed = await Promise.all(
+      allOrders.map(async (p) => {
+        if (!activeIds.has(p.id)) return p; // histórico: retorna direto
+        try {
+          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
+          return (det.status === 200 && det.data) ? det.data : p;
+        } catch(e) { return p; }
+      })
+    );
+
+    return res.status(200).json(detailed);
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
