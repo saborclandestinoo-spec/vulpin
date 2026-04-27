@@ -1970,7 +1970,7 @@ function renderDashboard(){
   const lancs=getLanc();
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const lancMes=lancs.filter(l=>l.data&&l.data.startsWith(mes));
+  const lancMes=lancs.filter(l=>(l.data&&l.data.startsWith(mes))||(l.dataPag&&l.dataPag.startsWith(mes)));
   const receitas=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
   const despesas=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
   const lucro=receitas-despesas;
@@ -5215,6 +5215,33 @@ function mergeNaHistoria(novos){
     if(!p.id)return;
     const isNovo=!mapa[p.id]; // pedido que nunca foi visto
     mapa[p.id]=p; // upsert
+
+    // Auto-lançamento de receita para pedidos DELIVERED/CONCLUDED
+    const lancsProc=S.get('pedidos_lanc_criado')||{};
+    if(isNovo&&!lancsProc[p.id]&&(p.status==='DELIVERED'||p.status==='CONCLUDED'||p.status==='COMPLETED')){
+      const total=p.total_price||p.totalPrice||p.valor||0;
+      if(total>0){
+        const dt=(p.created_at||p.createdAt||new Date().toISOString()).slice(0,10);
+        const novoLanc={
+          id:uid(),
+          tipo:'receita',
+          desc:`Pedido #${p.display_id||p.displayId||p.id} — Cardápio Web`,
+          valor:total,
+          data:dt,
+          dataPag:dt,
+          pago:true,
+          catCod:'3.1.1.6',
+          ccId:'',
+          bancoId:'',
+          obs:`Auto-lançado via sync Cardápio Web`
+        };
+        const lancsArr=getLanc();
+        lancsArr.push(novoLanc);
+        S.set('lancamentos',lancsArr);
+        lancsProc[p.id]=true;
+        S.set('pedidos_lanc_criado',lancsProc);
+      }
+    }
 
     // Baixa estoque apenas 1x por pedido, apenas se tiver itens
     if(isNovo&&!processados[p.id]){
