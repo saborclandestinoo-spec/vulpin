@@ -109,6 +109,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 .pill-ok{background:var(--green-bg);color:var(--green)}
 .pill-warn{background:var(--amber-bg);color:var(--amber)}
 .pill-zero{background:var(--red-bg);color:var(--red)}
+.pill-purple{background:#f3e8ff;color:#7c3aed}
 .pill-ativo{background:var(--green-bg);color:var(--green)}
 .pill-oculto{background:var(--bg3);color:var(--t3)}
 .pill-falta{background:var(--amber-bg);color:var(--amber)}
@@ -1971,8 +1972,19 @@ function renderDashboard(){
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const lancMes=lancs.filter(l=>(l.data&&l.data.startsWith(mes))||(l.dataPag&&l.dataPag.startsWith(mes)));
-  const receitas=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const receitasLanc=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
   const despesas=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+  // Receitas = todos pedidos do mês exceto cancelados
+  const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  const _histAll=getHistorico();
+  const receitasPedidos=_histAll.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';
+    if(!dt)return false;
+    const dtMes=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
+    const st=p.status||p.situacao||'';
+    return dtMes===mes&&!_stCancel.has(st);
+  }).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const receitas=receitasLanc+receitasPedidos;
   const lucro=receitas-despesas;
   const producoes=getProducao();
   const prodMes=producoes.filter(p=>p.data&&p.data.startsWith(mes));
@@ -1986,7 +1998,7 @@ function renderDashboard(){
   }).length;
 
   document.getElementById('dash-metrics').innerHTML=`
-    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Mês atual</div></div>
+    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Pedidos + Lançamentos</div></div>
     <div class="metric"><div class="metric-l">Despesas — Mês</div><div class="metric-v">R$ ${fmtN(despesas)}</div><div class="metric-d ${despesas>receitas?'dn':'warn'}">Mês atual</div></div>
     <div class="metric"><div class="metric-l">Saldo Líquido</div><div class="metric-v" style="color:${lucro>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(lucro)}</div><div class="metric-d ${lucro>=0?'up':'dn'}">${lucro>=0?'Positivo':'Negativo'}</div></div>
     <div class="metric"><div class="metric-l">Produzido — Mês</div><div class="metric-v">${totalProd} un</div><div class="metric-d ${criticos>0?'dn':'up'}">${criticos} insumos críticos</div></div>
@@ -4897,22 +4909,24 @@ function pedFilterStatus(s){
 }
 
 const STATUS_MAP={
-  'PENDING':{label:'Pendente',cls:'pill-warn'},
-  'CONFIRMED':{label:'Confirmado',cls:'pill-blue'},
-  'PREPARING':{label:'Preparando',cls:'pill-blue'},
-  'READY':{label:'Pronto',cls:'pill-ok'},
-  'DELIVERING':{label:'Em entrega',cls:'pill-warn'},
-  'DELIVERED':{label:'Entregue',cls:'pill-ok'},
-  'CANCELLED':{label:'Cancelado',cls:'pill-zero'},
-  'CANCELLATION_REQUESTED':{label:'Cancel. Solic.',cls:'pill-zero'},
-  'released':{label:'Confirmado',cls:'pill-blue'},
-  'waiting_to_catch':{label:'Pendente',cls:'pill-warn'},
-  'closed':{label:'Entregue',cls:'pill-ok'},
-  'cancelled':{label:'Cancelado',cls:'pill-zero'},
-  'cancellation_requested':{label:'Cancel. Solic.',cls:'pill-zero'},
-  'preparing':{label:'Preparando',cls:'pill-blue'},
-  'ready':{label:'Pronto',cls:'pill-ok'},
-  'delivering':{label:'Em entrega',cls:'pill-warn'},
+  'PENDING':{label:'Pendente',cls:'pill-warn'},'pending':{label:'Pendente',cls:'pill-warn'},
+  'CONFIRMED':{label:'Em preparação',cls:'pill-blue'},'confirmed':{label:'Em preparação',cls:'pill-blue'},
+  'PREPARING':{label:'Em preparação',cls:'pill-blue'},'preparing':{label:'Em preparação',cls:'pill-blue'},
+  'released':{label:'Em preparação',cls:'pill-blue'},
+  'SCHEDULED':{label:'Agendado',cls:'pill-purple'},'scheduled':{label:'Agendado',cls:'pill-purple'},
+  'SCHEDULED_CONFIRMED':{label:'Agendado',cls:'pill-purple'},'scheduled_confirmed':{label:'Agendado',cls:'pill-purple'},
+  'READY':{label:'Esperando retirar',cls:'pill-ok'},'ready':{label:'Esperando retirar',cls:'pill-ok'},
+  'waiting_to_catch':{label:'Esperando retirar',cls:'pill-ok'},
+  'DISPATCHED':{label:'Saiu para entrega',cls:'pill-warn'},'dispatched':{label:'Saiu para entrega',cls:'pill-warn'},
+  'DELIVERING':{label:'Saiu para entrega',cls:'pill-warn'},'delivering':{label:'Saiu para entrega',cls:'pill-warn'},
+  'out_for_delivery':{label:'Saiu para entrega',cls:'pill-warn'},
+  'DELIVERED':{label:'Entregue',cls:'pill-ok'},'delivered':{label:'Entregue',cls:'pill-ok'},
+  'CONCLUDED':{label:'Concluído',cls:'pill-ok'},'concluded':{label:'Concluído',cls:'pill-ok'},
+  'COMPLETED':{label:'Concluído',cls:'pill-ok'},'completed':{label:'Concluído',cls:'pill-ok'},
+  'CLOSED':{label:'Concluído',cls:'pill-ok'},'closed':{label:'Concluído',cls:'pill-ok'},
+  'CANCELLED':{label:'Cancelado',cls:'pill-zero'},'cancelled':{label:'Cancelado',cls:'pill-zero'},
+  'CANCELED':{label:'Cancelado',cls:'pill-zero'},'canceled':{label:'Cancelado',cls:'pill-zero'},
+  'CANCELLATION_REQUESTED':{label:'Cancel. Solicitado',cls:'pill-zero'},'cancellation_requested':{label:'Cancel. Solicitado',cls:'pill-zero'},
 };
 
 function fmtPedStatus(s){
@@ -4930,16 +4944,17 @@ function renderPedidos(){
   const search=(document.getElementById('ped-search')||{}).value?.toLowerCase()||'';
 
   // count por status
-  const counts={PENDING:0,CONFIRMED:0,DELIVERED:0,CANCELLED:0};
-  pedidos.forEach(p=>{
-    const s=p.status||p.situacao||'';
-    if(counts[s]!==undefined)counts[s]++;
-  });
+  const _P=new Set(['PENDING','pending']);
+  const _C=new Set(['CONFIRMED','confirmed','PREPARING','preparing','released','SCHEDULED','scheduled','SCHEDULED_CONFIRMED','scheduled_confirmed','DISPATCHED','dispatched','DELIVERING','delivering','out_for_delivery','READY','ready','waiting_to_catch']);
+  const _E=new Set(['DELIVERED','delivered','CONCLUDED','concluded','COMPLETED','completed','CLOSED','closed']);
+  const _X=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  let cP=0,cC=0,cE=0,cX=0;
+  pedidos.forEach(p=>{const s=p.status||p.situacao||'';if(_P.has(s))cP++;else if(_C.has(s))cC++;else if(_E.has(s))cE++;else if(_X.has(s))cX++;});
   document.getElementById('pc-todos').textContent=pedidos.length;
-  document.getElementById('pc-pendente').textContent=counts.PENDING;
-  document.getElementById('pc-confirmado').textContent=counts.CONFIRMED;
-  document.getElementById('pc-entregue').textContent=counts.DELIVERED;
-  document.getElementById('pc-cancelado').textContent=counts.CANCELLED;
+  document.getElementById('pc-pendente').textContent=cP;
+  document.getElementById('pc-confirmado').textContent=cC;
+  document.getElementById('pc-entregue').textContent=cE;
+  document.getElementById('pc-cancelado').textContent=cX;
 
   // badge sidebar
   const badge=document.getElementById('nb-pedidos');
@@ -4949,7 +4964,11 @@ function renderPedidos(){
   }
 
   // filter
-  if(pedStatusFilter)pedidos=pedidos.filter(p=>(p.status||p.situacao||'')===pedStatusFilter);
+  if(pedStatusFilter){
+    const _gF={'PENDING':_P,'CONFIRMED':_C,'DELIVERED':_E,'CANCELLED':_X};
+    const _al=_gF[pedStatusFilter]||new Set([pedStatusFilter]);
+    pedidos=pedidos.filter(p=>_al.has(p.status||p.situacao||''));
+  }
   if(search)pedidos=pedidos.filter(p=>{
     const cliente=(p.customer?.name||p.cliente?.nome||p.clienteNome||'').toLowerCase();
     const num=String(p.displayId||p.id||p.numero||'').toLowerCase();
