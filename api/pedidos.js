@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { token } = req.query;
+  const { token, date } = req.query;
   if (!token) return res.status(400).json({ error: 'token obrigatorio' });
 
   const headers = {
@@ -33,28 +33,26 @@ export default async function handler(req, res) {
   const BASE = 'https://integracao.cardapioweb.com';
 
   try {
-    // 1. Busca lista resumida
-    const listRes = await fetchJSON(`${BASE}/api/partner/v1/orders`, headers);
-    if (listRes.status !== 200) {
-      return res.status(listRes.status).json({ error: 'Erro ao buscar pedidos', status: listRes.status });
+    // Busca até 5 páginas (100 pedidos)
+    let allOrders = [];
+    for (let page = 1; page <= 5; page++) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=20&page=${page}`, headers);
+      if (r.status !== 200) break;
+      const list = Array.isArray(r.data) ? r.data : [];
+      if (!list.length) break;
+      allOrders = allOrders.concat(list);
+      if (list.length < 20) break; // ultima pagina
     }
 
-    const list = Array.isArray(listRes.data) ? listRes.data : [];
+    // Filtrar por data se fornecida (formato: YYYY-MM-DD)
+    if (date) {
+      allOrders = allOrders.filter(p => {
+        const d = p.created_at || '';
+        return d.startsWith(date);
+      });
+    }
 
-    // 2. Busca detalhes de cada pedido (max 20)
-    const limited = list.slice(0, 20);
-    const detailed = await Promise.all(
-      limited.map(async (p) => {
-        try {
-          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
-          return det.status === 200 && det.data ? det.data : p;
-        } catch(e) {
-          return p;
-        }
-      })
-    );
-
-    return res.status(200).json(detailed);
+    return res.status(200).json(allOrders);
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
