@@ -4251,7 +4251,8 @@ function openProd(id){
   openM('modal-prod');
 }
 function saveProd(){
-  const nome=(document.getElementById('mprod-title-input').value||document.getElementById('mprod-nome').value).trim();
+  const _ti=document.getElementById('mprod-title-input');const _tn=document.getElementById('mprod-nome');if(_ti&&_tn)_tn.value=_ti.value;
+  const nome=(_ti?.value||_tn?.value||'').trim();
   if(!nome){alert('Informe o nome do produto');return;}
   const estoqueInicial=parseFloat(document.getElementById('mprod-estoque').value)||0;
   const obj={
