@@ -4998,6 +4998,7 @@ function pedTab(tab){
 }
 
 // ── SYNC MÊS INTEIRO ──
+// 1 request com range completo — proxy pagina tudo internamente
 async function syncMes(){
   const cfg=getCWConfig();
   if(!cfg.storeCode||!cfg.token){alert('Configure o Cardápio Web em Configurações primeiro.');return;}
@@ -5008,28 +5009,46 @@ async function syncMes(){
   const btn=document.getElementById('btn-sync-mes');
   const st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
+  if(st)st.textContent='Buscando...';
 
-  let totalNovos=0;
-  for(let d=1;d<=daysInMonth;d++){
-    const dateStr=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    if(st)st.textContent=`${d}/${daysInMonth}...`;
-    try{
-      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&date=${dateStr}`;
-      const res=await fetch(url,{signal:AbortSignal.timeout(12000)});
-      if(res.ok){
-        const list=await res.json();
-        if(Array.isArray(list)&&list.length){
-          mergeNaHistoria(list);
-          totalNovos+=list.length;
-        }
+  const startDate=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
+  const endDate=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
+
+  try{
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    const res=await fetch(url,{signal:AbortSignal.timeout(55000)});
+    if(res.ok){
+      const list=await res.json();
+      if(Array.isArray(list)&&list.length){
+        mergeNaHistoria(list);
+        if(st)st.textContent=`✓ ${list.length} pedidos`;
+      } else {
+        if(st)st.textContent='Nenhum pedido';
       }
-    }catch(e){/* ignora dia com erro */}
-    // pequena pausa para não sobrecarregar API
-    await new Promise(r=>setTimeout(r,200));
+    } else {
+      if(st)st.textContent=`Erro ${res.status}`;
+    }
+  }catch(e){
+    // fallback: busca semana a semana se timeout
+    if(st)st.textContent='Timeout — tentando por semana...';
+    let total=0;
+    for(let week=0;week<6;week++){
+      const d1=week*7+1;
+      const d2=Math.min(d1+6,daysInMonth);
+      if(d1>daysInMonth)break;
+      const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
+      const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
+      try{
+        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(25000)});
+        if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
+      }catch(e2){}
+      if(st)st.textContent=`Semana ${week+1}/6 — ${total} pedidos...`;
+      await new Promise(r=>setTimeout(r,300));
+    }
+    if(st)st.textContent=`✓ ${total} pedidos`;
   }
 
   if(btn)btn.disabled=false;
-  if(st)st.textContent=`✓ ${totalNovos} pedidos`;
   renderHistorico();
   renderHistoricoMesesFilter();
 }
