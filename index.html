@@ -759,6 +759,20 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             </table></div>
           </div>
         </div>
+        <!-- EQUIPAMENTOS -->
+        <div class="card" style="margin-top:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="card-t" style="margin-bottom:0">Controle de Equipamentos</div>
+            <button class="btn-p" onclick="openEquip()" style="font-size:12px;padding:6px 14px">+ Equipamento</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl" id="tbl-equip">
+            <thead><tr>
+              <th>Cód</th><th>Nome</th><th>Centro de Custo</th><th>Nº Série</th><th>Fornecedor</th>
+              <th>Valor Aquisição</th><th>Status</th><th>Data Aquisição</th>
+              <th>Vida Útil (anos)</th><th>Deprec. Anual</th><th>Deprec. Mensal</th><th></th>
+            </tr></thead><tbody></tbody>
+          </table></div>
+        </div>
       </div>
     </div>
 
@@ -3525,7 +3539,45 @@ async function printEtiquetas(){
       <button onclick="window.print()" style="background:#FF6B2B;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">🖨️ Imprimir${printerName?' — '+printerName:''}</button>
       <button onclick="window.close()" style="background:#f0f0f0;color:#333;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer">Fechar</button>
     </div>
-    <div class="wrap">${Array(qtd).fill(etiq).join('')}</div></body></html>`);
+    <div class="wrap">${Array(qtd).fill(etiq).join('')}</div>
+<!-- MODAL EQUIPAMENTO -->
+<div class="overlay" id="modal-equip">
+  <div class="modal" style="max-width:560px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:700;color:var(--t)" id="mequip-title">Novo Equipamento</div>
+      <button class="modal-close" onclick="closeM('modal-equip')" style="font-size:22px;line-height:1">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label class="fl">Nome do Equipamento *</label><input class="fi" id="mequip-nome" placeholder="Ex: Forno Convector"></div>
+      <div><label class="fl">Código</label><input class="fi" id="mequip-cod" placeholder="Ex: WCV-535D"></div>
+      <div><label class="fl">Nº de Série</label><input class="fi" id="mequip-serie" placeholder="Ex: 60423"></div>
+      <div><label class="fl">Fornecedor</label><input class="fi" id="mequip-fornecedor" placeholder="Ex: Temperare"></div>
+      <div><label class="fl">Centro de Custo</label>
+        <select class="fi" id="mequip-cc">
+          <option value="">Selecione...</option>
+        </select>
+      </div>
+      <div><label class="fl">Status</label>
+        <select class="fi" id="mequip-status">
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+          <option value="Manutenção">Manutenção</option>
+        </select>
+      </div>
+      <div><label class="fl">Valor de Aquisição (R$) *</label><input class="fi" id="mequip-valor" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div><label class="fl">Data de Aquisição</label><input class="fi" id="mequip-data" type="date"></div>
+      <div><label class="fl">Vida Útil (anos)</label><input class="fi" id="mequip-vida" type="number" min="1" value="10" placeholder="10"></div>
+      <div><label class="fl">Manutenção Anual (R$)</label><input class="fi" id="mequip-manut" type="number" min="0" step="0.01" placeholder="0,00"></div>
+      <div style="grid-column:1/-1"><label class="fl">Observações</label><input class="fi" id="mequip-obs" placeholder="Observações"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn-o" id="mequip-del" onclick="deleteEquip()" style="margin-right:auto;display:none;color:var(--red);border-color:var(--red)">Excluir</button>
+      <button class="btn-o" onclick="closeM('modal-equip')">Cancelar</button>
+      <button class="btn-p" onclick="saveEquip()">Salvar</button>
+    </div>
+  </div>
+</div>
+</body></html>`);
   win.document.close();
 }
 
@@ -4442,7 +4494,128 @@ function renderCat(){
   if(dEl)dEl.innerHTML=buildTree('despesa');
   if(rEl)rEl.innerHTML=buildTree('receita');
 }
+
+// ═══════════════════════════════════════════
+// EQUIPAMENTOS
+// ═══════════════════════════════════════════
+const getEquip = () => S.get('equipamentos') || [];
+let editEquipId = null;
+
+function renderEquip() {
+  const equips = getEquip();
+  const tbody = document.querySelector('#tbl-equip tbody');
+  if(!tbody) return;
+  if(!equips.length) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:18px">Nenhum equipamento cadastrado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = equips.map(e => {
+    const valor = e.valor || 0;
+    const vida = e.vida || 10;
+    const depAnual = vida > 0 ? valor / vida : 0;
+    const depMensal = depAnual / 12;
+    const statusColor = e.status === 'Ativo' ? 'var(--green)' : e.status === 'Manutenção' ? 'var(--amber)' : 'var(--t3)';
+    return `<tr>
+      <td style="color:var(--t3);font-size:11px">${e.cod||'—'}</td>
+      <td style="font-weight:500;color:var(--t)">${e.nome}</td>
+      <td style="color:var(--t2)">${e.cc||'—'}</td>
+      <td style="color:var(--t3);font-size:11px">${e.serie||'—'}</td>
+      <td style="color:var(--t2)">${e.fornecedor||'—'}</td>
+      <td style="font-weight:600;color:var(--t)">R$ ${fmtN(valor)}</td>
+      <td><span style="color:${statusColor};font-weight:600;font-size:11px">${e.status||'Ativo'}</span></td>
+      <td style="color:var(--t3);font-size:11px">${e.data||'—'}</td>
+      <td style="text-align:center;color:var(--t2)">${vida}</td>
+      <td style="color:var(--red);font-weight:600">R$ ${fmtN(depAnual)}</td>
+      <td style="color:var(--red)">R$ ${fmtN(depMensal)}</td>
+      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="openEquip('${e.id}')">⋮</button></td>
+    </tr>`;
+  }).join('');
+  // Total row
+  const totalValor = equips.reduce((s,e)=>s+(e.valor||0),0);
+  const totalDepAnual = equips.reduce((s,e)=>{const v=e.valor||0;const u=e.vida||10;return s+(u>0?v/u:0);},0);
+  const totalDepMensal = totalDepAnual/12;
+  tbody.innerHTML += `<tr style="border-top:2px solid var(--bor);font-weight:700">
+    <td colspan="5" style="color:var(--t2);font-size:12px">TOTAL (${equips.length} equipamentos)</td>
+    <td style="color:var(--t)">R$ ${fmtN(totalValor)}</td>
+    <td colspan="3"></td>
+    <td style="color:var(--red)">R$ ${fmtN(totalDepAnual)}</td>
+    <td style="color:var(--red)">R$ ${fmtN(totalDepMensal)}</td>
+    <td></td>
+  </tr>`;
+}
+
+function openEquip(id) {
+  editEquipId = id || null;
+  // Populate CC select
+  const ccSel = document.getElementById('mequip-cc');
+  if(ccSel) {
+    ccSel.innerHTML = '<option value="">Selecione...</option>' +
+      getCC().map(c=>`<option value="${c.nome}">${c.nome}</option>`).join('');
+  }
+  if(id) {
+    const e = getEquip().find(x=>x.id===id);
+    if(e) {
+      document.getElementById('mequip-title').textContent = 'Editar Equipamento';
+      document.getElementById('mequip-nome').value = e.nome||'';
+      document.getElementById('mequip-cod').value = e.cod||'';
+      document.getElementById('mequip-serie').value = e.serie||'';
+      document.getElementById('mequip-fornecedor').value = e.fornecedor||'';
+      document.getElementById('mequip-cc').value = e.cc||'';
+      document.getElementById('mequip-status').value = e.status||'Ativo';
+      document.getElementById('mequip-valor').value = e.valor||'';
+      document.getElementById('mequip-data').value = e.data||'';
+      document.getElementById('mequip-vida').value = e.vida||10;
+      document.getElementById('mequip-manut').value = e.manut||'';
+      document.getElementById('mequip-obs').value = e.obs||'';
+      document.getElementById('mequip-del').style.display = 'block';
+    }
+  } else {
+    document.getElementById('mequip-title').textContent = 'Novo Equipamento';
+    ['mequip-nome','mequip-cod','mequip-serie','mequip-fornecedor','mequip-valor','mequip-data','mequip-manut','mequip-obs'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('mequip-vida').value = 10;
+    document.getElementById('mequip-status').value = 'Ativo';
+    document.getElementById('mequip-del').style.display = 'none';
+  }
+  openM('modal-equip');
+}
+
+function saveEquip() {
+  const nome = document.getElementById('mequip-nome').value.trim();
+  if(!nome){alert('Informe o nome do equipamento');return;}
+  const valor = parseFloat(document.getElementById('mequip-valor').value)||0;
+  if(!valor){alert('Informe o valor de aquisição');return;}
+  const obj = {
+    id: editEquipId || uid(),
+    nome,
+    cod: document.getElementById('mequip-cod').value.trim(),
+    serie: document.getElementById('mequip-serie').value.trim(),
+    fornecedor: document.getElementById('mequip-fornecedor').value.trim(),
+    cc: document.getElementById('mequip-cc').value,
+    status: document.getElementById('mequip-status').value,
+    valor,
+    data: document.getElementById('mequip-data').value,
+    vida: parseInt(document.getElementById('mequip-vida').value)||10,
+    manut: parseFloat(document.getElementById('mequip-manut').value)||0,
+    obs: document.getElementById('mequip-obs').value.trim(),
+  };
+  let data = getEquip();
+  if(editEquipId) data = data.map(x=>x.id===editEquipId?obj:x);
+  else data.push(obj);
+  S.set('equipamentos', data);
+  closeM('modal-equip');
+  renderEquip();
+}
+
+function deleteEquip() {
+  showConfirm('Excluir Equipamento','Tem certeza que deseja excluir este equipamento?','🗑️',()=>{
+    S.set('equipamentos', getEquip().filter(x=>x.id!==editEquipId));
+    closeM('modal-equip');
+    renderEquip();
+  });
+}
+
 function renderCC(){
+  renderEquip();
   const ccs=getCC();
   const lancs=getLanc();
   function ccTotal(ccId){return lancs.filter(l=>l.ccId===ccId).reduce((s,l)=>s+(l.valor||0),0);}
