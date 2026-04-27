@@ -4590,9 +4590,24 @@ function verPedido(id){
   const endTxt=end?(end.formattedAddress||`${end.street||''} ${end.number||''}, ${end.neighborhood||''}, ${end.city||''}`).trim():'Retirada';
   const obs=p.observation||p.observations||p.observacao||'';
   const _pags2=(p.payments||[]);const _pm2={'money':'Dinheiro','credit_card':'Cartão Crédito','debit_card':'Cartão Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pagTxt=_pags2.length?_pags2.map(pg=>(_pm2[pg.payment_method]||pg.payment_method)+(pg.change_for?' (troco p/ R$'+Number(pg.change_for).toFixed(2)+')':'')).join(' + '):'—';
-  
+
+  // Faixa de conclusão
+  const isClosed=p.status==='closed';
+  const updatedAt=p.updated_at||p.updatedAt||'';
+  const conclusaoTxt=updatedAt?new Date(updatedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const faixaConclusao=isClosed?`<div style="background:#27AE60;color:#fff;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:12px;font-weight:600;text-align:center">✅ Concluído${conclusaoTxt?' às '+conclusaoTxt:''}</div>`:'';
+
+  // Entregador
+  const isDelivery=p.order_type==='delivery';
+  const entregadorTxt=p.delivered_by?({'merchant':'Entrega própria','ifood':'iFood','ifood_shipping':'iFood Sob Demanda','foody_delivery':'Foody Delivery'}[p.delivered_by]||p.delivered_by):'';
+  const entregadorBox=isDelivery&&entregadorTxt?`<div style="background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px">
+    <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Entregador</div>
+    <div style="font-size:12px;font-weight:600;color:var(--t)">🛵 ${entregadorTxt}</div>
+    ${p.delivery_fee?`<div style="font-size:11px;color:var(--t3);margin-top:2px">Taxa de entrega: R$ ${(p.delivery_fee||0).toFixed(2)}</div>`:''}
+  </div>`:'';
 
   document.getElementById('mpd-body').innerHTML=`
+    ${faixaConclusao}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
       <div style="background:var(--bg2);border-radius:10px;padding:12px">
         <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Cliente</div>
@@ -4608,6 +4623,7 @@ function verPedido(id){
       <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Endereço / Tipo</div>
       <div style="font-size:12px;color:var(--t)">${endTxt}</div>
     </div>
+    ${entregadorBox}
     <div style="background:#fff;border:1px solid var(--bor);border-radius:10px;margin-bottom:12px">
       <div style="padding:10px 14px;border-bottom:1px solid var(--bor2);font-size:11px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.3px">Itens do Pedido</div>
       ${itens.length?itens.map(i=>{
