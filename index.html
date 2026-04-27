@@ -1974,16 +1974,9 @@ function renderDashboard(){
   const lancMes=lancs.filter(l=>(l.data&&l.data.startsWith(mes))||(l.dataPag&&l.dataPag.startsWith(mes)));
   const receitasLanc=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
   const despesas=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-  // Receitas = todos pedidos do mês exceto cancelados
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
   const _histAll=getHistorico();
-  const receitasPedidos=_histAll.filter(p=>{
-    const dt=p.created_at||p.createdAt||'';
-    if(!dt)return false;
-    const dtMes=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
-    const st=p.status||p.situacao||'';
-    return dtMes===mes&&!_stCancel.has(st);
-  }).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const receitasPedidos=_histAll.filter(p=>{const dt=p.created_at||p.createdAt||'';if(!dt)return false;const dtMes=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);return dtMes===mes&&!_stCancel.has(p.status||p.situacao||'');}).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
   const receitas=receitasLanc+receitasPedidos;
   const lucro=receitas-despesas;
   const producoes=getProducao();
@@ -4943,7 +4936,6 @@ function renderPedidos(){
   let pedidos=getPedidosCache();
   const search=(document.getElementById('ped-search')||{}).value?.toLowerCase()||'';
 
-  // count por status
   const _P=new Set(['PENDING','pending']);
   const _C=new Set(['CONFIRMED','confirmed','PREPARING','preparing','released','SCHEDULED','scheduled','SCHEDULED_CONFIRMED','scheduled_confirmed','DISPATCHED','dispatched','DELIVERING','delivering','out_for_delivery','READY','ready','waiting_to_catch']);
   const _E=new Set(['DELIVERED','delivered','CONCLUDED','concluded','COMPLETED','completed','CLOSED','closed']);
@@ -5434,41 +5426,36 @@ async function syncMes(){
   if(btn)btn.disabled=true;
   if(st)st.textContent='Buscando...';
 
-  const startDate=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
-  const endDate=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
-
+  // Busca semana a semana (evita timeout Vercel Free 10s)
+  // ~250 pedidos/semana = ~3 páginas = ~3s por request
+  const mm=String(m).padStart(2,'0');
+  let total=0;
+  const semanas=[];
+  for(let d1=1;d1<=daysInMonth;d1+=7){
+    semanas.push([d1,Math.min(d1+6,daysInMonth)]);
+  }
   try{
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(55000)});
-    if(res.ok){
-      const list=await res.json();
-      if(Array.isArray(list)&&list.length){
-        mergeNaHistoria(list);
-        if(st)st.textContent=`✓ ${list.length} pedidos`;
-      } else {
-        if(st)st.textContent='Nenhum pedido';
-      }
-    } else {
-      if(st)st.textContent=`Erro ${res.status}`;
-    }
-  }catch(e){
-    // fallback: busca semana a semana se timeout
-    if(st)st.textContent='Timeout — tentando por semana...';
-    let total=0;
-    for(let week=0;week<6;week++){
-      const d1=week*7+1;
-      const d2=Math.min(d1+6,daysInMonth);
-      if(d1>daysInMonth)break;
-      const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
-      const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
+    for(let i=0;i<semanas.length;i++){
+      const [d1,d2]=semanas[i];
+      if(st)st.textContent=`Semana ${i+1}/${semanas.length} — ${total} pedidos...`;
+      const sd=`${y}-${mm}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
+      const ed=`${y}-${mm}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
       try{
-        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(25000)});
-        if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
-      }catch(e2){}
-      if(st)st.textContent=`Semana ${week+1}/6 — ${total} pedidos...`;
-      await new Promise(r=>setTimeout(r,300));
+        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(20000)});
+        if(r.ok){
+          const l=await r.json();
+          if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}
+        } else {
+          if(st)st.textContent=`Erro semana ${i+1}: ${r.status}`;
+        }
+      }catch(e2){
+        if(st)st.textContent=`Timeout semana ${i+1}, continuando...`;
+      }
+      await new Promise(r=>setTimeout(r,200));
     }
     if(st)st.textContent=`✓ ${total} pedidos`;
+  }catch(e){
+    if(st)st.textContent=`Erro: ${e.message}`;
   }
 
   if(btn)btn.disabled=false;
