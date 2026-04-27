@@ -5071,6 +5071,7 @@ async function syncMes(){
 </html>
 <script>
 // Enriquece histórico em background: busca detalhe dos pedidos sem itens
+// Fix: merge atômico por lote — evita race condition no localStorage
 let _enriquecendo=false;
 async function enriquecerHistorico(){
   if(_enriquecendo)return;
@@ -5080,19 +5081,34 @@ async function enriquecerHistorico(){
   const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!(p.total||p.totalAmount||0));
   if(!zerados.length)return;
   _enriquecendo=true;
-  const CHUNK=8;
+  const CHUNK=10;
   const st=document.getElementById("hist-sync-status");
   for(let i=0;i<zerados.length;i+=CHUNK){
     const lote=zerados.slice(i,i+CHUNK);
     if(st)st.textContent=`Detalhes ${Math.min(i+CHUNK,zerados.length)}/${zerados.length}...`;
-    await Promise.all(lote.map(async p=>{
+    // busca todos do lote em paralelo
+    const resultados=await Promise.all(lote.map(async p=>{
       try{
-        const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(8000)});
-        if(res.ok){const det=await res.json();if(det&&det.id)mergeNaHistoria([det]);}
+        const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(9000)});
+        if(res.ok){
+          const det=await res.json();
+          // só aceita se veio com itens OU total > 0 (não substitui por dado ruim)
+          if(det&&det.id&&((det.items||[]).length>0||(det.total||det.totalAmount||0)>0))return det;
+        }
       }catch(e){}
+      return null;
     }));
+    // merge atômico: 1 leitura + 1 escrita por lote
+    const validos=resultados.filter(Boolean);
+    if(validos.length){
+      const hist2=getHistorico();
+      const mapa=Object.fromEntries(hist2.map(p=>[p.id,p]));
+      validos.forEach(p=>{mapa[p.id]=p;});
+      setHistorico(Object.values(mapa));
+      renderHistoricoMesesFilter();
+    }
     renderHistorico();
-    await new Promise(r=>setTimeout(r,300));
+    await new Promise(r=>setTimeout(r,200));
   }
   if(st)st.textContent=`✓ Completo`;
   _enriquecendo=false;
