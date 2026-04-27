@@ -745,22 +745,18 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     <!-- CENTRO DE CUSTOS -->
     <div class="pg" id="pg-centrocusto">
       <div class="scroll">
-        <div class="two-col">
-          <div class="card">
-            <div class="card-t">Categorias de Despesas</div>
-            <div class="tbl-wrap"><table class="tbl" id="tbl-cc-desp">
-              <thead><tr><th>Nome</th><th>Total Lançado</th><th></th></tr></thead><tbody></tbody>
-            </table></div>
+        <!-- CENTROS DE CUSTO -->
+        <div class="card" style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="card-t" style="margin-bottom:0">Centros de Custo</div>
+            <button class="btn-p" onclick="openCC()" style="font-size:12px;padding:6px 14px">+ Centro de Custo</button>
           </div>
-          <div class="card">
-            <div class="card-t">Categorias de Receitas</div>
-            <div class="tbl-wrap"><table class="tbl" id="tbl-cc-rec">
-              <thead><tr><th>Nome</th><th>Total Lançado</th><th></th></tr></thead><tbody></tbody>
-            </table></div>
-          </div>
+          <div class="tbl-wrap"><table class="tbl" id="tbl-cc-all">
+            <thead><tr><th>Cód</th><th>Nome</th><th>Tipo</th><th></th></tr></thead><tbody></tbody>
+          </table></div>
         </div>
         <!-- EQUIPAMENTOS -->
-        <div class="card" style="margin-top:18px">
+        <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div class="card-t" style="margin-bottom:0">Controle de Equipamentos</div>
             <button class="btn-p" onclick="openEquip()" style="font-size:12px;padding:6px 14px">+ Equipamento</button>
@@ -768,8 +764,8 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div class="tbl-wrap"><table class="tbl" id="tbl-equip">
             <thead><tr>
               <th>Cód</th><th>Nome</th><th>Centro de Custo</th><th>Nº Série</th><th>Fornecedor</th>
-              <th>Valor Aquisição</th><th>Status</th><th>Data Aquisição</th>
-              <th>Vida Útil (anos)</th><th>Deprec. Anual</th><th>Deprec. Mensal</th><th></th>
+              <th>Valor Aquisição</th><th>Status</th><th>Data Aquisição</th><th>Próx. Manutenção</th>
+              <th>Vida Útil (anos)</th><th>Deprec. Anual</th><th>Deprec. Mensal</th><th>Obs</th><th></th>
             </tr></thead><tbody></tbody>
           </table></div>
         </div>
@@ -1762,21 +1758,15 @@ function defaultEstMP(){
 }
 
 function defaultCC(){return[
-  {id:'cc1',nome:'Ingredientes',tipo:'despesa'},
-  {id:'cc2',nome:'Embalagens',tipo:'despesa'},
-  {id:'cc3',nome:'Mão de Obra',tipo:'despesa'},
-  {id:'cc4',nome:'Aluguel',tipo:'despesa'},
-  {id:'cc5',nome:'Marketing / Tráfego',tipo:'despesa'},
-  {id:'cc6',nome:'Delivery / Motoboy',tipo:'despesa'},
-  {id:'cc7',nome:'Energia Elétrica',tipo:'despesa'},
-  {id:'cc8',nome:'Equipamentos',tipo:'despesa'},
-  {id:'cc9',nome:'Taxas / Impostos',tipo:'despesa'},
-  {id:'cc10',nome:'Outros Custos',tipo:'despesa'},
-  {id:'cc11',nome:'Venda Direta',tipo:'receita'},
-  {id:'cc12',nome:'iFood',tipo:'receita'},
-  {id:'cc13',nome:'WhatsApp / Site',tipo:'receita'},
-  {id:'cc14',nome:'Kit / Encomenda',tipo:'receita'},
-  {id:'cc15',nome:'Outros',tipo:'receita'},
+  {id:'CC01',nome:'Cozinha / Produção',tipo:'despesa'},
+  {id:'CC02',nome:'Estoque Matéria-Prima',tipo:'despesa'},
+  {id:'CC03',nome:'Estoque Cookies',tipo:'despesa'},
+  {id:'CC04',nome:'Equipe de Cozinha',tipo:'despesa'},
+  {id:'CC05',nome:'Entregador',tipo:'despesa'},
+  {id:'CC06',nome:'Área de Venda',tipo:'despesa'},
+  {id:'CC07',nome:'Comercial / Marketing',tipo:'despesa'},
+  {id:'CC08',nome:'Administrativo',tipo:'despesa'},
+  {id:'CC09',nome:'Infraestrutura',tipo:'despesa'},
 ];}
 
 function defaultBancos(){return[
@@ -1812,7 +1802,7 @@ function getEstoqueAtualProd(prodId){
 const getProducao=()=>S.get('producao')||[];
 const getLanc=()=>S.get('lancamentos')||[];
 const getBancos=()=>S.get('bancos')||defaultBancos();
-const getCC=()=>S.get('centrocustos')||defaultCC();
+const getCC=()=>{const d=S.get('centrocustos');if(d&&d.length&&d[0].id==='cc1'){S.set('centrocustos',null);}return S.get('centrocustos')||defaultCC();};
 
 function getValorPorG(mp){
   if(!mp.qtd||mp.qtd===0) return 0;
@@ -3567,6 +3557,7 @@ async function printEtiquetas(){
       <div><label class="fl">Valor de Aquisição (R$) *</label><input class="fi" id="mequip-valor" type="number" min="0" step="0.01" placeholder="0,00"></div>
       <div><label class="fl">Data de Aquisição</label><input class="fi" id="mequip-data" type="date"></div>
       <div><label class="fl">Vida Útil (anos)</label><input class="fi" id="mequip-vida" type="number" min="1" value="10" placeholder="10"></div>
+      <div><label class="fl">Próx. Manutenção</label><input class="fi" id="mequip-proxmanut" type="date"></div>
       <div><label class="fl">Manutenção Anual (R$)</label><input class="fi" id="mequip-manut" type="number" min="0" step="0.01" placeholder="0,00"></div>
       <div style="grid-column:1/-1"><label class="fl">Observações</label><input class="fi" id="mequip-obs" placeholder="Observações"></div>
     </div>
@@ -4498,7 +4489,19 @@ function renderCat(){
 // ═══════════════════════════════════════════
 // EQUIPAMENTOS
 // ═══════════════════════════════════════════
-const getEquip = () => S.get('equipamentos') || [];
+function defaultEquip(){return[
+  {id:'eq1',cod:'WCV-535D-8028',nome:'Forno Convector Elétrico WCV-535D Wictory 110V',cc:'Cozinha / Produção',serie:'60423',fornecedor:'Temperare',valor:3206.30,status:'Ativo',data:'2025-07-02',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq2',cod:'4952',nome:'Batedeira Planetária 12L Gpaniz',cc:'Cozinha / Produção',serie:'14022',fornecedor:'Refrisol',valor:5485.77,status:'Ativo',data:'2025-10-06',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq3',cod:'4813-0',nome:'Freezer Horizontal 500L GHD-500CZ 127V Vidros',cc:'Estoque Cookies',serie:'153469',fornecedor:'Alimentar',valor:4949.00,status:'Ativo',data:'2026-02-18',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq4',cod:'A10215',nome:'Mesa Para Forno PRP - 004',cc:'Cozinha / Produção',serie:'70608',fornecedor:'ALC',valor:437.72,status:'Ativo',data:'2026-01-05',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq5',cod:'619206E11',nome:'Sebem Mesa Tampo Inox 120x55',cc:'Cozinha / Produção',serie:'000.065.557',fornecedor:'SBM',valor:538.97,status:'Ativo',data:'2025-08-29',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq6',cod:'5090',nome:'Mesa de Trabalho 190x70 Total Inox 430 Imeca',cc:'Cozinha / Produção',serie:'16906',fornecedor:'Refrisol',valor:1112.05,status:'Ativo',data:'2025-12-15',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq7',cod:'-',nome:'Freezer Vertical Midea 196L 2 Em 1 Turbo Freezer 1 Porta Branco',cc:'Estoque Matéria-Prima',serie:'-',fornecedor:'Climaster',valor:2655.00,status:'Ativo',data:'2025-09-01',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq8',cod:'-',nome:'Iphone 17 Pro Max',cc:'Comercial / Marketing',serie:'-',fornecedor:'RC Store',valor:8899.00,status:'Ativo',data:'2026-02-11',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq9',cod:'4849',nome:'Balança Upx Modelo EA-15',cc:'Cozinha / Produção',serie:'2012744',fornecedor:'Prime Soluções',valor:497.00,status:'Ativo',data:'2025-12-02',proxManut:'',vida:10,manut:0,obs:''},
+  {id:'eq10',cod:'-',nome:'Mesa Para Forno',cc:'Cozinha / Produção',serie:'-',fornecedor:'Magazine Luiza',valor:1299.00,status:'Ativo',data:'2026-07-06',proxManut:'',vida:10,manut:0,obs:''},
+];}
+const getEquip = () => S.get('equipamentos') || defaultEquip();
 let editEquipId = null;
 
 function renderEquip() {
@@ -4524,9 +4527,11 @@ function renderEquip() {
       <td style="font-weight:600;color:var(--t)">R$ ${fmtN(valor)}</td>
       <td><span style="color:${statusColor};font-weight:600;font-size:11px">${e.status||'Ativo'}</span></td>
       <td style="color:var(--t3);font-size:11px">${e.data||'—'}</td>
+      <td style="color:var(--t3);font-size:11px">${e.proxManut||'—'}</td>
       <td style="text-align:center;color:var(--t2)">${vida}</td>
       <td style="color:var(--red);font-weight:600">R$ ${fmtN(depAnual)}</td>
       <td style="color:var(--red)">R$ ${fmtN(depMensal)}</td>
+      <td style="color:var(--t3);font-size:11px">${e.obs||'—'}</td>
       <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="openEquip('${e.id}')">⋮</button></td>
     </tr>`;
   }).join('');
@@ -4565,13 +4570,14 @@ function openEquip(id) {
       document.getElementById('mequip-valor').value = e.valor||'';
       document.getElementById('mequip-data').value = e.data||'';
       document.getElementById('mequip-vida').value = e.vida||10;
+      document.getElementById('mequip-proxmanut').value = e.proxManut||'';
       document.getElementById('mequip-manut').value = e.manut||'';
       document.getElementById('mequip-obs').value = e.obs||'';
       document.getElementById('mequip-del').style.display = 'block';
     }
   } else {
     document.getElementById('mequip-title').textContent = 'Novo Equipamento';
-    ['mequip-nome','mequip-cod','mequip-serie','mequip-fornecedor','mequip-valor','mequip-data','mequip-manut','mequip-obs'].forEach(id=>document.getElementById(id).value='');
+    ['mequip-nome','mequip-cod','mequip-serie','mequip-fornecedor','mequip-valor','mequip-data','mequip-proxmanut','mequip-manut','mequip-obs'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('mequip-vida').value = 10;
     document.getElementById('mequip-status').value = 'Ativo';
     document.getElementById('mequip-del').style.display = 'none';
@@ -4594,6 +4600,7 @@ function saveEquip() {
     status: document.getElementById('mequip-status').value,
     valor,
     data: document.getElementById('mequip-data').value,
+    proxManut: document.getElementById('mequip-proxmanut').value,
     vida: parseInt(document.getElementById('mequip-vida').value)||10,
     manut: parseFloat(document.getElementById('mequip-manut').value)||0,
     obs: document.getElementById('mequip-obs').value.trim(),
@@ -4617,19 +4624,15 @@ function deleteEquip() {
 function renderCC(){
   renderEquip();
   const ccs=getCC();
-  const lancs=getLanc();
-  function ccTotal(ccId){return lancs.filter(l=>l.ccId===ccId).reduce((s,l)=>s+(l.valor||0),0);}
-  ['desp','rec'].forEach(tipo=>{
-    const tipo2=tipo==='desp'?'despesa':'receita';
-    const filtered=ccs.filter(c=>c.tipo===tipo2);
-    document.querySelector(`#tbl-cc-${tipo} tbody`).innerHTML=filtered.length?
-      filtered.map(c=>`<tr>
-        <td style="font-weight:500;color:var(--t)">${c.nome}</td>
-        <td style="color:${tipo2==='receita'?'var(--green)':'var(--red)'};font-weight:600">R$ ${fmtN(ccTotal(c.id))}</td>
-        <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="openCtx(event,'cc','${c.id}')">⋮</button></td>
-      </tr>`).join(''):
-      `<tr><td colspan="3" style="text-align:center;color:var(--t3);padding:14px">Nenhum cadastrado</td></tr>`;
-  });
+  const tbody=document.querySelector('#tbl-cc-all tbody');
+  if(tbody){
+    tbody.innerHTML=ccs.length?ccs.map((c,i)=>`<tr>
+      <td style="color:var(--t3);font-size:11px;font-weight:600">CC${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:500;color:var(--t)">${c.nome}</td>
+      <td><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${c.tipo==='receita'?'var(--green-l)':'var(--red-l)'};color:${c.tipo==='receita'?'var(--green)':'var(--red)'}">${c.tipo}</span></td>
+      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="openCtx(event,'cc','${c.id}')">⋮</button></td>
+    </tr>`).join(''):`<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:14px">Nenhum cadastrado</td></tr>`;
+  }
 }
 function openCC(tipoDefault,id){
   editCCId=id||null;
