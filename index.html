@@ -4900,9 +4900,45 @@ function mergeNaHistoria(novos){
   if(!novos||!novos.length)return;
   const hist=getHistorico();
   const mapa=Object.fromEntries(hist.map(p=>[p.id,p]));
+  // Rastreia pedidos que já tiveram estoque baixado
+  const processados=S.get('pedidos_estoque_baixado')||{};
+
   novos.forEach(p=>{
-    if(p.id)mapa[p.id]=p; // upsert — sempre atualiza com versão mais nova
+    if(!p.id)return;
+    const isNovo=!mapa[p.id]; // pedido que nunca foi visto
+    mapa[p.id]=p; // upsert
+
+    // Baixa estoque apenas 1x por pedido, apenas se tiver itens
+    if(isNovo&&!processados[p.id]){
+      const itens=p.items||p.itens||[];
+      if(itens.length){
+        const est=getEstProd();
+        let baixou=false;
+        itens.forEach(i=>{
+          const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
+          const prod=pdvCode?findProdByPdv(pdvCode):null;
+          if(prod){
+            const qtd=i.quantity||i.qtd||1;
+            if(!est[prod.id])est[prod.id]={inicial:0,entradas:[],saidas:[]};
+            est[prod.id].saidas.push({
+              id:uid(),
+              data:p.created_at||p.createdAt||new Date().toISOString(),
+              qtd,
+              obs:`Pedido #${p.display_id||p.displayId||p.id} — Cardápio Web`
+            });
+            baixou=true;
+          }
+        });
+        if(baixou){
+          S.set('est_prod',est);
+          processados[p.id]=true;
+          S.set('pedidos_estoque_baixado',processados);
+          updateAlertBadge();
+        }
+      }
+    }
   });
+
   setHistorico(Object.values(mapa));
   renderHistoricoMesesFilter();
 }
