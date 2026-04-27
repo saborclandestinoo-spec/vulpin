@@ -476,7 +476,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Sincronizar
           </button>
-          <input type="date" id="ped-date-filter" class="filter-sel" style="font-family:'Poppins',sans-serif;font-size:11px" onchange="syncPedidos()" title="Filtrar por dia">
+          <div style="position:relative;display:flex;align-items:center">
+            <svg style="position:absolute;left:10px;pointer-events:none;color:#A0A0B8" width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <input type="date" id="ped-date-filter" onchange="syncPedidos()" style="font-family:'Poppins',sans-serif;font-size:11px;padding:7px 10px 7px 28px;border:1px solid var(--bor);border-radius:8px;background:#fff;color:var(--t);outline:none;cursor:pointer;height:34px;transition:border-color .15s" onfocus="this.style.borderColor='var(--fox)'" onblur="this.style.borderColor='var(--bor)'" title="Filtrar por dia">
+          </div>
           <div class="search-wrap" style="max-width:200px">
             <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
             <input class="search-in" id="ped-search" placeholder="Buscar cliente/nº..." oninput="renderPedidos()">
@@ -504,7 +507,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     </div>
 
     <!-- MODAL DETALHE PEDIDO -->
-    <div class="overlay" id="modal-pedido-det">
+    <div class="overlay" id="modal-pedido-det" onclick="if(event.target===this)closeM('modal-pedido-det')">
       <div class="modal" style="max-width:560px">
         <div class="modal-t">
           <span id="mpd-title">Pedido #0000</span>
