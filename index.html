@@ -4951,22 +4951,30 @@ function renderHistorico(){
   }).join('');
 }
 
-function verPedidoHist(id){
-  // reusar verPedido mas buscando no histórico
+async function verPedidoHist(id){
   const hist=getHistorico();
   const orig=getPedidosCache();
-  // inject temporariamente no cache para usar verPedido
-  const p=hist.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
+  let p=hist.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
   if(!p)return;
-  // add to cache temporarily if not present
-  if(!orig.find(x=>x.id===p.id)){
-    const tmp=[...orig,p];
-    S.set('pedidos_cache',tmp);
-    verPedido(id);
-    S.set('pedidos_cache',orig);
-  } else {
-    verPedido(id);
+
+  // Se sem itens ou total zero, busca detalhe completo via proxy
+  const semItens=!(p.items||p.itens||[]).length;
+  const semTotal=!(p.total||p.totalAmount||0);
+  if(semItens||semTotal){
+    try{
+      const cfg=getCWConfig();
+      const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(10000)});
+      if(res.ok){
+        const det=await res.json();
+        if(det&&det.id){p=det;mergeNaHistoria([p]);}
+      }
+    }catch(e){}
   }
+
+  const tmp=[...orig.filter(x=>x.id!==p.id),p];
+  S.set('pedidos_cache',tmp);
+  verPedido(p.id||id);
+  S.set('pedidos_cache',orig);
 }
 
 function limparHistorico(){
@@ -5051,6 +5059,8 @@ async function syncMes(){
   if(btn)btn.disabled=false;
   renderHistorico();
   renderHistoricoMesesFilter();
+  // enriquece itens/total em background
+  setTimeout(enriquecerHistorico, 1000);
 }
 
 // ── PATCH syncPedidos: já incorporado na função original acima ──
@@ -5058,3 +5068,25 @@ async function syncMes(){
 </script>
 </body>
 </html>
+<script>
+// Enriquece histórico em background: busca detalhe dos pedidos sem itens
+async function enriquecerHistorico(){
+  const cfg=getCWConfig();
+  if(!cfg.token)return;
+  const hist=getHistorico();
+  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!(p.total||p.totalAmount||0));
+  if(!zerados.length)return;
+  const CHUNK=5;
+  for(let i=0;i<zerados.length;i+=CHUNK){
+    const lote=zerados.slice(i,i+CHUNK);
+    await Promise.all(lote.map(async p=>{
+      try{
+        const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(8000)});
+        if(res.ok){const det=await res.json();if(det&&det.id)mergeNaHistoria([det]);}
+      }catch(e){}
+    }));
+    await new Promise(r=>setTimeout(r,500));
+  }
+  renderHistorico();
+}
+</script>
