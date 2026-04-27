@@ -60,6 +60,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 .ni:hover{background:var(--bg2);color:var(--t)}
 .ni.on{background:var(--fox-l);color:var(--fox);font-weight:600}
 .ni svg{flex-shrink:0;opacity:.65}.ni.on svg{opacity:1}
+.ni-plain{font-size:12.5px;color:var(--t2);padding:6px 10px}.ni-plain.on{background:none;color:var(--fox);font-weight:600}
 .ni-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px}
 .sb-foot{padding:9px 12px;border-top:1px solid var(--bor2)}
 .sb-user{display:flex;align-items:center;gap:8px;padding:5px;border-radius:8px;cursor:pointer}
@@ -370,26 +371,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <span class="ni-badge" id="nb-est">0</span>
     </div>
     <div class="nav-g">Financeiro</div>
-    <div class="ni" onclick="go('financeiro',this)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 11L4 7.5L7 9.5L10 4.5L13 7" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Fluxo de Caixa
-    </div>
-    <div class="ni" onclick="go('lancamentos',this)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="2" rx="1" fill="currentColor"/><rect x="1" y="6" width="8" height="2" rx="1" fill="currentColor"/><rect x="1" y="10" width="10" height="2" rx="1" fill="currentColor"/></svg>
-      Lançamentos
-    </div>
-    <div class="ni" onclick="go('bancos',this)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 5L7 1.5 13 5v1H1V5z" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="2" y="6" width="2" height="5" fill="currentColor" rx=".3"/><rect x="6" y="6" width="2" height="5" fill="currentColor" rx=".3"/><rect x="10" y="6" width="2" height="5" fill="currentColor" rx=".3"/><rect x="1" y="11" width="12" height="1.5" rx=".5" fill="currentColor"/></svg>
-      Contas Bancárias
-    </div>
-    <div class="ni" onclick="go('centrocusto',this)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 2h12v2H1zM1 6h8v2H1zM1 10h10v2H1z" fill="currentColor" rx=".5"/></svg>
-      Centro de Custos
-    </div>
-    <div class="ni" onclick="go('categorias',this)">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M1 7h8M1 11h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      Categorias
-    </div>
+    <div class="ni ni-plain" onclick="go('lancamentos',this)">Lançamentos</div>
+    <div class="ni ni-plain" onclick="go('financeiro',this)">Fluxo de caixa</div>
+    <div class="ni ni-plain" onclick="go('bancos',this)">Contas Bancárias</div>
+    <div class="ni ni-plain" onclick="go('centrocusto',this)">Centro de Custos</div>
+    <div class="ni ni-plain" onclick="go('categorias',this)">Categorias</div>
     <div class="nav-g">Sistema</div>
     <div class="ni" onclick="go('config',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 107 12.5 5.5 5.5 0 007 1.5zm0 0v2m0 7v2M1.5 7h2m7 0h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -783,15 +769,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div class="two-col">
           <div class="card">
             <div class="card-t">Categorias de Despesas</div>
-            <div class="tbl-wrap"><table class="tbl" id="tbl-cat-desp">
-              <thead><tr><th>Código</th><th>Nome</th></tr></thead><tbody></tbody>
-            </table></div>
+            <div id="cat-desp-body" style="padding:0 4px"></div>
           </div>
           <div class="card">
             <div class="card-t">Categorias de Receitas</div>
-            <div class="tbl-wrap"><table class="tbl" id="tbl-cat-rec">
-              <thead><tr><th>Código</th><th>Nome</th></tr></thead><tbody></tbody>
-            </table></div>
+            <div id="cat-rec-body" style="padding:0 4px"></div>
           </div>
         </div>
       </div>
@@ -2607,6 +2589,7 @@ function renderFluxoChart(m){
 // ═══════════════════════════════════════════
 // PLANO DE CONTAS
 // ═══════════════════════════════════════════
+const PLANO_CONTAS_NOMES={"3.1": "Receita Bruta Operacional", "3.1.1": "Receita de Venda de Produtos", "3.1.2": "Receita de Prestação de Serviços", "3.2": "Receitas Financeiras", "3.2.1": "Rendimentos de Aplicações", "3.2.2": "Juros e Multas Recebidos", "3.3": "Outras Receitas Não Operacionais", "3.3.1": "Alienação de Ativos", "3.3.2": "Entradas Diversas", "3.9": "Deduções da Receita Bruta", "3.9.1": "Impostos sobre Vendas", "3.9.2": "Devoluções e Cancelamentos", "3.9.3": "Taxas de Marketplace e Maquininhas", "4.1": "CPV — Custo dos Produtos Vendidos", "4.1.1": "Matérias-Primas e Ingredientes", "4.1.2": "Mão de Obra Direta", "4.1.3": "Custos Indiretos de Fabricação", "4.2": "Despesas com Vendas", "4.2.1": "Logística e Entrega", "4.2.2": "Marketing e Comunicação", "4.2.3": "Canais de Venda", "4.3": "Despesas Administrativas", "4.3.1": "Ocupação", "4.3.2": "Utilidades", "4.3.3": "Serviços Profissionais", "4.3.4": "Pessoal Administrativo", "4.3.5": "Manutenção Geral", "4.3.6": "Tecnologia e Sistemas", "4.3.7": "Tributário e Legal", "4.4": "Despesas Financeiras", "4.4.1": "Encargos Financeiros", "4.5": "Outras Despesas Não Operacionais", "4.5.1": "Perdas e Baixas de Ativos", "4.6": "Depreciação e Amortização", "4.6.1": "Depreciação", "4.6.2": "Amortização", "4.7": "Investimentos Ativados", "4.7.1": "Imobilizações", "4.7.2": "Intangíveis", "5.1": "Transferências a Crédito", "5.1.1": "Movimentações Bancárias — Crédito", "5.2": "Transferências a Débito", "5.2.1": "Movimentações Bancárias — Débito"};
 const PLANO_CONTAS=[
   {cod:'3.1.1.1',nome:"Vendas no Balcão — Pix",tipo:'receita'},
   {cod:'3.1.1.2',nome:"Vendas no Balcão — Dinheiro",tipo:'receita'},
@@ -4393,19 +4376,43 @@ function deleteProd(){
 let editCCId=null;
 
 function renderCat(){
-  const tipos=[
-    {key:'desp',tipo:'despesa',tbl:'tbl-cat-desp',cor:'var(--red)'},
-    {key:'rec', tipo:'receita',tbl:'tbl-cat-rec', cor:'var(--green)'},
-  ];
-  tipos.forEach(({tipo,tbl})=>{
-    const rows=PLANO_CONTAS.filter(c=>c.tipo===tipo);
-    document.querySelector('#'+tbl+' tbody').innerHTML=rows.length
-      ?rows.map(c=>`<tr>
-        <td style="color:var(--t3);font-size:11px;font-family:monospace">${c.cod}</td>
-        <td style="font-weight:500;color:var(--t)">${c.nome}</td>
-      </tr>`).join('')
-      :`<tr><td colspan="2" style="text-align:center;color:var(--t3);padding:14px">Nenhuma conta</td></tr>`;
-  });
+  // Build hierarchy: group by first 2 segments, subgroup by 3, leaf by 4
+  function buildTree(tipo){
+    const all=PLANO_CONTAS.filter(c=>c.tipo===tipo);
+    // also include sinteticas from PLANO_CONTAS_SINT if exists
+    const items=all;
+    let html='';
+    let lastG='',lastSG='';
+    items.forEach(c=>{
+      const parts=c.cod.split('.');
+      const g=parts.slice(0,2).join('.');   // ex: 4.1
+      const sg=parts.slice(0,3).join('.');  // ex: 4.1.1
+      if(g!==lastG){
+        html+=`<div style="display:flex;align-items:center;gap:8px;padding:10px 0 6px;border-top:1px solid var(--bor);margin-top:4px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${tipo==='receita'?'var(--green)':'var(--red)'};flex-shrink:0"></span>
+          <span style="font-size:12px;font-weight:700;color:var(--t)">${g} ${PLANO_CONTAS_NOMES[g]||''}</span>
+        </div>`;
+        lastG=g;lastSG='';
+      }
+      if(sg!==lastSG){
+        html+=`<div style="display:flex;align-items:center;gap:6px;padding:4px 0 2px 20px">
+          <span style="color:var(--t3);font-size:10px">⋯</span>
+          <span style="font-size:11.5px;color:var(--t2);font-weight:600">${sg} ${PLANO_CONTAS_NOMES[sg]||''}</span>
+        </div>`;
+        lastSG=sg;
+      }
+      html+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0 5px 44px;border-bottom:1px solid var(--bor)">
+        <span style="color:var(--t3);font-size:10px">⋯</span>
+        <span style="font-size:11.5px;color:var(--t)">${c.cod}</span>
+        <span style="font-size:11.5px;color:var(--t);margin-left:4px">${c.nome}</span>
+      </div>`;
+    });
+    return html||`<div style="color:var(--t3);padding:14px;text-align:center">Nenhuma conta</div>`;
+  }
+  const dEl=document.getElementById('cat-desp-body');
+  const rEl=document.getElementById('cat-rec-body');
+  if(dEl)dEl.innerHTML=buildTree('despesa');
+  if(rEl)rEl.innerHTML=buildTree('receita');
 }
 function renderCC(){
   const ccs=getCC();
