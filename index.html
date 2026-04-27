@@ -4654,9 +4654,25 @@ function verPedido(id){
           ${obs2?`<div style="font-size:10px;color:var(--amber);margin-top:3px">📝 ${obs2}</div>`:''}
         </div>`;
       }).join(''):'<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Sem itens</div>'}
-      <div style="padding:10px 14px;display:flex;justify-content:space-between">
-        <span style="font-size:13px;font-weight:700;color:var(--t)">Total</span>
-        <span style="font-size:15px;font-weight:700;color:var(--fox)">R$ ${fmtN(total)}</span>
+      <div style="padding:10px 14px;border-top:1px solid var(--bor2)">
+        ${(()=>{
+          const subtotal=itens.reduce((s,i)=>s+(i.total_price||0),0);
+          const taxaEntrega=p.delivery_fee||0;
+          const taxaAdicional=p.additional_fee||0;
+          const taxaServico=p.service_fee||0;
+          const descontos=(p.discounts||[]).reduce((s,d)=>s+(d.total||0),0);
+          const rows=[];
+          rows.push(`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:4px"><span>Subtotal</span><span>R$ ${fmtN(subtotal)}</span></div>`);
+          if(taxaEntrega>0)rows.push(`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:4px"><span>Taxa de entrega</span><span>+ R$ ${fmtN(taxaEntrega)}</span></div>`);
+          if(taxaAdicional>0)rows.push(`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:4px"><span>Taxa adicional</span><span>+ R$ ${fmtN(taxaAdicional)}</span></div>`);
+          if(taxaServico>0)rows.push(`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:4px"><span>Taxa de serviço</span><span>+ R$ ${fmtN(taxaServico)}</span></div>`);
+          if(descontos>0)rows.push(`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--green);margin-bottom:4px"><span>Desconto</span><span>- R$ ${fmtN(descontos)}</span></div>`);
+          rows.push(`<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--bor2)"><span style="font-size:13px;font-weight:700;color:var(--t)">Total</span><span style="font-size:15px;font-weight:700;color:var(--fox)">R$ ${fmtN(total)}</span></div>`);
+          // Pagamento online obs
+          const temOnline=(_pags2||[]).some(pg=>pg.payment_type==='online');
+          if(temOnline)rows.push(`<div style="font-size:10px;color:var(--blue);margin-top:6px;font-style:italic">💳 Pago online — não cobrar do cliente</div>`);
+          return rows.join('');
+        })()}
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:${obs?'12px':'0'}">
