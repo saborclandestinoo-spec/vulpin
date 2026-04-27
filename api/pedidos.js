@@ -33,23 +33,27 @@ export default async function handler(req, res) {
   const BASE = 'https://integracao.cardapioweb.com';
 
   try {
-    // Busca até 10 páginas de 50 cada = 500 pedidos
     let allOrders = [];
-    for (let page = 1; page <= 10; page++) {
-      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
-      if (r.status !== 200 || !r.data) break;
-      const list = Array.isArray(r.data) ? r.data : [];
-      if (!list.length) break;
-      allOrders = allOrders.concat(list);
-      if (list.length < 50) break;
-    }
 
-    // Filtrar por data se fornecida (YYYY-MM-DD)
     if (date) {
-      allOrders = allOrders.filter(p => {
-        const d = p.created_at || '';
-        return d.startsWith(date);
-      });
+      // Usa endpoint de histórico para buscar pedidos do dia específico
+      const start = `${date}T00:00:00-03:00`;
+      const end   = `${date}T23:59:59-03:00`;
+      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&status[]=closed&status[]=canceled`;
+      const r = await fetchJSON(url, headers);
+      if (r.status === 200 && r.data?.orders) {
+        allOrders = r.data.orders;
+      }
+    } else {
+      // Sem data: busca pedidos ativos via polling
+      for (let page = 1; page <= 5; page++) {
+        const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
+        if (r.status !== 200 || !r.data) break;
+        const list = Array.isArray(r.data) ? r.data : [];
+        if (!list.length) break;
+        allOrders = allOrders.concat(list);
+        if (list.length < 50) break;
+      }
     }
 
     // Buscar detalhes completos de cada pedido
@@ -58,9 +62,7 @@ export default async function handler(req, res) {
         try {
           const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
           return (det.status === 200 && det.data) ? det.data : p;
-        } catch(e) {
-          return p;
-        }
+        } catch(e) { return p; }
       })
     );
 
