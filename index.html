@@ -4585,7 +4585,7 @@ function verPedido(id){
   const end=p.delivery_address||p.deliveryAddress||p.endereco;
   const endTxt=end?(end.formattedAddress||`${end.street||''} ${end.number||''}, ${end.neighborhood||''}, ${end.city||''}`).trim():'Retirada';
   const obs=p.observation||p.observations||p.observacao||'';
-  const _pags2=(p.payments||[]);const _pm2={'money':'Dinheiro','credit_card':'Cartão Crédito','debit_card':'Cartão Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pagTxt=_pags2.length?_pags2.map(pg=>(_pm2[pg.payment_method]||pg.payment_method)+(pg.change_for?' (troco p/ R$'+Number(pg.change_for).toFixed(2)+')'':'')).join(' + '):'—';
+  const _pags2=(p.payments||[]);const _pm2={'money':'Dinheiro','credit_card':'Cartão Crédito','debit_card':'Cartão Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pagTxt=_pags2.length?_pags2.map(pg=>(_pm2[pg.payment_method]||pg.payment_method)+(pg.change_for?' (troco p/ R$'+Number(pg.change_for).toFixed(2)+')':'')).join(' + '):'—';
   
 
   document.getElementById('mpd-body').innerHTML=`
