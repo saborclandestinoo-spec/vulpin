@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { token, date, start_date, end_date } = req.query;
+  const { token, date, start_date, end_date, id } = req.query;
   if (!token) return res.status(400).json({ error: 'token obrigatorio' });
 
   const headers = {
@@ -33,6 +33,13 @@ export default async function handler(req, res) {
   const BASE = 'https://integracao.cardapioweb.com';
 
   try {
+    // MODO DETALHE: busca pedido individual por id
+    if (id) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders/${id}`, headers);
+      if (r.status === 200 && r.data) return res.status(200).json(r.data);
+      return res.status(r.status).json({ error: 'pedido nao encontrado' });
+    }
+
     let allOrders = [];
     const seenIds = new Set();
 
