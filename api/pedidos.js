@@ -33,29 +33,28 @@ export default async function handler(req, res) {
   const BASE = 'https://integracao.cardapioweb.com';
 
   try {
-    // Busca até 5 páginas
+    // Busca até 10 páginas de 50 cada = 500 pedidos
     let allOrders = [];
-    for (let page = 1; page <= 5; page++) {
-      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=20&page=${page}`, headers);
+    for (let page = 1; page <= 10; page++) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
       if (r.status !== 200 || !r.data) break;
       const list = Array.isArray(r.data) ? r.data : [];
       if (!list.length) break;
       allOrders = allOrders.concat(list);
-      if (list.length < 20) break;
+      if (list.length < 50) break;
     }
 
     // Filtrar por data se fornecida (YYYY-MM-DD)
     if (date) {
-      // API retorna datas em horário local BR (-03:00), comparar só o prefixo da data local
       allOrders = allOrders.filter(p => {
         const d = p.created_at || '';
         return d.startsWith(date);
       });
     }
 
-    // Buscar detalhes de cada pedido (items, payments, customer completo)
+    // Buscar detalhes completos de cada pedido
     const detailed = await Promise.all(
-      allOrders.slice(0, 30).map(async (p) => {
+      allOrders.map(async (p) => {
         try {
           const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
           return (det.status === 200 && det.data) ? det.data : p;
