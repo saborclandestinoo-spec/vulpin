@@ -4563,8 +4563,11 @@ function renderPedidos(){
     const _pags=(p.payments||[]);const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pag=_pags.length?(_pm[_pags[0].payment_method]||_pags[0].payment_method||'—'):'—';
     const total=p.total||p.totalAmount||p.valor||0;
     const status=p.status||p.situacao||'';
+    const canal=p.sales_channel||'';
+    const canalBadge=canal==='ifood'?`<span style="display:inline-block;background:#EA1D2C;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">iF</span>`:
+      canal==='whatsapp_extension'?`<span style="display:inline-block;background:#25D366;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">WPP</span>`:'';
     return`<tr style="cursor:pointer" onclick="verPedido('${p.id||p.display_id}')">
-      <td style="font-weight:600;color:var(--t)">#${num}</td>
+      <td style="font-weight:600;color:var(--t)">#${num}${canalBadge}</td>
       <td style="color:var(--t)">${cliente}</td>
       <td>${dtFmt}</td>
       <td style="font-size:11px;color:var(--t3);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${itensTxt}</td>
@@ -4581,7 +4584,12 @@ function verPedido(id){
   const p=pedidos.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
   if(!p)return;
   const num=p.display_id||p.displayId||p.id||'—';
-  document.getElementById('mpd-title').textContent=`Pedido #${num}`;
+  // Canal badge
+  const canal=p.sales_channel||'';
+  const canalBadgeModal=canal==='ifood'?`<span style="display:inline-block;background:#EA1D2C;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;margin-left:8px">iFood</span>`:
+    canal==='whatsapp_extension'?`<span style="display:inline-block;background:#25D366;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;margin-left:8px">WhatsApp</span>`:'';
+  document.getElementById('mpd-title').textContent='';
+  document.getElementById('mpd-title').innerHTML=`Pedido #${num}${canalBadgeModal}`;
   const itens=(p.items||p.itens||[]);
   const total=p.total||p.totalAmount||p.valor||0;
   const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
