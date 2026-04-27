@@ -1134,7 +1134,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       </div>
       <div class="fi-row">
         <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
-        <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Automático" readonly style="background:var(--bg3);color:var(--t3);cursor:not-allowed"></div>
+        <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Ex: moh909rb..."></div>
       </div>
       <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
     </div>
@@ -1780,7 +1780,7 @@ const getProdutos=()=>S.get('produtos')||defaultProdutos();
 function findProdByPdv(codigoPdv){
   if(!codigoPdv)return null;
   const code=String(codigoPdv).trim();
-  return getProdutos().find(p=>p.codigo_pdv&&String(p.codigo_pdv).trim()===code)||null;
+  return getProdutos().find(p=>(p.codigo_pdv&&String(p.codigo_pdv).trim()===code)||(p.id_externo&&String(p.id_externo).trim()===code))||null;
 }
 const getEstMP=()=>S.get('est_mp')||defaultEstMP();
 const getEstProd=()=>S.get('est_prod')||{};
@@ -4263,6 +4263,7 @@ function saveProd(){
     preco:parseFloat(document.getElementById('mprod-preco').value)||0,
     status:document.getElementById('mprod-status').value,
     codigo_pdv:(document.getElementById('mprod-codigo-pdv').value||'').trim()||null,
+    id_externo:(document.getElementById('mprod-codigo-interno').value||'').trim()||null,
   };
   // apply ficha custo if toggle is on
   if(ftUsarFicha&&ftItems.length>0){
