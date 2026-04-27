@@ -4352,12 +4352,12 @@ function cwSalvarConfig(){
 // Base: dashboard.cardapioweb.com
 // Auth: Bearer token (API de Integração)
 // ═══════════════════════════════════════════
-const CW_BASE='https://integracao.cardapioweb.com';
+const CW_BASE='https://dashboard.cardapioweb.com';
 
 async function cwFetch(path,cfg){
-  // Proxy Vercel: /api/pedidos — sem CORS
+  // Usa API route do Vercel — sem CORS
   try{
-    const url=`/api/pedidos?storeCode=${encodeURIComponent(cfg.storeCode)}&token=${encodeURIComponent(cfg.token)}`;
+    const url=`/api/pedidos?storeCode=${encodeURIComponent(cfg.storeCode)}&token=${encodeURIComponent(cfg.token)}&limit=100`;
     const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
     return r;
   }catch(e){}
@@ -4550,16 +4550,16 @@ function renderPedidos(){
   }
 
   tbody.innerHTML=pedidos.map(p=>{
-    const num=p.displayId||p.id||p.numero||'—';
+    const num=p.display_id||p.displayId||p.id||p.numero||'—';
     const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
-    const dt=p.createdAt||p.criadoEm||p.data||'';
+    const dt=p.created_at||p.createdAt||p.criadoEm||p.data||'';
     const dtFmt=dt?new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
     const itens=(p.items||p.itens||[]);
     const itensTxt=itens.length?itens.map(i=>`${i.quantity||i.qtd||1}x ${i.name||i.nome||'?'}`).join(', ').slice(0,40)+(itens.length>2?'…':''):`${itens.length} item(s)`;
-    const pag=p.payment?.name||p.pagamento||p.formaPagamento||'—';
+    const _pags=(p.payments||[]);const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pag=_pags.length?(_pm[_pags[0].payment_method]||_pags[0].payment_method||'—'):'—';
     const total=p.total||p.totalAmount||p.valor||0;
     const status=p.status||p.situacao||'';
-    return`<tr style="cursor:pointer" onclick="verPedido('${p.id||p.displayId}')">
+    return`<tr style="cursor:pointer" onclick="verPedido('${p.id||p.display_id}')">
       <td style="font-weight:600;color:var(--t)">#${num}</td>
       <td style="color:var(--t)">${cliente}</td>
       <td>${dtFmt}</td>
@@ -4567,7 +4567,7 @@ function renderPedidos(){
       <td>${pag}</td>
       <td style="font-weight:600;color:var(--fox)">R$ ${fmtN(total)}</td>
       <td>${fmtPedStatus(status)}</td>
-      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();verPedido('${p.id||p.displayId}')">Ver</button></td>
+      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();verPedido('${p.id||p.display_id}')">Ver</button></td>
     </tr>`;
   }).join('');
 }
@@ -4576,17 +4576,17 @@ function verPedido(id){
   const pedidos=getPedidosCache();
   const p=pedidos.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
   if(!p)return;
-  const num=p.displayId||p.id||'—';
+  const num=p.display_id||p.displayId||p.id||'—';
   document.getElementById('mpd-title').textContent=`Pedido #${num}`;
   const itens=(p.items||p.itens||[]);
   const total=p.total||p.totalAmount||p.valor||0;
   const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
   const tel=p.customer?.phone||p.cliente?.telefone||'—';
-  const end=p.deliveryAddress||p.endereco;
+  const end=p.delivery_address||p.deliveryAddress||p.endereco;
   const endTxt=end?(end.formattedAddress||`${end.street||''} ${end.number||''}, ${end.neighborhood||''}, ${end.city||''}`).trim():'Retirada';
-  const obs=p.observations||p.observacao||'';
-  const pag=p.payment?.name||p.pagamento||p.formaPagamento||'—';
-  const troco=p.payment?.changeFor||p.troco||0;
+  const obs=p.observation||p.observations||p.observacao||'';
+  const _pags=(p.payments||[]);const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pag=_pags.length?(_pm[_pags[0].payment_method]||_pags[0].payment_method||'—'):'—';
+  const troco=(_pags2[0]?.change_for)||0;
 
   document.getElementById('mpd-body').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -4635,7 +4635,7 @@ function verPedido(id){
       </div>
       <div style="background:var(--bg2);border-radius:10px;padding:12px">
         <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Data/Hora</div>
-        <div style="font-size:12px;color:var(--t)">${p.createdAt?new Date(p.createdAt).toLocaleString('pt-BR'):'—'}</div>
+        <div style="font-size:12px;color:var(--t)">${(p.created_at||p.createdAt)?new Date(p.created_at||p.createdAt).toLocaleString('pt-BR'):'—'}</div>
       </div>
     </div>
     ${obs?`<div style="background:var(--amber-bg);border-radius:10px;padding:12px;border:1px solid rgba(230,126,34,.2)">
