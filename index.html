@@ -5002,6 +5002,7 @@ function pedTab(tab){
     // default sync month = current
     const sm=document.getElementById('hist-sync-month');
     if(sm&&!sm.value){const now=new Date();sm.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;}
+    setTimeout(enriquecerHistorico,500);
   }
 }
 
@@ -5070,23 +5071,31 @@ async function syncMes(){
 </html>
 <script>
 // Enriquece histórico em background: busca detalhe dos pedidos sem itens
+let _enriquecendo=false;
 async function enriquecerHistorico(){
+  if(_enriquecendo)return;
   const cfg=getCWConfig();
   if(!cfg.token)return;
   const hist=getHistorico();
   const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!(p.total||p.totalAmount||0));
   if(!zerados.length)return;
-  const CHUNK=5;
+  _enriquecendo=true;
+  const CHUNK=8;
+  const st=document.getElementById("hist-sync-status");
   for(let i=0;i<zerados.length;i+=CHUNK){
     const lote=zerados.slice(i,i+CHUNK);
+    if(st)st.textContent=`Detalhes ${Math.min(i+CHUNK,zerados.length)}/${zerados.length}...`;
     await Promise.all(lote.map(async p=>{
       try{
         const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(8000)});
         if(res.ok){const det=await res.json();if(det&&det.id)mergeNaHistoria([det]);}
       }catch(e){}
     }));
-    await new Promise(r=>setTimeout(r,500));
+    renderHistorico();
+    await new Promise(r=>setTimeout(r,300));
   }
+  if(st)st.textContent=`✓ Completo`;
+  _enriquecendo=false;
   renderHistorico();
 }
 </script>
