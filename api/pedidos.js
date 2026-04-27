@@ -34,29 +34,35 @@ export default async function handler(req, res) {
 
   try {
     let allOrders = [];
+    const seenIds = new Set();
 
-    if (date) {
-      // Usa endpoint de histórico para buscar pedidos do dia específico
-      const start = `${date}T00:00:00-03:00`;
-      const end   = `${date}T23:59:59-03:00`;
-      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&status[]=closed&status[]=canceled`;
-      const r = await fetchJSON(url, headers);
-      if (r.status === 200 && r.data?.orders) {
-        allOrders = r.data.orders;
-      }
-    } else {
-      // Sem data: busca pedidos ativos via polling
-      for (let page = 1; page <= 5; page++) {
-        const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
-        if (r.status !== 200 || !r.data) break;
-        const list = Array.isArray(r.data) ? r.data : [];
-        if (!list.length) break;
-        allOrders = allOrders.concat(list);
-        if (list.length < 50) break;
-      }
+    // 1. Busca pedidos ATIVOS (polling)
+    for (let page = 1; page <= 5; page++) {
+      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
+      if (r.status !== 200 || !r.data) break;
+      const list = Array.isArray(r.data) ? r.data : [];
+      if (!list.length) break;
+      list.forEach(p => { if(!seenIds.has(p.id)){ seenIds.add(p.id); allOrders.push(p); } });
+      if (list.length < 50) break;
     }
 
-    // Buscar detalhes completos de cada pedido
+    // 2. Se tem data, busca histórico (closed + canceled) e junta
+    if (date) {
+      const start = `${date}T00:00:00-03:00`;
+      const end   = `${date}T23:59:59-03:00`;
+      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100`;
+      const r = await fetchJSON(url, headers);
+      if (r.status === 200 && r.data?.orders) {
+        r.data.orders.forEach(p => {
+          if(!seenIds.has(p.id)){ seenIds.add(p.id); allOrders.push(p); }
+        });
+      }
+
+      // Filtrar pelo dia selecionado
+      allOrders = allOrders.filter(p => (p.created_at||'').startsWith(date));
+    }
+
+    // 3. Buscar detalhes completos
     const detailed = await Promise.all(
       allOrders.map(async (p) => {
         try {
