@@ -2929,6 +2929,11 @@ const PC_TREE = {
       {cod:'4.7.1',label:'Imobilizações',children:['4.7.1.1','4.7.1.2','4.7.1.3','4.7.1.4']},
       {cod:'4.7.2',label:'Intangíveis',children:['4.7.2.1','4.7.2.2']},
     ]},
+    {cod:'3.9',label:'(-) Deduções da Receita Bruta',children:[
+      {cod:'3.9.1',label:'Impostos Sobre Vendas',children:['3.9.1.1','3.9.1.2','3.9.1.3']},
+      {cod:'3.9.2',label:'Devoluções e Cancelamentos',children:['3.9.2.1','3.9.2.2','3.9.2.3']},
+      {cod:'3.9.3',label:'Taxas de Marketplace e Maquininhas',children:['3.9.3.1','3.9.3.2','3.9.3.3','3.9.3.4','3.9.3.5']},
+    ]},
   ],
   receita: [
     {cod:'3.1',label:'Receita Bruta Operacional',children:[
@@ -2942,11 +2947,6 @@ const PC_TREE = {
     {cod:'3.3',label:'Outras Receitas',children:[
       {cod:'3.3.1',label:'Alienação de Ativos',children:['3.3.1.1','3.3.1.2','3.3.1.3']},
       {cod:'3.3.2',label:'Entradas Diversas',children:['3.3.2.1','3.3.2.2','3.3.2.3','3.3.2.4']},
-    ]},
-    {cod:'3.9',label:'(-) Deduções da Receita Bruta',children:[
-      {cod:'3.9.1',label:'Impostos Sobre Vendas',children:['3.9.1.1','3.9.1.2','3.9.1.3']},
-      {cod:'3.9.2',label:'Devoluções e Cancelamentos',children:['3.9.2.1','3.9.2.2','3.9.2.3']},
-      {cod:'3.9.3',label:'Taxas de Marketplace e Maquininhas',children:['3.9.3.1','3.9.3.2','3.9.3.3','3.9.3.4','3.9.3.5']},
     ]},
   ],
 };
@@ -2978,17 +2978,17 @@ const PC_EXTRA=[
   {cod:'4.6.2.1',nome:'Amortização — Softwares e Sistemas',tipo:'despesa'},
   {cod:'4.6.2.2',nome:'Amortização — Marca / Intangíveis',tipo:'despesa'},
   {cod:'4.7.1.2',nome:'Aquisição de Veículos',tipo:'despesa'},
-  {cod:'3.9.1.1',nome:'(-) Simples Nacional sobre Vendas (DAS)',tipo:'receita'},
-  {cod:'3.9.1.2',nome:'(-) ICMS sobre Vendas',tipo:'receita'},
-  {cod:'3.9.1.3',nome:'(-) ISS sobre Serviços',tipo:'receita'},
-  {cod:'3.9.2.1',nome:'(-) Devoluções de Vendas',tipo:'receita'},
-  {cod:'3.9.2.2',nome:'(-) Cancelamentos de Pedidos',tipo:'receita'},
-  {cod:'3.9.2.3',nome:'(-) Descontos Incondicionais Concedidos',tipo:'receita'},
-  {cod:'3.9.3.1',nome:'(-) Taxas iFood',tipo:'receita'},
-  {cod:'3.9.3.2',nome:'(-) Taxas de Cartão — Débito',tipo:'receita'},
-  {cod:'3.9.3.3',nome:'(-) Taxas de Cartão — Crédito 1x',tipo:'receita'},
-  {cod:'3.9.3.4',nome:'(-) Taxas de Cartão — Crédito Parcelado',tipo:'receita'},
-  {cod:'3.9.3.5',nome:'(-) Antecipação de Recebíveis',tipo:'receita'},
+  {cod:'3.9.1.1',nome:'(-) Simples Nacional sobre Vendas (DAS)',tipo:'despesa'},
+  {cod:'3.9.1.2',nome:'(-) ICMS sobre Vendas',tipo:'despesa'},
+  {cod:'3.9.1.3',nome:'(-) ISS sobre Serviços',tipo:'despesa'},
+  {cod:'3.9.2.1',nome:'(-) Devoluções de Vendas',tipo:'despesa'},
+  {cod:'3.9.2.2',nome:'(-) Cancelamentos de Pedidos',tipo:'despesa'},
+  {cod:'3.9.2.3',nome:'(-) Descontos Incondicionais Concedidos',tipo:'despesa'},
+  {cod:'3.9.3.1',nome:'(-) Taxas iFood',tipo:'despesa'},
+  {cod:'3.9.3.2',nome:'(-) Taxas de Cartão — Débito',tipo:'despesa'},
+  {cod:'3.9.3.3',nome:'(-) Taxas de Cartão — Crédito 1x',tipo:'despesa'},
+  {cod:'3.9.3.4',nome:'(-) Taxas de Cartão — Crédito Parcelado',tipo:'despesa'},
+  {cod:'3.9.3.5',nome:'(-) Antecipação de Recebíveis',tipo:'despesa'},
 ];
 PC_EXTRA.forEach(e=>{if(!PLANO_CONTAS.find(c=>c.cod===e.cod))PLANO_CONTAS.push(e);});
 
