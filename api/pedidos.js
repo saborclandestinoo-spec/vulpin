@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     let allOrders = [];
     const seenIds = new Set();
 
-    // 1. Pedidos ATIVOS (polling) — sem data obrigatória
+    // 1. Pedidos ATIVOS (sem date = modo polling ao vivo)
     if (!date) {
       for (let page = 1; page <= 5; page++) {
         const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
@@ -46,55 +46,46 @@ export default async function handler(req, res) {
         list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
         if (list.length < 50) break;
       }
-    }
-
-    // 2. Histórico com PAGINAÇÃO COMPLETA quando tem date
-    if (date) {
-      const start = `${date}T00:00:00-03:00`;
-      const end   = `${date}T23:59:59-03:00`;
-
-      for (let page = 1; page <= 20; page++) {
-        const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&page=${page}`;
-        const r = await fetchJSON(url, headers);
-
-        if (r.status !== 200 || !r.data) break;
-
-        // API pode retornar { orders: [] } ou array direto
-        const list = Array.isArray(r.data)
-          ? r.data
-          : (Array.isArray(r.data.orders) ? r.data.orders : []);
-
-        if (!list.length) break;
-
-        list.forEach(p => {
-          if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); }
-        });
-
-        // Para quando retornou menos que o máximo (última página)
-        if (list.length < 100) break;
-      }
-
-      // Filtrar pelo dia exato (garante mesmo que API retorne adjacentes)
-      allOrders = allOrders.filter(p => (p.created_at || '').startsWith(date));
-    }
-
-    // 3. Detalhes completos em paralelo (chunks de 10 pra não sobrecarregar)
-    const detailed = [];
-    const chunkSize = 10;
-    for (let i = 0; i < allOrders.length; i += chunkSize) {
-      const chunk = allOrders.slice(i, i + chunkSize);
-      const results = await Promise.all(
-        chunk.map(async (p) => {
+      // sem date: busca detalhes (lista pequena, ok)
+      const detailed = await Promise.all(
+        allOrders.map(async (p) => {
           try {
             const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
             return (det.status === 200 && det.data) ? det.data : p;
           } catch(e) { return p; }
         })
       );
-      detailed.push(...results);
+      return res.status(200).json(detailed);
     }
 
-    return res.status(200).json(detailed);
+    // 2. Histórico COM PAGINAÇÃO — retorna direto sem buscar detalhe individual
+    const start = `${date}T00:00:00-03:00`;
+    const end   = `${date}T23:59:59-03:00`;
+
+    for (let page = 1; page <= 20; page++) {
+      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&page=${page}`;
+      const r = await fetchJSON(url, headers);
+
+      if (r.status !== 200 || !r.data) break;
+
+      const list = Array.isArray(r.data)
+        ? r.data
+        : (Array.isArray(r.data.orders) ? r.data.orders : []);
+
+      if (!list.length) break;
+
+      list.forEach(p => {
+        if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); }
+      });
+
+      if (list.length < 100) break; // última página
+    }
+
+    // Filtrar pelo dia exato
+    allOrders = allOrders.filter(p => (p.created_at || '').startsWith(date));
+
+    return res.status(200).json(allOrders);
+
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
