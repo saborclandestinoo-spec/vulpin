@@ -5219,7 +5219,7 @@ function mergeNaHistoria(novos){
     // Auto-lançamento de receita para pedidos DELIVERED/CONCLUDED
     const lancsProc=S.get('pedidos_lanc_criado')||{};
     if(isNovo&&!lancsProc[p.id]&&(p.status==='DELIVERED'||p.status==='CONCLUDED'||p.status==='COMPLETED'||p.status==='closed'||p.status==='released')){
-      const total=p.total_price||p.totalPrice||p.valor||0;
+      const total=p.total||p.total_price||p.totalPrice||p.valor||0;
       if(total>0){
         const dt=(p.created_at||p.createdAt||new Date().toISOString()).slice(0,10);
         const novoLanc={
