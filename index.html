@@ -754,7 +754,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-produtos">
-            <thead><tr><th>Cód</th><th>Produto</th><th>Categoria</th><th>Custo Unit (R$)</th><th>Preço Venda (R$)</th><th>Lucro (R$)</th><th>Margem</th><th>Status</th><th></th></tr></thead>
+            <thead><tr><th>Cód</th><th>Produto</th><th>Categoria</th><th>Cód. PDV</th><th>Custo Unit (R$)</th><th>Preço Venda (R$)</th><th>Lucro (R$)</th><th>Margem</th><th>Status</th><th></th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -1131,6 +1131,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div><label class="fl">Status</label>
           <select class="fi" id="mprod-status"><option value="ativo">Ativo</option><option value="oculto">Oculto</option><option value="falta">Em falta</option></select>
         </div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
+        <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Automático" readonly style="background:var(--bg3);color:var(--t3);cursor:not-allowed"></div>
       </div>
       <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
     </div>
@@ -1772,6 +1776,12 @@ function defaultBancos(){return[
 // ═══════════════════════════════════════════
 const getMP=()=>S.get('mp')||defaultMP();
 const getProdutos=()=>S.get('produtos')||defaultProdutos();
+// Busca produto pelo codigo_pdv (usado na integração Cardápio Web)
+function findProdByPdv(codigoPdv){
+  if(!codigoPdv)return null;
+  const code=String(codigoPdv).trim();
+  return getProdutos().find(p=>p.codigo_pdv&&String(p.codigo_pdv).trim()===code)||null;
+}
 const getEstMP=()=>S.get('est_mp')||defaultEstMP();
 const getEstProd=()=>S.get('est_prod')||{};
 
@@ -4049,6 +4059,7 @@ function renderProdutos(){
       <td>${p.cod}</td>
       <td style="font-weight:500;color:var(--t)">${p.nome}</td>
       <td>${p.cat}</td>
+      <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span></td>
       <td>R$ ${fmtN(p.custo)}</td>
       <td style="font-weight:600">R$ ${fmtN(p.preco)}</td>
       <td style="color:var(--green)">R$ ${fmtN(lucro)}</td>
@@ -4206,6 +4217,8 @@ function openProd(id){
       document.getElementById('mprod-custo').value=p.custo||'';
       document.getElementById('mprod-preco').value=p.preco||'';
       document.getElementById('mprod-status').value=p.status||'ativo';
+      document.getElementById('mprod-codigo-pdv').value=p.codigo_pdv||'';
+      document.getElementById('mprod-codigo-interno').value=p.id||'';
       document.getElementById('mprod-del').style.display='block';
       const est=getEstProd();
       const e=est[id]||{inicial:0};
@@ -4225,7 +4238,8 @@ function openProd(id){
   } else {
     document.getElementById('mprod-title-input').value='';
     document.getElementById('mprod-subtitle').textContent='';
-    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco'].forEach(i=>document.getElementById(i).value='');
+    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('mprod-codigo-interno').value='(gerado ao salvar)';
     document.getElementById('mprod-estoque').value='0';
     document.getElementById('mprod-status').value='ativo';
     document.getElementById('mprod-del').style.display='none';
@@ -4247,6 +4261,7 @@ function saveProd(){
     custo:parseFloat(document.getElementById('mprod-custo').value)||0,
     preco:parseFloat(document.getElementById('mprod-preco').value)||0,
     status:document.getElementById('mprod-status').value,
+    codigo_pdv:(document.getElementById('mprod-codigo-pdv').value||'').trim()||null,
   };
   // apply ficha custo if toggle is on
   if(ftUsarFicha&&ftItems.length>0){
@@ -4729,6 +4744,12 @@ function verPedido(id){
         const subTotal=i.total_price||i.totalPrice||(i.unit_price||i.price||i.preco||0)*(i.quantity||i.qtd||1);
         const obs2=i.observations||i.observacao||'';
         const comps=(i.options||i.complementos||[]).map(c=>`<div style="font-size:10px;color:var(--t3);padding-left:8px">+ ${c.name||c.nome||c} ${c.price?('+R$'+fmtN(c.price)):''}</div>`).join('');
+        const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
+        const matchProd=pdvCode?findProdByPdv(pdvCode):null;
+        const matchBadge=pdvCode?(matchProd
+          ?`<div style="font-size:9px;color:var(--green);margin-top:2px">✓ Vulpin: ${matchProd.nome}</div>`
+          :`<div style="font-size:9px;color:var(--amber);margin-top:2px">⚠ PDV ${pdvCode} sem mapeamento</div>`)
+          :'';
         return`<div style="padding:10px 14px;border-bottom:1px solid var(--bor2)">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div>
@@ -4738,6 +4759,7 @@ function verPedido(id){
             <span style="font-size:12px;font-weight:600;color:var(--t)">R$ ${fmtN(subTotal)}</span>
           </div>
           ${comps}
+          ${matchBadge}
           ${obs2?`<div style="font-size:10px;color:var(--amber);margin-top:3px">📝 ${obs2}</div>`:''}
         </div>`;
       }).join(''):'<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Sem itens</div>'}
