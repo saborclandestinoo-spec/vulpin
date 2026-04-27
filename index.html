@@ -4527,6 +4527,8 @@ async function syncPedidos(){
       st.textContent=`Atualizado ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
     }
     renderPedidos();
+    // enriquece itens em background
+    setTimeout(()=>enriquecerHistoricoECache(arr),500);
   }catch(e){
     if(st)st.textContent='Erro de conexão (CORS)';
     // Load cached if available
@@ -5072,6 +5074,40 @@ async function syncMes(){
 <script>
 // Enriquece histórico em background: busca detalhe dos pedidos sem itens
 // Fix: merge atômico por lote — evita race condition no localStorage
+// Versão que enriquece e também atualiza pedidos_cache (aba Pedidos do Dia)
+async function enriquecerHistoricoECache(pedidosDoDia){
+  const cfg=getCWConfig();
+  if(!cfg.token||!pedidosDoDia||!pedidosDoDia.length)return;
+  const zerados=pedidosDoDia.filter(p=>!(p.items||p.itens||[]).length||!(p.total||p.totalAmount||0));
+  if(!zerados.length)return;
+  const CHUNK=10;
+  for(let i=0;i<zerados.length;i+=CHUNK){
+    const lote=zerados.slice(i,i+CHUNK);
+    const resultados=await Promise.all(lote.map(async p=>{
+      try{
+        const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(9000)});
+        if(res.ok){const det=await res.json();if(det&&det.id&&((det.items||[]).length>0||(det.total||det.totalAmount||0)>0))return det;}
+      }catch(e){}
+      return null;
+    }));
+    const validos=resultados.filter(Boolean);
+    if(validos.length){
+      // atualiza historico
+      const hist=getHistorico();
+      const mapa=Object.fromEntries(hist.map(p=>[p.id,p]));
+      validos.forEach(p=>{mapa[p.id]=p;});
+      setHistorico(Object.values(mapa));
+      // atualiza cache do dia
+      const cache=getPedidosCache();
+      const cacheMapa=Object.fromEntries(cache.map(p=>[p.id,p]));
+      validos.forEach(p=>{if(cacheMapa[p.id])cacheMapa[p.id]=p;});
+      S.set('pedidos_cache',Object.values(cacheMapa));
+      renderPedidos();
+    }
+    await new Promise(r=>setTimeout(r,200));
+  }
+}
+
 let _enriquecendo=false;
 async function enriquecerHistorico(){
   if(_enriquecendo)return;
