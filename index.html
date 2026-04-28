@@ -106,6 +106,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 .tbl tr:last-child td{border-bottom:none}
 .tbl td:first-child,.tbl th:first-child{color:var(--t)}
 .pill{font-size:9px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.rp-preset{padding:7px 14px;font-size:11px;color:var(--t2);cursor:pointer;white-space:nowrap}.rp-preset:hover{background:var(--bg2);color:var(--fox)}.rp-day{padding:4px 2px;font-size:11px;cursor:pointer;border-radius:5px;text-align:center;line-height:1.6}.rp-day:hover{background:var(--bg2)}.rp-day.in-range{background:var(--fox-l);color:var(--fox)}.rp-day.start,.rp-day.end{background:var(--fox);color:#fff;font-weight:700}.rp-day.disabled{color:var(--bor);cursor:default}.rp-day-hdr{font-size:9px;font-weight:600;color:var(--t3);padding:2px;text-align:center}
 .pill-ok{background:var(--green-bg);color:var(--green)}
 .pill-warn{background:var(--amber-bg);color:var(--amber)}
 .pill-zero{background:var(--red-bg);color:var(--red)}
@@ -431,29 +432,53 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
     <!-- PEDIDOS -->
     <div class="pg" id="pg-pedidos">
+      <!-- Tabs: Pedidos do Dia / Histórico -->
+      <div style="background:#fff;border-bottom:1px solid var(--bor);padding:0 18px;display:flex;align-items:center;gap:0;flex-shrink:0">
+        <div id="ped-tab-hoje" onclick="pedTab('hoje')" style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;transition:all .15s">Pedidos do Dia</div>
+        <div id="ped-tab-historico" onclick="pedTab('historico')" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Histórico</div>
+      </div>
 
-      <!-- ── HISTÓRICO ── -->
-      <div id="ped-panel-historico" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
-        <!-- Toolbar histórico -->
+      <!-- ── ABA HOJE ── -->
+      <div id="ped-panel-hoje" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+        <!-- Status bar -->
         <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-          <!-- Resumo acumulado -->
-          <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
-            Total: R$ 0,00 · 0 pedidos
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('')" id="pf-todos">
+            <span style="color:var(--t2)">Todos</span><span id="pc-todos" style="color:var(--t);font-weight:700">0</span>
           </div>
-          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <!-- Filtro dia -->
-            <div style="position:relative" id="hist-date-wrap">
-              <button onclick="toggleHistDatePicker()" id="hist-date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px">
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('PENDING')" id="pf-pendente">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Pendentes</span><span id="pc-pendente" style="color:var(--amber);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CONFIRMED')" id="pf-confirmado">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Confirmados</span><span id="pc-confirmado" style="color:var(--blue);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('DELIVERED')" id="pf-entregue">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Entregues</span><span id="pc-entregue" style="color:var(--green);font-weight:700">0</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CANCELLED')" id="pf-cancelado">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;display:inline-block"></span>
+            <span style="color:var(--t2)">Cancelados</span><span id="pc-cancelado" style="color:var(--red);font-weight:700">0</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+            <div id="ped-sync-status" style="font-size:10px;color:var(--t3)"></div>
+            <button class="btn-o" onclick="syncPedidos()" id="btn-sync-ped" style="font-size:11px">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Sincronizar
+            </button>
+            <div style="position:relative" id="custom-date-wrap">
+              <button onclick="toggleDatePicker()" id="date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;transition:all .15s" onmouseover="this.style.borderColor='var(--fox)'" onmouseout="this.style.borderColor=document.getElementById('ped-date-filter').value?'var(--fox)':'var(--bor)'">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-                <span id="hist-date-btn-label">Filtrar por data</span>
-                <span id="hist-date-btn-clear" onclick="event.stopPropagation();clearHistDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
+                <span id="date-btn-label">Filtrar por data</span>
+                <span id="date-btn-clear" onclick="event.stopPropagation();clearDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
               </button>
-              <input type="hidden" id="hist-date-filter">
-              <div id="hist-date-picker-drop" style="display:none;position:absolute;top:38px;right:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
+              <input type="hidden" id="ped-date-filter">
+              <div id="date-picker-drop" style="display:none;position:absolute;top:38px;left:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                  <button onclick="histDatePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px">‹</button>
-                  <span id="hist-dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                  <button onclick="histDatePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px">›</button>
+                  <button onclick="datePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">‹</button>
+                  <span id="dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                  <button onclick="datePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">›</button>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:6px">
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">D</div>
@@ -464,32 +489,107 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
                 </div>
-                <div id="hist-dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+                <div id="dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
                 <div style="display:flex;justify-content:space-between;margin-top:10px;border-top:1px solid var(--bor2);padding-top:10px">
-                  <button onclick="clearHistDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
-                  <button onclick="selectHistDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
+                  <button onclick="clearDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
+                  <button onclick="selectDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
                 </div>
               </div>
             </div>
-            <!-- Sync mês inteiro -->
-            <div style="display:flex;align-items:center;gap:6px">
-              <input type="month" id="hist-sync-month" class="filter-sel" style="font-size:11px;padding:6px 10px">
-              <button class="btn-p" onclick="syncMes()" id="btn-sync-mes" style="font-size:11px;white-space:nowrap">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Sincronizar Mês
-              </button>
-              <div id="hist-sync-status" style="font-size:10px;color:var(--t3);min-width:80px"></div>
-            </div>
-            <!-- Filtro mês visualização -->
-            <select class="filter-sel" id="hist-mes-filter" onchange="renderHistorico()" style="font-size:11px">
-              <option value="">Todos os meses</option>
-            </select>
-            <!-- Busca -->
             <div class="search-wrap" style="max-width:200px">
+              <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <input class="search-in" id="ped-search" placeholder="Buscar cliente/nº..." oninput="renderPedidos()">
+            </div>
+          </div>
+        </div>
+        <!-- Config aviso se não configurado -->
+        <div id="ped-config-aviso" style="display:none;margin:20px 18px;background:var(--amber-bg);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:16px 20px">
+          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">⚙️ Configure a integração Cardápio Web</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Acesse <b>Configurações → Cardápio Web</b> e informe o Código da Loja e o Token para sincronizar pedidos.</div>
+          <button class="btn-p" style="background:var(--amber);font-size:11px" onclick="go('config',document.querySelector('.ni:last-of-type'))">Ir para Configurações</button>
+        </div>
+        <div class="scroll">
+          <div class="card">
+            <div class="tbl-wrap">
+              <table class="tbl" id="tbl-pedidos">
+                <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
+                <tbody id="tbody-pedidos">
+                  <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Clique em <b>Sincronizar</b> para carregar pedidos do Cardápio Web</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ABA HISTÓRICO ── -->
+      <div id="ped-panel-historico" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+        <!-- Toolbar histórico -->
+        <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+          <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
+            Total: R$ 0,00 · 0 pedidos
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <!-- Range picker único -->
+            <div style="position:relative" id="hist-range-wrap">
+              <button onclick="toggleRangePicker()" id="hist-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span id="hist-range-label">Este mês</span>
+              </button>
+              <!-- Dropdown range picker -->
+              <div id="hist-range-drop" style="display:none;position:absolute;top:38px;right:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden">
+                <div style="display:flex">
+                  <!-- Atalhos -->
+                  <div style="width:130px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
+                    <div class="rp-preset" onclick="rpPreset('hoje')">Hoje</div>
+                    <div class="rp-preset" onclick="rpPreset('ontem')">Ontem</div>
+                    <div class="rp-preset" onclick="rpPreset('semana')">Esta semana</div>
+                    <div class="rp-preset" onclick="rpPreset('semana_passada')">Semana passada</div>
+                    <div class="rp-preset" onclick="rpPreset('mes')" id="rp-active-preset" style="color:var(--fox);font-weight:600">Este mês</div>
+                    <div class="rp-preset" onclick="rpPreset('mes_passado')">Mês passado</div>
+                    <div class="rp-preset" onclick="rpPreset('m2')">Últimos 2 meses</div>
+                    <div class="rp-preset" onclick="rpPreset('m3')">Últimos 3 meses</div>
+                  </div>
+                  <!-- Calendários -->
+                  <div style="flex:1;padding:14px 16px">
+                    <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="rp-range-label">—</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <button onclick="rpNav(-1)" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--t2);padding:2px 6px">‹</button>
+                          <span id="rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <div style="width:24px"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="rp-m1-days"></div>
+                      </div>
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <div style="width:24px"></div>
+                          <span id="rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <button onclick="rpNav(1)" style="background:none;border:none;cursor:pointer;font-size:15px;color:var(--t2);padding:2px 6px">›</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="rp-m2-days"></div>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
+                      <button onclick="closeRangePicker()" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
+                      <button onclick="applyRange()" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Sync -->
+            <button class="btn-p" onclick="syncRange()" id="btn-sync-mes" style="font-size:11px;white-space:nowrap">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Sincronizar
+            </button>
+            <div id="hist-sync-status" style="font-size:10px;color:var(--t3);min-width:80px"></div>
+            <!-- Busca -->
+            <div class="search-wrap" style="max-width:180px">
               <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
               <input class="search-in" id="hist-search" placeholder="Buscar cliente/nº..." oninput="renderHistorico()">
             </div>
-            <!-- Limpar histórico -->
             <button class="btn-o" onclick="limparHistorico()" style="font-size:11px;color:var(--red);border-color:rgba(231,76,60,.3)">Limpar</button>
           </div>
         </div>
@@ -5246,22 +5346,9 @@ function renderHistoricoMesesFilter(){
 function renderHistorico(){
   let hist=getHistorico();
   const mes=(document.getElementById('hist-mes-filter')||{}).value||'';
-  const diaFilter=(document.getElementById('hist-date-filter')||{}).value||'';
   const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
 
-  // Filtro por dia específico (prioridade sobre mês)
-  if(diaFilter){
-    hist=hist.filter(p=>{
-      const dt=p.created_at||p.createdAt||'';
-      if(!dt)return false;
-      return new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===diaFilter;
-    });
-  } else if(mes){
-    hist=hist.filter(p=>{
-      const dt=p.created_at||p.createdAt||'';
-      return dt?new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).startsWith(mes):false;
-    });
-  }
+  if(mes)hist=hist.filter(p=>(p.created_at||p.createdAt||'').startsWith(mes));
   if(search)hist=hist.filter(p=>{
     const cliente=(p.customer?.name||p.cliente?.nome||p.clienteNome||'').toLowerCase();
     const num=String(p.displayId||p.display_id||p.id||'').toLowerCase();
@@ -5422,60 +5509,6 @@ async function syncMes(){
 
 // ── PATCH syncPedidos: já incorporado na função original acima ──
 
-
-// ── DATE PICKER HISTÓRICO ──
-let _histDpYear=new Date().getFullYear(), _histDpMonth=new Date().getMonth();
-function toggleHistDatePicker(){
-  const d=document.getElementById('hist-date-picker-drop');
-  if(!d)return;
-  const open=d.style.display==='block';
-  document.querySelectorAll('[id$="-drop"]').forEach(x=>x.style.display='none');
-  if(!open){d.style.display='block';renderHistDpDays();}
-}
-function renderHistDpDays(){
-  const lbl=document.getElementById('hist-dp-month-label');
-  const grid=document.getElementById('hist-dp-days');
-  if(!lbl||!grid)return;
-  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  lbl.textContent=meses[_histDpMonth]+' '+_histDpYear;
-  const first=new Date(_histDpYear,_histDpMonth,1).getDay();
-  const days=new Date(_histDpYear,_histDpMonth+1,0).getDate();
-  const sel=(document.getElementById('hist-date-filter')||{}).value||'';
-  let html='';
-  for(let i=0;i<first;i++)html+='<div></div>';
-  for(let d=1;d<=days;d++){
-    const ds=`${_histDpYear}-${String(_histDpMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday=ds===new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
-    const isSel=ds===sel;
-    html+=`<div onclick="selectHistDate('${ds}')" style="padding:4px 2px;border-radius:6px;font-size:11px;cursor:pointer;${isSel?'background:var(--fox);color:#fff;font-weight:700;':isToday?'background:var(--fox-l);color:var(--fox);font-weight:600;':'color:var(--t2);'}">${d}</div>`;
-  }
-  grid.innerHTML=html;
-}
-function histDatePickerNav(dir){_histDpMonth+=dir;if(_histDpMonth>11){_histDpMonth=0;_histDpYear++;}else if(_histDpMonth<0){_histDpMonth=11;_histDpYear--;}renderHistDpDays();}
-function selectHistDate(ds){
-  document.getElementById('hist-date-filter').value=ds;
-  document.getElementById('hist-date-btn-label').textContent=ds.split('-').reverse().join('/');
-  document.getElementById('hist-date-btn-clear').style.display='inline';
-  document.getElementById('hist-date-btn').style.borderColor='var(--fox)';
-  document.getElementById('hist-date-picker-drop').style.display='none';
-  // limpar filtro de mês ao selecionar dia
-  const mf=document.getElementById('hist-mes-filter');if(mf)mf.value='';
-  renderHistorico();
-}
-function selectHistDateToday(){
-  selectHistDate(new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}));
-}
-function clearHistDateFilter(){
-  document.getElementById('hist-date-filter').value='';
-  document.getElementById('hist-date-btn-label').textContent='Filtrar por data';
-  document.getElementById('hist-date-btn-clear').style.display='none';
-  document.getElementById('hist-date-btn').style.borderColor='var(--bor)';
-  renderHistorico();
-}
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#hist-date-wrap'))document.getElementById('hist-date-picker-drop')&&(document.getElementById('hist-date-picker-drop').style.display='none');
-});
-
 </script>
 </body>
 </html>
@@ -5558,4 +5591,253 @@ async function enriquecerHistorico(){
   _enriquecendo=false;
   renderHistorico();
 }
+</script>
+<script>
+// ════════════════════════════════════════════
+// RANGE PICKER — Histórico de Pedidos
+// ════════════════════════════════════════════
+const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MESES_ABREV=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// Estado do range picker
+let _rp = {
+  y1: new Date().getFullYear(), m1: new Date().getMonth(), // calendário esquerdo
+  start: null, end: null, // datas selecionadas (Date)
+  hover: null,
+  selecting: false // true = aguardando 2ª data
+};
+
+// Inicializa com "Este mês"
+(function(){
+  const now = new Date();
+  _rp.start = new Date(now.getFullYear(), now.getMonth(), 1);
+  _rp.end   = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  _rp.y1    = now.getFullYear();
+  _rp.m1    = now.getMonth() > 0 ? now.getMonth()-1 : 0;
+  // default sync month
+  const sm = document.getElementById('hist-sync-month');
+  if(sm) sm.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+})();
+
+function d2s(d){ return d ? d.toLocaleDateString('sv-SE') : ''; }
+function s2d(s){ return s ? new Date(s+'T00:00:00') : null; }
+function fmtRange(s, e){
+  if(!s && !e) return 'Período';
+  const fs = s ? s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '?';
+  const fe = e ? e.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '?';
+  return s && e && d2s(s)===d2s(e) ? fs : `${fs} ~ ${fe}`;
+}
+
+function toggleRangePicker(){
+  const d = document.getElementById('hist-range-drop');
+  if(!d) return;
+  const open = d.style.display === 'block';
+  if(!open){ d.style.display = 'block'; renderRpCalendars(); }
+  else closeRangePicker();
+}
+function closeRangePicker(){
+  const d = document.getElementById('hist-range-drop');
+  if(d) d.style.display = 'none';
+  _rp.selecting = false;
+  _rp.hover = null;
+}
+
+function rpNav(dir){
+  _rp.m1 += dir;
+  if(_rp.m1 > 11){ _rp.m1=0; _rp.y1++; }
+  else if(_rp.m1 < 0){ _rp.m1=11; _rp.y1--; }
+  renderRpCalendars();
+}
+
+function renderRpCalendars(){
+  const y2 = _rp.m1===11 ? _rp.y1+1 : _rp.y1;
+  const m2 = _rp.m1===11 ? 0 : _rp.m1+1;
+  renderRpMonth('rp-m1-label','rp-m1-days',_rp.y1,_rp.m1);
+  renderRpMonth('rp-m2-label','rp-m2-days',y2,m2);
+  const lbl = document.getElementById('rp-range-label');
+  if(lbl) lbl.textContent = fmtRange(_rp.start, _rp.end);
+}
+
+function renderRpMonth(lblId, gridId, y, m){
+  const lbl = document.getElementById(lblId);
+  const grid = document.getElementById(gridId);
+  if(!lbl||!grid) return;
+  lbl.textContent = MESES_PT[m]+' '+y;
+  const firstDay = new Date(y,m,1).getDay();
+  const daysIn = new Date(y,m+1,0).getDate();
+  const dias = ['Do','Se','Te','Qu','Qu','Se','Sá'];
+  let html = dias.map(d=>`<div class="rp-day-hdr">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
+  for(let d=1;d<=daysIn;d++){
+    const dt = new Date(y,m,d);
+    const ds = d2s(dt);
+    const ss = _rp.start ? d2s(_rp.start) : null;
+    const es = _rp.end   ? d2s(_rp.end)   : null;
+    const hs = _rp.hover ? d2s(_rp.hover) : null;
+    const isStart = ds===ss;
+    const isEnd   = ds===es;
+    // in-range check
+    let inRange = false;
+    if(_rp.start && _rp.end) inRange = dt>_rp.start && dt<_rp.end;
+    else if(_rp.start && _rp.hover && _rp.selecting){
+      const lo = _rp.start<_rp.hover?_rp.start:_rp.hover;
+      const hi = _rp.start<_rp.hover?_rp.hover:_rp.start;
+      inRange = dt>lo && dt<hi;
+    }
+    let cls = 'rp-day';
+    if(isStart||isEnd) cls += ' start';
+    else if(inRange) cls += ' in-range';
+    html += `<div class="${cls}" onclick="rpClick('${ds}')" onmouseenter="rpHover('${ds}')">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function rpClick(ds){
+  const dt = s2d(ds);
+  if(!_rp.selecting){
+    _rp.start = dt; _rp.end = null; _rp.selecting = true;
+  } else {
+    if(dt < _rp.start){ _rp.end=_rp.start; _rp.start=dt; }
+    else { _rp.end = dt; }
+    _rp.selecting = false; _rp.hover = null;
+  }
+  renderRpCalendars();
+}
+
+function rpHover(ds){
+  if(_rp.selecting){ _rp.hover = s2d(ds); renderRpCalendars(); }
+}
+
+function rpPreset(p){
+  const now = new Date();
+  const y=now.getFullYear(), m=now.getMonth(), d=now.getDate();
+  // limpa ativo
+  document.querySelectorAll('.rp-preset').forEach(el=>el.style.color='');
+  if(p==='hoje'){        _rp.start=new Date(y,m,d); _rp.end=new Date(y,m,d); }
+  else if(p==='ontem'){  _rp.start=new Date(y,m,d-1); _rp.end=new Date(y,m,d-1); }
+  else if(p==='semana'){ const s=new Date(y,m,d-now.getDay()); _rp.start=s; _rp.end=new Date(y,m,d); }
+  else if(p==='semana_passada'){ const s=new Date(y,m,d-now.getDay()-7); _rp.start=s; _rp.end=new Date(y,m,d-now.getDay()-1); }
+  else if(p==='mes'){    _rp.start=new Date(y,m,1); _rp.end=new Date(y,m+1,0); }
+  else if(p==='mes_passado'){ _rp.start=new Date(y,m-1,1); _rp.end=new Date(y,m,0); }
+  else if(p==='m2'){     _rp.start=new Date(y,m-1,1); _rp.end=new Date(y,m+1,0); }
+  else if(p==='m3'){     _rp.start=new Date(y,m-2,1); _rp.end=new Date(y,m+1,0); }
+  _rp.selecting = false; _rp.hover = null;
+  // navega para mostrar o mês do início
+  _rp.y1 = _rp.start.getFullYear();
+  _rp.m1 = _rp.start.getMonth()>0 ? _rp.start.getMonth()-1 : 0;
+  renderRpCalendars();
+}
+
+function applyRange(){
+  if(!_rp.start) return;
+  if(!_rp.end) _rp.end = _rp.start;
+  document.getElementById('hist-range-label').textContent = fmtRange(_rp.start, _rp.end);
+  closeRangePicker();
+  // atualiza hist-sync-month para syncMes
+  const sm = document.getElementById('hist-sync-month');
+  if(sm) sm.value = `${_rp.start.getFullYear()}-${String(_rp.start.getMonth()+1).padStart(2,'0')}`;
+  renderHistoricoComRange();
+}
+
+function renderHistoricoComRange(){
+  let hist = getHistorico();
+  const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
+  const s = _rp.start, e = _rp.end;
+
+  if(s && e){
+    hist = hist.filter(p=>{
+      const dt = p.created_at||p.createdAt||'';
+      if(!dt) return false;
+      const d = new Date(new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}));
+      return d >= new Date(d2s(s)) && d <= new Date(d2s(e));
+    });
+  }
+  if(search) hist=hist.filter(p=>{
+    const cl=(p.customer?.name||p.cliente?.nome||'').toLowerCase();
+    const nu=String(p.displayId||p.display_id||p.id||'').toLowerCase();
+    return cl.includes(search)||nu.includes(search);
+  });
+
+  hist.sort((a,b)=>new Date(b.created_at||b.createdAt||0)-new Date(a.created_at||a.createdAt||0));
+
+  const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const badge=document.getElementById('hist-total-badge');
+  if(badge) badge.textContent=`Total: R$ ${fmtN(total)} · ${hist.length} pedido${hist.length!==1?'s':''}`;
+
+  const tbody=document.getElementById('tbody-historico');
+  if(!tbody) return;
+  if(!hist.length){ tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum pedido no período</td></tr>`; return; }
+  tbody.innerHTML=hist.map(p=>{
+    const num=p.display_id||p.displayId||p.id||'—';
+    const cliente=p.customer?.name||p.cliente?.nome||p.clienteNome||'—';
+    const dt=p.created_at||p.createdAt||'';
+    const dtFmt=dt?new Date(dt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+    const itens=(p.items||p.itens||[]);
+    const itensTxt=itens.length?itens.map(i=>`${i.quantity||i.qtd||1}x ${i.name||i.nome||'?'}`).join(', ').slice(0,40)+(itens.length>2?'…':''):'—';
+    const _pags=(p.payments||[]);const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pag=_pags.length?(_pm[_pags[0].payment_method]||_pags[0].payment_method||'—'):'—';
+    const total2=p.total||p.totalAmount||p.valor||0;
+    const status=p.status||p.situacao||'';
+    const canal=p.sales_channel||'';
+    const canalBadge=canal==='ifood'?`<span style="display:inline-block;background:#EA1D2C;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">iF</span>`:canal==='whatsapp_extension'?`<span style="display:inline-block;background:#25D366;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:4px">WPP</span>`:'';
+    return`<tr style="cursor:pointer" onclick="verPedidoHist('${p.id||p.display_id}')">
+      <td style="font-weight:600;color:var(--t)">#${num}${canalBadge}</td>
+      <td style="color:var(--t)">${cliente}</td>
+      <td>${dtFmt}</td>
+      <td style="font-size:11px;color:var(--t3);max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${itensTxt}</td>
+      <td>${pag}</td>
+      <td style="font-weight:600;color:var(--fox)">R$ ${fmtN(total2)}</td>
+      <td>${fmtPedStatus(status)}</td>
+      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();verPedidoHist('${p.id||p.display_id}')">Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// Sync pelo range selecionado — divide em semanas
+async function syncRange(){
+  const cfg=getCWConfig();
+  if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
+  if(!_rp.start){alert('Selecione um período.');return;}
+  const start=_rp.start, end=_rp.end||_rp.start;
+  const btn=document.getElementById('btn-sync-mes');
+  const st=document.getElementById('hist-sync-status');
+  if(btn)btn.disabled=true;
+
+  // divide em semanas
+  const semanas=[];
+  let cur=new Date(start);
+  while(cur<=end){
+    const fim=new Date(Math.min(cur.getTime()+6*864e5, end.getTime()));
+    semanas.push([d2s(cur),d2s(fim)]);
+    cur=new Date(fim.getTime()+864e5);
+  }
+
+  let total=0;
+  for(let i=0;i<semanas.length;i++){
+    const [sd,ed]=semanas[i];
+    if(st)st.textContent=`${i+1}/${semanas.length} — ${total} ped...`;
+    try{
+      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd+'T00:00:00-03:00')}&end_date=${encodeURIComponent(ed+'T23:59:59-03:00')}`;
+      const r=await fetch(url,{signal:AbortSignal.timeout(20000)});
+      if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
+    }catch(e){}
+    await new Promise(r=>setTimeout(r,200));
+  }
+  if(st)st.textContent=`✓ ${total} pedidos`;
+  if(btn)btn.disabled=false;
+  renderHistoricoComRange();
+  renderHistoricoMesesFilter();
+  setTimeout(enriquecerHistorico,1000);
+}
+
+// Fechar ao clicar fora
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#hist-range-wrap')) closeRangePicker();
+});
+
+// Override renderHistorico para usar range
+const _renderHistoricoOrig = typeof renderHistorico==='function' ? renderHistorico : null;
+renderHistorico = renderHistoricoComRange;
+
+// Init
+renderHistoricoComRange();
 </script>
