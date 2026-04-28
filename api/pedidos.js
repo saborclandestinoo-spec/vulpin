@@ -16,20 +16,18 @@ async function fetchJSON(url, headers) {
   catch(e) { return { status: r.status, data: null }; }
 }
 
-function toBRDate(isoStr) {
-  if (!isoStr) return '';
-  try { return new Date(isoStr).toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' }); }
-  catch { return isoStr.slice(0, 10); }
-}
-
+// Busca UMA página do histórico — frontend controla paginação
+// GET /api/pedidos-page?token=X&start_date=Y&end_date=Z&page=1
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { token, date, start_date, end_date, id } = req.query;
-  if (!token) return res.status(400).json({ error: 'token obrigatorio' });
+  const { token, start_date, end_date, page = '1' } = req.query;
+  if (!token || !start_date || !end_date) {
+    return res.status(400).json({ error: 'token, start_date e end_date obrigatorios' });
+  }
 
   const headers = {
     'X-API-KEY': token,
@@ -38,81 +36,20 @@ export default async function handler(req, res) {
   };
 
   const BASE = 'https://integracao.cardapioweb.com';
+  const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${page}`;
 
   try {
-    // ── DETALHE INDIVIDUAL ──
-    if (id) {
-      const r = await fetchJSON(`${BASE}/api/partner/v1/orders/${id}`, headers);
-      if (r.status === 200 && r.data) return res.status(200).json(r.data);
-      return res.status(404).json({ error: 'nao encontrado' });
+    let r = await fetchJSON(url, headers);
+    if (r.status === 429 || r.status >= 500) {
+      await new Promise(x => setTimeout(x, 1500));
+      r = await fetchJSON(url, headers);
     }
-
-    const seenIds = new Set();
-    let allOrders = [];
-
-    // ── MODO RANGE (mês inteiro) — paginação sem limite fixo ──
-    if (start_date && end_date) {
-      for (let page = 1; page <= 500; page++) {
-        const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${page}`;
-        let r = await fetchJSON(url, headers);
-        // retry once on 429 or 5xx
-        if (r.status === 429 || r.status >= 500) {
-          await new Promise(x => setTimeout(x, 1500));
-          r = await fetchJSON(url, headers);
-        }
-        if (r.status !== 200 || !r.data) break;
-        const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
-        if (!list.length) break;
-        list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-        if (list.length < 100) break; // última página
-      }
-      return res.status(200).json(allOrders);
+    if (r.status !== 200 || !r.data) {
+      return res.status(r.status).json({ orders: [], hasMore: false });
     }
-
-    // ── MODO DIA ──
-    const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
-
-    // Ativos (tempo real)
-    for (let page = 1; page <= 10; page++) {
-      const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
-      if (r.status !== 200 || !r.data) break;
-      const list = Array.isArray(r.data) ? r.data : [];
-      if (!list.length) break;
-      list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-      if (list.length < 50) break;
-    }
-
-    // Histórico do dia — janela BRT (00h-23:59 BRT = 03h-02:59 UTC next day)
-    const start = `${targetDate}T00:00:00-03:00`;
-    const end   = `${targetDate}T23:59:59-03:00`;
-    for (let page = 1; page <= 20; page++) {
-      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&per_page=100&page=${page}`;
-      const r = await fetchJSON(url, headers);
-      if (r.status !== 200 || !r.data) break;
-      const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
-      if (!list.length) break;
-      list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-      if (list.length < 100) break;
-    }
-
-    // Filtra pelo dia em fuso BR
-    allOrders = allOrders.filter(p => toBRDate(p.created_at || p.createdAt || '') === targetDate);
-
-    // Detalhes só para ativos
-    const activeStatuses = new Set(['PENDING','CONFIRMED','PREPARING','READY','SCHEDULED_CONFIRMED','pending','confirmed','preparing','ready','scheduled_confirmed','scheduled']);
-    const detailed = await Promise.all(
-      allOrders.map(async (p) => {
-        if (!activeStatuses.has(p.status || '')) return p;
-        try {
-          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
-          return (det.status === 200 && det.data) ? det.data : p;
-        } catch { return p; }
-      })
-    );
-
-    return res.status(200).json(detailed);
-
-  } catch (err) {
+    const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
+    return res.status(200).json({ orders: list, hasMore: list.length === 100 });
+  } catch(err) {
     return res.status(500).json({ error: err.message });
   }
 }
