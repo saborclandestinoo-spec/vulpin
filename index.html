@@ -5352,28 +5352,28 @@ async function syncMes(){
   const st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
 
-  // Divide em semanas para evitar timeout
-  const semanas=[];
-  for(let week=0;week<6;week++){
-    const d1=week*7+1;
-    const d2=Math.min(d1+6,daysInMonth);
-    if(d1>daysInMonth)break;
-    const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
-    const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
-    semanas.push([sd,ed]);
+  // Gera lista de todos os dias do mês
+  const dias=[];
+  for(let d=1;d<=daysInMonth;d++){
+    dias.push(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
   }
 
   let total=0;
-  for(let i=0;i<semanas.length;i++){
-    const[sd,ed]=semanas[i];
-    if(st)st.textContent=`Semana ${i+1}/${semanas.length} — ${total} ped...`;
-    try{
-      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
-      const r=await fetch(url,{signal:AbortSignal.timeout(30000)});
-      if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
-      else if(st)st.textContent=`Erro ${(await r.text()).slice(0,40)}`;
-    }catch(e){if(st)st.textContent=`Timeout semana ${i+1}, continuando...`;}
-    await new Promise(r=>setTimeout(r,200));
+  const CHUNK=3; // 3 dias em paralelo — cada request ~1-2s no Vercel
+  for(let i=0;i<dias.length;i+=CHUNK){
+    const lote=dias.slice(i,i+CHUNK);
+    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${total} ped...`;
+    const resultados=await Promise.all(lote.map(async dia=>{
+      const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
+      try{
+        const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
+        const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+        if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
+      }catch(e){}
+      return[];
+    }));
+    resultados.forEach(l=>{if(l.length){mergeNaHistoria(l);total+=l.length;}});
+    await new Promise(r=>setTimeout(r,150));
   }
 
   if(st)st.textContent=`✓ ${total} pedidos`;
@@ -5597,25 +5597,31 @@ function renderHistorico(){
   }).join('');
 }
 
-// syncRange — divide em semanas para evitar timeout Vercel
+// syncRange — 1 request por dia, 3 em paralelo (evita timeout Vercel 10s)
 async function syncRange(){
   const cfg=getCWConfig();if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
   if(!_rp.start){alert('Selecione um período.');return;}
   const start=_rp.start,end=_rp.end||_rp.start;
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
-  const semanas=[];let cur=new Date(start);
-  while(cur<=end){const fim=new Date(Math.min(cur.getTime()+6*864e5,end.getTime()));semanas.push([d2sBRT(cur),d2sBRT(fim)]);cur=new Date(fim.getTime()+864e5);}
+  const dias=[];let cur=new Date(start);
+  while(cur<=end){dias.push(d2sBRT(new Date(cur)));cur=new Date(cur.getTime()+864e5);}
   let total=0;
-  for(let i=0;i<semanas.length;i++){
-    const[sd,ed]=semanas[i];
-    if(st)st.textContent=`${i+1}/${semanas.length} — ${total} ped...`;
-    try{
-      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd+'T00:00:00-03:00')}&end_date=${encodeURIComponent(ed+'T23:59:59-03:00')}&per_page=100`;
-      const r=await fetch(url,{signal:AbortSignal.timeout(20000)});
-      if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
-    }catch(e){}
-    await new Promise(r=>setTimeout(r,200));
+  const CHUNK=3;
+  for(let i=0;i<dias.length;i+=CHUNK){
+    const lote=dias.slice(i,i+CHUNK);
+    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${total} ped...`;
+    const resultados=await Promise.all(lote.map(async dia=>{
+      const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
+      try{
+        const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
+        const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+        if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
+      }catch(e){}
+      return[];
+    }));
+    resultados.forEach(l=>{if(l.length){mergeNaHistoria(l);total+=l.length;}});
+    await new Promise(r=>setTimeout(r,150));
   }
   if(st)st.textContent=`✓ ${total} pedidos`;
   if(btn)btn.disabled=false;
