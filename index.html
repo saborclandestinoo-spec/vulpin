@@ -5360,9 +5360,10 @@ async function syncMes(){
 
   let total=0;
   const CHUNK=3; // 3 dias em paralelo — cada request ~1-2s no Vercel
+  const todosPedidos=[];
   for(let i=0;i<dias.length;i+=CHUNK){
     const lote=dias.slice(i,i+CHUNK);
-    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${total} ped...`;
+    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${todosPedidos.length} ped...`;
     const resultados=await Promise.all(lote.map(async dia=>{
       const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
       try{
@@ -5372,9 +5373,12 @@ async function syncMes(){
       }catch(e){}
       return[];
     }));
-    resultados.forEach(l=>{if(l.length){mergeNaHistoria(l);total+=l.length;}});
+    resultados.forEach(l=>{if(l.length)todosPedidos.push(...l);});
     await new Promise(r=>setTimeout(r,150));
   }
+  // Merge único no final — evita race condition no localStorage
+  if(todosPedidos.length)mergeNaHistoria(todosPedidos);
+  total=todosPedidos.length;
 
   if(st)st.textContent=`✓ ${total} pedidos`;
   if(btn)btn.disabled=false;
@@ -5608,9 +5612,10 @@ async function syncRange(){
   while(cur<=end){dias.push(d2sBRT(new Date(cur)));cur=new Date(cur.getTime()+864e5);}
   let total=0;
   const CHUNK=3;
+  const todosPedidos=[];
   for(let i=0;i<dias.length;i+=CHUNK){
     const lote=dias.slice(i,i+CHUNK);
-    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${total} ped...`;
+    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${todosPedidos.length} ped...`;
     const resultados=await Promise.all(lote.map(async dia=>{
       const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
       try{
@@ -5620,9 +5625,12 @@ async function syncRange(){
       }catch(e){}
       return[];
     }));
-    resultados.forEach(l=>{if(l.length){mergeNaHistoria(l);total+=l.length;}});
+    resultados.forEach(l=>{if(l.length)todosPedidos.push(...l);});
     await new Promise(r=>setTimeout(r,150));
   }
+  // Merge único no final — evita race condition no localStorage
+  if(todosPedidos.length)mergeNaHistoria(todosPedidos);
+  total=todosPedidos.length;
   if(st)st.textContent=`✓ ${total} pedidos`;
   if(btn)btn.disabled=false;
   renderHistorico();
