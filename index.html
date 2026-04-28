@@ -5340,7 +5340,8 @@ function pedTab(tab){
 }
 
 // ── SYNC MÊS INTEIRO ──
-// 1 request com range completo — proxy pagina tudo internamente
+// 1 request mês completo — proxy já pagina internamente (sem limite)
+// Fallback: semana a semana se timeout
 async function syncMes(){
   const cfg=getCWConfig();
   if(!cfg.storeCode||!cfg.token){alert('Configure o Cardápio Web em Configurações primeiro.');return;}
@@ -5351,36 +5352,48 @@ async function syncMes(){
   const btn=document.getElementById('btn-sync-mes');
   const st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
+  if(st)st.textContent='Buscando mês completo...';
 
-  // Gera lista de todos os dias do mês
-  const dias=[];
-  for(let d=1;d<=daysInMonth;d++){
-    dias.push(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
-  }
-
-  let total=0;
-  const CHUNK=3; // 3 dias em paralelo — cada request ~1-2s no Vercel
+  const pad=n=>String(n).padStart(2,'0');
+  const startDate=`${y}-${pad(m)}-01T00:00:00-03:00`;
+  const endDate=`${y}-${pad(m)}-${pad(daysInMonth)}T23:59:59-03:00`;
   const todosPedidos=[];
-  for(let i=0;i<dias.length;i+=CHUNK){
-    const lote=dias.slice(i,i+CHUNK);
-    if(st)st.textContent=`Dia ${Math.min(i+CHUNK,dias.length)}/${dias.length} — ${todosPedidos.length} ped...`;
-    const resultados=await Promise.all(lote.map(async dia=>{
-      const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
+
+  // Tentativa 1: mês inteiro numa request (proxy pagina sem limite)
+  try{
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    if(st)st.textContent='Buscando... (pode levar ~30s)';
+    const r=await fetch(url,{signal:AbortSignal.timeout(55000),cache:'no-store'});
+    if(r.ok){
+      const l=await r.json();
+      if(Array.isArray(l)&&l.length){todosPedidos.push(...l);}
+    }
+  }catch(e){
+    // Fallback: 4 semanas em paralelo
+    if(st)st.textContent='Timeout — buscando por semana...';
+    const semanas=[];
+    for(let d=1;d<=daysInMonth;d+=7){
+      const d2=Math.min(d+6,daysInMonth);
+      semanas.push([`${y}-${pad(m)}-${pad(d)}T00:00:00-03:00`,`${y}-${pad(m)}-${pad(d2)}T23:59:59-03:00`]);
+    }
+    const resultados=await Promise.all(semanas.map(async([sd,ed],i)=>{
+      if(st)st.textContent=`Semana ${i+1}/${semanas.length}...`;
       try{
-        const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
-        const r=await fetch(url,{signal:AbortSignal.timeout(12000),cache:'no-store'});
+        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(30000),cache:'no-store'});
         if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
-      }catch(e){}
+      }catch(e2){}
       return[];
     }));
-    resultados.forEach(l=>{if(l.length)todosPedidos.push(...l);});
-    await new Promise(r=>setTimeout(r,150));
+    resultados.forEach(l=>todosPedidos.push(...l));
   }
-  // Merge único no final — evita race condition no localStorage
-  if(todosPedidos.length)mergeNaHistoria(todosPedidos);
-  total=todosPedidos.length;
 
-  if(st)st.textContent=`✓ ${total} pedidos`;
+  // Deduplica por id
+  const mapa={};
+  todosPedidos.forEach(p=>{if(p.id)mapa[p.id]=p;});
+  const unicos=Object.values(mapa);
+
+  if(unicos.length)mergeNaHistoria(unicos);
+  if(st)st.textContent=`✓ ${unicos.length} pedidos`;
   if(btn)btn.disabled=false;
   renderHistorico();
   renderHistoricoMesesFilter();
