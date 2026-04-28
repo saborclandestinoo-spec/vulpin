@@ -4787,7 +4787,7 @@ async function syncPedidos(){
     const dateFilter=(document.getElementById('ped-date-filter')||{}).value||'';
     const dateParam=dateFilter?`&date=${dateFilter}`:'';
     const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}${dateParam}`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(15000)});
+    const res=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
     if(!res.ok){
       const errTxt=await res.text();
       if(st)st.textContent=`Erro ${res.status}`;
@@ -5368,7 +5368,7 @@ async function syncMes(){
       const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
       try{
         const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
-        const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+        const r=await fetch(url,{signal:AbortSignal.timeout(12000),cache:'no-store'});
         if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
       }catch(e){}
       return[];
@@ -5620,7 +5620,7 @@ async function syncRange(){
       const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
       try{
         const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
-        const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+        const r=await fetch(url,{signal:AbortSignal.timeout(12000),cache:'no-store'});
         if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
       }catch(e){}
       return[];
