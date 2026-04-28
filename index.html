@@ -5384,27 +5384,30 @@ async function syncMes(){
   const st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
 
-  // Gera lista de todos os dias do mês
-  const dias=[];
-  for(let d=1;d<=daysInMonth;d++){
-    dias.push(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
-  }
-
   let total=0;
   const todosPedidos=[];
   const seenIds=new Set();
-  // Busca mês inteiro paginando no frontend — 1 request por página (~100 pedidos)
-  // Cada request é rápido (nunca estoura Vercel timeout)
   const sd=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
   const ed=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
   async function fetchPagina(page){
-    const url=`/api/pedidos-page?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
+    // Usa pedidos.js com start_date/end_date/page — sem precisar de arquivo novo
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
     for(let t=0;t<3;t++){
       try{
-        const r=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
-        if(r.ok){const j=await r.json();return j;}
+        const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
+        if(r.ok){
+          const j=await r.json();
+          // suporta {orders:[],hasMore:bool} ou array direto
+          if(Array.isArray(j))return{orders:j,hasMore:j.length===100};
+          return{orders:j.orders||[],hasMore:!!j.hasMore};
+        }
+        if(st)st.textContent=`Erro HTTP ${r.status} na página ${page}`;
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
-      }catch(e){if(t<2)await new Promise(x=>setTimeout(x,1000));}
+        return{orders:[],hasMore:false};
+      }catch(e){
+        if(st)st.textContent=`Erro conexão pg ${page}: ${e.message}`;
+        if(t<2)await new Promise(x=>setTimeout(x,1000));
+      }
     }
     return{orders:[],hasMore:false};
   }
@@ -5415,7 +5418,7 @@ async function syncMes(){
     novos.forEach(p=>seenIds.add(p.id));
     if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
     if(!hasMore)break;
-    await new Promise(r=>setTimeout(r,200));
+    await new Promise(r=>setTimeout(r,300));
   }
   total=todosPedidos.length;
 
@@ -5654,13 +5657,22 @@ async function syncRange(){
   const todosPedidos=[];
   const seenIds=new Set();
   async function fetchPaginaRange(page){
-    const url=`/api/pedidos-page?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
     for(let t=0;t<3;t++){
       try{
-        const r=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
-        if(r.ok){const j=await r.json();return j;}
+        const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
+        if(r.ok){
+          const j=await r.json();
+          if(Array.isArray(j))return{orders:j,hasMore:j.length===100};
+          return{orders:j.orders||[],hasMore:!!j.hasMore};
+        }
+        if(st)st.textContent=`Erro HTTP ${r.status} pg ${page}`;
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
-      }catch(e){if(t<2)await new Promise(x=>setTimeout(x,1000));}
+        return{orders:[],hasMore:false};
+      }catch(e){
+        if(st)st.textContent=`Erro conexão pg ${page}: ${e.message}`;
+        if(t<2)await new Promise(x=>setTimeout(x,1000));
+      }
     }
     return{orders:[],hasMore:false};
   }
