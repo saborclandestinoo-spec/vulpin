@@ -5605,7 +5605,7 @@ function renderHistorico(){
 async function syncRange(){
   const cfg=getCWConfig();if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
   if(!_rp.start){alert('Selecione um período.');return;}
-  const start=_rp.start,end=_rp.end||_rp.start;
+  const start=new Date(_rp.start),end=new Date(_rp.end||_rp.start);
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
   const dias=[];let cur=new Date(start);
