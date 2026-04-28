@@ -5397,9 +5397,10 @@ async function syncMes(){
         const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
         if(r.ok){
           const j=await r.json();
-          // suporta {orders:[],hasMore:bool} ou array direto
-          if(Array.isArray(j))return{orders:j,hasMore:j.length===100};
-          return{orders:j.orders||[],hasMore:!!j.hasMore};
+          if(Array.isArray(j))return{orders:j,hasMore:j.length>=100};
+          const ords=j.orders||[];
+          const hm=j.hasMore??j.has_more??j.next_page??null;
+          return{orders:ords,hasMore:hm!==null?!!hm:ords.length>=100};
         }
         if(st)st.textContent=`Erro HTTP ${r.status} na página ${page}`;
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
@@ -5417,7 +5418,7 @@ async function syncMes(){
     const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
     novos.forEach(p=>seenIds.add(p.id));
     if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
-    if(!hasMore)break;
+    if(!orders.length||!hasMore)break;
     await new Promise(r=>setTimeout(r,300));
   }
   total=todosPedidos.length;
@@ -5663,8 +5664,11 @@ async function syncRange(){
         const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
         if(r.ok){
           const j=await r.json();
-          if(Array.isArray(j))return{orders:j,hasMore:j.length===100};
-          return{orders:j.orders||[],hasMore:!!j.hasMore};
+          if(Array.isArray(j))return{orders:j,hasMore:j.length>=100};
+          const ords=j.orders||[];
+          // hasMore: API pode retornar campo hasMore/has_more/next_page, senão usa tamanho
+          const hm=j.hasMore??j.has_more??j.next_page??null;
+          return{orders:ords,hasMore:hm!==null?!!hm:ords.length>=100};
         }
         if(st)st.textContent=`Erro HTTP ${r.status} pg ${page}`;
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
@@ -5682,14 +5686,18 @@ async function syncRange(){
     const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
     novos.forEach(p=>seenIds.add(p.id));
     if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
-    if(!hasMore)break;
+    // Para quando vier página vazia OU API sinalizar sem mais
+    if(!orders.length||!hasMore)break;
     await new Promise(r=>setTimeout(r,200));
   }
   total=todosPedidos.length;
-  if(st)st.textContent=`✓ ${total} pedidos`;
+  if(st)st.textContent=`Enriquecendo ${total} pedidos...`;
   if(btn)btn.disabled=false;
   renderHistorico();
-  setTimeout(enriquecerHistorico,1000);
+  // Enriquece itens zerados imediatamente após sync de range
+  await enriquecerHistoricoECache(todosPedidos);
+  if(st)st.textContent=`✓ ${total} pedidos`;
+  renderHistorico();
 }
 
 // verPedidoHist busca detalhe se item zerado
