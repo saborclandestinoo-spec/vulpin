@@ -5135,11 +5135,43 @@ document.addEventListener('click',e=>{
 // Merge por id: não duplica, atualiza status
 // ═══════════════════════════════════════════
 
+// Comprime pedido — guarda só campos usados no sistema (evita estouro localStorage)
+function slim(p){
+  if(!p)return p;
+  const itens=(p.items||p.itens||[]).map(i=>({
+    quantity:i.quantity||i.qtd||1,
+    name:i.name||i.nome||'',
+    external_code:i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'',
+    price:i.price||i.totalPrice||i.valor||0,
+  }));
+  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.value||pg.valor||0}));
+  return{
+    id:p.id,
+    display_id:p.display_id||p.displayId,
+    status:p.status||p.situacao||'',
+    created_at:p.created_at||p.createdAt||'',
+    total:p.total||p.totalAmount||p.valor||0,
+    sales_channel:p.sales_channel||'',
+    customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||''},
+    items:itens,
+    payments:pag,
+  };
+}
+
 function getHistorico(){
   try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
 }
 function setHistorico(arr){
-  try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}catch(e){alert('localStorage cheio: '+e.message);}
+  try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}
+  catch(e){
+    // localStorage cheio — tenta salvar sem itens de pedidos mais antigos
+    try{
+      const sorted=[...arr].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+      const cortado=sorted.slice(0,Math.floor(sorted.length*0.8));
+      localStorage.setItem('pedidos_historico',JSON.stringify(cortado));
+      console.warn('localStorage cheio: cortou para',cortado.length,'pedidos');
+    }catch(e2){console.error('localStorage cheio mesmo após corte:',e2.message);}
+  }
 }
 
 function mergeNaHistoria(novos){
@@ -5152,7 +5184,7 @@ function mergeNaHistoria(novos){
   novos.forEach(p=>{
     if(!p.id)return;
     const isNovo=!mapa[p.id]; // pedido que nunca foi visto
-    mapa[p.id]=p; // upsert
+    mapa[p.id]=slim(p); // upsert comprimido
 
     // Auto-lançamento de receita para pedidos DELIVERED/CONCLUDED
     const lancsProc=S.get('pedidos_lanc_criado')||{};
