@@ -431,53 +431,29 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
     <!-- PEDIDOS -->
     <div class="pg" id="pg-pedidos">
-      <!-- Tabs: Pedidos do Dia / Histórico -->
-      <div style="background:#fff;border-bottom:1px solid var(--bor);padding:0 18px;display:flex;align-items:center;gap:0;flex-shrink:0">
-        <div id="ped-tab-hoje" onclick="pedTab('hoje')" style="padding:10px 16px;font-size:13px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;transition:all .15s">Pedidos do Dia</div>
-        <div id="ped-tab-historico" onclick="pedTab('historico')" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Histórico</div>
-      </div>
 
-      <!-- ── ABA HOJE ── -->
-      <div id="ped-panel-hoje" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
-        <!-- Status bar -->
+      <!-- ── HISTÓRICO ── -->
+      <div id="ped-panel-historico" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+        <!-- Toolbar histórico -->
         <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('')" id="pf-todos">
-            <span style="color:var(--t2)">Todos</span><span id="pc-todos" style="color:var(--t);font-weight:700">0</span>
+          <!-- Resumo acumulado -->
+          <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
+            Total: R$ 0,00 · 0 pedidos
           </div>
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('PENDING')" id="pf-pendente">
-            <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;display:inline-block"></span>
-            <span style="color:var(--t2)">Pendentes</span><span id="pc-pendente" style="color:var(--amber);font-weight:700">0</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CONFIRMED')" id="pf-confirmado">
-            <span style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;display:inline-block"></span>
-            <span style="color:var(--t2)">Confirmados</span><span id="pc-confirmado" style="color:var(--blue);font-weight:700">0</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('DELIVERED')" id="pf-entregue">
-            <span style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;display:inline-block"></span>
-            <span style="color:var(--t2)">Entregues</span><span id="pc-entregue" style="color:var(--green);font-weight:700">0</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" onclick="pedFilterStatus('CANCELLED')" id="pf-cancelado">
-            <span style="width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;display:inline-block"></span>
-            <span style="color:var(--t2)">Cancelados</span><span id="pc-cancelado" style="color:var(--red);font-weight:700">0</span>
-          </div>
-          <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-            <div id="ped-sync-status" style="font-size:10px;color:var(--t3)"></div>
-            <button class="btn-o" onclick="syncPedidos()" id="btn-sync-ped" style="font-size:11px">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Sincronizar
-            </button>
-            <div style="position:relative" id="custom-date-wrap">
-              <button onclick="toggleDatePicker()" id="date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;transition:all .15s" onmouseover="this.style.borderColor='var(--fox)'" onmouseout="this.style.borderColor=document.getElementById('ped-date-filter').value?'var(--fox)':'var(--bor)'">
+          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <!-- Filtro dia -->
+            <div style="position:relative" id="hist-date-wrap">
+              <button onclick="toggleHistDatePicker()" id="hist-date-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:#fff;padding:6px 12px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-                <span id="date-btn-label">Filtrar por data</span>
-                <span id="date-btn-clear" onclick="event.stopPropagation();clearDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
+                <span id="hist-date-btn-label">Filtrar por data</span>
+                <span id="hist-date-btn-clear" onclick="event.stopPropagation();clearHistDateFilter()" style="display:none;color:var(--t3);font-size:14px;line-height:1;margin-left:2px">×</span>
               </button>
-              <input type="hidden" id="ped-date-filter">
-              <div id="date-picker-drop" style="display:none;position:absolute;top:38px;left:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
+              <input type="hidden" id="hist-date-filter">
+              <div id="hist-date-picker-drop" style="display:none;position:absolute;top:38px;right:0;z-index:9999;background:#fff;border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);padding:16px;width:260px;font-family:'Poppins',sans-serif">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-                  <button onclick="datePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">‹</button>
-                  <span id="dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                  <button onclick="datePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">›</button>
+                  <button onclick="histDatePickerNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px">‹</button>
+                  <span id="hist-dp-month-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                  <button onclick="histDatePickerNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:4px 8px;border-radius:6px">›</button>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;margin-bottom:6px">
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">D</div>
@@ -488,48 +464,13 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
                   <div style="font-size:10px;font-weight:600;color:var(--t3);padding:2px">S</div>
                 </div>
-                <div id="dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+                <div id="hist-dp-days" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
                 <div style="display:flex;justify-content:space-between;margin-top:10px;border-top:1px solid var(--bor2);padding-top:10px">
-                  <button onclick="clearDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
-                  <button onclick="selectDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
+                  <button onclick="clearHistDateFilter()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--t3);font-family:'Poppins',sans-serif;padding:0">Limpar</button>
+                  <button onclick="selectHistDateToday()" style="background:var(--fox);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Hoje</button>
                 </div>
               </div>
             </div>
-            <div class="search-wrap" style="max-width:200px">
-              <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <input class="search-in" id="ped-search" placeholder="Buscar cliente/nº..." oninput="renderPedidos()">
-            </div>
-          </div>
-        </div>
-        <!-- Config aviso se não configurado -->
-        <div id="ped-config-aviso" style="display:none;margin:20px 18px;background:var(--amber-bg);border:1px solid rgba(230,126,34,.3);border-radius:10px;padding:16px 20px">
-          <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">⚙️ Configure a integração Cardápio Web</div>
-          <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Acesse <b>Configurações → Cardápio Web</b> e informe o Código da Loja e o Token para sincronizar pedidos.</div>
-          <button class="btn-p" style="background:var(--amber);font-size:11px" onclick="go('config',document.querySelector('.ni:last-of-type'))">Ir para Configurações</button>
-        </div>
-        <div class="scroll">
-          <div class="card">
-            <div class="tbl-wrap">
-              <table class="tbl" id="tbl-pedidos">
-                <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
-                <tbody id="tbody-pedidos">
-                  <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Clique em <b>Sincronizar</b> para carregar pedidos do Cardápio Web</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── ABA HISTÓRICO ── -->
-      <div id="ped-panel-historico" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0">
-        <!-- Toolbar histórico -->
-        <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-          <!-- Resumo acumulado -->
-          <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
-            Total: R$ 0,00 · 0 pedidos
-          </div>
-          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <!-- Sync mês inteiro -->
             <div style="display:flex;align-items:center;gap:6px">
               <input type="month" id="hist-sync-month" class="filter-sel" style="font-size:11px;padding:6px 10px">
@@ -1991,7 +1932,7 @@ function renderDashboard(){
   }).length;
 
   document.getElementById('dash-metrics').innerHTML=`
-    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Pedidos + Lançamentos</div></div>
+    <div class="metric"><div class="metric-l">Receitas — Mês</div><div class="metric-v">R$ ${fmtN(receitas)}</div><div class="metric-d up">↑ Mês atual</div></div>
     <div class="metric"><div class="metric-l">Despesas — Mês</div><div class="metric-v">R$ ${fmtN(despesas)}</div><div class="metric-d ${despesas>receitas?'dn':'warn'}">Mês atual</div></div>
     <div class="metric"><div class="metric-l">Saldo Líquido</div><div class="metric-v" style="color:${lucro>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(lucro)}</div><div class="metric-d ${lucro>=0?'up':'dn'}">${lucro>=0?'Positivo':'Negativo'}</div></div>
     <div class="metric"><div class="metric-l">Produzido — Mês</div><div class="metric-v">${totalProd} un</div><div class="metric-d ${criticos>0?'dn':'up'}">${criticos} insumos críticos</div></div>
@@ -4936,17 +4877,17 @@ function renderPedidos(){
   let pedidos=getPedidosCache();
   const search=(document.getElementById('ped-search')||{}).value?.toLowerCase()||'';
 
-  const _P=new Set(['PENDING','pending']);
-  const _C=new Set(['CONFIRMED','confirmed','PREPARING','preparing','released','SCHEDULED','scheduled','SCHEDULED_CONFIRMED','scheduled_confirmed','DISPATCHED','dispatched','DELIVERING','delivering','out_for_delivery','READY','ready','waiting_to_catch']);
-  const _E=new Set(['DELIVERED','delivered','CONCLUDED','concluded','COMPLETED','completed','CLOSED','closed']);
-  const _X=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
-  let cP=0,cC=0,cE=0,cX=0;
-  pedidos.forEach(p=>{const s=p.status||p.situacao||'';if(_P.has(s))cP++;else if(_C.has(s))cC++;else if(_E.has(s))cE++;else if(_X.has(s))cX++;});
+  // count por status
+  const counts={PENDING:0,CONFIRMED:0,DELIVERED:0,CANCELLED:0};
+  pedidos.forEach(p=>{
+    const s=p.status||p.situacao||'';
+    if(counts[s]!==undefined)counts[s]++;
+  });
   document.getElementById('pc-todos').textContent=pedidos.length;
-  document.getElementById('pc-pendente').textContent=cP;
-  document.getElementById('pc-confirmado').textContent=cC;
-  document.getElementById('pc-entregue').textContent=cE;
-  document.getElementById('pc-cancelado').textContent=cX;
+  document.getElementById('pc-pendente').textContent=counts.PENDING;
+  document.getElementById('pc-confirmado').textContent=counts.CONFIRMED;
+  document.getElementById('pc-entregue').textContent=counts.DELIVERED;
+  document.getElementById('pc-cancelado').textContent=counts.CANCELLED;
 
   // badge sidebar
   const badge=document.getElementById('nb-pedidos');
@@ -4956,11 +4897,7 @@ function renderPedidos(){
   }
 
   // filter
-  if(pedStatusFilter){
-    const _gF={'PENDING':_P,'CONFIRMED':_C,'DELIVERED':_E,'CANCELLED':_X};
-    const _al=_gF[pedStatusFilter]||new Set([pedStatusFilter]);
-    pedidos=pedidos.filter(p=>_al.has(p.status||p.situacao||''));
-  }
+  if(pedStatusFilter)pedidos=pedidos.filter(p=>(p.status||p.situacao||'')===pedStatusFilter);
   if(search)pedidos=pedidos.filter(p=>{
     const cliente=(p.customer?.name||p.cliente?.nome||p.clienteNome||'').toLowerCase();
     const num=String(p.displayId||p.id||p.numero||'').toLowerCase();
@@ -5309,9 +5246,22 @@ function renderHistoricoMesesFilter(){
 function renderHistorico(){
   let hist=getHistorico();
   const mes=(document.getElementById('hist-mes-filter')||{}).value||'';
+  const diaFilter=(document.getElementById('hist-date-filter')||{}).value||'';
   const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
 
-  if(mes)hist=hist.filter(p=>(p.created_at||p.createdAt||'').startsWith(mes));
+  // Filtro por dia específico (prioridade sobre mês)
+  if(diaFilter){
+    hist=hist.filter(p=>{
+      const dt=p.created_at||p.createdAt||'';
+      if(!dt)return false;
+      return new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===diaFilter;
+    });
+  } else if(mes){
+    hist=hist.filter(p=>{
+      const dt=p.created_at||p.createdAt||'';
+      return dt?new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).startsWith(mes):false;
+    });
+  }
   if(search)hist=hist.filter(p=>{
     const cliente=(p.customer?.name||p.cliente?.nome||p.clienteNome||'').toLowerCase();
     const num=String(p.displayId||p.display_id||p.id||'').toLowerCase();
@@ -5426,36 +5376,41 @@ async function syncMes(){
   if(btn)btn.disabled=true;
   if(st)st.textContent='Buscando...';
 
-  // Busca semana a semana (evita timeout Vercel Free 10s)
-  // ~250 pedidos/semana = ~3 páginas = ~3s por request
-  const mm=String(m).padStart(2,'0');
-  let total=0;
-  const semanas=[];
-  for(let d1=1;d1<=daysInMonth;d1+=7){
-    semanas.push([d1,Math.min(d1+6,daysInMonth)]);
-  }
+  const startDate=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
+  const endDate=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
+
   try{
-    for(let i=0;i<semanas.length;i++){
-      const [d1,d2]=semanas[i];
-      if(st)st.textContent=`Semana ${i+1}/${semanas.length} — ${total} pedidos...`;
-      const sd=`${y}-${mm}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
-      const ed=`${y}-${mm}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
-      try{
-        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(20000)});
-        if(r.ok){
-          const l=await r.json();
-          if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}
-        } else {
-          if(st)st.textContent=`Erro semana ${i+1}: ${r.status}`;
-        }
-      }catch(e2){
-        if(st)st.textContent=`Timeout semana ${i+1}, continuando...`;
+    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    const res=await fetch(url,{signal:AbortSignal.timeout(55000)});
+    if(res.ok){
+      const list=await res.json();
+      if(Array.isArray(list)&&list.length){
+        mergeNaHistoria(list);
+        if(st)st.textContent=`✓ ${list.length} pedidos`;
+      } else {
+        if(st)st.textContent='Nenhum pedido';
       }
-      await new Promise(r=>setTimeout(r,200));
+    } else {
+      if(st)st.textContent=`Erro ${res.status}`;
+    }
+  }catch(e){
+    // fallback: busca semana a semana se timeout
+    if(st)st.textContent='Timeout — tentando por semana...';
+    let total=0;
+    for(let week=0;week<6;week++){
+      const d1=week*7+1;
+      const d2=Math.min(d1+6,daysInMonth);
+      if(d1>daysInMonth)break;
+      const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
+      const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
+      try{
+        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(25000)});
+        if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
+      }catch(e2){}
+      if(st)st.textContent=`Semana ${week+1}/6 — ${total} pedidos...`;
+      await new Promise(r=>setTimeout(r,300));
     }
     if(st)st.textContent=`✓ ${total} pedidos`;
-  }catch(e){
-    if(st)st.textContent=`Erro: ${e.message}`;
   }
 
   if(btn)btn.disabled=false;
@@ -5466,6 +5421,60 @@ async function syncMes(){
 }
 
 // ── PATCH syncPedidos: já incorporado na função original acima ──
+
+
+// ── DATE PICKER HISTÓRICO ──
+let _histDpYear=new Date().getFullYear(), _histDpMonth=new Date().getMonth();
+function toggleHistDatePicker(){
+  const d=document.getElementById('hist-date-picker-drop');
+  if(!d)return;
+  const open=d.style.display==='block';
+  document.querySelectorAll('[id$="-drop"]').forEach(x=>x.style.display='none');
+  if(!open){d.style.display='block';renderHistDpDays();}
+}
+function renderHistDpDays(){
+  const lbl=document.getElementById('hist-dp-month-label');
+  const grid=document.getElementById('hist-dp-days');
+  if(!lbl||!grid)return;
+  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  lbl.textContent=meses[_histDpMonth]+' '+_histDpYear;
+  const first=new Date(_histDpYear,_histDpMonth,1).getDay();
+  const days=new Date(_histDpYear,_histDpMonth+1,0).getDate();
+  const sel=(document.getElementById('hist-date-filter')||{}).value||'';
+  let html='';
+  for(let i=0;i<first;i++)html+='<div></div>';
+  for(let d=1;d<=days;d++){
+    const ds=`${_histDpYear}-${String(_histDpMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    const isSel=ds===sel;
+    html+=`<div onclick="selectHistDate('${ds}')" style="padding:4px 2px;border-radius:6px;font-size:11px;cursor:pointer;${isSel?'background:var(--fox);color:#fff;font-weight:700;':isToday?'background:var(--fox-l);color:var(--fox);font-weight:600;':'color:var(--t2);'}">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+function histDatePickerNav(dir){_histDpMonth+=dir;if(_histDpMonth>11){_histDpMonth=0;_histDpYear++;}else if(_histDpMonth<0){_histDpMonth=11;_histDpYear--;}renderHistDpDays();}
+function selectHistDate(ds){
+  document.getElementById('hist-date-filter').value=ds;
+  document.getElementById('hist-date-btn-label').textContent=ds.split('-').reverse().join('/');
+  document.getElementById('hist-date-btn-clear').style.display='inline';
+  document.getElementById('hist-date-btn').style.borderColor='var(--fox)';
+  document.getElementById('hist-date-picker-drop').style.display='none';
+  // limpar filtro de mês ao selecionar dia
+  const mf=document.getElementById('hist-mes-filter');if(mf)mf.value='';
+  renderHistorico();
+}
+function selectHistDateToday(){
+  selectHistDate(new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}));
+}
+function clearHistDateFilter(){
+  document.getElementById('hist-date-filter').value='';
+  document.getElementById('hist-date-btn-label').textContent='Filtrar por data';
+  document.getElementById('hist-date-btn-clear').style.display='none';
+  document.getElementById('hist-date-btn').style.borderColor='var(--bor)';
+  renderHistorico();
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#hist-date-wrap'))document.getElementById('hist-date-picker-drop')&&(document.getElementById('hist-date-picker-drop').style.display='none');
+});
 
 </script>
 </body>
