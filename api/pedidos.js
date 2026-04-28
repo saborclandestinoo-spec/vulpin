@@ -52,9 +52,14 @@ export default async function handler(req, res) {
 
     // ── MODO RANGE (mês inteiro) — paginação sem limite fixo ──
     if (start_date && end_date) {
-      for (let page = 1; page <= 100; page++) {
+      for (let page = 1; page <= 500; page++) {
         const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${page}`;
-        const r = await fetchJSON(url, headers);
+        let r = await fetchJSON(url, headers);
+        // retry once on 429 or 5xx
+        if (r.status === 429 || r.status >= 500) {
+          await new Promise(x => setTimeout(x, 1500));
+          r = await fetchJSON(url, headers);
+        }
         if (r.status !== 200 || !r.data) break;
         const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
         if (!list.length) break;
