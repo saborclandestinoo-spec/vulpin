@@ -5351,50 +5351,36 @@ async function syncMes(){
   const btn=document.getElementById('btn-sync-mes');
   const st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
-  if(st)st.textContent='Buscando...';
 
-  const startDate=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
-  const endDate=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
-
-  try{
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(55000)});
-    if(res.ok){
-      const list=await res.json();
-      if(Array.isArray(list)&&list.length){
-        mergeNaHistoria(list);
-        if(st)st.textContent=`✓ ${list.length} pedidos`;
-      } else {
-        if(st)st.textContent='Nenhum pedido';
-      }
-    } else {
-      if(st)st.textContent=`Erro ${res.status}`;
-    }
-  }catch(e){
-    // fallback: busca semana a semana se timeout
-    if(st)st.textContent='Timeout — tentando por semana...';
-    let total=0;
-    for(let week=0;week<6;week++){
-      const d1=week*7+1;
-      const d2=Math.min(d1+6,daysInMonth);
-      if(d1>daysInMonth)break;
-      const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
-      const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
-      try{
-        const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`,{signal:AbortSignal.timeout(25000)});
-        if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
-      }catch(e2){}
-      if(st)st.textContent=`Semana ${week+1}/6 — ${total} pedidos...`;
-      await new Promise(r=>setTimeout(r,300));
-    }
-    if(st)st.textContent=`✓ ${total} pedidos`;
+  // Divide em semanas para evitar timeout
+  const semanas=[];
+  for(let week=0;week<6;week++){
+    const d1=week*7+1;
+    const d2=Math.min(d1+6,daysInMonth);
+    if(d1>daysInMonth)break;
+    const sd=`${y}-${String(m).padStart(2,'0')}-${String(d1).padStart(2,'0')}T00:00:00-03:00`;
+    const ed=`${y}-${String(m).padStart(2,'0')}-${String(d2).padStart(2,'0')}T23:59:59-03:00`;
+    semanas.push([sd,ed]);
   }
 
+  let total=0;
+  for(let i=0;i<semanas.length;i++){
+    const[sd,ed]=semanas[i];
+    if(st)st.textContent=`Semana ${i+1}/${semanas.length} — ${total} ped...`;
+    try{
+      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
+      const r=await fetch(url,{signal:AbortSignal.timeout(30000)});
+      if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
+      else if(st)st.textContent=`Erro ${(await r.text()).slice(0,40)}`;
+    }catch(e){if(st)st.textContent=`Timeout semana ${i+1}, continuando...`;}
+    await new Promise(r=>setTimeout(r,200));
+  }
+
+  if(st)st.textContent=`✓ ${total} pedidos`;
   if(btn)btn.disabled=false;
   renderHistorico();
   renderHistoricoMesesFilter();
-  // enriquece itens/total em background
-  setTimeout(enriquecerHistorico, 1000);
+  setTimeout(enriquecerHistorico,1000);
 }
 
 // ── PATCH syncPedidos: já incorporado na função original acima ──
@@ -5486,8 +5472,7 @@ async function enriquecerHistorico(){
 const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 let _rp={y1:new Date().getFullYear(),m1:new Date().getMonth()-1<0?0:new Date().getMonth()-1,start:null,end:null,hover:null,selecting:false};
 
-function d2s(d){return d?d.toLocaleDateString('sv-SE'):'';}
-function s2d(s){return s?new Date(s+'T12:00:00'):null;}
+function d2s(d){return d?d.toLocaleDateString('sv-SE'):'';} function d2sBRT(d){return d?d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}):'';} function s2d(s){return s?new Date(s+'T12:00:00'):null;}
 function fmtRangeLbl(s,e){
   if(!s)return'Período';
   const f=d=>d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -5569,10 +5554,10 @@ function renderHistorico(){
   let hist=getHistorico();
   const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
   if(_rp.start&&_rp.end){
-    const s=new Date(d2s(_rp.start)),e=new Date(d2s(_rp.end));
+    const s=new Date(d2sBRT(_rp.start)+'T00:00:00'),e=new Date(d2sBRT(_rp.end)+'T23:59:59');
     hist=hist.filter(p=>{
       const dt=p.created_at||p.createdAt||'';if(!dt)return false;
-      const pd=new Date(new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}));
+      const pd=new Date(new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})+'T12:00:00');
       return pd>=s&&pd<=e;
     });
   }
@@ -5620,13 +5605,13 @@ async function syncRange(){
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
   const semanas=[];let cur=new Date(start);
-  while(cur<=end){const fim=new Date(Math.min(cur.getTime()+6*864e5,end.getTime()));semanas.push([d2s(cur),d2s(fim)]);cur=new Date(fim.getTime()+864e5);}
+  while(cur<=end){const fim=new Date(Math.min(cur.getTime()+6*864e5,end.getTime()));semanas.push([d2sBRT(cur),d2sBRT(fim)]);cur=new Date(fim.getTime()+864e5);}
   let total=0;
   for(let i=0;i<semanas.length;i++){
     const[sd,ed]=semanas[i];
     if(st)st.textContent=`${i+1}/${semanas.length} — ${total} ped...`;
     try{
-      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd+'T00:00:00-03:00')}&end_date=${encodeURIComponent(ed+'T23:59:59-03:00')}`;
+      const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd+'T00:00:00-03:00')}&end_date=${encodeURIComponent(ed+'T23:59:59-03:00')}&per_page=100`;
       const r=await fetch(url,{signal:AbortSignal.timeout(20000)});
       if(r.ok){const l=await r.json();if(Array.isArray(l)&&l.length){mergeNaHistoria(l);total+=l.length;}}
     }catch(e){}
