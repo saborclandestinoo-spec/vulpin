@@ -5392,24 +5392,30 @@ async function syncMes(){
 
   let total=0;
   const todosPedidos=[];
-  // Sequencial com retry — evita timeout Vercel em dias movimentados
-  async function fetchDia(dia){
-    const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
-    for(let tentativa=0;tentativa<3;tentativa++){
+  const seenIds=new Set();
+  // Busca mês inteiro paginando no frontend — 1 request por página (~100 pedidos)
+  // Cada request é rápido (nunca estoura Vercel timeout)
+  const sd=`${y}-${String(m).padStart(2,'0')}-01T00:00:00-03:00`;
+  const ed=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
+  async function fetchPagina(page){
+    const url=`/api/pedidos-page?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
+    for(let t=0;t<3;t++){
       try{
-        const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:'no-store'});
-        if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
+        const r=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
+        if(r.ok){const j=await r.json();return j;}
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
-      }catch(e){if(tentativa<2)await new Promise(x=>setTimeout(x,1000));}
+      }catch(e){if(t<2)await new Promise(x=>setTimeout(x,1000));}
     }
-    return[];
+    return{orders:[],hasMore:false};
   }
-  for(let i=0;i<dias.length;i++){
-    if(st)st.textContent=`Dia ${i+1}/${dias.length} — ${todosPedidos.length} ped...`;
-    const lista=await fetchDia(dias[i]);
-    if(lista.length){todosPedidos.push(...lista);mergeNaHistoria(lista);}
-    await new Promise(r=>setTimeout(r,300));
+  for(let page=1;page<=500;page++){
+    if(st)st.textContent=`Página ${page} — ${todosPedidos.length} ped...`;
+    const {orders,hasMore}=await fetchPagina(page);
+    const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
+    novos.forEach(p=>seenIds.add(p.id));
+    if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
+    if(!hasMore)break;
+    await new Promise(r=>setTimeout(r,200));
   }
   total=todosPedidos.length;
 
@@ -5635,34 +5641,37 @@ function renderHistorico(){
   }).join('');
 }
 
-// syncRange — sequencial com retry (evita timeout Vercel)
+// syncRange — paginação no frontend, 1 request por página
 async function syncRange(){
   const cfg=getCWConfig();if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
   if(!_rp.start){alert('Selecione um período.');return;}
   const start=new Date(_rp.start),end=new Date(_rp.end||_rp.start);
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
-  const dias=[];let cur=new Date(start);
-  while(cur<=end){dias.push(d2sBRT(new Date(cur)));cur=new Date(cur.getTime()+864e5);}
+  const sd=d2sBRT(start)+'T00:00:00-03:00';
+  const ed=d2sBRT(end)+'T23:59:59-03:00';
   let total=0;
   const todosPedidos=[];
-  async function fetchDiaRange(dia){
-    const sd=`${dia}T00:00:00-03:00`,ed=`${dia}T23:59:59-03:00`;
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}`;
+  const seenIds=new Set();
+  async function fetchPaginaRange(page){
+    const url=`/api/pedidos-page?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
     for(let t=0;t<3;t++){
       try{
-        const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:'no-store'});
-        if(r.ok){const l=await r.json();return Array.isArray(l)?l:[];}
+        const r=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
+        if(r.ok){const j=await r.json();return j;}
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
       }catch(e){if(t<2)await new Promise(x=>setTimeout(x,1000));}
     }
-    return[];
+    return{orders:[],hasMore:false};
   }
-  for(let i=0;i<dias.length;i++){
-    if(st)st.textContent=`Dia ${i+1}/${dias.length} — ${todosPedidos.length} ped...`;
-    const lista=await fetchDiaRange(dias[i]);
-    if(lista.length){todosPedidos.push(...lista);mergeNaHistoria(lista);}
-    await new Promise(r=>setTimeout(r,300));
+  for(let page=1;page<=500;page++){
+    if(st)st.textContent=`Página ${page} — ${todosPedidos.length} ped...`;
+    const {orders,hasMore}=await fetchPaginaRange(page);
+    const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
+    novos.forEach(p=>seenIds.add(p.id));
+    if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
+    if(!hasMore)break;
+    await new Promise(r=>setTimeout(r,200));
   }
   total=todosPedidos.length;
   if(st)st.textContent=`✓ ${total} pedidos`;
