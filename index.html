@@ -5558,7 +5558,8 @@ function renderHistorico(){
   let hist=getHistorico();
   const search=(document.getElementById('hist-search')||{}).value?.toLowerCase()||'';
   if(_rp.start&&_rp.end){
-    const s=new Date(d2sBRT(_rp.start)+'T00:00:00'),e=new Date(d2sBRT(_rp.end)+'T23:59:59');
+    const s=new Date(new Date(_rp.start).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})+'T00:00:00');
+    const e=new Date(new Date(_rp.end).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})+'T23:59:59');
     hist=hist.filter(p=>{
       const dt=p.created_at||p.createdAt||'';if(!dt)return false;
       const pd=new Date(new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})+'T12:00:00');
