@@ -1991,6 +1991,8 @@ function fmtPedStatus(s){
   const m=STATUS_MAP[s]||{label:s||'—',cls:'pill-falta'};
   return `<span class="pill ${m.cls}">${m.label}</span>`;
 }
+const getPedidosCache=()=>S.get('pedidos_cache')||[];
+const getFichas=()=>S.get('fichas')||{};
 function renderDashboard(){
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -4441,7 +4443,6 @@ function mprodTab(tab){
 
 // ─── FICHA TÉCNICA ───
 // Storage: fichas = {prodId: [{mpId, qtd}]}
-const getFichas=()=>S.get('fichas')||{};
 let ftItems=[]; // current editing items
 
 function ftRender(){
@@ -5022,7 +5023,6 @@ async function cwTestarConexao(){
 // ═══════════════════════════════════════════
 // PEDIDOS — MÓDULO
 // ═══════════════════════════════════════════
-const getPedidosCache=()=>S.get('pedidos_cache')||[];
 let pedStatusFilter='';
 let cwSyncTimer=null;
 
