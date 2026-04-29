@@ -4281,16 +4281,19 @@ function mmpRenderEst(){
 
 function mmpRenderUso(){
   if(!editMPId){document.getElementById('mmp-uso-lista').innerHTML='<div style="color:var(--t3);font-size:12px">Salve o insumo primeiro.</div>';return;}
-  // show which products use this MP (placeholder — connect to fichas técnicas when available)
   const prods=getProdutos();
+  const fichas=getFichas();
   const lista=document.getElementById('mmp-uso-lista');
-  const mp=getMP().find(x=>x.id===editMPId);
-  // for now, show all products as potential users with a note
-  lista.innerHTML=`<div style="font-size:11px;color:var(--t3);margin-bottom:12px">Produtos que podem utilizar <b>${mp?mp.nome:''}</b> como insumo. Conecte fichas técnicas para rastrear consumo automático.</div>`+
-    prods.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid var(--bor2);background:#fff">
-      <div style="font-size:12px;font-weight:500;color:var(--t)">${p.nome}</div>
-      <span style="font-size:10px;background:var(--bg3);padding:2px 8px;border-radius:5px;color:var(--t2)">${p.cat}</span>
-    </div>`).join('');
+  // Só mostra produtos que têm ficha com este insumo
+  const usados=prods.filter(p=>(fichas[p.id]||[]).some(f=>f.mpId===editMPId));
+  if(!usados.length){
+    lista.innerHTML='<div style="font-size:12px;color:var(--t3);padding:12px 0">Nenhum produto usa este insumo ainda. Cadastre fichas técnicas nos produtos para rastrear.</div>';
+    return;
+  }
+  lista.innerHTML=usados.map(p=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid var(--bor2);background:#fff">
+    <div style="font-size:12px;font-weight:500;color:var(--t)">${p.nome}</div>
+    <span style="font-size:10px;background:var(--bg3);padding:2px 8px;border-radius:5px;color:var(--t2)">${p.cat}</span>
+  </div>`).join('');
 }
 
 function mmpAlterar(){
