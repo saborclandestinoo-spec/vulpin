@@ -1998,6 +1998,21 @@ function fmtPedStatus(s){
 }
 const getPedidosCache=()=>S.get('pedidos_cache')||[];
 const getFichas=()=>S.get('fichas')||{};
+function getHistorico(){
+  try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
+}
+function setHistorico(arr){
+  try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}
+  catch(e){
+    // localStorage cheio — tenta salvar sem itens de pedidos mais antigos
+    try{
+      const sorted=[...arr].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+      const cortado=sorted.slice(0,Math.floor(sorted.length*0.8));
+      localStorage.setItem('pedidos_historico',JSON.stringify(cortado));
+      console.warn('localStorage cheio: cortou para',cortado.length,'pedidos');
+    }catch(e2){console.error('localStorage cheio mesmo após corte:',e2.message);}
+  }
+}
 function renderDashboard(){
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
@@ -2216,7 +2231,6 @@ function renderDashboard(){
   // charts
   renderFatChart();
   renderFluxoChart();
-}catch(e){console.error("renderDashboard error:",e);}
 }
 
 function renderFatChart(){
@@ -5429,21 +5443,6 @@ function slim(p){
   };
 }
 
-function getHistorico(){
-  try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
-}
-function setHistorico(arr){
-  try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}
-  catch(e){
-    // localStorage cheio — tenta salvar sem itens de pedidos mais antigos
-    try{
-      const sorted=[...arr].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-      const cortado=sorted.slice(0,Math.floor(sorted.length*0.8));
-      localStorage.setItem('pedidos_historico',JSON.stringify(cortado));
-      console.warn('localStorage cheio: cortou para',cortado.length,'pedidos');
-    }catch(e2){console.error('localStorage cheio mesmo após corte:',e2.message);}
-  }
-}
 
 function mergeNaHistoria(novos){
   if(!novos||!novos.length)return;
