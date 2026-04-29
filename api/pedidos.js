@@ -22,13 +22,20 @@ function toBRDate(isoStr) {
   catch { return isoStr.slice(0, 10); }
 }
 
+async function fetchDetail(id, headers, BASE) {
+  try {
+    const r = await fetchJSON(`${BASE}/api/partner/v1/orders/${id}`, headers);
+    return (r.status === 200 && r.data) ? r.data : null;
+  } catch { return null; }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { token, date, start_date, end_date, id, page } = req.query;
+  const { token, date, start_date, end_date, id } = req.query;
   if (!token) return res.status(400).json({ error: 'token obrigatorio' });
 
   const headers = {
@@ -50,20 +57,29 @@ export default async function handler(req, res) {
     const seenIds = new Set();
     let allOrders = [];
 
-    // ── MODO RANGE — 1 página por request, frontend pagina ──
+    // ── MODO RANGE — busca historico + detalhes completos ──
     if (start_date && end_date) {
-      const pageNum = parseInt(page || '1', 10);
-      const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${pageNum}`;
-      let r = await fetchJSON(url, headers);
-      if (r.status === 429 || r.status >= 500) {
-        await new Promise(x => setTimeout(x, 1500));
-        r = await fetchJSON(url, headers);
+      for (let page = 1; page <= 100; page++) {
+        const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${page}`;
+        const r = await fetchJSON(url, headers);
+        if (r.status !== 200 || !r.data) break;
+        const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
+        if (!list.length) break;
+        list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
+        const hasMore = r.data.hasMore === true;
+        if (!hasMore && list.length < 100) break;
       }
-      if (r.status !== 200 || !r.data) {
-        return res.status(200).json({ orders: [], hasMore: false });
+
+      // Busca detalhes completos em paralelo (chunks de 5 para nao estourar)
+      const detailed = [];
+      const CHUNK = 5;
+      for (let i = 0; i < allOrders.length; i += CHUNK) {
+        const chunk = allOrders.slice(i, i + CHUNK);
+        const results = await Promise.all(chunk.map(p => fetchDetail(p.id, headers, BASE)));
+        results.forEach((det, j) => detailed.push(det || chunk[j]));
       }
-      const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
-      return res.status(200).json({ orders: list, hasMore: list.length === 100 });
+
+      return res.status(200).json(detailed);
     }
 
     // ── MODO DIA ──
@@ -79,7 +95,7 @@ export default async function handler(req, res) {
       if (list.length < 50) break;
     }
 
-    // Histórico do dia — janela BRT (00h-23:59 BRT = 03h-02:59 UTC next day)
+    // Historico do dia
     const start = `${targetDate}T00:00:00-03:00`;
     const end   = `${targetDate}T23:59:59-03:00`;
     for (let page = 1; page <= 20; page++) {
@@ -89,22 +105,16 @@ export default async function handler(req, res) {
       const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
       if (!list.length) break;
       list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-      if (list.length < 100) break;
+      const hasMore = r.data.hasMore === true;
+      if (!hasMore && list.length < 100) break;
     }
 
     // Filtra pelo dia em fuso BR
     allOrders = allOrders.filter(p => toBRDate(p.created_at || p.createdAt || '') === targetDate);
 
-    // Detalhes só para ativos
-    const activeStatuses = new Set(['PENDING','CONFIRMED','PREPARING','READY','SCHEDULED_CONFIRMED','pending','confirmed','preparing','ready','scheduled_confirmed','scheduled']);
+    // Detalhes para todos (ativos e historico do dia)
     const detailed = await Promise.all(
-      allOrders.map(async (p) => {
-        if (!activeStatuses.has(p.status || '')) return p;
-        try {
-          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
-          return (det.status === 200 && det.data) ? det.data : p;
-        } catch { return p; }
-      })
+      allOrders.map(p => fetchDetail(p.id, headers, BASE).then(det => det || p))
     );
 
     return res.status(200).json(detailed);
