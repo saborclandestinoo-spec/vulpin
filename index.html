@@ -1679,8 +1679,33 @@ const S = {
     const { data, error } = await _sb.from('user_data').select('key, value').eq('user_id', _uid);
     if (error) { console.warn('[sb pull]', error.message); return; }
     (data||[]).forEach(r => { try { localStorage.setItem('verp_'+r.key, r.value); } catch(e){} });
+    // Puxa historico de pedidos separado
+    await pullHistorico().catch(e=>console.warn('[pull historico]',e.message));
   }
 };
+
+// ═══════════════════════════════════════════
+// HISTORICO PEDIDOS — Supabase (tabela separada por pedido)
+// ═══════════════════════════════════════════
+async function _sbSetHistorico(pedidos) {
+  if (!_uid || !pedidos.length) return;
+  const rows = pedidos.map(p => ({
+    user_id: _uid,
+    pedido_id: String(p.id),
+    data: JSON.stringify(p),
+    created_at_pedido: p.created_at || p.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }));
+  const { error } = await _sb.from('pedidos_historico').upsert(rows, { onConflict: 'user_id,pedido_id' });
+  if (error) console.warn('[sb historico set]', error.message);
+}
+
+async function _sbGetHistorico() {
+  if (!_uid) return [];
+  const { data, error } = await _sb.from('pedidos_historico').select('data').eq('user_id', _uid);
+  if (error) { console.warn('[sb historico get]', error.message); return []; }
+  return (data||[]).map(r => { try { return JSON.parse(r.data); } catch { return null; } }).filter(Boolean);
+}
 
 // ═══════════════════════════════════════════
 // DEFAULT DATA (from spreadsheet)
@@ -1940,16 +1965,27 @@ function getHistorico(){
   try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
 }
 function setHistorico(arr){
+  // Salva local
   try{localStorage.setItem('pedidos_historico',JSON.stringify(arr));}
   catch(e){
-    // localStorage cheio — tenta salvar sem itens de pedidos mais antigos
     try{
       const sorted=[...arr].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
       const cortado=sorted.slice(0,Math.floor(sorted.length*0.8));
       localStorage.setItem('pedidos_historico',JSON.stringify(cortado));
-      console.warn('localStorage cheio: cortou para',cortado.length,'pedidos');
-    }catch(e2){console.error('localStorage cheio mesmo após corte:',e2.message);}
+    }catch(e2){console.error('localStorage cheio:',e2.message);}
   }
+  // Sync Supabase async — não bloqueia UI
+  _sbSetHistorico(arr).catch(e=>console.warn('[sb hist sync]',e.message));
+}
+// Carrega historico do Supabase pro localStorage (chamado no pull)
+async function pullHistorico(){
+  const remote=await _sbGetHistorico();
+  if(!remote.length)return;
+  // Merge com local (remote tem prioridade pois é fonte da verdade)
+  const local=getHistorico();
+  const mapa=Object.fromEntries(local.map(p=>[p.id,p]));
+  remote.forEach(p=>{mapa[p.id]=p;});
+  try{localStorage.setItem('pedidos_historico',JSON.stringify(Object.values(mapa)));}catch(e){}
 }
 function renderDashboard(){
   const now=new Date();
