@@ -6,6 +6,7 @@
 <title>Vulpin ERP</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
 :root{
@@ -1657,11 +1658,28 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
 <script>
 // ═══════════════════════════════════════════
-// STORAGE
+// STORAGE — Supabase por usuário
 // ═══════════════════════════════════════════
-const S={
-  get:k=>{try{return JSON.parse(localStorage.getItem('verp_'+k));}catch(e){return null;}},
-  set:(k,v)=>localStorage.setItem('verp_'+k,JSON.stringify(v)),
+const SUPABASE_URL  = 'COLE_SUA_URL_AQUI';
+const SUPABASE_ANON = 'COLE_SUA_ANON_KEY_AQUI';
+const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+let _uid = null; // setado após login
+
+const S = {
+  get: k => { try { return JSON.parse(localStorage.getItem('verp_'+k)); } catch(e) { return null; } },
+  set: (k, v) => {
+    localStorage.setItem('verp_'+k, JSON.stringify(v));
+    if (_uid) {
+      _sb.from('user_data').upsert({ user_id: _uid, key: k, value: JSON.stringify(v) }, { onConflict: 'user_id,key' })
+        .then(({error}) => { if(error) console.warn('[sb set]', k, error.message); });
+    }
+  },
+  pull: async () => {
+    if (!_uid) return;
+    const { data, error } = await _sb.from('user_data').select('key, value').eq('user_id', _uid);
+    if (error) { console.warn('[sb pull]', error.message); return; }
+    (data||[]).forEach(r => { try { localStorage.setItem('verp_'+r.key, r.value); } catch(e){} });
+  }
 };
 
 // ═══════════════════════════════════════════
@@ -1856,17 +1874,22 @@ function lTab(t){
   document.getElementById('rerr').style.display='none';
   document.getElementById('lok').style.display='none';
 }
-function doLogin(){
+async function doLogin(){
   const em=document.getElementById('l-email').value.trim();
   const pw=document.getElementById('l-pass').value;
   const err=document.getElementById('lerr');
   err.style.display='none';
-  const acc=S.get('accounts')||[];
-  const f=acc.find(a=>a.email===em&&a.password===pw);
-  if(f){S.set('user',{email:f.email,loja:f.loja});currentUser=S.get('user');bootApp();}
-  else{err.textContent='E-mail ou senha incorretos';err.style.display='block';}
+  const {data,error} = await _sb.auth.signInWithPassword({email:em, password:pw});
+  if(error){err.textContent='E-mail ou senha incorretos';err.style.display='block';return;}
+  const u=data.user;
+  _uid=u.id;
+  const meta=u.user_metadata||{};
+  S.set('user',{email:u.email,loja:meta.loja||u.email.split('@')[0]});
+  currentUser=S.get('user');
+  await S.pull();
+  bootApp();
 }
-function doReg(){
+async function doReg(){
   const loja=document.getElementById('r-loja').value.trim();
   const em=document.getElementById('r-email').value.trim();
   const pw=document.getElementById('r-pass').value;
@@ -1876,16 +1899,16 @@ function doReg(){
   if(!loja||!em||!pw){err.textContent='Preencha todos os campos';err.style.display='block';return;}
   if(pw.length<6){err.textContent='Senha mínimo 6 caracteres';err.style.display='block';return;}
   if(pw!==pw2){err.textContent='Senhas não coincidem';err.style.display='block';return;}
-  const acc=S.get('accounts')||[];
-  if(acc.find(a=>a.email===em)){err.textContent='E-mail já cadastrado';err.style.display='block';return;}
-  acc.push({email:em,password:pw,loja});S.set('accounts',acc);
-  if(!S.get('config'))S.set('config',{nome:loja});
-  ok.style.display='block';
-  setTimeout(()=>{lTab('login');document.getElementById('l-email').value=em;},1400);
+  const {data,error} = await _sb.auth.signUp({email:em, password:pw, options:{data:{loja}}});
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  ok.textContent='Conta criada! Verifique seu e-mail para confirmar.';ok.style.display='block';
+  setTimeout(()=>{lTab('login');document.getElementById('l-email').value=em;},2000);
 }
 document.getElementById('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('r-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doReg();});
-function doLogout(){
+async function doLogout(){
+  await _sb.auth.signOut();
+  _uid=null;
   S.set('user',null);currentUser=null;
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
@@ -1910,7 +1933,17 @@ function bootApp(){
   currentPage='dashboard';
   renderDashboard();
 }
-if(currentUser)bootApp();
+// Supabase: checa sessão ativa
+_sb.auth.getSession().then(async ({data:{session}}) => {
+  if(session){
+    _uid=session.user.id;
+    const meta=session.user.user_metadata||{};
+    S.set('user',{email:session.user.email,loja:meta.loja||session.user.email.split('@')[0]});
+    currentUser=S.get('user');
+    await S.pull();
+    bootApp();
+  }
+});
 
 // ═══════════════════════════════════════════
 // NAVIGATION
