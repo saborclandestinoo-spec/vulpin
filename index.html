@@ -5551,9 +5551,15 @@ function mergeNaHistoria(novos){
       if(itens.length){
         const est=getEstProd();
         let baixou=false;
+        const prods=getProdutos();
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
-          const prod=pdvCode?findProdByPdv(pdvCode):null;
+          // 1) tenta por codigo_pdv, 2) fallback por nome exato, 3) fallback por nome normalizado
+          const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
+          const prod=
+            (pdvCode?findProdByPdv(pdvCode):null)||
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
+            prods.find(x=>nomeCW.includes((x.nome||'').trim().toLowerCase())||(x.nome||'').trim().toLowerCase().includes(nomeCW));
           if(prod){
             const qtd=i.quantity||i.qtd||1;
             if(!est[prod.id])est[prod.id]={inicial:0,entradas:[],saidas:[]};
