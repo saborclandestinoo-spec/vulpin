@@ -22,13 +22,6 @@ function toBRDate(isoStr) {
   catch { return isoStr.slice(0, 10); }
 }
 
-async function fetchDetail(id, headers, BASE) {
-  try {
-    const r = await fetchJSON(`${BASE}/api/partner/v1/orders/${id}`, headers);
-    return (r.status === 200 && r.data) ? r.data : null;
-  } catch { return null; }
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -57,7 +50,7 @@ export default async function handler(req, res) {
     const seenIds = new Set();
     let allOrders = [];
 
-    // ── MODO RANGE — busca historico + detalhes completos ──
+    // ── MODO RANGE — só lista, sem detalhes (rápido) ──
     if (start_date && end_date) {
       for (let page = 1; page <= 100; page++) {
         const url = `${BASE}/api/partner/v1/orders/history?start_date=${encodeURIComponent(start_date)}&end_date=${encodeURIComponent(end_date)}&per_page=100&page=${page}`;
@@ -66,26 +59,16 @@ export default async function handler(req, res) {
         const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
         if (!list.length) break;
         list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-        const hasMore = r.data.hasMore === true;
+        const hasMore = r.data && r.data.hasMore === true;
         if (!hasMore && list.length < 100) break;
       }
-
-      // Busca detalhes completos em paralelo (chunks de 5 para nao estourar)
-      const detailed = [];
-      const CHUNK = 5;
-      for (let i = 0; i < allOrders.length; i += CHUNK) {
-        const chunk = allOrders.slice(i, i + CHUNK);
-        const results = await Promise.all(chunk.map(p => fetchDetail(p.id, headers, BASE)));
-        results.forEach((det, j) => detailed.push(det || chunk[j]));
-      }
-
-      return res.status(200).json(detailed);
+      return res.status(200).json(allOrders);
     }
 
     // ── MODO DIA ──
     const targetDate = date || new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
 
-    // Ativos (tempo real)
+    // Ativos (tempo real) — com detalhes
     for (let page = 1; page <= 10; page++) {
       const r = await fetchJSON(`${BASE}/api/partner/v1/orders?per_page=50&page=${page}`, headers);
       if (r.status !== 200 || !r.data) break;
@@ -105,16 +88,20 @@ export default async function handler(req, res) {
       const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
       if (!list.length) break;
       list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-      const hasMore = r.data.hasMore === true;
+      const hasMore = r.data && r.data.hasMore === true;
       if (!hasMore && list.length < 100) break;
     }
 
-    // Filtra pelo dia em fuso BR
     allOrders = allOrders.filter(p => toBRDate(p.created_at || p.createdAt || '') === targetDate);
 
-    // Detalhes para todos (ativos e historico do dia)
+    // Detalhes para todos do dia (quantidade pequena, ok)
     const detailed = await Promise.all(
-      allOrders.map(p => fetchDetail(p.id, headers, BASE).then(det => det || p))
+      allOrders.map(async p => {
+        try {
+          const det = await fetchJSON(`${BASE}/api/partner/v1/orders/${p.id}`, headers);
+          return (det.status === 200 && det.data) ? det.data : p;
+        } catch { return p; }
+      })
     );
 
     return res.status(200).json(detailed);
