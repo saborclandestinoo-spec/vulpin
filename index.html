@@ -496,8 +496,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           </div>
 
         </div>
-      </div>
-    </div>
         <!-- HOJE PANEL -->
         <div id="dash-panel-hoje" style="display:none;padding:20px 24px;background:#F5F6FA">
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="hoje-kpis"></div>
@@ -522,6 +520,8 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
     <!-- PEDIDOS -->
     <div class="pg" id="pg-pedidos">
@@ -2024,20 +2024,15 @@ function dashTab(tab){
   document.getElementById('dash-tab-mes').style.color=isMes?'#fff':'rgba(255,255,255,.6)';
   document.getElementById('dash-tab-hoje').style.background=!isMes?'#FF6B35':'transparent';
   document.getElementById('dash-tab-hoje').style.color=!isMes?'#fff':'rgba(255,255,255,.6)';
-  // Find dash scroll content
-  const mesContent=document.querySelector('#pg-dashboard .scroll > div:not(#dash-panel-hoje):not([style*="linear-gradient"])');
-  // toggle panels
-  const hojePanel=document.getElementById('dash-panel-hoje');
-  const kpiStrip=document.getElementById('dash-kpi-strip');
-  // Find all content divs inside scroll except header and hoje panel
+  // Toggle: esconde/mostra conteúdo do mês e painel hoje
   const scroll=document.querySelector('#pg-dashboard .scroll');
   if(!scroll)return;
   Array.from(scroll.children).forEach(c=>{
-    if(c.style&&c.style.background&&c.style.background.includes('gradient'))return; // header
-    if(c.id==='dash-panel-hoje')return;
-    c.style.display=isMes?'':'none';
+    if(!c.id&&c.style&&c.style.background&&c.style.background.includes('gradient'))return; // header sempre visível
+    if(c.id==='dash-panel-hoje'){c.style.display=isMes?'none':'block';return;}
+    // tudo que não é header nem painel hoje
+    if(!c.id||c.id!=='dash-panel-hoje') c.style.display=isMes?'':'none';
   });
-  if(hojePanel)hojePanel.style.display=isMes?'none':'block';
   if(!isMes)renderHoje();
 }
 
