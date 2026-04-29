@@ -409,19 +409,16 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <div class="scroll" style="background:#F5F6FA;padding:0">
 
         <!-- HEADER STRIP -->
-        <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);padding:20px 24px 24px;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,107,53,.15);pointer-events:none"></div>
-          <div style="position:absolute;bottom:-40px;left:40%;width:120px;height:120px;border-radius:50%;background:rgba(255,107,53,.08);pointer-events:none"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase">Visão Geral</div>
-            <div style="display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:20px;padding:3px">
-              <button id="dash-tab-mes" onclick="dashTab('mes')" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Mês</button>
-              <button id="dash-tab-hoje" onclick="dashTab('hoje')" style="background:transparent;color:rgba(255,255,255,.6);border:none;border-radius:16px;padding:4px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s">Hoje</button>
+        <div style="background:#fff;border-bottom:1px solid #eee;padding:16px 24px 0;position:relative">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div id="dash-header-title" style="font-size:16px;font-weight:700;color:#1a1a2e">Carregando...</div>
+            <div style="display:flex;gap:4px;background:#f0f0f0;border-radius:20px;padding:3px">
+              <button id="dash-tab-mes" onclick="dashTab('mes')" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:5px 16px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Mês</button>
+              <button id="dash-tab-hoje" onclick="dashTab('hoje')" style="background:transparent;color:#888;border:none;border-radius:16px;padding:5px 16px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s">Hoje</button>
             </div>
           </div>
-          <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:16px" id="dash-header-title">Carregando...</div>
           <!-- KPI ROW TOP -->
-          <div id="dash-kpi-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px"></div>
+          <div id="dash-kpi-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding-bottom:16px"></div>
         </div>
 
         <!-- MAIN CONTENT -->
@@ -498,25 +495,44 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
         <!-- HOJE PANEL -->
         <div id="dash-panel-hoje" style="display:none;padding:20px 24px;background:#F5F6FA">
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="hoje-kpis"></div>
-          <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;margin-bottom:20px">
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
-              <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
+          <!-- Sub-tabs: Pedidos / Despesas -->
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <button id="hoje-sub-pedidos" onclick="hojeSubTab('pedidos')" style="background:#FF6B35;color:#fff;border:none;border-radius:20px;padding:6px 18px;font-size:12px;font-weight:700;cursor:pointer">Pedidos</button>
+            <button id="hoje-sub-despesas" onclick="hojeSubTab('despesas')" style="background:#f0f0f0;color:#888;border:none;border-radius:20px;padding:6px 18px;font-size:12px;font-weight:600;cursor:pointer">Despesas</button>
+          </div>
+          <!-- Painel Pedidos -->
+          <div id="hoje-sub-panel-pedidos">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px" id="hoje-kpis"></div>
+            <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;margin-bottom:20px">
+              <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
+                <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
+              </div>
+              <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Top Produtos Hoje</div>
+                <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:10px"></div>
+              </div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Top Produtos Hoje</div>
-              <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:10px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Por Pagamento</div>
+                <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
+              </div>
+              <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Por Canal</div>
+                <div id="hoje-canais" style="display:flex;flex-direction:column;gap:8px"></div>
+              </div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <!-- Painel Despesas -->
+          <div id="hoje-sub-panel-despesas" style="display:none">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="hoje-desp-kpis"></div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Por Pagamento</div>
-              <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
-            </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Por Canal</div>
-              <div id="hoje-canais" style="display:flex;flex-direction:column;gap:8px"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e">Lançamentos de Hoje</div>
+                <button onclick="openDesp()" style="background:#FF6B35;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
+              </div>
+              <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div>
             </div>
           </div>
         </div>
@@ -2021,9 +2037,9 @@ async function pullHistorico(){
 function dashTab(tab){
   const isMes=tab==='mes';
   document.getElementById('dash-tab-mes').style.background=isMes?'#FF6B35':'transparent';
-  document.getElementById('dash-tab-mes').style.color=isMes?'#fff':'rgba(255,255,255,.6)';
+  document.getElementById('dash-tab-mes').style.color=isMes?'#fff':'#888';
   document.getElementById('dash-tab-hoje').style.background=!isMes?'#FF6B35':'transparent';
-  document.getElementById('dash-tab-hoje').style.color=!isMes?'#fff':'rgba(255,255,255,.6)';
+  document.getElementById('dash-tab-hoje').style.color=!isMes?'#fff':'#888';
   // Toggle: esconde/mostra conteúdo do mês e painel hoje
   const scroll=document.querySelector('#pg-dashboard .scroll');
   if(!scroll)return;
@@ -2039,6 +2055,58 @@ function dashTab(tab){
 function fmtPag(pm){
   const m={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};
   return m[pm]||pm||'Outro';
+}
+
+function hojeSubTab(tab){
+  const isPed=tab==='pedidos';
+  document.getElementById('hoje-sub-pedidos').style.background=isPed?'#FF6B35':'#f0f0f0';
+  document.getElementById('hoje-sub-pedidos').style.color=isPed?'#fff':'#888';
+  document.getElementById('hoje-sub-despesas').style.background=!isPed?'#FF6B35':'#f0f0f0';
+  document.getElementById('hoje-sub-despesas').style.color=!isPed?'#fff':'#888';
+  document.getElementById('hoje-sub-panel-pedidos').style.display=isPed?'block':'none';
+  document.getElementById('hoje-sub-panel-despesas').style.display=!isPed?'block':'none';
+  if(!isPed)renderHojeDespesas();
+}
+
+function renderHojeDespesas(){
+  const hoje=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+  const lancs=getLanc();
+  const hoje_lancs=lancs.filter(l=>(l.data||l.dataPag||'').startsWith(hoje));
+  const despesas=hoje_lancs.filter(l=>l.tipo==='despesa');
+  const receitas=hoje_lancs.filter(l=>l.tipo==='receita');
+  const totDesp=despesas.reduce((s,l)=>s+(l.valor||0),0);
+  const totRec=receitas.reduce((s,l)=>s+(l.valor||0),0);
+  const saldo=totRec-totDesp;
+
+  const kpis=document.getElementById('hoje-desp-kpis');
+  if(kpis)kpis.innerHTML=[
+    {ico:'💸',lbl:'Despesas Hoje',val:`R$ ${fmtN(totDesp)}`,cor:'#E74C3C'},
+    {ico:'💚',lbl:'Receitas Hoje',val:`R$ ${fmtN(totRec)}`,cor:'#27AE60'},
+    {ico:'⚖️',lbl:'Saldo do Dia',val:`R$ ${fmtN(saldo)}`,cor:saldo>=0?'#27AE60':'#E74C3C'},
+  ].map(k=>`<div style="background:#fff;border-radius:16px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px">
+    <div style="font-size:28px">${k.ico}</div>
+    <div>
+      <div style="font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.5px">${k.lbl}</div>
+      <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
+    </div>
+  </div>`).join('');
+
+  const lista=document.getElementById('hoje-desp-lista');
+  if(!lista)return;
+  const todos=[...despesas,...receitas].sort((a,b)=>new Date(b.data||0)-new Date(a.data||0));
+  if(!todos.length){lista.innerHTML='<div style="color:#aaa;font-size:13px;padding:20px;text-align:center">Nenhum lançamento hoje ainda</div>';return;}
+  lista.innerHTML=todos.map(l=>{
+    const isDesp=l.tipo==='despesa';
+    const cor=isDesp?'#E74C3C':'#27AE60';
+    const sinal=isDesp?'−':'+';
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;border:1px solid #f0f0f0;background:#fafafa">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:#1a1a2e">${l.desc||'Sem descrição'}</div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px">${isDesp?'Despesa':'Receita'}</div>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:${cor}">${sinal} R$ ${fmtN(l.valor||0)}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderHoje(){
@@ -2263,6 +2331,7 @@ function renderDashboard(){
   ];
   const headerTitle=document.getElementById('dash-header-title');
   if(headerTitle)headerTitle.textContent=`${mesNome.charAt(0).toUpperCase()+mesNome.slice(1)} · ${histMes.length} pedidos · R$ ${fmtN(receitas)}`;
+  if(headerTitle)headerTitle.style.color='#1a1a2e';
 
   const strip=document.getElementById('dash-kpi-strip');
   if(strip)strip.innerHTML=kpis.map(k=>`
