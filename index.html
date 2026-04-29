@@ -560,6 +560,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <button class="btn-o" onclick="limparHistorico()" style="font-size:11px;color:var(--red);border-color:rgba(231,76,60,.3)">Limpar</button>
         </div>
       </div>
+      <!-- Painel faturamento detalhado -->
+      <div id="ped-fat-bar" style="background:#fff;border-bottom:1px solid var(--bor);padding:14px 18px;display:none">
+        <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:10px">Detalhes do faturamento</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="ped-fat-cards"></div>
+      </div>
       <!-- Tabela única -->
       <div class="scroll">
         <div class="card">
@@ -5545,10 +5550,53 @@ function renderHistorico(){
   // sort desc
   hist.sort((a,b)=>new Date(b.created_at||b.createdAt||0)-new Date(a.created_at||a.createdAt||0));
 
-  // total badge
+  // Calcular faturamento detalhado
+  const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  const cancelados=hist.filter(p=>_stCancel.has(p.status||''));
+  const validos=hist.filter(p=>!_stCancel.has(p.status||''));
+
+  const totalProdutos=validos.reduce((s,p)=>{
+    const items=p.items||p.itens||[];
+    if(items.length)return s+items.reduce((si,i)=>si+(i.price||0)*(i.quantity||1),0);
+    return s+(p.total||p.totalAmount||0);
+  },0);
+  const taxasEntrega=validos.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
+  const taxasServico=validos.reduce((s,p)=>s+(p.service_tax||p.serviceTax||0),0);
+  const taxasAdicionais=validos.reduce((s,p)=>s+(p.additional_fees||0),0);
+  const descontosIfood=validos.reduce((s,p)=>s+(p.benefits?.reduce?.((si,b)=>si+(b.value||0),0)||0),0);
+  const descontosLoja=validos.reduce((s,p)=>s+(p.discount||p.desconto||0),0);
+  const faturamento=validos.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
   const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+
   const badge=document.getElementById('hist-total-badge');
-  if(badge)badge.textContent=`Total: R$ ${fmtN(total)} · ${hist.length} pedido${hist.length!==1?'s':''}`;
+  if(badge)badge.textContent=`Total: R$ ${fmtN(faturamento)} · ${validos.length} pedido${validos.length!==1?'s':''}${cancelados.length?` · ${cancelados.length} cancelado${cancelados.length!==1?'s':''}` : ''}`;
+
+  // Painel detalhado
+  const fatBar=document.getElementById('ped-fat-bar');
+  const fatCards=document.getElementById('ped-fat-cards');
+  if(fatBar&&fatCards&&hist.length){
+    fatBar.style.display='block';
+    const cards=[
+      {ico:'🛒',lbl:'Total dos produtos',val:totalProdutos,op:'+',cor:'#3498DB'},
+      {ico:'🛵',lbl:'Taxas de entrega',val:taxasEntrega,op:'+',cor:'#E67E22'},
+      {ico:'⚙️',lbl:'Taxas de serviço',val:taxasServico,op:'+',cor:'#E67E22'},
+      {ico:'➕',lbl:'Taxas adicionais',val:taxasAdicionais,op:'+',cor:'#E67E22'},
+      {ico:'🏷️',lbl:'Descontos loja',val:descontosLoja,op:'−',cor:'#E74C3C'},
+      {ico:'🍔',lbl:'Descontos iFood',val:descontosIfood,op:'−',cor:'#E74C3C'},
+      {ico:'❌',lbl:'Cancelados',val:cancelados.reduce((s,p)=>s+(p.total||0),0),op:'−',cor:'#E74C3C',count:cancelados.length},
+      {ico:'💰',lbl:'Faturamento',val:faturamento,op:'=',cor:'#27AE60',bold:true},
+    ];
+    fatCards.innerHTML=cards.map(c=>`
+      <div style="background:var(--bg2);border-radius:12px;padding:12px 14px;border-left:3px solid ${c.cor}">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="width:20px;height:20px;border-radius:50%;background:${c.cor}22;display:flex;align-items:center;justify-content:center;font-size:11px">${c.op}</span>
+          <span style="font-size:10px;color:var(--t3)">${c.lbl}${c.count?` (${c.count})`:''}  </span>
+        </div>
+        <div style="font-size:${c.bold?'16px':'14px'};font-weight:${c.bold?800:600};color:${c.cor}">R$ ${fmtN(c.val)}</div>
+      </div>`).join('');
+  } else if(fatBar){
+    fatBar.style.display='none';
+  }
 
   const tbody=document.getElementById('tbody-historico');
   if(!tbody)return;
