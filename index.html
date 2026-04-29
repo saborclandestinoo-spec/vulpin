@@ -1881,12 +1881,15 @@ async function doLogin(){
   err.style.display='none';
   const {data,error} = await _sb.auth.signInWithPassword({email:em, password:pw});
   if(error){err.textContent='E-mail ou senha incorretos';err.style.display='block';return;}
+  // Limpa localStorage ANTES de carregar dados do novo usuário
+  Object.keys(localStorage).filter(k=>k.startsWith('verp_')).forEach(k=>localStorage.removeItem(k));
+  try{localStorage.removeItem('pedidos_historico');}catch(e){}
   const u=data.user;
   _uid=u.id;
   const meta=u.user_metadata||{};
+  await S.pull();
   S.set('user',{email:u.email,loja:meta.loja||u.email.split('@')[0]});
   currentUser=S.get('user');
-  await S.pull();
   bootApp();
 }
 async function doReg(){
