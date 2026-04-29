@@ -405,28 +405,77 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
     <!-- DASHBOARD -->
     <div class="pg on" id="pg-dashboard">
-      <div class="scroll">
-        <div class="metric-grid" id="dash-metrics"></div>
-        <div class="dash-grid">
-          <div class="card">
-            <div class="card-t">Faturamento — últimos 30 dias <span style="font-size:10px;color:var(--t3);font-weight:400">receitas lançadas</span></div>
-            <div class="chart-area"><canvas id="chart-fat"></canvas></div>
+      <div class="scroll" style="background:var(--bg2)">
+
+        <!-- KPI STRIP -->
+        <div id="dash-kpi-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 20px 0"></div>
+
+        <!-- ROW 1: Chart + Alertas -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px 20px">
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--t)">Receitas x Despesas</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:1px">Ultimos 6 meses</div>
+              </div>
+              <div style="display:flex;gap:12px;font-size:10px;color:var(--t3)">
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#27AE60;margin-right:4px"></span>Receitas</span>
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#E74C3C;margin-right:4px"></span>Despesas</span>
+                <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--fox);margin-right:4px"></span>Lucro</span>
+              </div>
+            </div>
+            <div style="height:200px"><canvas id="chart-fat"></canvas></div>
           </div>
-          <div class="card">
-            <div class="card-t">🚨 Estoque Crítico</div>
-            <div class="alert-list" id="dash-alerts" style="max-height:180px;overflow-y:auto"></div>
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px;overflow:hidden">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:12px">Alertas Inteligentes</div>
+            <div id="dash-alerts" style="display:flex;flex-direction:column;gap:7px;max-height:220px;overflow-y:auto"></div>
           </div>
         </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-t">Últimas produções</div>
+
+        <!-- ROW 2: DRE + Ranking -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px">
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--t)">DRE — Mes Atual</div>
+                <div style="font-size:11px;color:var(--t3)" id="dash-dre-periodo"></div>
+              </div>
+              <span id="dash-dre-badge" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px"></span>
+            </div>
+            <div id="dash-dre-rows" style="display:flex;flex-direction:column;gap:0"></div>
+          </div>
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Ranking de Produtos</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">por volume vendido no mes</div>
+            <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+        </div>
+
+        <!-- ROW 3: Fluxo + Lancamentos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px">
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Fluxo de Caixa — Projecao 30 dias</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Baseado na media dos ultimos 3 meses</div>
+            <div style="height:140px"><canvas id="chart-fluxo"></canvas></div>
+          </div>
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:14px">Ultimos Lancamentos</div>
+            <div class="tbl-wrap"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Descricao</th><th>Tipo</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- ROW 4: Producoes + Estoque valor -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px">
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:14px">Ultimas Producoes</div>
             <div class="tbl-wrap"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
           </div>
-          <div class="card">
-            <div class="card-t">Últimos lançamentos</div>
-            <div class="tbl-wrap"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--bor);padding:20px">
+            <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:14px">Estoque em Valor</div>
+            <div id="dash-estoque-valor" style="display:flex;flex-direction:column;gap:6px"></div>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -1917,160 +1966,214 @@ document.addEventListener('click',()=>document.getElementById('ctx').classList.r
 // DASHBOARD
 // ═══════════════════════════════════════════
 function renderDashboard(){
-  const lancs=getLanc();
   const now=new Date();
   const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const mesPrev=`${now.getMonth()===0?now.getFullYear()-1:now.getFullYear()}-${String(now.getMonth()===0?12:now.getMonth()).padStart(2,'0')}`;
+  const mesNome=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+
+  const lancs=getLanc();
+  const lancMes=lancs.filter(l=>(l.data||'').startsWith(mes)||(l.dataPag||'').startsWith(mes));
+  const lancPrev=lancs.filter(l=>(l.data||'').startsWith(mesPrev)||(l.dataPag||'').startsWith(mesPrev));
+
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
-
-  // ── Lançamentos ──
-  const lancMes=lancs.filter(l=>(l.data&&l.data.startsWith(mes))||(l.dataPag&&l.dataPag.startsWith(mes)));
-  const lancPrev=lancs.filter(l=>(l.data&&l.data.startsWith(mesPrev))||(l.dataPag&&l.dataPag.startsWith(mesPrev)));
-  const receitasLanc=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
-  const despesas=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-  const despPrev=lancPrev.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-
-  // ── Pedidos ──
-  const _histAll=getHistorico();
-  const pedidosMes=_histAll.filter(p=>{
+  const hist=getHistorico();
+  const histMes=hist.filter(p=>{
     const dt=p.created_at||p.createdAt||'';if(!dt)return false;
-    const dtMes=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
-    return dtMes===mes&&!_stCancel.has(p.status||p.situacao||'');
+    const dm=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
+    return dm===mes&&!_stCancel.has(p.status||'');
   });
-  const pedidosPrev=_histAll.filter(p=>{
+  const histPrev=hist.filter(p=>{
     const dt=p.created_at||p.createdAt||'';if(!dt)return false;
-    const dtMes=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
-    return dtMes===mesPrev&&!_stCancel.has(p.status||p.situacao||'');
+    const dm=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
+    return dm===mesPrev&&!_stCancel.has(p.status||'');
   });
-  const receitasPedidos=pedidosMes.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
-  const recPedPrev=pedidosPrev.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
-  const receitas=receitasLanc+receitasPedidos;
-  const recPrev=lancPrev.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0)+recPedPrev;
 
-  // ── Variações ──
-  const varRec=recPrev>0?((receitas-recPrev)/recPrev*100):null;
-  const varDesp=despPrev>0?((despesas-despPrev)/despPrev*100):null;
+  const recLanc=lancMes.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const despLanc=lancMes.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+  const recPedMes=histMes.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const recPedPrev=histPrev.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
 
-  // ── Lucro e Margem ──
-  const lucro=receitas-despesas;
-  const margem=receitas>0?(lucro/receitas*100):0;
-
-  // ── Ticket médio ──
-  const totalPedidos=pedidosMes.length;
-  const ticket=totalPedidos>0?(receitasPedidos/totalPedidos):0;
-
-  // ── Produto campeão (por qtd nos pedidos) ──
+  // CMV — soma custo dos produtos vendidos via pedidos
   const prods=getProdutos();
-  const contProd={};
-  pedidosMes.forEach(p=>{
-    const its=p.items||p.itens||p.orderItems||[];
-    its.forEach(it=>{
-      const nome=it.name||it.nome||it.product_name||'';
-      if(nome)contProd[nome]=(contProd[nome]||0)+(it.quantity||it.qtd||1);
+  const fichas=getFichas();
+  const mp=getMP();
+  function cmvPedido(p){
+    const items=p.items||p.itens||[];
+    let c=0;
+    items.forEach(it=>{
+      const pr=findProdByPdv(it.productId||it.produto_id||it.id)||prods.find(x=>x.nome===it.name||x.nome===it.nome);
+      if(!pr)return;
+      const qtd=it.quantity||it.qtd||1;
+      const ficha=fichas[pr.id]||[];
+      if(ficha.length){
+        ficha.forEach(f=>{const m=mp.find(x=>x.id===f.mpId);if(m)c+=getValorPorG(m)*(f.qtd||0)*qtd;});
+      } else {
+        c+=(pr.custo||0)*qtd;
+      }
     });
-  });
-  const campNome=Object.keys(contProd).sort((a,b)=>contProd[b]-contProd[a])[0]||null;
-  const campQtd=campNome?contProd[campNome]:0;
+    return c;
+  }
+  const cmvMes=histMes.reduce((s,p)=>s+cmvPedido(p),0);
 
-  // ── Produção ──
+  const receitas=recLanc+recPedMes;
+  const despesas=despLanc;
+  const lucroReal=receitas-despesas-cmvMes;
+  const margemPct=receitas>0?((lucroReal/receitas)*100):0;
+
+  const ticketMedio=histMes.length>0?recPedMes/histMes.length:0;
+  const ticketPrev=histPrev.length>0?recPedPrev/histPrev.length:0;
+
+  // producao
   const producoes=getProducao();
   const prodMes=producoes.filter(p=>p.data&&p.data.startsWith(mes));
   const totalProd=prodMes.reduce((s,p)=>s+(p.qtd||0),0);
+  const totalPerdas=prodMes.reduce((s,p)=>s+(p.perdas||0),0);
 
-  // ── Estoque crítico ──
-  const mp=getMP();
-  const mpCriticos=mp.filter(m=>getEstoqueAtualMP(m.id)<=0);
-  const mpBaixos=mp.filter(m=>{const a=getEstoqueAtualMP(m.id);return a>0&&m.min>0&&a<m.min;});
+  // estoque critico
+  const mpAll=getMP();
+  const mpCrit=mpAll.filter(m=>getEstoqueAtualMP(m.id)<=0);
+  const mpAbaixo=mpAll.filter(m=>{const a=getEstoqueAtualMP(m.id);return a>0&&m.min&&a<m.min;});
 
-  // ── Produtos com prejuízo ──
-  const prejuizo=prods.filter(p=>p.ativo!==false&&p.preco>0&&p.custo>0&&p.custo>=p.preco);
+  // helpers
+  const pct=(a,b)=>b>0?Math.round(((a-b)/b)*100):0;
+  const arrow=(v)=>v>=0?'↑':'↓';
+  const arrowCls=(v)=>v>=0?'color:#27AE60':'color:#E74C3C';
 
-  // ── Helper variação ──
-  const varTag=(v,inv)=>{
-    if(v===null)return`<span style="font-size:10px;color:var(--t3)">sem histórico</span>`;
-    const up=inv?(v<0):(v>=0);
-    const sym=v>=0?'↑':'↓';
-    const col=up?'var(--green)':'var(--red)';
-    return`<span style="font-size:10px;font-weight:600;color:${col}">${sym} ${Math.abs(v).toFixed(1)}% vs mês ant.</span>`;
-  };
+  // ── KPI STRIP ──
+  const kpis=[
+    {ico:'💰',lbl:'Receita do Mês',val:`R$ ${fmtN(receitas)}`,sub:`${arrow(pct(receitas,recPedPrev))} ${Math.abs(pct(receitas,recPedPrev))}% vs mês ant.`,cls:arrowCls(pct(receitas,recPedPrev))},
+    {ico:'📉',lbl:'Despesas',val:`R$ ${fmtN(despesas)}`,sub:'lançamentos do mês',cls:'color:var(--t3)'},
+    {ico:'✨',lbl:'Lucro Real',val:`R$ ${fmtN(lucroReal)}`,sub:`Margem: ${margemPct.toFixed(1)}%`,cls:lucroReal>=0?'color:#27AE60':'color:#E74C3C'},
+    {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticketMedio)}`,sub:`${arrow(pct(ticketMedio,ticketPrev))} ${Math.abs(pct(ticketMedio,ticketPrev))}% vs mês ant.`,cls:arrowCls(pct(ticketMedio,ticketPrev))},
+    {ico:'📦',lbl:'Pedidos no Mês',val:`${histMes.length}`,sub:`${arrow(pct(histMes.length,histPrev.length))} ${Math.abs(pct(histMes.length,histPrev.length))}% vs mês ant.`,cls:arrowCls(pct(histMes.length,histPrev.length))},
+    {ico:'🏭',lbl:'Produzido',val:`${totalProd} un`,sub:`${totalPerdas} perdas (${((totalPerdas/(totalProd||1))*100).toFixed(1)}%)`,cls:'color:var(--t3)'},
+    {ico:'🚨',lbl:'Estoque Crítico',val:`${mpCrit.length}`,sub:`${mpAbaixo.length} abaixo do mínimo`,cls:mpCrit.length>0?'color:#E74C3C':'color:#27AE60'},
+    {ico:'📊',lbl:'CMV do Mês',val:`R$ ${fmtN(cmvMes)}`,sub:`${receitas>0?((cmvMes/receitas)*100).toFixed(1):0}% da receita`,cls:'color:var(--t3)'},
+  ];
+  const strip=document.getElementById('dash-kpi-strip');
+  if(strip)strip.innerHTML=kpis.map(k=>`
+    <div style="background:#fff;border:1px solid var(--bor);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px;cursor:default;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+      <div style="font-size:20px;line-height:1">${k.ico}</div>
+      <div style="font-size:11px;color:var(--t3);font-weight:500;margin-top:4px">${k.lbl}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--t);line-height:1.1">${k.val}</div>
+      <div style="font-size:10px;font-weight:600;${k.cls}">${k.sub}</div>
+    </div>`).join('');
 
-  // ── KPIs ──
-  document.getElementById('dash-metrics').innerHTML=`
-    <div class="metric">
-      <div class="metric-l">Faturamento — Mês</div>
-      <div class="metric-v">R$ ${fmtN(receitas)}</div>
-      <div class="metric-d">${varTag(varRec,false)}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-l">Despesas — Mês</div>
-      <div class="metric-v" style="color:${despesas>receitas?'var(--red)':'var(--t)'}">R$ ${fmtN(despesas)}</div>
-      <div class="metric-d">${varTag(varDesp,true)}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-l">Lucro Líquido · Margem</div>
-      <div class="metric-v" style="color:${lucro>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(lucro)}</div>
-      <div class="metric-d"><span style="font-size:10px;font-weight:600;color:${margem>=30?'var(--green)':margem>=15?'var(--amber)':'var(--red)'}">${margem.toFixed(1)}% margem</span></div>
-    </div>
-    <div class="metric">
-      <div class="metric-l">Pedidos · Ticket Médio</div>
-      <div class="metric-v">${totalPedidos} ped.</div>
-      <div class="metric-d"><span style="font-size:10px;font-weight:600;color:var(--t2)">R$ ${fmtN(ticket)} / pedido</span></div>
-    </div>
-    <div class="metric">
-      <div class="metric-l">Produto Campeão</div>
-      <div class="metric-v" style="font-size:${campNome&&campNome.length>14?'13px':'20px'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${campNome||'—'}</div>
-      <div class="metric-d"><span style="font-size:10px;color:var(--t2)">${campQtd?campQtd+' un vendidas este mês':'sem dados de pedidos'}</span></div>
-    </div>
-    <div class="metric">
-      <div class="metric-l">Produzido — Mês</div>
-      <div class="metric-v">${totalProd} un</div>
-      <div class="metric-d"><span style="font-size:10px;color:${mpCriticos.length>0?'var(--red)':'var(--t2)'}">${mpCriticos.length} zerado · ${mpBaixos.length} baixo</span></div>
-    </div>
-  `;
-
-  // Ajusta grid para 6 KPIs (3 colunas × 2 linhas no desktop, scroll no mobile)
-  const mg=document.getElementById('dash-metrics');
-  if(mg)mg.style.gridTemplateColumns='repeat(auto-fill,minmax(170px,1fr))';
-
-  // ── Alertas inteligentes ──
-  const alertList=document.getElementById('dash-alerts');
-  const alertas=[];
-  mpCriticos.slice(0,4).forEach(m=>alertas.push({ico:'🚨',cor:'var(--red)',nome:m.nome,sub:`Estoque zerado · Mín: ${m.min||0} ${m.un}`,pill:'ZERADO',pillCor:'var(--red)'}));
-  mpBaixos.slice(0,4).forEach(m=>{const a=getEstoqueAtualMP(m.id);alertas.push({ico:'⚠️',cor:'var(--amber)',nome:m.nome,sub:`Estoque ${a.toFixed(0)} ${m.un} · Mín: ${m.min} ${m.un}`,pill:'BAIXO',pillCor:'var(--amber)'});});
-  prejuizo.slice(0,3).forEach(p=>{const diff=p.preco-p.custo;alertas.push({ico:'📉',cor:'var(--red)',nome:p.nome,sub:`Preço R$${fmtN(p.preco)} · Custo R$${fmtN(p.custo)} → Prejuízo R$${fmtN(Math.abs(diff))}`,pill:'PREJUÍZO',pillCor:'var(--red)'});});
-  if(margem<10&&receitas>0)alertas.unshift({ico:'💸',cor:'var(--red)',nome:'Margem crítica este mês',sub:`Margem de ${margem.toFixed(1)}% — revise preços ou custos`,pill:'ALERTA',pillCor:'var(--red)'});
-
-  if(!alertas.length){
-    alertList.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:11px">✓ Nenhum alerta no momento</div>';
-  } else {
-    alertList.innerHTML=alertas.map(a=>`
-      <div class="alert-item">
-        <div class="alert-ico" style="background:${a.cor}22;font-size:14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex-shrink:0">${a.ico}</div>
-        <div style="flex:1;min-width:0">
-          <div class="alert-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.nome}</div>
-          <div class="alert-sub" style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.sub}</div>
-        </div>
-        <span style="font-size:9px;font-weight:700;color:${a.pillCor};background:${a.pillCor}18;padding:2px 6px;border-radius:4px;flex-shrink:0">${a.pill}</span>
-      </div>`).join('');
+  // ── ALERTAS INTELIGENTES ──
+  const alerts=[];
+  mpCrit.slice(0,3).forEach(m=>alerts.push({ico:'🔴',txt:`<b>${m.nome}</b> zerado`,sub:'Estoque crítico',bg:'#FFF5F5',bc:'#FFCDD2'}));
+  mpAbaixo.slice(0,2).forEach(m=>{const a=getEstoqueAtualMP(m.id);alerts.push({ico:'⚠️',txt:`<b>${m.nome}</b> baixo`,sub:`${a.toFixed(0)} ${m.un} — mín: ${m.min}`,bg:'#FFFDE7',bc:'#FFF9C4'});});
+  if(histMes.length>0&&histPrev.length>0){
+    const quedaPct=pct(histMes.length,histPrev.length);
+    if(quedaPct<-20)alerts.push({ico:'📉',txt:'Queda de pedidos',sub:`${Math.abs(quedaPct)}% menos que mês passado`,bg:'#FFF3E0',bc:'#FFE0B2'});
   }
+  if(margemPct<20&&receitas>0)alerts.push({ico:'⚡',txt:'Margem baixa',sub:`Lucro de apenas ${margemPct.toFixed(1)}% da receita`,bg:'#FFF3E0',bc:'#FFE0B2'});
+  if(lucroReal<0)alerts.push({ico:'🆘',txt:'Resultado negativo',sub:`Prejuízo de R$ ${fmtN(Math.abs(lucroReal))} este mês`,bg:'#FFF5F5',bc:'#FFCDD2'});
+  if(!alerts.length)alerts.push({ico:'✅',txt:'Tudo sob controle',sub:'Nenhum alerta crítico no momento',bg:'#F1F8E9',bc:'#C8E6C9'});
+  const alertEl=document.getElementById('dash-alerts');
+  if(alertEl)alertEl.innerHTML=alerts.map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:${a.bg};border:1px solid ${a.bc}">
+      <span style="font-size:16px;flex-shrink:0">${a.ico}</span>
+      <div style="min-width:0">
+        <div style="font-size:11px;color:var(--t)">${a.txt}</div>
+        <div style="font-size:10px;color:var(--t3)">${a.sub}</div>
+      </div>
+    </div>`).join('');
 
-  // ── Últimas produções ──
+  // ── DRE ──
+  const dreRows=[
+    {lbl:'(+) Receita Bruta',val:receitas,bold:false,color:'var(--t)'},
+    {lbl:'(−) CMV',val:-cmvMes,bold:false,color:'#E74C3C'},
+    {lbl:'(=) Lucro Bruto',val:receitas-cmvMes,bold:true,color:receitas-cmvMes>=0?'#27AE60':'#E74C3C',sep:true},
+    {lbl:'(−) Despesas Operacionais',val:-despesas,bold:false,color:'#E74C3C'},
+    {lbl:'(=) Lucro Líquido',val:lucroReal,bold:true,color:lucroReal>=0?'#27AE60':'#E74C3C',sep:true,big:true},
+  ];
+  const dreEl=document.getElementById('dash-dre-rows');
+  const drePerEl=document.getElementById('dash-dre-periodo');
+  const dreBadge=document.getElementById('dash-dre-badge');
+  if(drePerEl)drePerEl.textContent=mesNome;
+  if(dreBadge){
+    dreBadge.textContent=lucroReal>=0?'LUCRO':'PREJUÍZO';
+    dreBadge.style.background=lucroReal>=0?'#E8F5E9':'#FFEBEE';
+    dreBadge.style.color=lucroReal>=0?'#27AE60':'#E74C3C';
+  }
+  if(dreEl)dreEl.innerHTML=dreRows.map(r=>`
+    <div style="${r.sep?'border-top:1px solid var(--bor);margin-top:4px;padding-top:6px':'padding:3px 0'};display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:${r.big?'13px':'11px'};font-weight:${r.bold?700:400};color:var(--t2)">${r.lbl}</span>
+      <span style="font-size:${r.big?'15px':'12px'};font-weight:${r.bold?800:500};color:${r.color}">R$ ${fmtN(Math.abs(r.val))}</span>
+    </div>`).join('');
+
+  // ── RANKING PRODUTOS ──
+  const prodCount={};
+  histMes.forEach(p=>{
+    (p.items||p.itens||[]).forEach(it=>{
+      const nome=it.name||it.nome||'?';
+      const qtd=it.quantity||it.qtd||1;
+      prodCount[nome]=(prodCount[nome]||0)+qtd;
+    });
+  });
+  const top5=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxQtd=top5[0]?top5[0][1]:1;
+  const colors=['#FF6B35','#F7931E','#FFD700','#27AE60','#3498DB'];
+  const rankEl=document.getElementById('dash-ranking');
+  if(rankEl)rankEl.innerHTML=top5.length?top5.map(([nome,qtd],i)=>`
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11px;color:var(--t);font-weight:500">${i+1}. ${nome}</span>
+        <span style="font-size:11px;color:var(--t3);font-weight:600">${qtd} un</span>
+      </div>
+      <div style="height:5px;border-radius:3px;background:var(--bg2);overflow:hidden">
+        <div style="height:100%;width:${((qtd/maxQtd)*100).toFixed(1)}%;background:${colors[i]||'var(--fox)'};border-radius:3px;transition:width .4s"></div>
+      </div>
+    </div>`).join(''):
+    '<div style="font-size:11px;color:var(--t3);text-align:center;padding:20px 0">Nenhum pedido com itens identificados</div>';
+
+  // ── ÚLTIMOS LANÇAMENTOS ──
+  const ultLanc=lancs.slice(-6).reverse();
+  document.querySelector('#dash-lanc tbody').innerHTML=ultLanc.length?
+    ultLanc.map(l=>`<tr>
+      <td>${fmtDate(l.data)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc}</td>
+      <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
+      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
+    </tr>`).join(''):
+    '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">Nenhum lançamento</td></tr>';
+
+  // ── ÚLTIMAS PRODUÇÕES ──
   const ultProd=producoes.slice(-5).reverse();
   document.querySelector('#dash-prods tbody').innerHTML=ultProd.length?
     ultProd.map(p=>{
       const pr=prods.find(x=>x.id===p.produtoId);
-      return`<tr><td>${fmtDate(p.data)}</td><td>${pr?pr.nome:'—'}</td><td>${p.qtd}</td><td>${p.perdas||0}</td></tr>`;
+      return`<tr><td>${fmtDate(p.data)}</td><td>${pr?pr.nome:'—'}</td><td>${p.qtd}</td><td style="color:${p.perdas>0?'var(--red)':'var(--t3)'}">${p.perdas||0}</td></tr>`;
     }).join(''):
-    '<tr><td colspan="4" style="text-align:center;color:var(--t3)">Nenhuma produção registrada</td></tr>';
+    '<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">Nenhuma produção</td></tr>';
 
-  // ── Últimos lançamentos ──
-  const ultLanc=lancs.slice(-5).reverse();
-  document.querySelector('#dash-lanc tbody').innerHTML=ultLanc.length?
-    ultLanc.map(l=>`<tr><td>${fmtDate(l.data)}</td><td>${l.desc}</td><td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td><td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td></tr>`).join(''):
-    '<tr><td colspan="4" style="text-align:center;color:var(--t3)">Nenhum lançamento</td></tr>';
+  // ── ESTOQUE EM VALOR ──
+  const mpVal=mpAll.map(m=>{
+    const atual=getEstoqueAtualMP(m.id);
+    const vg=getValorPorG(m);
+    return{nome:m.nome,atual,vg,totalR:atual*vg,un:m.un};
+  }).filter(x=>x.totalR>0).sort((a,b)=>b.totalR-a.totalR).slice(0,6);
+  const totalEstR=mpVal.reduce((s,x)=>s+x.totalR,0);
+  const estEl=document.getElementById('dash-estoque-valor');
+  if(estEl){
+    estEl.innerHTML=`<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:10px;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:600;color:var(--t)">Total em estoque</span>
+      <span style="font-size:14px;font-weight:800;color:var(--fox)">R$ ${fmtN(totalEstR)}</span>
+    </div>`+
+    (mpVal.length?mpVal.map(x=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bor2)">
+        <span style="font-size:11px;color:var(--t2)">${x.nome}</span>
+        <div style="text-align:right">
+          <div style="font-size:11px;font-weight:600;color:var(--t)">R$ ${fmtN(x.totalR)}</div>
+          <div style="font-size:10px;color:var(--t3)">${x.atual.toFixed(0)} ${x.un}</div>
+        </div>
+      </div>`).join(''):'<div style="font-size:11px;color:var(--t3);text-align:center;padding:16px">Sem dados de estoque</div>');
+  }
 
-  // chart
+  // charts
   renderFatChart();
+  renderFluxoChart();
 }
 
 function renderFatChart(){
@@ -2080,36 +2183,57 @@ function renderFatChart(){
   const hist=getHistorico();
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
   const now=new Date();
-  const labels=[];const recData=[];const despData=[];const pedData=[];const lucroData=[];
+  const labels=[];const recData=[];const despData=[];const lucroData=[];
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
     const m=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    labels.push(d.toLocaleString('pt-BR',{month:'short',year:'2-digit'}));
-    const lm=lancs.filter(l=>l.data&&l.data.startsWith(m));
+    labels.push(d.toLocaleString('pt-BR',{month:'short'}));
+    const lm=lancs.filter(l=>(l.data||'').startsWith(m));
     const rec=lm.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+    const ped=hist.filter(p=>{const dt=p.created_at||p.createdAt||'';if(!dt)return false;return new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7)===m&&!_stCancel.has(p.status||'');}).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
     const desp=lm.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-    const ped=hist.filter(p=>{
-      const dt=p.created_at||p.createdAt||'';if(!dt)return false;
-      return new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7)===m&&!_stCancel.has(p.status||p.situacao||'');
-    }).reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
-    recData.push(rec);
+    recData.push(rec+ped);
     despData.push(desp);
-    pedData.push(ped);
     lucroData.push(rec+ped-desp);
   }
   new Chart(ctx,{type:'bar',data:{labels,datasets:[
-    {label:'Lançamentos',data:recData,backgroundColor:'rgba(39,174,96,.65)',borderRadius:4,stack:'rec'},
-    {label:'Pedidos CW',data:pedData,backgroundColor:'rgba(255,140,0,.7)',borderRadius:4,stack:'rec'},
-    {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.55)',borderRadius:4,stack:'desp'},
-    {label:'Lucro',data:lucroData,type:'line',borderColor:'rgba(99,102,241,1)',backgroundColor:'rgba(99,102,241,.1)',borderWidth:2,pointRadius:3,pointBackgroundColor:'rgba(99,102,241,1)',tension:.3,fill:false,yAxisID:'y',stack:undefined},
-  ]},options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{font:{family:'Poppins',size:10},boxWidth:10,padding:10}}},
-    scales:{
-      x:{grid:{display:false},stacked:true,ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},
-      y:{grid:{color:'rgba(0,0,0,.04)'},stacked:true,ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}
-    }
-  }});
+    {label:'Receitas',data:recData,backgroundColor:'rgba(39,174,96,.75)',borderRadius:6,order:2},
+    {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.65)',borderRadius:6,order:2},
+    {label:'Lucro',data:lucroData,type:'line',borderColor:'var(--fox)',backgroundColor:'rgba(231,130,70,.1)',borderWidth:2,pointRadius:4,pointBackgroundColor:'var(--fox)',fill:true,tension:.3,order:1},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
 }
+
+function renderFluxoChart(){
+  const ctx=document.getElementById('chart-fluxo');if(!ctx)return;
+  const ex=Chart.getChart(ctx);if(ex)ex.destroy();
+  const lancs=getLanc();
+  const now=new Date();
+  // media diaria ultimos 3 meses
+  const hist3m=[];
+  for(let i=3;i>=1;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const m=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const lm=lancs.filter(l=>(l.data||'').startsWith(m));
+    const rec=lm.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+    const desp=lm.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+    hist3m.push(rec-desp);
+  }
+  const mediaLucro=hist3m.reduce((s,x)=>s+x,0)/3;
+  const diario=mediaLucro/30;
+  // saldo atual bancos
+  const bancos=getBancos();
+  const saldoAtual=bancos.reduce((s,b)=>s+getSaldoBanco(b.id),0);
+  const labels=[];const data=[];
+  let acum=saldoAtual;
+  for(let d=0;d<30;d++){
+    const dt=new Date(now.getTime()+d*864e5);
+    labels.push(d===0?'Hoje':d===15?'+15d':d===29?'+30d':'');
+    acum+=diario;
+    data.push(Math.round(acum));
+  }
+  new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Saldo projetado',data,borderColor:data[data.length-1]>=saldoAtual?'#27AE60':'#E74C3C',backgroundColor:data[data.length-1]>=saldoAtual?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:0,pointHoverRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
+}
+
 
 // ═══════════════════════════════════════════
 // PRODUÇÃO
