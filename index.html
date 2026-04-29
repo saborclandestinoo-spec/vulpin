@@ -5545,8 +5545,42 @@ function mergeNaHistoria(novos){
       }
     }
 
-    // Baixa estoque apenas 1x por pedido, apenas se tiver itens
-    if(isNovo&&!processados[p.id]){
+    const isCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']).has(p.status||'');
+
+    // Se cancelou e já havia baixado estoque → reverte
+    if(isCancelado&&processados[p.id]==='baixado'){
+      const itens=p.items||p.itens||[];
+      if(itens.length){
+        const est=getEstProd();
+        const prods=getProdutos();
+        itens.forEach(i=>{
+          const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
+          const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
+          const prod=
+            (pdvCode?findProdByPdv(pdvCode):null)||
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
+            prods.find(x=>nomeCW.includes((x.nome||'').trim().toLowerCase())||(x.nome||'').trim().toLowerCase().includes(nomeCW));
+          if(prod){
+            const qtd=i.quantity||i.qtd||1;
+            if(!est[prod.id])est[prod.id]={inicial:0,entradas:[],saidas:[]};
+            // Entrada de estorno
+            est[prod.id].entradas.push({
+              id:uid(),
+              data:p.created_at||p.createdAt||new Date().toISOString(),
+              qtd,
+              obs:`Cancelamento Pedido #${p.display_id||p.displayId||p.id}`
+            });
+          }
+        });
+        S.set('est_prod',est);
+        processados[p.id]='cancelado';
+        S.set('pedidos_estoque_baixado',processados);
+        updateAlertBadge();
+      }
+    }
+
+    // Baixa estoque apenas 1x por pedido não cancelado
+    if(!isCancelado&&!processados[p.id]){
       const itens=p.items||p.itens||[];
       if(itens.length){
         const est=getEstProd();
@@ -5554,7 +5588,6 @@ function mergeNaHistoria(novos){
         const prods=getProdutos();
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
-          // 1) tenta por codigo_pdv, 2) fallback por nome exato, 3) fallback por nome normalizado
           const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
@@ -5574,7 +5607,7 @@ function mergeNaHistoria(novos){
         });
         if(baixou){
           S.set('est_prod',est);
-          processados[p.id]=true;
+          processados[p.id]='baixado';
           S.set('pedidos_estoque_baixado',processados);
           updateAlertBadge();
         }
