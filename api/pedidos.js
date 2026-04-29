@@ -59,8 +59,8 @@ export default async function handler(req, res) {
         const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
         if (!list.length) break;
         list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-        const hasMore = r.data && r.data.hasMore === true;
-        if (!hasMore && list.length < 100) break;
+        // Break se menos que per_page (ultima pagina) ou sem hasMore
+        if (list.length < 100) break;
       }
       return res.status(200).json(allOrders);
     }
@@ -88,8 +88,7 @@ export default async function handler(req, res) {
       const list = Array.isArray(r.data) ? r.data : (Array.isArray(r.data.orders) ? r.data.orders : []);
       if (!list.length) break;
       list.forEach(p => { if (!seenIds.has(p.id)) { seenIds.add(p.id); allOrders.push(p); } });
-      const hasMore = r.data && r.data.hasMore === true;
-      if (!hasMore && list.length < 100) break;
+      if (list.length < 100) break;
     }
 
     allOrders = allOrders.filter(p => toBRDate(p.created_at || p.createdAt || '') === targetDate);
