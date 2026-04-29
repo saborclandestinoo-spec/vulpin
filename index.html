@@ -5971,10 +5971,13 @@ async function verPedidoHist(id){
       if(r.ok){const det=await r.json();if(det&&det.id){p=det;mergeNaHistoria([p]);}}
     }catch(e){}
   }
+  // Merge no cache sem sobrescrever depois (sem race condition)
   const orig=getPedidosCache();
-  S.set('pedidos_cache',[...orig.filter(x=>x.id!==p.id),p]);
+  const mapa={};
+  orig.forEach(x=>{mapa[x.id]=x;});
+  mapa[p.id]=p;
+  S.set('pedidos_cache',Object.values(mapa));
   verPedido(p.id||id);
-  S.set('pedidos_cache',orig);
 }
 
 function limparHistorico(){
