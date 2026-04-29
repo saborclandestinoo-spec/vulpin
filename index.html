@@ -4599,7 +4599,7 @@ function openProd(id){
       ftUsarFicha=fichaPrefs[id]!==false; // default true
       const ftNome=document.getElementById('ft-prod-nome');
       if(ftNome)ftNome.textContent=p.nome;
-      setTimeout(calcMargem,60);
+      setTimeout(()=>{ftRender();calcMargem();},60);
     }
   } else {
     document.getElementById('mprod-title-input').value='';
