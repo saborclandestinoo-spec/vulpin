@@ -1982,7 +1982,14 @@ function renderDashboard(){
   const lancPrev=lancs.filter(l=>(l.data||'').startsWith(mesPrev)||(l.dataPag||'').startsWith(mesPrev));
 
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
-  const hist=getHistorico();
+  // Merge historico + cache do dia (cache tem detalhes completos)
+  const histRaw=getHistorico();
+  const cacheHoje=getPedidosCache();
+  const histMapa={};
+  histRaw.forEach(p=>{histMapa[p.id]=p;});
+  cacheHoje.forEach(p=>{if(p.id)histMapa[p.id]={...histMapa[p.id],...p};});
+  const hist=Object.values(histMapa);
+
   const histMes=hist.filter(p=>{
     const dt=p.created_at||p.createdAt||'';if(!dt)return false;
     const dm=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).slice(0,7);
@@ -5572,10 +5579,12 @@ async function verPedidoHist(id){
     }catch(e){}
   }
 
-  const tmp=[...orig.filter(x=>x.id!==p.id),p];
-  S.set('pedidos_cache',tmp);
+  // merge pedido no cache para verPedido encontrar
+  const cacheMapa={};
+  orig.forEach(x=>{cacheMapa[x.id]=x;});
+  cacheMapa[p.id]=p;
+  S.set('pedidos_cache',Object.values(cacheMapa));
   verPedido(p.id||id);
-  S.set('pedidos_cache',orig);
 }
 
 function limparHistorico(){
