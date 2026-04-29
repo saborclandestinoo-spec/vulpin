@@ -1888,7 +1888,7 @@ const PAGE_ACTIONS={
   lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
   bancos:()=>`<button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
-  produtos:()=>`<button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
+  produtos:()=>`<button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="importarCatalogoCW()">⬇ Importar CW</button><button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
   centrocusto:()=>`<button class="btn-p" onclick="openCC('despesa')">+ Despesa</button><button class="btn-p" onclick="openCC('receita')" style="background:var(--green)">+ Receita</button>`,
     categorias:()=>'',
   config:()=>``,
@@ -4603,6 +4603,93 @@ function openProd(id){
   }
   openM('modal-prod');
 }
+async function importarCatalogoCW(){
+  const cfg=getCWConfig();
+  if(!cfg.token){alert('Configure o token do Cardápio Web em Configurações → Cardápio Web primeiro.');return;}
+  const btn=document.querySelector('[onclick="importarCatalogoCW()"]');
+  if(btn){btn.disabled=true;btn.textContent='Importando...';}
+  try{
+    // Usa proxy do pedidos pra evitar CORS — chama endpoint diferente
+    const res=await fetch(`/api/catalogo?token=${encodeURIComponent(cfg.token)}`,{signal:AbortSignal.timeout(15000)});
+    let catalogData=null;
+    if(res.ok){
+      catalogData=await res.json();
+    } else {
+      // Fallback: tenta direto (funciona em localhost)
+      const r2=await fetch('https://integracao.cardapioweb.com/api/partner/v1/catalog',{
+        headers:{'X-API-KEY':cfg.token,'Content-Type':'application/json','Accept':'application/json'},
+        signal:AbortSignal.timeout(15000)
+      });
+      if(r2.ok) catalogData=await r2.json();
+    }
+    if(!catalogData){alert('Não foi possível conectar ao Cardápio Web.');return;}
+
+    // Extrai itens de todas as categorias
+    const categorias=catalogData.categories||catalogData.catalog?.categories||[];
+    const itensRaw=[];
+    categorias.forEach(cat=>{
+      (cat.items||[]).forEach(item=>{
+        itensRaw.push({...item, cat_nome: cat.name||'Sem categoria'});
+      });
+    });
+    // Também itens diretos no catálogo
+    (catalogData.items||[]).forEach(item=>{
+      itensRaw.push({...item, cat_nome: item.category?.name||'Sem categoria'});
+    });
+
+    if(!itensRaw.length){alert('Nenhum item encontrado no catálogo.');return;}
+
+    const produtosExistentes=getProdutos();
+    const est=getEstProd();
+    let novos=0, atualizados=0;
+
+    itensRaw.forEach(item=>{
+      const cwId=String(item.id||'');
+      const nome=(item.name||'').trim();
+      if(!nome) return;
+
+      // Tenta achar produto existente por id_externo (CW id) ou nome
+      let prod=produtosExistentes.find(p=>p.id_externo===cwId)||
+               produtosExistentes.find(p=>p.nome===nome);
+
+      if(prod){
+        // Atualiza campos sem apagar ficha ou estoque
+        prod.nome=nome;
+        prod.cat=item.cat_nome;
+        prod.preco=item.price||prod.preco||0;
+        prod.id_externo=cwId;
+        if(item.external_code) prod.codigo_pdv=String(item.external_code);
+        atualizados++;
+      } else {
+        // Cria novo
+        const id=uid();
+        const novoProd={
+          id,
+          nome,
+          cat:item.cat_nome,
+          custo:item.cost_price||0,
+          preco:item.price||0,
+          status:'ativo',
+          codigo_pdv:item.external_code?String(item.external_code):null,
+          id_externo:cwId,
+        };
+        produtosExistentes.push(novoProd);
+        if(!est[id]) est[id]={inicial:0,entradas:[],saidas:[]};
+        novos++;
+      }
+    });
+
+    S.set('produtos',produtosExistentes);
+    S.set('est_prod',est);
+    renderProdutos();
+    alert(`✓ Importação concluída!\n${novos} novos produtos\n${atualizados} atualizados`);
+  } catch(e){
+    alert('Erro na importação: '+e.message);
+  } finally {
+    if(btn){btn.disabled=false;btn.textContent='⬇ Importar CW';}
+  }
+}
+
 function saveProd(){
   const _ti=document.getElementById('mprod-title-input');const _tn=document.getElementById('mprod-nome');if(_ti&&_tn)_tn.value=_ti.value;
   const nome=(_ti?.value||_tn?.value||'').trim();
