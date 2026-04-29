@@ -495,12 +495,8 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
         <!-- HOJE PANEL -->
         <div id="dash-panel-hoje" style="display:none;padding:20px 24px;background:#F5F6FA">
-          <!-- ROW 1: KPIs unidos — 4 pedidos + 3 despesas -->
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:20px" id="hoje-kpis-row"></div>
-
-          <!-- ROW 2: Pedidos | Despesas lado a lado -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px" id="hoje-kpis"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-            <!-- Coluna Pedidos -->
             <div style="display:flex;flex-direction:column;gap:14px">
               <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
                 <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
@@ -517,15 +513,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
                 </div>
               </div>
             </div>
-            <!-- Coluna Despesas -->
             <div style="display:flex;flex-direction:column;gap:14px">
               <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                  <div style="font-size:14px;font-weight:700;color:#1a1a2e">Lançamentos de Hoje</div>
-                  <div style="display:flex;gap:8px">
-                    <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">− Despesa</button>
-                    <button onclick="openRec()" style="background:#27AE60;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Receita</button>
-                  </div>
+                  <div style="font-size:14px;font-weight:700;color:#1a1a2e">Despesas de Hoje</div>
+                  <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
                 </div>
                 <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
               </div>
@@ -2081,47 +2073,40 @@ function renderHoje(){
   const ticket=pedidos.length?total/pedidos.length:0;
 
   // KPIs
-  // KPIs unificados: 4 pedidos + 3 despesas numa linha
+  // Busca despesas do dia
   const hoje2=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
-  const lancsHoje=getLanc().filter(l=>(l.data||l.dataPag||'').startsWith(hoje2));
-  const despHoje=lancsHoje.filter(l=>l.tipo==='despesa');
-  const recHoje=lancsHoje.filter(l=>l.tipo==='receita');
+  const despHoje=getLanc().filter(l=>l.tipo==='despesa'&&(l.data||l.dataPag||'').startsWith(hoje2));
   const totDesp=despHoje.reduce((s,l)=>s+(l.valor||0),0);
-  const totRecLanc=recHoje.reduce((s,l)=>s+(l.valor||0),0);
-  const saldoDia=total+totRecLanc-totDesp;
 
-  const kpis=document.getElementById('hoje-kpis-row');
+  const kpis=document.getElementById('hoje-kpis');
   if(kpis) kpis.innerHTML=[
     {ico:'🛒',lbl:'Pedidos',val:pedidos.length,sub:cancelados.length?`${cancelados.length} cancel.`:'0 cancel.',cor:'#1a1a2e'},
     {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(total)}`,sub:'do dia',cor:'#27AE60'},
     {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#FF6B35'},
     {ico:'⏰',lbl:'Último Ped.',val:pedidos.length?new Date(pedidos[pedidos.length-1].created_at||pedidos[pedidos.length-1].createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'--:--',sub:'horário BRT',cor:'#8E44AD'},
     {ico:'💸',lbl:'Despesas',val:`R$ ${fmtN(totDesp)}`,sub:'lançamentos',cor:'#E74C3C'},
-    {ico:'📥',lbl:'Outras Rec.',val:`R$ ${fmtN(totRecLanc)}`,sub:'lançamentos',cor:'#2980B9'},
-    {ico:'⚖️',lbl:'Saldo',val:`R$ ${fmtN(saldoDia)}`,sub:'fat.+rec.−desp.',cor:saldoDia>=0?'#27AE60':'#E74C3C'},
   ].map(k=>`
     <div style="background:#fff;border-radius:12px;padding:14px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px">
       <div style="font-size:20px">${k.ico}</div>
       <div style="min-width:0">
-        <div style="font-size:9px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">${k.lbl}</div>
-        <div style="font-size:14px;font-weight:800;color:${k.cor};line-height:1.2;white-space:nowrap">${k.val}</div>
+        <div style="font-size:9px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.4px">${k.lbl}</div>
+        <div style="font-size:16px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
         <div style="font-size:9px;color:#bbb;margin-top:1px">${k.sub}</div>
       </div>
     </div>`).join('');
 
-  // Render despesas lista
+  // Despesas lista
   const despLista=document.getElementById('hoje-desp-lista');
   if(despLista){
-    const todos=[...despHoje,...recHoje].sort((a,b)=>new Date(b.data||0)-new Date(a.data||0));
-    if(!todos.length){despLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:16px;text-align:center">Nenhum lançamento hoje</div>';}
-    else despLista.innerHTML=todos.map(l=>{
-      const isD=l.tipo==='despesa';
-      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #f0f0f0">
-        <div><div style="font-size:12px;font-weight:600;color:#1a1a2e">${l.desc||'Sem descrição'}</div>
-        <div style="font-size:10px;color:#aaa">${isD?'Despesa':'Receita'}</div></div>
-        <div style="font-size:13px;font-weight:800;color:${isD?'#E74C3C':'#27AE60'}">${isD?'−':'+'}R$ ${fmtN(l.valor||0)}</div>
-      </div>`;
-    }).join('');
+    if(!despHoje.length){despLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:16px;text-align:center">Nenhuma despesa hoje</div>';}
+    else despLista.innerHTML=[...despHoje].sort((a,b)=>new Date(b.data||0)-new Date(a.data||0)).map(l=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #f0f0f0">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#1a1a2e">${l.desc||'Sem descrição'}</div>
+          <div style="font-size:10px;color:#aaa">${l.catCod||'Despesa'}</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#E74C3C">− R$ ${fmtN(l.valor||0)}</div>
+      </div>`).join('');
   }
 
   // Lista pedidos
