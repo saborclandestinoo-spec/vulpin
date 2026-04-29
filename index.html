@@ -1685,112 +1685,11 @@ const S = {
 // ═══════════════════════════════════════════
 // DEFAULT DATA (from spreadsheet)
 // ═══════════════════════════════════════════
-function defaultMP(){return[
-  {id:'mp1',cod:'15',nome:'Açucar Mascavo Favinho',cat:'Açucar',un:'g',qtd:1000,valor:14.10,min:200},
-  {id:'mp2',cod:'10',nome:'Açucar Refinado Caravelas',cat:'Açucar',un:'g',qtd:1000,valor:2.89,min:500},
-  {id:'mp3',cod:'40',nome:'Bicarbon. Kinino',cat:'Secos',un:'g',qtd:500,valor:9.69,min:50},
-  {id:'mp4',cod:'320',nome:'Bomb Ferrero',cat:'Recheio',un:'g',qtd:1000,valor:238.90,min:10},
-  {id:'mp5',cod:'30',nome:'Farinha Venturelli',cat:'Secos',un:'g',qtd:1000,valor:4.47,min:1000},
-  {id:'mp6',cod:'70',nome:'Nutella Ferrero',cat:'Recheio',un:'g',qtd:3000,valor:189.90,min:300},
-  {id:'mp7',cod:'5',nome:'Manteiga Aviação Sem Sal',cat:'Manteiga',un:'g',qtd:200,valor:0,min:200},
-  {id:'mp8',cod:'55',nome:'Choc. Sicao Nobre Gotas Ao Leite',cat:'Chocolates',un:'g',qtd:2050,valor:0,min:300},
-  {id:'mp9',cod:'100',nome:'Choc. Sicao Nobre Gotas Branco',cat:'Chocolates',un:'g',qtd:2050,valor:0,min:200},
-  {id:'mp10',cod:'290',nome:'Choc. Sicao Nobre Gotas 40%',cat:'Chocolates',un:'g',qtd:1050,valor:0,min:300},
-  {id:'mp11',cod:'110',nome:'Choc. Callebaut Ruby 33,1%',cat:'Chocolates',un:'g',qtd:2500,valor:0,min:200},
-  {id:'mp12',cod:'325',nome:'Choc. Ao Leite 33,6% Callebaut',cat:'Chocolates',un:'g',qtd:2500,valor:0,min:200},
-  {id:'mp13',cod:'60',nome:'Choc. Sicao Cobertura Chips Ao Leite',cat:'Chocolates',un:'g',qtd:1050,valor:0,min:200},
-  {id:'mp14',cod:'65',nome:'Choc. Top Cobertura Chips Branco',cat:'Chocolates',un:'g',qtd:500,valor:0,min:200},
-  {id:'mp15',cod:'140',nome:'Choc. Sicao Nobre Barra 40%',cat:'Chocolates',un:'g',qtd:1050,valor:0,min:200},
-  {id:'mp16',cod:'135',nome:'Choc. Sicao Nobre Barra Ao Leite',cat:'Chocolates',un:'g',qtd:1050,valor:0,min:25},
-  {id:'mp17',cod:'155',nome:'Choc. Sicao Nobre Barra Branco',cat:'Chocolates',un:'g',qtd:1050,valor:0,min:1000},
-  {id:'mp18',cod:'75',nome:'Ovomaltine Creme Crocante 900g',cat:'Recheio',un:'g',qtd:900,valor:0,min:250},
-  {id:'mp19',cod:'115',nome:'Ovomaltine Creme Crocante 2000g',cat:'Recheio',un:'g',qtd:2000,valor:0,min:200},
-  {id:'mp20',cod:'85',nome:'Kit Kat Ao Leite',cat:'Recheio',un:'g',qtd:41.5,valor:0,min:100},
-  {id:'mp21',cod:'90',nome:'Kit Kat Dark',cat:'Recheio',un:'g',qtd:41.5,valor:0,min:100},
-  {id:'mp22',cod:'80',nome:'Kinder Bueno White',cat:'Recheio',un:'g',qtd:39,valor:0,min:100},
-  {id:'mp23',cod:'190',nome:'Cream Cheese President',cat:'Recheio',un:'g',qtd:300,valor:0,min:100},
-  {id:'mp24',cod:'185',nome:'Corante Soft Gel Mix 25G Vermelho',cat:'Corante',un:'g',qtd:25,valor:0,min:25},
-  {id:'mp25',cod:'170',nome:'Extrato De Baunilha Natural Líquido',cat:'Baunilha',un:'ml',qtd:30,valor:0,min:20},
-  {id:'mp26',cod:'20',nome:'Ovo Mantiqueira',cat:'Ovo',un:'un',qtd:30,valor:0,min:12},
-  {id:'mp27',cod:'50',nome:'Sal Cisney',cat:'Secos',un:'g',qtd:1000,valor:0,min:50},
-  {id:'mp28',cod:'45',nome:'Fermento Royal',cat:'Secos',un:'g',qtd:100,valor:0,min:50},
-  {id:'mp29',cod:'130',nome:'Lte Po Ninho Integral',cat:'Secos',un:'g',qtd:400,valor:0,min:200},
-  {id:'mp30',cod:'150',nome:'Cacau Em Pó Black Sicao',cat:'Secos',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp31',cod:'145',nome:'Cacau Em Pó Sicao',cat:'Secos',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp32',cod:'175',nome:'Pasta Saborizante Cremagusto Pistache',cat:'Recheio',un:'g',qtd:1000,valor:0,min:50},
-  {id:'mp33',cod:'105',nome:'Pistache Cru Sem Casca',cat:'Recheio',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp34',cod:'315',nome:'Nozes',cat:'Recheio',un:'g',qtd:200,valor:0,min:200},
-  {id:'mp35',cod:'330',nome:'Choc M&Ms',cat:'Chocolates',un:'g',qtd:200,valor:0,min:200},
-  {id:'mp36',cod:'340',nome:'Coco Flocos S/Açucar',cat:'Recheio',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp37',cod:'345',nome:'Leite Condensado Moça',cat:'Recheio',un:'g',qtd:395,valor:0,min:200},
-  {id:'mp38',cod:'350',nome:'Leite De Coco',cat:'Recheio',un:'ml',qtd:200,valor:0,min:100},
-  {id:'mp39',cod:'295',nome:'Cr Lte Itambé',cat:'Recheio',un:'ml',qtd:200,valor:0,min:200},
-  {id:'mp40',cod:'195',nome:'Frutas Vermelhas Congeladas',cat:'Recheio',un:'g',qtd:400,valor:0,min:300},
-  {id:'mp41',cod:'120',nome:'Ovomaltine Flocos Crocantes',cat:'Recheio',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp42',cod:'305',nome:'Ovomaltine Rocks - 550G',cat:'Recheio',un:'g',qtd:550,valor:0,min:100},
-  {id:'mp43',cod:'360',nome:'Recheio Caribe Bueno Bisnaga 1,01Kg',cat:'Recheio',un:'g',qtd:1010,valor:0,min:100},
-  {id:'mp44',cod:'160',nome:'Manteiga São Leopoldo',cat:'Manteiga',un:'g',qtd:200,valor:0,min:500},
-  {id:'mp45',cod:'165',nome:'Manteiga President',cat:'Manteiga',un:'g',qtd:200,valor:0,min:200},
-  {id:'mp46',cod:'280',nome:'Saco Barreira 10,4X14 Personalizado',cat:'Outros',un:'un',qtd:100,valor:0,min:50},
-  {id:'mp47',cod:'230',nome:'Saco Celofane 15X13',cat:'Outros',un:'un',qtd:100,valor:0,min:50},
-  {id:'mp48',cod:'265',nome:'Saco Celofane Adesivado 10X10',cat:'Outros',un:'un',qtd:100,valor:0,min:30},
-  {id:'mp49',cod:'380',nome:'Saco Celofane Cortado 15x15',cat:'Embalagens',un:'un',qtd:100,valor:0,min:10},
-  {id:'mp50',cod:'395',nome:'Adesivo Logo',cat:'Embalagens',un:'un',qtd:100,valor:0,min:30},
-  {id:'mp51',cod:'200',nome:'Papel Wyda Un Manteiga',cat:'Outros',un:'un',qtd:100,valor:0,min:100},
-  {id:'mp52',cod:'225',nome:'Luva Bompack Sem Talco',cat:'Outros',un:'cx',qtd:1,valor:0,min:1},
-  {id:'mp53',cod:'25',nome:'Fita Cetim 15MM Personalizada',cat:'Embalagens',un:'m',qtd:1,valor:0,min:5},
-  {id:'mp54',cod:'375',nome:'Caixa P Ovo Cookie',cat:'Outros',un:'un',qtd:1,valor:0,min:5},
-  {id:'mp55',cod:'385',nome:'Colher P Ovo de Colher',cat:'Embalagens',un:'un',qtd:1,valor:0,min:5},
-  {id:'mp56',cod:'390',nome:'Lacre de Segurança',cat:'Embalagens',un:'un',qtd:100,valor:0,min:50},
-  {id:'mp57',cod:'400',nome:'Saco Delivery Papel Couchê 12x26x9',cat:'Embalagens',un:'un',qtd:100,valor:0,min:30},
-  {id:'mp58',cod:'405',nome:'Saco Delivery Papel Couchê 17,5x30x11',cat:'Embalagens',un:'un',qtd:100,valor:0,min:30},
-  {id:'mp59',cod:'260',nome:'Saco Zipado 24X34 Pc100',cat:'Outros',un:'pc',qtd:100,valor:0,min:2},
-  {id:'mp60',cod:'285',nome:'Saco Zíper Fecho Slider',cat:'Outros',un:'un',qtd:100,valor:0,min:30},
-  {id:'mp61',cod:'335',nome:'Amêndoa Laminada',cat:'Recheio',un:'g',qtd:200,valor:0,min:100},
-  {id:'mp62',cod:'355',nome:'Kit Kat Mini Ao Leite',cat:'Recheio',un:'g',qtd:87,valor:0,min:100},
-  {id:'mp63',cod:'410',nome:'Choc. Sicao Nobre Gotas Blend',cat:'Chocolates',un:'g',qtd:2050,valor:0,min:200},
-];}
+function defaultMP(){return[];}
 
-function defaultProdutos(){return[
-  {id:'pr1',cod:'300',nome:'Nut-09',cat:'Cookies Recheados',custo:5.54,preco:12.50,status:'ativo'},
-  {id:'pr2',cod:'305',nome:'Kinder-X',cat:'Cookies Recheados',custo:8.83,preco:17.00,status:'ativo'},
-  {id:'pr3',cod:'310',nome:'Kit-Kat',cat:'Cookies Recheados',custo:5.95,preco:15.00,status:'ativo'},
-  {id:'pr4',cod:'315',nome:'Ovoltino',cat:'Cookies Recheados',custo:0,preco:12.00,status:'ativo'},
-  {id:'pr5',cod:'325',nome:'Pistache (Ruby Edition)',cat:'Cookies Recheados',custo:9.44,preco:21.50,status:'ativo'},
-  {id:'pr6',cod:'365',nome:'Bala Baiana',cat:'Cookies Recheados',custo:6.35,preco:17.50,status:'ativo'},
-  {id:'pr7',cod:'340',nome:'Eclipse',cat:'Cookies Recheados',custo:6.00,preco:15.00,status:'ativo'},
-  {id:'pr8',cod:'345',nome:'Red Velvet',cat:'Cookies Recheados',custo:11.44,preco:21.50,status:'ativo'},
-  {id:'pr9',cod:'355',nome:'Ferrero Rocher',cat:'Cookies Recheados',custo:8.92,preco:19.90,status:'ativo'},
-  {id:'pr10',cod:'330',nome:'Triple Chocolate',cat:'Cookies Sem Recheios',custo:0,preco:12.00,status:'ativo'},
-  {id:'pr11',cod:'335',nome:'Apocalipse',cat:'Cookies Sem Recheios',custo:0,preco:14.00,status:'ativo'},
-  {id:'pr12',cod:'350',nome:'Nozes',cat:'Cookies Sem Recheios',custo:5.07,preco:15.00,status:'ativo'},
-  {id:'pr13',cod:'360',nome:"M&M's Crunch",cat:'Cookies Sem Recheios',custo:5.80,preco:16.00,status:'ativo'},
-  {id:'pr14',cod:'300M',nome:'Mini Cookie - Nutella',cat:'Mini Cookies',custo:3.19,preco:6.99,status:'ativo'},
-  {id:'pr15',cod:'400',nome:'SUPER CRUNCH',cat:'Ovos Cookies',custo:29.09,preco:79.90,status:'ativo'},
-  {id:'pr16',cod:'405',nome:'KINDER-X',cat:'Ovos Cookies',custo:43.38,preco:99.90,status:'ativo'},
-  {id:'pr17',cod:'410',nome:'NUTELLA',cat:'Ovos Cookies',custo:24.84,preco:89.90,status:'ativo'},
-  {id:'pr18',cod:'415',nome:'OVOLTINO',cat:'Ovos Cookies',custo:39.39,preco:99.90,status:'ativo'},
-  {id:'pr19',cod:'420',nome:'DUO',cat:'Ovos Cookies',custo:36.74,preco:109.90,status:'ativo'},
-];}
+function defaultProdutos(){return[];}
 
-function defaultEstMP(){
-  const mp=getMP();
-  const estoques={};
-  mp.forEach(m=>{
-    estoques[m.id]={mpId:m.id,inicial:0,entradas:[],consumo:0};
-  });
-  // from spreadsheet
-  const predefined={
-    'mp1':{inicial:6530},'mp2':{inicial:9188},'mp3':{inicial:1400},
-    'mp4':{inicial:1262.5},'mp5':{inicial:5000},'mp6':{inicial:59500},
-    'mp8':{inicial:6180},'mp9':{inicial:4040},'mp10':{inicial:4678},
-    'mp13':{inicial:3500},'mp14':{inicial:9820},'mp31':{inicial:566},
-    'mp30':{inicial:1170},'mp27':{inicial:665},'mp36':{inicial:900},
-    'mp18':{inicial:5000},'mp7':{inicial:5000},'mp5':{inicial:41000},
-  };
-  Object.entries(predefined).forEach(([k,v])=>{if(estoques[k])estoques[k].inicial=v.inicial;});
-  return estoques;
-}
+function defaultEstMP(){return{};}
 
 function defaultCC(){return[
   {id:'CC01',nome:'Cozinha / Produção',tipo:'despesa'},
