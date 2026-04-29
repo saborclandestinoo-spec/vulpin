@@ -5730,10 +5730,11 @@ async function enriquecerHistorico(){
   const cfg=getCWConfig();
   if(!cfg.token)return;
   const hist=getHistorico();
-  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!(p.total||p.totalAmount||0));
+  // Enriquece pedidos sem itens OU sem cliente — independente do total
+  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!p.customer?.name);
   if(!zerados.length)return;
   _enriquecendo=true;
-  const CHUNK=10;
+  const CHUNK=5;
   const st=document.getElementById("hist-sync-status");
   try{
     for(let i=0;i<zerados.length;i+=CHUNK){
@@ -5741,10 +5742,10 @@ async function enriquecerHistorico(){
       if(st)st.textContent=`Detalhes ${Math.min(i+CHUNK,zerados.length)}/${zerados.length}...`;
       const resultados=await Promise.all(lote.map(async p=>{
         try{
-          const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(9000)});
+          const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(12000)});
           if(res.ok){
             const det=await res.json();
-            if(det&&det.id&&((det.items||[]).length>0||(det.total||det.totalAmount||0)>0))return det;
+            if(det&&det.id)return det; // aceita mesmo total=0
           }
         }catch(e){}
         return null;
