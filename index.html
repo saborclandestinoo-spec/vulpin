@@ -5556,6 +5556,15 @@ function mergeNaHistoria(novos){
 
     const isCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']).has(p.status||'');
 
+    // Só baixa estoque de pedidos a partir do corte (29/04/2026 16:00 BRT)
+    const ESTOQUE_CORTE=new Date('2026-04-29T19:00:00.000Z'); // UTC equivalente de 16h BRT
+    const pedidoData=new Date(p.created_at||p.createdAt||0);
+    if(pedidoData<ESTOQUE_CORTE){
+      if(!processados[p.id]) processados[p.id]='ignorado';
+      mapa[p.id]=slim(p);
+      return;
+    }
+
     // Se cancelou e já havia baixado estoque → reverte
     if(isCancelado&&processados[p.id]==='baixado'){
       const itens=p.items||p.itens||[];
