@@ -5574,7 +5574,7 @@ function renderHistorico(){
   // Painel detalhado
   const fatBar=document.getElementById('ped-fat-bar');
   const fatCards=document.getElementById('ped-fat-cards');
-  if(fatBar&&fatCards&&hist.length){
+  if(fatBar&&fatCards){
     fatBar.style.display='block';
     const cards=[
       {ico:'🛒',lbl:'Total dos produtos',val:totalProdutos,op:'+',cor:'#3498DB'},
@@ -5594,9 +5594,7 @@ function renderHistorico(){
         </div>
         <div style="font-size:${c.bold?'16px':'14px'};font-weight:${c.bold?800:600};color:${c.cor}">R$ ${fmtN(c.val)}</div>
       </div>`).join('');
-  } else if(fatBar){
-    fatBar.style.display='none';
-  }
+
 
   const tbody=document.getElementById('tbody-historico');
   if(!tbody)return;
