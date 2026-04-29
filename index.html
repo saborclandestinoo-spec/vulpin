@@ -5553,17 +5553,17 @@ function mergeNaHistoria(novos){
       if(itens.length){
         const est=getEstProd();
         const prods=getProdutos();
+        const revertidosNestePedido=new Set();
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
           const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>nomeCW.includes((x.nome||'').trim().toLowerCase())||(x.nome||'').trim().toLowerCase().includes(nomeCW));
-          if(prod){
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
+          if(prod&&!revertidosNestePedido.has(prod.id)){
+            revertidosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
             if(!est[prod.id])est[prod.id]={inicial:0,entradas:[],saidas:[]};
-            // Entrada de estorno
             est[prod.id].entradas.push({
               id:uid(),
               data:p.created_at||p.createdAt||new Date().toISOString(),
@@ -5586,14 +5586,17 @@ function mergeNaHistoria(novos){
         const est=getEstProd();
         let baixou=false;
         const prods=getProdutos();
+        // Rastreia prods já baixados neste pedido pra não duplicar
+        const baixadosNestePedido=new Set();
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
           const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
+          // Só nome EXATO — sem parcial (parcial causava duplicação)
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>nomeCW.includes((x.nome||'').trim().toLowerCase())||(x.nome||'').trim().toLowerCase().includes(nomeCW));
-          if(prod){
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
+          if(prod&&!baixadosNestePedido.has(prod.id)){
+            baixadosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
             if(!est[prod.id])est[prod.id]={inicial:0,entradas:[],saidas:[]};
             est[prod.id].saidas.push({
