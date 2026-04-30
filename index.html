@@ -379,6 +379,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     <div class="ni ni-plain" onclick="go('bancos',this)">Contas Bancárias</div>
     <div class="ni ni-plain" onclick="go('centrocusto',this)">Centro de Custos</div>
     <div class="ni ni-plain" onclick="go('categorias',this)">Categorias</div>
+    <div class="ni ni-plain" onclick="go('precificacao',this)">💰 Precificação</div>
     <div class="nav-g">Sistema</div>
     <div class="ni" onclick="go('config',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 107 12.5 5.5 5.5 0 007 1.5zm0 0v2m0 7v2M1.5 7h2m7 0h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -802,6 +803,72 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
       </div>
     </div>
+    <!-- PRECIFICAÇÃO -->
+    <div class="pg" id="pg-precificacao">
+      <div class="scroll">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--t)">💰 Precificação</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">Custo real por unidade com MO, custos fixos e margem</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div style="font-size:11px;color:var(--t3)">Mês base:</div>
+            <input type="month" id="prec-mes" style="border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--t)" onchange="renderPrecificacao()">
+            <div style="font-size:11px;color:var(--t3)">Margem %:</div>
+            <input type="number" id="prec-margem" value="30" min="0" max="100" style="border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:11px;width:70px;font-family:inherit" onchange="renderPrecificacao()">
+            <div style="font-size:11px;color:var(--t3)">Imposto %:</div>
+            <input type="number" id="prec-imposto" value="6" min="0" max="100" style="border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:11px;width:70px;font-family:inherit" onchange="renderPrecificacao()">
+          </div>
+        </div>
+
+        <!-- Resumo MO + CF -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:18px" id="prec-resumo"></div>
+
+        <!-- Tabela produtos -->
+        <div class="card">
+          <div class="card-t">Precificação por Produto</div>
+          <div class="tbl-wrap">
+            <table class="tbl" id="prec-tbl">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>CMV/un</th>
+                  <th>MO/un</th>
+                  <th>CF/un</th>
+                  <th>Custo Total</th>
+                  <th>Imposto</th>
+                  <th>Preço Mín.</th>
+                  <th>Preço Sug.</th>
+                  <th>Preço Atual</th>
+                  <th>Margem Real</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Config MO -->
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="card">
+            <div class="card-t">Mão de Obra de Produção</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Salários funcionários de produção (cat. 4.2) do mês selecionado</div>
+            <div id="prec-mo-lista"></div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bor2)">
+              <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Produção total do mês (unidades):</div>
+              <input type="number" id="prec-prod-total" placeholder="Ex: 900" style="border:1px solid var(--bor);border-radius:8px;padding:7px 10px;font-size:12px;width:100%;font-family:inherit;box-sizing:border-box" oninput="renderPrecificacao()">
+              <div style="font-size:10px;color:var(--t3);margin-top:4px">Se vazio, usa soma das produções registradas no mês</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-t">Custos Fixos Rateados</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Despesas fixas do mês (aluguel, energia, etc) ÷ unidades produzidas</div>
+            <div id="prec-cf-lista"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- CONFIGURAÇÕES -->
     <div class="pg" id="pg-config">
       <div class="scroll">
@@ -1874,7 +1941,7 @@ _sb.auth.getSession().then(async ({data:{session}}) => {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações'};
+const PAGE_TITLES={dashboard:'Dashboard',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação'};
 const PAGE_ACTIONS={
   dashboard:()=>``,
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
@@ -1888,6 +1955,7 @@ const PAGE_ACTIONS={
   centrocusto:()=>`<button class="btn-p" onclick="openCC('despesa')">+ Despesa</button><button class="btn-p" onclick="openCC('receita')" style="background:var(--green)">+ Receita</button>`,
     categorias:()=>'',
   config:()=>``,
+  precificacao:()=>'',
 };
 var currentPage='dashboard';
 function go(page,el){
@@ -1901,7 +1969,8 @@ function go(page,el){
   const renders={
     dashboard:renderDashboard,pedidos:renderPedidos,producao:renderProducao,estoque:renderEstoque,
     financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,
-    materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig
+    materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,
+    precificacao:renderPrecificacao
   };
   if(renders[page])renders[page]();
 }
@@ -2414,8 +2483,117 @@ function renderFluxoChart(){
 
 
 // ═══════════════════════════════════════════
-// PRODUÇÃO
+// PRECIFICAÇÃO
 // ═══════════════════════════════════════════
+function renderPrecificacao(){
+  const now=new Date();
+  const mesEl=document.getElementById('prec-mes');
+  if(!mesEl.value) mesEl.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mes=mesEl.value;
+  const margem=(parseFloat(document.getElementById('prec-margem').value)||30)/100;
+  const imposto=(parseFloat(document.getElementById('prec-imposto').value)||6)/100;
+
+  const lancs=getLanc().filter(l=>(l.data||'').startsWith(mes));
+  const prods=getProdutos();
+  const mp=getMP();
+  const fichas=getFichas();
+  const producoes=getProducao().filter(p=>(p.data||'').startsWith(mes));
+
+  // MO: cat 4.2 (salários)
+  const moLancs=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.2'));
+  const totalMO=moLancs.reduce((s,l)=>s+(l.valor||0),0);
+
+  // Custos fixos: cat 4.3, 4.4, 4.5 (despesas fixas exceto MO e CMV)
+  const cfLancs=lancs.filter(l=>l.tipo==='despesa'&&!(l.catCod||'').startsWith('4.1')&&!(l.catCod||'').startsWith('4.2'));
+  const totalCF=cfLancs.reduce((s,l)=>s+(l.valor||0),0);
+
+  // Produção total do mês
+  const prodInputEl=document.getElementById('prec-prod-total');
+  const prodTotalInput=parseFloat(prodInputEl.value)||0;
+  const prodTotalMes=prodTotalInput||producoes.reduce((s,p)=>s+(p.qtd||0),0)||1;
+
+  const moPerUn=totalMO/prodTotalMes;
+  const cfPerUn=totalCF/prodTotalMes;
+
+  // Resumo cards
+  const resumoEl=document.getElementById('prec-resumo');
+  if(resumoEl) resumoEl.innerHTML=[
+    {ico:'👷',lbl:'Mão de Obra Total',val:`R$ ${fmtN(totalMO)}`,sub:`R$ ${fmtN(moPerUn)}/un · ${moLancs.length} lançamentos`,cor:'var(--blue)'},
+    {ico:'🏠',lbl:'Custos Fixos Total',val:`R$ ${fmtN(totalCF)}`,sub:`R$ ${fmtN(cfPerUn)}/un · ${cfLancs.length} lançamentos`,cor:'var(--amber)'},
+    {ico:'🏭',lbl:'Produção do Mês',val:`${prodTotalMes} unidades`,sub:prodTotalInput?'Informado manualmente':`${producoes.length} lotes registrados`,cor:'var(--fox)'},
+  ].map(k=>`<div style="background:#fff;border:1px solid var(--bor);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+    <div style="font-size:24px">${k.ico}</div>
+    <div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">${k.lbl}</div>
+      <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.1">${k.val}</div>
+      <div style="font-size:10px;color:var(--t3);margin-top:2px">${k.sub}</div>
+    </div>
+  </div>`).join('');
+
+  // MO lista
+  const moListaEl=document.getElementById('prec-mo-lista');
+  if(moListaEl) moListaEl.innerHTML=moLancs.length?moLancs.map(l=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2)">
+      <span style="font-size:11.5px;color:var(--t)">${l.desc||'—'}</span>
+      <span style="font-size:11.5px;font-weight:600;color:var(--red)">R$ ${fmtN(l.valor)}</span>
+    </div>`).join('')+`<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700">
+      <span style="font-size:12px;color:var(--t)">Total MO</span>
+      <span style="font-size:12px;color:var(--blue)">R$ ${fmtN(totalMO)}</span>
+    </div>`
+  :'<div style="font-size:11px;color:var(--t3)">Nenhum lançamento cat. 4.2 no mês</div>';
+
+  // CF lista
+  const cfListaEl=document.getElementById('prec-cf-lista');
+  if(cfListaEl) cfListaEl.innerHTML=cfLancs.length?cfLancs.slice(0,10).map(l=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2)">
+      <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${l.desc||'—'}</span>
+      <span style="font-size:11px;font-weight:600;color:var(--red)">R$ ${fmtN(l.valor)}</span>
+    </div>`).join('')+`<div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700">
+      <span style="font-size:12px;color:var(--t)">Total CF</span>
+      <span style="font-size:12px;color:var(--amber)">R$ ${fmtN(totalCF)}</span>
+    </div>`
+  :'<div style="font-size:11px;color:var(--t3)">Nenhuma despesa fixa no mês</div>';
+
+  // Tabela produtos
+  const tbody=document.querySelector('#prec-tbl tbody');
+  if(!tbody)return;
+
+  const rows=prods.map(p=>{
+    // CMV da ficha técnica
+    let cmv=0;
+    const ft=fichas[p.id]||[];
+    ft.forEach(it=>{
+      const m=mp.find(x=>x.id===it.mpId);
+      if(m) cmv+=getValorPorG(m)*(it.qtd||0);
+    });
+    if(!cmv) cmv=p.custo||0;
+
+    const custoTotal=cmv+moPerUn+cfPerUn;
+    const impostoVal=custoTotal*imposto/(1-imposto-margem>0?1-imposto-margem:0.64);
+    const precoMin=custoTotal/(1-imposto);
+    const precoSug=custoTotal/(1-imposto-margem>0?1-imposto-margem:0.64);
+    const precoAtual=p.preco||0;
+    const margemReal=precoAtual>0?((precoAtual-custoTotal)/precoAtual*100):0;
+    const margemOk=margemReal>=(margem*100-2);
+
+    return{p,cmv,moPerUn,cfPerUn,custoTotal,precoMin,precoSug,precoAtual,margemReal,margemOk};
+  }).sort((a,b)=>a.p.nome.localeCompare(b.p.nome));
+
+  tbody.innerHTML=rows.map(r=>`<tr>
+    <td style="font-weight:600;color:var(--t)">${r.p.nome}</td>
+    <td>R$ ${fmtN(r.cmv)}</td>
+    <td>R$ ${fmtN(r.moPerUn)}</td>
+    <td>R$ ${fmtN(r.cfPerUn)}</td>
+    <td style="font-weight:700;color:var(--fox)">R$ ${fmtN(r.custoTotal)}</td>
+    <td style="color:var(--red)">R$ ${fmtN(r.custoTotal*imposto)}</td>
+    <td>R$ ${fmtN(r.precoMin)}</td>
+    <td style="font-weight:700;color:var(--blue)">R$ ${fmtN(r.precoSug)}</td>
+    <td style="color:${r.precoAtual>0?'var(--t)':'var(--t3)'}">R$ ${fmtN(r.precoAtual)}</td>
+    <td><span class="pill ${r.margemOk?'pill-ok':'pill-zero'}">${r.margemReal.toFixed(1)}%</span></td>
+  </tr>`).join('');
+}
+
+
 let editProd2Id=null;
 function renderProducao(){
   const month=document.getElementById('prod-filter-month').value;
