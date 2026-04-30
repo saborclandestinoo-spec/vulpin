@@ -2503,13 +2503,15 @@ function renderPrecificacao(){
   const moLancs=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.2'));
   const totalMO=moLancs.reduce((s,l)=>s+(l.valor||0),0);
 
-  // Custos fixos: todas despesas exceto CMV (4.1.1) e MO (4.1.2)
-  const cfLancs=lancs.filter(l=>l.tipo==='despesa'&&!(l.catCod||'').startsWith('4.1.1')&&!(l.catCod||'').startsWith('4.1.2'));
+  // Custos fixos: somente categorias fixas reais
+  const _cfCats=['4.3.3.1','4.3.6.1','4.3.4.1','4.3.4.2','4.3.4.3','4.2.3.1'];
+  const cfLancs=lancs.filter(l=>l.tipo==='despesa'&&_cfCats.some(c=>(l.catCod||'').startsWith(c)));
   const totalCF=cfLancs.reduce((s,l)=>s+(l.valor||0),0);
 
   // Produção total do mês
   const prodInputEl=document.getElementById('prec-prod-total');
-  const prodTotalInput=parseFloat(prodInputEl.value)||0;
+  const savedProdVal=prodInputEl?prodInputEl.value:'';
+  const prodTotalInput=parseFloat(savedProdVal)||0;
   const prodTotalMes=prodTotalInput||producoes.reduce((s,p)=>s+(p.qtd||0),0)||1;
 
   const moPerUn=totalMO/prodTotalMes;
@@ -2530,9 +2532,11 @@ function renderPrecificacao(){
     </div>
   </div>`).join('');
 
-  // MO lista
+  // MO lista — render once per mes change, not on prod-total input
   const moListaEl=document.getElementById('prec-mo-lista');
-  if(moListaEl) moListaEl.innerHTML=moLancs.length?moLancs.map(l=>`
+  if(moListaEl&&moListaEl.dataset.mes!==mes){
+    moListaEl.dataset.mes=mes;
+    moListaEl.innerHTML=moLancs.length?moLancs.map(l=>`
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2)">
       <span style="font-size:11.5px;color:var(--t)">${l.desc||'—'}</span>
       <span style="font-size:11.5px;font-weight:600;color:var(--red)">R$ ${fmtN(l.valor)}</span>
@@ -2540,11 +2544,14 @@ function renderPrecificacao(){
       <span style="font-size:12px;color:var(--t)">Total MO</span>
       <span style="font-size:12px;color:var(--blue)">R$ ${fmtN(totalMO)}</span>
     </div>`
-  :'<div style="font-size:11px;color:var(--t3)">Nenhum lançamento cat. 4.2 no mês</div>';
+    :'<div style="font-size:11px;color:var(--t3)">Nenhum lançamento cat. 4.1.2 no mês</div>';
+  }
 
-  // CF lista
+  // CF lista — render once per mes change
   const cfListaEl=document.getElementById('prec-cf-lista');
-  if(cfListaEl) cfListaEl.innerHTML=cfLancs.length?cfLancs.slice(0,10).map(l=>`
+  if(cfListaEl&&cfListaEl.dataset.mes!==mes){
+    cfListaEl.dataset.mes=mes;
+    cfListaEl.innerHTML=cfLancs.length?cfLancs.slice(0,10).map(l=>`
     <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bor2)">
       <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">${l.desc||'—'}</span>
       <span style="font-size:11px;font-weight:600;color:var(--red)">R$ ${fmtN(l.valor)}</span>
@@ -2552,7 +2559,8 @@ function renderPrecificacao(){
       <span style="font-size:12px;color:var(--t)">Total CF</span>
       <span style="font-size:12px;color:var(--amber)">R$ ${fmtN(totalCF)}</span>
     </div>`
-  :'<div style="font-size:11px;color:var(--t3)">Nenhuma despesa fixa no mês</div>';
+    :'<div style="font-size:11px;color:var(--t3)">Nenhuma despesa fixa no mês</div>';
+  }
 
   // Tabela produtos
   const tbody=document.querySelector('#prec-tbl tbody');
