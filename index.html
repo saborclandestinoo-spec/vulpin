@@ -6147,11 +6147,12 @@ function renderPedidos(){
     const s=p.status||p.situacao||'';
     if(counts[s]!==undefined)counts[s]++;
   });
-  document.getElementById('pc-todos').textContent=pedidos.length;
-  document.getElementById('pc-pendente').textContent=counts.PENDING;
-  document.getElementById('pc-confirmado').textContent=counts.CONFIRMED;
-  document.getElementById('pc-entregue').textContent=counts.DELIVERED;
-  document.getElementById('pc-cancelado').textContent=counts.CANCELLED;
+  const _s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  _s('pc-todos',pedidos.length);
+  _s('pc-pendente',counts.PENDING);
+  _s('pc-confirmado',counts.CONFIRMED);
+  _s('pc-entregue',counts.DELIVERED);
+  _s('pc-cancelado',counts.CANCELLED);
 
   // badge sidebar
   const badge=document.getElementById('nb-pedidos');
