@@ -2326,47 +2326,56 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn){
     const estProd=getEstProd();
     const estMP=getEstMP();
 
-    // Produtos acabados
+    // Produtos acabados — usa CUSTO, não preço de venda
     const prodRows=prods.map(p=>{
       const atual=getEstoqueAtualProd(p.id);
-      const valor=atual*(p.preco||0);
+      const valor=atual*(p.custo||0);
       return{nome:p.nome,atual,valor,tipo:'produto'};
-    }).filter(x=>x.atual>0).sort((a,b)=>b.valor-a.valor).slice(0,5);
+    }).filter(x=>x.atual>0).sort((a,b)=>b.valor-a.valor).slice(0,8);
 
-    // Insumos (matéria-prima)
+    // Insumos (matéria-prima) — valor por unidade = m.valor / m.qtd
     const mpRows=mp.map(m=>{
       const e=estMP[m.id]||{};
       const entradas=(e.entradas||[]).reduce((s,x)=>s+(x.qtd||0),0);
       const saidas=(e.saidas||[]).reduce((s,x)=>s+(x.qtd||0),0);
       const atual=(e.inicial||0)+entradas-saidas;
-      const valor=atual*(m.valor/m.qtd||0);
+      const valorUnit=m.qtd>0?(m.valor||0)/m.qtd:0;
+      const valor=atual*valorUnit;
       return{nome:m.nome,atual:atual.toFixed(1),valor,un:m.un,tipo:'insumo'};
-    }).filter(x=>parseFloat(x.atual)>0).sort((a,b)=>b.valor-a.valor).slice(0,5);
+    }).filter(x=>parseFloat(x.atual)>0).sort((a,b)=>b.valor-a.valor).slice(0,8);
 
     const totalProd=prodRows.reduce((s,x)=>s+x.valor,0);
     const totalMP=mpRows.reduce((s,x)=>s+x.valor,0);
 
     estEl.innerHTML=`
-      <div style="display:flex;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bor2)">
-        <span style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Total em estoque</span>
-        <span style="font-size:13px;font-weight:700;color:var(--fox)">R$ ${fmtN(totalProd+totalMP)}</span>
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid var(--bor)">
+        <span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total em estoque</span>
+        <span style="font-size:14px;font-weight:800;color:var(--fox)">R$ ${fmtN(totalProd+totalMP)}</span>
       </div>
-      ${prodRows.length?`<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Produtos</div>
-      ${prodRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
-        <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${x.nome}</span>
-        <div style="text-align:right;flex-shrink:0;margin-left:8px">
-          <span style="font-size:10px;color:var(--t3)">${x.atual} un</span>
-          <span style="font-size:11px;font-weight:600;color:var(--green);margin-left:6px">R$ ${fmtN(x.valor)}</span>
+      ${prodRows.length?`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+          <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Produtos</div>
+          <div style="font-size:10px;font-weight:700;color:var(--green)">R$ ${fmtN(totalProd)}</div>
         </div>
-      </div>`).join('')}`:''}
-      ${mpRows.length?`<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Insumos</div>
-      ${mpRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
-        <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${x.nome}</span>
-        <div style="text-align:right;flex-shrink:0;margin-left:8px">
-          <span style="font-size:10px;color:var(--t3)">${x.atual} ${x.un}</span>
-          <span style="font-size:11px;font-weight:600;color:var(--blue);margin-left:6px">R$ ${fmtN(x.valor)}</span>
+        ${prodRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
+          <span style="font-size:11.5px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%">${x.nome}</span>
+          <div style="text-align:right;flex-shrink:0;margin-left:8px">
+            <span style="font-size:10px;color:var(--t3)">${x.atual} un · </span>
+            <span style="font-size:11.5px;font-weight:700;color:var(--green)">R$ ${fmtN(x.valor)}</span>
+          </div>
+        </div>`).join('')}`:''}
+      ${mpRows.length?`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 7px">
+          <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Insumos</div>
+          <div style="font-size:10px;font-weight:700;color:var(--blue)">R$ ${fmtN(totalMP)}</div>
         </div>
-      </div>`).join('')}`:''}
+        ${mpRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
+          <span style="font-size:11.5px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%">${x.nome}</span>
+          <div style="text-align:right;flex-shrink:0;margin-left:8px">
+            <span style="font-size:10px;color:var(--t3)">${x.atual} ${x.un} · </span>
+            <span style="font-size:11.5px;font-weight:700;color:var(--blue)">R$ ${fmtN(x.valor)}</span>
+          </div>
+        </div>`).join('')}`:''}
       ${!prodRows.length&&!mpRows.length?'<div style="font-size:11px;color:var(--t3);padding:8px 0">Nenhum item em estoque</div>':''}
     `;
   }
