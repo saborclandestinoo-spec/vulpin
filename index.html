@@ -2236,7 +2236,7 @@ function renderDashboard(){
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
 
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F5F6FA;border-bottom:none';
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F8F8FB;border-bottom:none';
     if(strip) strip.innerHTML=[
       {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'total do dia',cor:'#27AE60'},
       {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas/descontos',cor:'#FF6B35'},
@@ -2257,21 +2257,21 @@ function renderDashboard(){
     // Render hoje content
     renderHoje();
   } else {
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:16px 20px;background:#F5F6FA;border-bottom:none';
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:#F8F8FB;border-bottom:none';
     if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60',bg:'#F0FFF4',bor:'rgba(39,174,96,.15)'},
-      {ico:'💸',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C',bg:'#FFF5F5',bor:'rgba(231,76,60,.15)'},
-      {ico:'📈',lbl:'Lucro Real',val:`R$ ${fmtN(lucroPeriod)}`,sub:`Margem: ${margem}%`,cor:lucroPeriod>=0?'#FF6B35':'#E74C3C',bg:lucroPeriod>=0?'#FFF8F5':'#FFF5F5',bor:'rgba(255,107,43,.15)'},
-      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD',bg:'#FAF5FF',bor:'rgba(142,68,173,.15)'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'#1a1a2e',bg:'#F8F9FF',bor:'rgba(26,26,46,.15)'},
-      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9',bg:'#F0F8FF',bor:'rgba(41,128,185,.15)'},
-      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C',bg:'#FFF5F5',bor:'rgba(231,76,60,.15)'},
-    ].map(k=>`<div style="background:${k.bg};border:1px solid ${k.bor};border-radius:16px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px">
-      <div style="font-size:22px;line-height:1;margin-top:2px">${k.ico}</div>
+      {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
+      {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
+      {ico:'📈',lbl:'Lucro Real',val:`R$ ${fmtN(lucroPeriod)}`,sub:`Margem: ${margem}%`,cor:lucroPeriod>=0?'#FF6B35':'#E74C3C'},
+      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'#1a1a2e'},
+      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
+      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
+    ].map(k=>`<div style="background:#fff;border:1px solid #EEEEF2;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+      <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
       <div>
-        <div style="font-size:9px;font-weight:600;color:${k.cor};text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;opacity:.75">${k.lbl}</div>
-        <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.2;letter-spacing:-.3px">${k.val}</div>
-        <div style="font-size:9px;color:${k.cor};margin-top:3px;opacity:.55">${k.sub}</div>
+        <div style="font-size:9px;font-weight:700;color:#A0A0B8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${k.lbl}</div>
+        <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1;letter-spacing:-.3px">${k.val}</div>
+        <div style="font-size:10px;color:#B0B0C8;margin-top:2px">${k.sub}</div>
       </div>
     </div>`).join('');
   }
