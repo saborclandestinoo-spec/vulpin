@@ -430,47 +430,18 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
         <!-- MES/PERIODO CONTENT -->
         <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
-          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:#1a1a2e">Receitas × Despesas × Lucro</div>
-                  <div style="font-size:11px;color:#999;margin-top:2px">Últimos 6 meses</div>
-                </div>
-                <div style="display:flex;gap:12px;font-size:10px;color:#999;align-items:center">
-                  <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#27AE60;display:inline-block"></span>Receitas</span>
-                  <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#E74C3C;display:inline-block"></span>Despesas</span>
-                  <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#FF6B35;display:inline-block"></span>Lucro</span>
-                </div>
-              </div>
-              <div style="height:220px"><canvas id="chart-fat"></canvas></div>
-            </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">⚡ Alertas</div>
-              <div id="dash-alerts" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto"></div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:#1a1a2e">DRE do Período</div>
-                <span id="dash-dre-badge" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px"></span>
-              </div>
-              <div style="font-size:11px;color:#999;margin-bottom:12px" id="dash-dre-periodo"></div>
-              <div id="dash-dre-rows"></div>
-            </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">🏆 Top Produtos</div>
               <div style="font-size:11px;color:#999;margin-bottom:14px">Volume vendido no período</div>
               <div id="dash-ranking" style="display:flex;flex-direction:column;gap:10px"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">📈 Projeção 30 dias</div>
-              <div style="font-size:11px;color:#999;margin-bottom:12px">Baseado nos últimos 3 meses</div>
-              <div style="height:160px"><canvas id="chart-fluxo"></canvas></div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">📦 Estoque em Valor</div>
+              <div id="dash-estoque-valor"></div>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Últimos Lançamentos</div>
               <div class="tbl-wrap"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Tipo</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
@@ -478,10 +449,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Últimas Produções</div>
               <div class="tbl-wrap"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
-            </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">📦 Estoque em Valor</div>
-              <div id="dash-estoque-valor"></div>
             </div>
           </div>
         </div>
@@ -2260,11 +2227,10 @@ function renderDashboard(){
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:#F8F8FB;border-bottom:none';
     if(strip) strip.innerHTML=[
       {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
+      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
       {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
-      {ico:'📈',lbl:'Lucro Real',val:`R$ ${fmtN(lucroPeriod)}`,sub:`Margem: ${margem}%`,cor:lucroPeriod>=0?'#FF6B35':'#E74C3C'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
       {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'#1a1a2e'},
-      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
     ].map(k=>`<div style="background:#fff;border:1px solid #EEEEF2;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
       <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
@@ -2274,6 +2240,9 @@ function renderDashboard(){
         <div style="font-size:10px;color:#B0B0C8;margin-top:2px">${k.sub}</div>
       </div>
     </div>`).join('');
+
+    // Render mes widgets
+    renderDashMesWidgets(histPeriod, lancPeriod, filterFn);
   }
 
   // Panel visibility handled by dashSetPeriod
@@ -2287,6 +2256,120 @@ function renderDashboard(){
     {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.65)',borderRadius:6,order:2},
     {label:'Lucro',data:lucroData,type:'line',borderColor:'var(--fox)',backgroundColor:'rgba(231,130,70,.1)',borderWidth:2,pointRadius:4,pointBackgroundColor:'var(--fox)',fill:true,tension:.3,order:1},
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
+}
+
+function renderDashMesWidgets(histPeriod, lancPeriod, filterFn){
+  // === TOP PRODUTOS ===
+  const rankEl=document.getElementById('dash-ranking');
+  if(rankEl){
+    const contagem={};
+    histPeriod.forEach(p=>(p.items||p.itens||[]).forEach(i=>{
+      const nome=i.name||i.nome||'?';
+      contagem[nome]=(contagem[nome]||0)+(i.quantity||i.qtd||1);
+    }));
+    const sorted=Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const max=sorted[0]?sorted[0][1]:1;
+    rankEl.innerHTML=sorted.length?sorted.map(([nome,qtd],i)=>`
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:11px;font-weight:700;color:#C0C0D8;width:16px;text-align:right">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:12px;font-weight:500;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${nome}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--fox)">${qtd} un</span>
+          </div>
+          <div style="height:4px;background:#F0F0F5;border-radius:4px;overflow:hidden">
+            <div style="height:100%;background:var(--fox);border-radius:4px;width:${(qtd/max*100).toFixed(0)}%;transition:width .4s"></div>
+          </div>
+        </div>
+      </div>`).join('')
+    :'<div style="font-size:11px;color:var(--t3);padding:8px 0">Nenhum produto vendido no período</div>';
+  }
+
+  // === ÚLTIMOS LANÇAMENTOS ===
+  const lancTbody=document.querySelector('#dash-lanc tbody');
+  if(lancTbody){
+    const ultLancs=[...lancPeriod].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,8);
+    lancTbody.innerHTML=ultLancs.length?ultLancs.map(l=>`<tr>
+      <td style="white-space:nowrap">${fmtDate(l.data)}</td>
+      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc||'—'}</td>
+      <td><span class="pill ${l.tipo==='receita'?'pill-rec':'pill-desp'}">${l.tipo==='receita'?'Rec':'Desp'}</span></td>
+      <td style="font-weight:600;color:${l.tipo==='receita'?'var(--green)':'var(--red)'}">R$ ${fmtN(l.valor)}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:16px">Nenhum lançamento</td></tr>';
+  }
+
+  // === ÚLTIMAS PRODUÇÕES ===
+  const prodTbody=document.querySelector('#dash-prods tbody');
+  if(prodTbody){
+    const prods=getProdutos();
+    const producoes=[...getProducao()].filter(p=>{
+      const dt=(p.data||'').slice(0,10);
+      try{return filterFn(dt);}catch{return true;}
+    }).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,8);
+    prodTbody.innerHTML=producoes.length?producoes.map(p=>{
+      const pr=prods.find(x=>x.id===p.produtoId);
+      return`<tr>
+        <td style="white-space:nowrap">${fmtDate(p.data)}</td>
+        <td style="font-weight:500;color:var(--t);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pr?pr.nome:'—'}</td>
+        <td style="color:var(--green);font-weight:600">${p.qtd}</td>
+        <td style="color:${p.perdas>0?'var(--red)':'var(--t3)'}">${p.perdas||0}</td>
+      </tr>`;
+    }).join('')
+    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:16px">Nenhuma produção</td></tr>';
+  }
+
+  // === ESTOQUE EM VALOR ===
+  const estEl=document.getElementById('dash-estoque-valor');
+  if(estEl){
+    const prods=getProdutos();
+    const mp=getMP();
+    const estProd=getEstProd();
+    const estMP=getEstMP();
+
+    // Produtos acabados
+    const prodRows=prods.map(p=>{
+      const atual=getEstoqueAtualProd(p.id);
+      const valor=atual*(p.preco||0);
+      return{nome:p.nome,atual,valor,tipo:'produto'};
+    }).filter(x=>x.atual>0).sort((a,b)=>b.valor-a.valor).slice(0,5);
+
+    // Insumos (matéria-prima)
+    const mpRows=mp.map(m=>{
+      const e=estMP[m.id]||{};
+      const entradas=(e.entradas||[]).reduce((s,x)=>s+(x.qtd||0),0);
+      const saidas=(e.saidas||[]).reduce((s,x)=>s+(x.qtd||0),0);
+      const atual=(e.inicial||0)+entradas-saidas;
+      const valor=atual*(m.valor/m.qtd||0);
+      return{nome:m.nome,atual:atual.toFixed(1),valor,un:m.un,tipo:'insumo'};
+    }).filter(x=>parseFloat(x.atual)>0).sort((a,b)=>b.valor-a.valor).slice(0,5);
+
+    const totalProd=prodRows.reduce((s,x)=>s+x.valor,0);
+    const totalMP=mpRows.reduce((s,x)=>s+x.valor,0);
+
+    estEl.innerHTML=`
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bor2)">
+        <span style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">Total em estoque</span>
+        <span style="font-size:13px;font-weight:700;color:var(--fox)">R$ ${fmtN(totalProd+totalMP)}</span>
+      </div>
+      ${prodRows.length?`<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Produtos</div>
+      ${prodRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
+        <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${x.nome}</span>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <span style="font-size:10px;color:var(--t3)">${x.atual} un</span>
+          <span style="font-size:11px;font-weight:600;color:var(--green);margin-left:6px">R$ ${fmtN(x.valor)}</span>
+        </div>
+      </div>`).join('')}`:''}
+      ${mpRows.length?`<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px">Insumos</div>
+      ${mpRows.map(x=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bor2)">
+        <span style="font-size:11px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${x.nome}</span>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <span style="font-size:10px;color:var(--t3)">${x.atual} ${x.un}</span>
+          <span style="font-size:11px;font-weight:600;color:var(--blue);margin-left:6px">R$ ${fmtN(x.valor)}</span>
+        </div>
+      </div>`).join('')}`:''}
+      ${!prodRows.length&&!mpRows.length?'<div style="font-size:11px;color:var(--t3);padding:8px 0">Nenhum item em estoque</div>':''}
+    `;
+  }
 }
 
 function renderFluxoChart(){
