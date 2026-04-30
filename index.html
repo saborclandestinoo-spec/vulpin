@@ -488,7 +488,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
         <!-- HOJE CONTENT -->
         <div style="display:none;padding:16px 20px;flex-direction:column;gap:14px" id="dash-hoje-content">
-          <!-- ROW 1: Pedidos + Despesas -->
+          <!-- ROW 1: Pedidos + Cancelados -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
@@ -496,10 +496,9 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas de Hoje</div>
-                <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
+                <div style="font-size:14px;font-weight:700;color:#E74C3C">Cancelados de Hoje</div>
               </div>
-              <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
+              <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
             </div>
           </div>
           <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
@@ -509,8 +508,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
               <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#E74C3C;margin-bottom:14px">❌ Cancelados</div>
-              <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas de Hoje</div>
+                <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
+              </div>
+              <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">💳 Por Pagamento</div>
@@ -2112,10 +2114,15 @@ function renderHoje(){
   // Top produtos
   const prodCount={};
   pedidos.forEach(p=>(p.items||p.itens||[]).forEach(i=>{
-    const nome=i.name||i.nome||'?';
-    prodCount[nome]=(prodCount[nome]||0)+(i.quantity||i.qtd||1);
+    // Normaliza: lowercase trim pra agrupar variações de case/acento
+    const nome=(i.name||i.nome||'?').trim();
+    const key=nome.toLowerCase();
+    if(!prodCount[key])prodCount[key]={nome,qtd:0};
+    prodCount[key].qtd+=(i.quantity||i.qtd||1);
   }));
-  const topProds=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]);
+  // Converte pra array com nome original capitalizado
+  const _prodEntries=Object.values(prodCount).map(x=>[x.nome,x.qtd]).sort((a,b)=>b[1]-a[1]);
+  const topProds=_prodEntries;
   const maxQtd=topProds[0]?.[1]||1;
   let totalCookiesHoje=topProds.reduce((s,[,q])=>s+q,0);
   const topEl=document.getElementById('hoje-top-prods');
@@ -2230,17 +2237,18 @@ function renderDashboard(){
 
   if(isHoje){
     // Big cards para o dia
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F5F6FA;border-bottom:none';
+    if(strip) strip.style.gridTemplateColumns='repeat(5,1fr)';
     if(strip) strip.innerHTML=[
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'pedidos ativos/concluídos',cor:'#1a1a2e'},
-      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'do dia',cor:'#27AE60'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:canceladosPeriod.length?`${canceladosPeriod.length} cancelado${canceladosPeriod.length>1?'s':''}`:'0 cancelados',cor:'#1a1a2e'},
+      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'pedidos ativos/concluídos',cor:'#27AE60'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#FF6B35'},
-      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
-    ].map(k=>`<div style="background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px">${k.ico}</div>
+      {ico:'💸',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos do dia',cor:'#E74C3C'},
+      {ico:'⏰',lbl:'Último Pedido',val:(()=>{const last=histPeriod[histPeriod.length-1];return last?new Date(last.created_at||last.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'--:--';})(),sub:'horário BRT',cor:'#8E44AD'},
+    ].map(k=>`<div style="padding:16px 20px;border-right:1px solid #eee;display:flex;align-items:center;gap:14px">
+      <div style="font-size:26px">${k.ico}</div>
       <div>
         <div style="font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">${k.lbl}</div>
-        <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
+        <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
         <div style="font-size:10px;color:#aaa;margin-top:2px">${k.sub}</div>
       </div>
     </div>`).join('');
