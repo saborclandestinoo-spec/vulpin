@@ -110,6 +110,8 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 .rp-preset{padding:7px 16px;font-size:11px;color:var(--t2);cursor:pointer;white-space:nowrap}.rp-preset:hover{background:var(--bg2);color:var(--fox)}.rp-day{padding:4px 2px;font-size:11px;cursor:pointer;border-radius:5px;text-align:center;line-height:1.6}.rp-day:hover{background:var(--bg2)}.rp-day.in-range{background:var(--fox-l);color:var(--fox)}.rp-day.start,.rp-day.end{background:var(--fox)!important;color:#fff!important;font-weight:700}.rp-day-hdr{font-size:9px;font-weight:600;color:var(--t3);padding:2px;text-align:center}
 .pill-purple{background:#f3e8ff;color:#7c3aed}
 .pill-ok{background:var(--green-bg);color:var(--green)}
+.pill-parc{background:var(--blue-bg);color:var(--blue)}
+.pill-rec-fix{background:#EAF2FB;color:var(--blue)}
 .pill-warn{background:var(--amber-bg);color:var(--amber)}
 .pill-zero{background:var(--red-bg);color:var(--red)}
 .pill-ativo{background:var(--green-bg);color:var(--green)}
@@ -1293,6 +1295,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       </div>
       <div class="fi-row">
         <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
+        <div><label class="fl">Nome no iFood</label><input class="fi" id="mprod-nome-ifood" type="text" placeholder="Ex: OVO NUTELLA"></div>
         <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Ex: moh909rb..."></div>
       </div>
       <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
@@ -1461,7 +1464,33 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
       </div>
     </div>
-    <!-- Vincular a estoque -->
+    <!-- Parcelas / Recorrência -->
+    <div id="mdesp-parc-section" style="display:none;margin-bottom:16px;background:var(--bg2);border:1px solid var(--bor);border-radius:10px;padding:14px">
+      <div id="mdesp-parc-fields" style="display:none">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Parcelamento</div>
+        <div class="mfg-row mfg-row-3">
+          <div class="flt-wrap"><input class="flt-in" id="mdesp-num-parc" type="number" min="2" max="60" placeholder=" " oninput="updateParcPreview('mdesp')"><label class="flt-lbl">Nº de parcelas *</label></div>
+          <div class="flt-wrap"><input class="flt-in" id="mdesp-valor-total-parc" type="number" step="0.01" placeholder=" " oninput="updateParcPreview('mdesp')"><label class="flt-lbl">Valor total</label></div>
+          <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)" id="mdesp-parc-preview">—</div>
+        </div>
+      </div>
+      <div id="mdesp-fixo-fields" style="display:none">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Recorrência</div>
+        <div class="mfg-row mfg-row-3">
+          <div class="flt-wrap">
+            <select class="flt-in" id="mdesp-freq" style="appearance:auto">
+              <option value="mensal">Mensal</option>
+              <option value="semanal">Semanal</option>
+              <option value="quinzenal">Quinzenal</option>
+              <option value="anual">Anual</option>
+            </select>
+            <label class="flt-lbl flt-lbl-sel">Frequência</label>
+          </div>
+          <div class="flt-wrap"><input class="flt-in" id="mdesp-num-rep" type="number" min="2" max="120" placeholder=" "><label class="flt-lbl">Repetições (0=sem fim)</label></div>
+          <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)">Gera lançamentos futuros automaticamente</div>
+        </div>
+      </div>
+    </div>
     <div id="mdesp-est-section" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <input type="checkbox" id="mdesp-est-chk" onchange="toggleEstSection('desp')" style="width:16px;height:16px;accent-color:var(--fox);cursor:pointer">
@@ -1584,6 +1613,33 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div class="cd-item cd-item-l1 selected" onclick="setTipoLanc('mrec','unico','Único',event)">Único</div>
           <div class="cd-item cd-item-l1" onclick="setTipoLanc('mrec','fixo','Fixo (recorrente)',event)">Fixo (recorrente)</div>
           <div class="cd-item cd-item-l1" onclick="setTipoLanc('mrec','parcelado','Parcelado',event)">Parcelado</div>
+        </div>
+      </div>
+    </div>
+    <!-- Parcelas / Recorrência Receita -->
+    <div id="mrec-parc-section" style="display:none;margin-bottom:16px;background:var(--bg2);border:1px solid var(--bor);border-radius:10px;padding:14px">
+      <div id="mrec-parc-fields" style="display:none">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Parcelamento</div>
+        <div class="mfg-row mfg-row-3">
+          <div class="flt-wrap"><input class="flt-in" id="mrec-num-parc" type="number" min="2" max="60" placeholder=" " oninput="updateParcPreview('mrec')"><label class="flt-lbl">Nº de parcelas *</label></div>
+          <div class="flt-wrap"><input class="flt-in" id="mrec-valor-total-parc" type="number" step="0.01" placeholder=" " oninput="updateParcPreview('mrec')"><label class="flt-lbl">Valor total</label></div>
+          <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)" id="mrec-parc-preview">—</div>
+        </div>
+      </div>
+      <div id="mrec-fixo-fields" style="display:none">
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Recorrência</div>
+        <div class="mfg-row mfg-row-3">
+          <div class="flt-wrap">
+            <select class="flt-in" id="mrec-freq" style="appearance:auto">
+              <option value="mensal">Mensal</option>
+              <option value="semanal">Semanal</option>
+              <option value="quinzenal">Quinzenal</option>
+              <option value="anual">Anual</option>
+            </select>
+            <label class="flt-lbl flt-lbl-sel">Frequência</label>
+          </div>
+          <div class="flt-wrap"><input class="flt-in" id="mrec-num-rep" type="number" min="2" max="120" placeholder=" "><label class="flt-lbl">Repetições (0=sem fim)</label></div>
+          <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)">Gera lançamentos futuros automaticamente</div>
         </div>
       </div>
     </div>
@@ -3879,7 +3935,7 @@ function renderLanc(){
     return`<tr style="cursor:pointer" onclick="openLancEdit('${l.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="lanc-chk" value="${l.id}"></td>
       <td style="color:var(--t3);font-size:11px">${fmtDate(l.data||l.venc)}</td>
-      <td style="font-weight:500;color:var(--t)">${l.desc}</td>
+      <td style="font-weight:500;color:var(--t)">${l.desc}${l.parcela?` <span class="pill pill-parc" style="font-size:9px;padding:1px 6px">${l.recorrente?'🔄':'📦'} ${l.parcela}</span>`:''}</td>
       <td style="color:var(--t3);font-size:11px">${cat?cat.cod+' — '+cat.nome:'—'}</td>
       <td style="color:var(--t3)">${bk?bk.nome:'—'}</td>
       <td style="color:var(--t3);font-size:11px">${fmtDate(l.venc)}</td>
@@ -4768,9 +4824,61 @@ function saveLancTipo(tipo,andAnother){
     obs:document.getElementById(prefix+'-obs').value,
   };
   let data=getLanc();
-  if(editLancId)data=data.map(x=>x.id===editLancId?obj:x);
-  else data.push(obj);
-  S.set('lancamentos',data);
+  const tipoLanc=document.getElementById(prefix+'-tipo-lanc')?.value||'unico';
+
+  if(!editLancId && tipoLanc==='parcelado'){
+    // Parcelado — gera N lançamentos mensais
+    const nParc=parseInt(document.getElementById(prefix+'-num-parc')?.value)||1;
+    const valorTotal=parseFloat(document.getElementById(prefix+'-valor-total-parc')?.value)||valor;
+    const valorParc=valorTotal/nParc;
+    const grupoId=uid();
+    const dataBase=new Date(obj.data||new Date().toISOString().slice(0,10));
+    for(let i=0;i<nParc;i++){
+      const d=new Date(dataBase);
+      d.setMonth(d.getMonth()+i);
+      const dt=d.toISOString().slice(0,10);
+      data.push({
+        ...obj,
+        id:uid(),
+        valor:parseFloat(valorParc.toFixed(2)),
+        data:dt,dataPag:dt,venc:dt,comp:dt,
+        pago:i===0?obj.pago:false,
+        grupoId,
+        parcela:`${i+1}/${nParc}`,
+        desc:`${desc} (${i+1}/${nParc})`,
+      });
+    }
+    S.set('lancamentos',data);
+  } else if(!editLancId && tipoLanc==='fixo'){
+    // Recorrente — gera N repetições
+    const freq=document.getElementById(prefix+'-freq')?.value||'mensal';
+    const nRep=parseInt(document.getElementById(prefix+'-num-rep')?.value)||12;
+    const total=nRep>0?nRep:12;
+    const grupoId=uid();
+    const dataBase=new Date(obj.data||new Date().toISOString().slice(0,10));
+    for(let i=0;i<total;i++){
+      const d=new Date(dataBase);
+      if(freq==='mensal') d.setMonth(d.getMonth()+i);
+      else if(freq==='semanal') d.setDate(d.getDate()+i*7);
+      else if(freq==='quinzenal') d.setDate(d.getDate()+i*15);
+      else if(freq==='anual') d.setFullYear(d.getFullYear()+i);
+      const dt=d.toISOString().slice(0,10);
+      data.push({
+        ...obj,
+        id:uid(),
+        data:dt,dataPag:dt,venc:dt,comp:dt,
+        pago:i===0?obj.pago:false,
+        grupoId,
+        recorrente:freq,
+        parcela:`${i+1}/${total}`,
+      });
+    }
+    S.set('lancamentos',data);
+  } else {
+    if(editLancId)data=data.map(x=>x.id===editLancId?obj:x);
+    else data.push(obj);
+    S.set('lancamentos',data);
+  }
 
   // ── Atualizar estoque vinculado ──
   if(isDesp){
@@ -4886,6 +4994,30 @@ function setTipoLanc(prefix, val, label, e) {
   if(e && e.target) e.target.classList.add('selected');
   document.querySelectorAll('.custom-drop').forEach(d=>d.classList.remove('open'));
   document.querySelectorAll('.flt-custom-wrap').forEach(w=>w.classList.remove('active'));
+
+  // Show/hide parcela and recorrencia sections
+  const sec=document.getElementById(prefix+'-parc-section');
+  const parcF=document.getElementById(prefix+'-parc-fields');
+  const fixoF=document.getElementById(prefix+'-fixo-fields');
+  if(sec) sec.style.display=(val==='unico')?'none':'block';
+  if(parcF) parcF.style.display=(val==='parcelado')?'block':'none';
+  if(fixoF) fixoF.style.display=(val==='fixo')?'block':'none';
+}
+
+function updateParcPreview(prefix){
+  const n=parseInt(document.getElementById(prefix+'-num-parc')?.value)||0;
+  const tot=parseFloat(document.getElementById(prefix+'-valor-total-parc')?.value)||0;
+  const prev=document.getElementById(prefix+'-parc-preview');
+  const valInput=document.getElementById(prefix+'-valor');
+  if(prev){
+    if(n>1&&tot>0){
+      const parc=tot/n;
+      prev.textContent=`${n}x de R$ ${fmtN(parc)}`;
+      if(valInput&&!valInput.value) valInput.value=parc.toFixed(2);
+    } else {
+      prev.textContent='—';
+    }
+  }
 }
 
 // ─── LEGACY COMPAT ───
@@ -5217,7 +5349,7 @@ function renderProdutos(){
     return`<tr>
       <td style="font-weight:500;color:var(--t)">${p.nome}</td>
       <td>${p.cat}</td>
-      <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span></td>
+      <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span>${p.nome_ifood?`<br><span style="font-size:9px;background:#FEF2EC;color:var(--fox);padding:1px 6px;border-radius:10px;font-weight:600">iF: ${p.nome_ifood}</span>`:''}</td>
       <td>R$ ${fmtN(p.custo)}</td>
       <td style="font-weight:600">R$ ${fmtN(p.preco)}</td>
       <td style="color:var(--green)">R$ ${fmtN(lucro)}</td>
@@ -5375,6 +5507,7 @@ function openProd(id){
       document.getElementById('mprod-preco').value=p.preco||'';
       document.getElementById('mprod-status').value=p.status||'ativo';
       document.getElementById('mprod-codigo-pdv').value=p.codigo_pdv||'';
+      document.getElementById('mprod-nome-ifood').value=p.nome_ifood||'';
       document.getElementById('mprod-codigo-interno').value=p.id||'';
       document.getElementById('mprod-del').style.display='block';
       const est=getEstProd();
@@ -5395,7 +5528,7 @@ function openProd(id){
   } else {
     document.getElementById('mprod-title-input').value='';
     document.getElementById('mprod-subtitle').textContent='';
-    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv'].forEach(i=>document.getElementById(i).value='');
+    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv','mprod-nome-ifood'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('mprod-codigo-interno').value='(gerado ao salvar)';
     document.getElementById('mprod-estoque').value='0';
     document.getElementById('mprod-status').value='ativo';
@@ -5507,6 +5640,7 @@ function saveProd(){
     preco:parseFloat(document.getElementById('mprod-preco').value)||0,
     status:document.getElementById('mprod-status').value,
     codigo_pdv:(document.getElementById('mprod-codigo-pdv').value||'').trim()||null,
+    nome_ifood:(document.getElementById('mprod-nome-ifood').value||'').trim().toUpperCase()||null,
     id_externo:(document.getElementById('mprod-codigo-interno').value||'').trim()||null,
   };
   // apply ficha custo if toggle is on
@@ -6364,9 +6498,11 @@ function mergeNaHistoria(novos){
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
           const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
+          // Busca: 1) PDV code, 2) nome exato, 3) alias iFood
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
+            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
           if(prod&&!revertidosNestePedido.has(prod.id)){
             revertidosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
@@ -6401,7 +6537,8 @@ function mergeNaHistoria(novos){
           // Só nome EXATO — sem parcial (parcial causava duplicação)
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
+            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
           if(prod&&!baixadosNestePedido.has(prod.id)){
             baixadosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
