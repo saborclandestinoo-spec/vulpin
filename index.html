@@ -856,7 +856,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             <div id="prec-mo-lista"></div>
             <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bor2)">
               <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Produção total do mês (unidades):</div>
-              <input type="number" id="prec-prod-total" placeholder="Ex: 900" style="border:1px solid var(--bor);border-radius:8px;padding:7px 10px;font-size:12px;width:100%;font-family:inherit;box-sizing:border-box" oninput="renderPrecificacao()">
+              <input type="number" id="prec-prod-total" placeholder="Ex: 900" style="border:1px solid var(--bor);border-radius:8px;padding:7px 10px;font-size:12px;width:100%;font-family:inherit;box-sizing:border-box" oninput="S.set('prec_prod_total',this.value);renderPrecificacao()">
               <div style="font-size:10px;color:var(--t3);margin-top:4px">Se vazio, usa soma das produções registradas no mês</div>
             </div>
           </div>
@@ -2510,6 +2510,7 @@ function renderPrecificacao(){
 
   // Produção total do mês
   const prodInputEl=document.getElementById('prec-prod-total');
+  if(prodInputEl&&!prodInputEl.value){const saved=S.get('prec_prod_total');if(saved)prodInputEl.value=saved;}
   const savedProdVal=prodInputEl?prodInputEl.value:'';
   const prodTotalInput=parseFloat(savedProdVal)||0;
   const prodTotalMes=prodTotalInput||producoes.reduce((s,p)=>s+(p.qtd||0),0)||1;
