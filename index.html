@@ -2238,13 +2238,13 @@ function renderDashboard(){
 
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F5F6FA;border-bottom:none';
     if(strip) strip.innerHTML=[
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'#1a1a2e'},
       {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'total do dia',cor:'#27AE60'},
       {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas/descontos',cor:'#FF6B35'},
       {ico:'🛵',lbl:'Taxas Entrega',val:`R$ ${fmtN(_taxaEnt)}`,sub:'delivery',cor:'#E67E22'},
       {ico:'🏷️',lbl:'Descontos Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'promoções',cor:'#E74C3C'},
       {ico:'🍔',lbl:'Descontos iFood',val:`R$ ${fmtN(_descIF)}`,sub:'plataforma',cor:'#EA1D2C'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'#1a1a2e'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
     ].map(k=>`<div style="background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px">
       <div style="font-size:24px">${k.ico}</div>
