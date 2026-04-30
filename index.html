@@ -5553,6 +5553,10 @@ function slim(p){
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
     sales_channel:p.sales_channel||'',
+    order_type:p.order_type||'',
+    delivery_fee:p.delivery_fee||p.deliveryFee||0,
+    discount:p.discount||p.desconto||p.store_discount||0,
+    benefits:p.benefits||[],
     customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||''},
     items:itens,
     payments:pag,
@@ -5960,7 +5964,7 @@ async function enriquecerHistorico(){
   if(!cfg.token)return;
   const hist=getHistorico();
   // Enriquece pedidos sem itens OU sem cliente — independente do total
-  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!p.customer?.name);
+  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type));
   if(!zerados.length)return;
   _enriquecendo=true;
   const CHUNK=5;
