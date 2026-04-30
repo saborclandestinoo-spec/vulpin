@@ -431,6 +431,20 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
         <!-- MES/PERIODO CONTENT -->
         <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
+
+          <!-- DRE -->
+          <div style="background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--t)">DRE — Demonstração do Resultado do Exercício</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:2px" id="dre-periodo-label">Período selecionado</div>
+              </div>
+              <button onclick="toggleDRE()" id="dre-toggle-btn" style="background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;color:var(--t2)">Expandir</button>
+            </div>
+            <div id="dre-body" style="display:none;padding:0 0 8px"></div>
+            <div id="dre-resumo" style="padding:14px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;border-top:1px solid var(--bor2)"></div>
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">🏆 Top Produtos</div>
@@ -2311,7 +2325,7 @@ function renderDashboard(){
     </div>`).join('');
 
     // Render mes widgets
-    renderDashMesWidgets(histPeriod, lancPeriod, filterFn);
+    renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel);
   }
 
   // Panel visibility handled by dashSetPeriod
@@ -2327,7 +2341,9 @@ function renderDashboard(){
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
 }
 
-function renderDashMesWidgets(histPeriod, lancPeriod, filterFn){
+function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel){
+  // DRE
+  renderDRE(histPeriod, lancPeriod, canceladosPeriod, periodoLabel);
   // === TOP PRODUTOS ===
   const rankEl=document.getElementById('dash-ranking');
   if(rankEl){
@@ -2483,8 +2499,153 @@ function renderFluxoChart(){
 
 
 // ═══════════════════════════════════════════
-// PRECIFICAÇÃO
+// DRE
 // ═══════════════════════════════════════════
+let _dreExpanded=false;
+function toggleDRE(){
+  _dreExpanded=!_dreExpanded;
+  const body=document.getElementById('dre-body');
+  const btn=document.getElementById('dre-toggle-btn');
+  if(body) body.style.display=_dreExpanded?'block':'none';
+  if(btn) btn.textContent=_dreExpanded?'Recolher':'Expandir';
+}
+
+function renderDRE(histPeriod, lancPeriod, canceladosPeriod, periodoLabel){
+  const dreLabel=document.getElementById('dre-periodo-label');
+  if(dreLabel) dreLabel.textContent=periodoLabel;
+
+  const lancs=lancPeriod;
+  const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+
+  // === RECEITAS ===
+  const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+
+  // Vendas por forma de pagamento
+  const vendaPix=histPeriod.reduce((s,p)=>{const pg=(p.payments||p.pagamentos||[]);return s+pg.filter(x=>(x.method||x.tipo||'').toLowerCase().includes('pix')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaDin=histPeriod.reduce((s,p)=>{const pg=(p.payments||p.pagamentos||[]);return s+pg.filter(x=>(x.method||x.tipo||'').toLowerCase().includes('dinheiro')||( x.method||x.tipo||'').toLowerCase().includes('cash')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaCred=histPeriod.reduce((s,p)=>{const pg=(p.payments||p.pagamentos||[]);return s+pg.filter(x=>(x.method||x.tipo||'').toLowerCase().includes('credit')||(x.method||x.tipo||'').toLowerCase().includes('crédito')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaDeb=histPeriod.reduce((s,p)=>{const pg=(p.payments||p.pagamentos||[]);return s+pg.filter(x=>(x.method||x.tipo||'').toLowerCase().includes('debit')||(x.method||x.tipo||'').toLowerCase().includes('débito')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaIF=histPeriod.reduce((s,p)=>{const pg=(p.payments||p.pagamentos||[]);return s+pg.filter(x=>(x.method||x.tipo||'').toLowerCase().includes('ifood')||(x.method||x.tipo||'').toLowerCase().includes('online')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+
+  // Deduções
+  const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
+  const descontos=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0)+(p.discounts||[]).reduce((a,d)=>a+(d.value||d.total||0),0),0);
+  const taxaIF=histPeriod.reduce((s,p)=>s+(typeof p.total_fees==='number'?p.total_fees:0),0);
+  const simples=lancs.filter(l=>(l.catCod||'').startsWith('3.9.1')).reduce((s,l)=>s+(l.valor||0),0);
+
+  const recLiq=recBruta-cancelVal-descontos-taxaIF-simples;
+
+  // === CPV ===
+  const cmvMat=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const moDir=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const cif=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const cpv=cmvMat+moDir+cif;
+
+  const lucBruto=recLiq-cpv;
+
+  // === DESPESAS VENDAS ===
+  const logistica=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.2.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const canaisVenda=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.2.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const despVendas=logistica+canaisVenda;
+
+  // === DESPESAS ADMIN ===
+  const ocupacao=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const utilidades=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const servProf=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const pessoalAdm=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.4')).reduce((s,l)=>s+(l.valor||0),0);
+  const manutGeral=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.5')).reduce((s,l)=>s+(l.valor||0),0);
+  const tecnologia=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.6')).reduce((s,l)=>s+(l.valor||0),0);
+  const tribLegal=lancs.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.7')).reduce((s,l)=>s+(l.valor||0),0);
+  const despAdmin=ocupacao+utilidades+servProf+pessoalAdm+manutGeral+tecnologia+tribLegal;
+
+  // === OUTRAS ===
+  const outras=lancs.filter(l=>l.tipo==='despesa'&&!(l.catCod||'').startsWith('4.1')&&!(l.catCod||'').startsWith('4.2')&&!(l.catCod||'').startsWith('4.3')&&!(l.catCod||'').startsWith('3.9')).reduce((s,l)=>s+(l.valor||0),0);
+
+  const ebit=lucBruto-despVendas-despAdmin-outras;
+  const lucLiq=ebit; // Simples Nacional já deduzido em cima
+
+  const pct=(v)=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'—';
+  const row=(cod,nome,val,nivel=0,bold=false,color='')=>{
+    const indent=nivel*14;
+    const isNeg=val<0;
+    const fmt=`R$ ${fmtN(Math.abs(val))}`;
+    const display=isNeg?`(${fmt})`:(val===0?'—':fmt);
+    const cor=color||(val>0?'var(--t)':val<0?'var(--red)':'var(--t3)');
+    return `<div style="display:flex;align-items:center;padding:5px 20px;border-bottom:1px solid var(--bor2);${bold?'background:var(--bg2)':''}">
+      <div style="width:70px;font-size:10px;color:var(--t3);flex-shrink:0">${cod}</div>
+      <div style="flex:1;font-size:${bold?'12':'11'}px;font-weight:${bold?700:400};color:var(--t);padding-left:${indent}px">${nome}</div>
+      <div style="font-size:${bold?'12':'11'}px;font-weight:${bold?700:500};color:${cor};min-width:90px;text-align:right">${display}</div>
+      <div style="font-size:10px;color:var(--t3);min-width:50px;text-align:right;margin-left:8px">${pct(val)}</div>
+    </div>`;
+  };
+  const sep=(label)=>`<div style="padding:8px 20px 4px;background:var(--fox-l)"><div style="font-size:9px;font-weight:700;color:var(--fox);text-transform:uppercase;letter-spacing:.7px">${label}</div></div>`;
+  const result=(label,val,color)=>`<div style="display:flex;align-items:center;padding:8px 20px;background:${val>=0?'#F0FFF4':'#FFF5F5'}">
+    <div style="width:70px"></div>
+    <div style="flex:1;font-size:12.5px;font-weight:700;color:var(--t)">${label}</div>
+    <div style="font-size:13px;font-weight:800;color:${color||( val>=0?'var(--green)':'var(--red)')};min-width:90px;text-align:right">R$ ${fmtN(val)}</div>
+    <div style="font-size:10px;color:var(--t3);min-width:50px;text-align:right;margin-left:8px">${pct(val)}</div>
+  </div>`;
+
+  const dreBody=document.getElementById('dre-body');
+  if(dreBody) dreBody.innerHTML=`
+    <div style="display:flex;padding:6px 20px;background:var(--bg3);border-bottom:1px solid var(--bor)">
+      <div style="width:70px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Cód.</div>
+      <div style="flex:1;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Conta</div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:90px;text-align:right">Valor</div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:50px;text-align:right;margin-left:8px">% Rec.</div>
+    </div>
+    ${sep('3 — RECEITAS')}
+    ${row('3.1','Receita Bruta Operacional',recBruta,0,true,'var(--green)')}
+    ${row('3.1.1.1','Vendas Pix',vendaPix,2)}
+    ${row('3.1.1.2','Vendas Dinheiro',vendaDin,2)}
+    ${row('3.1.1.3','Vendas Cartão Crédito',vendaCred,2)}
+    ${row('3.1.1.4','Vendas Cartão Débito',vendaDeb,2)}
+    ${row('3.1.1.5','Vendas iFood',vendaIF,2)}
+    ${row('3.2','(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF+simples),1,false,'var(--red)')}
+    ${row('3.2.1.1','(-) Simples Nacional (DAS)',-simples,2)}
+    ${row('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,2)}
+    ${row('3.2.2.3','(-) Descontos Concedidos',-descontos,2)}
+    ${row('3.2.3.1','(-) Taxas iFood',-taxaIF,2)}
+    ${result('(=) Receita Líquida Operacional',recLiq,'var(--blue)')}
+
+    ${sep('4.1 — CUSTO DOS PRODUTOS VENDIDOS (CPV)')}
+    ${row('4.1.1','Matérias-Primas e Ingredientes',-cmvMat,1,false,'var(--red)')}
+    ${row('4.1.2','Mão de Obra Direta (MOD)',-moDir,1,false,'var(--red)')}
+    ${row('4.1.3','Custos Indiretos de Fabricação',-cif,1,false,'var(--red)')}
+    ${result('(=) Resultado Bruto (Margem Bruta)',lucBruto,lucBruto>=0?'var(--green)':'var(--red)')}
+
+    ${sep('4.2 — DESPESAS COM VENDAS')}
+    ${row('4.2.1','Logística e Entrega',-logistica,1)}
+    ${row('4.2.3','Canais de Venda',-canaisVenda,1)}
+    ${result('(=) Resultado após Desp. Vendas',lucBruto-despVendas)}
+
+    ${sep('4.3 — DESPESAS ADMINISTRATIVAS')}
+    ${row('4.3.1','Ocupação',-ocupacao,1)}
+    ${row('4.3.2','Utilidades',-utilidades,1)}
+    ${row('4.3.3','Serviços Profissionais',-servProf,1)}
+    ${row('4.3.4','Pessoal Administrativo',-pessoalAdm,1)}
+    ${row('4.3.5','Manutenção Geral',-manutGeral,1)}
+    ${row('4.3.6','Tecnologia e Sistemas',-tecnologia,1)}
+    ${row('4.3.7','Tributário e Legal',-tribLegal,1)}
+    ${outras>0?row('4.x','Outras Despesas',-outras,1):''}
+    ${result('(=) EBIT — Resultado Operacional',ebit,ebit>=0?'var(--green)':'var(--red)')}
+    ${result('(=) Resultado Líquido do Exercício',lucLiq,lucLiq>=0?'var(--green)':'var(--red)')}
+  `;
+
+  // Resumo cards compactos
+  const dreResumo=document.getElementById('dre-resumo');
+  if(dreResumo) dreResumo.innerHTML=[
+    {lbl:'Receita Bruta',val:recBruta,cor:'var(--green)'},
+    {lbl:'Custo Total (CPV+Desp)',val:-(cpv+despVendas+despAdmin+cancelVal+descontos+taxaIF+simples),cor:'var(--red)'},
+    {lbl:'EBIT',val:ebit,cor:ebit>=0?'var(--blue)':'var(--red)'},
+    {lbl:'Margem Líquida',val:null,txt:recBruta>0?(lucLiq/recBruta*100).toFixed(1)+'%':'—',cor:lucLiq>=0?'var(--green)':'var(--red)'},
+  ].map(k=>`<div style="text-align:center">
+    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${k.lbl}</div>
+    <div style="font-size:16px;font-weight:800;color:${k.cor}">${k.txt||'R$ '+fmtN(k.val)}</div>
+  </div>`).join('');
+}
+
+
 function renderPrecificacao(){
   const now=new Date();
   const mesEl=document.getElementById('prec-mes');
