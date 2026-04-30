@@ -358,6 +358,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor"/><rect x="7.5" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor"/><rect x="1" y="7.5" width="5.5" height="5.5" rx="1.2" fill="currentColor"/><rect x="7.5" y="7.5" width="5.5" height="5.5" rx="1.2" fill="currentColor"/></svg>
       Dashboard
     </div>
+    <div class="ni" onclick="go('dre',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11V3h10v8H2z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><path d="M4 8l2-2 2 2 2-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      DRE
+    </div>
     <div class="ni" onclick="go('pedidos',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5h6M4 7h4M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       Pedidos
@@ -404,6 +408,59 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     <div class="tb-r" id="tb-r"></div>
   </div>
   <div class="content">
+
+    <!-- DRE -->
+    <div class="pg" id="pg-dre">
+      <div class="scroll" style="background:var(--bg2)">
+        <!-- Header -->
+        <div style="background:#fff;border-bottom:1px solid var(--bor);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Demonstração do Resultado do Exercício</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="dre-pg-periodo">—</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:3px;background:#F1F1F4;border-radius:22px;padding:3px">
+              <button onclick="drePgSetPeriod('mes')" id="dre-btn-mes" style="background:var(--fox);color:#fff;border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Este Mês</button>
+              <button onclick="drePgSetPeriod('custom')" id="dre-btn-custom" style="background:transparent;color:var(--t3);border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Período</button>
+            </div>
+            <div id="dre-pg-range" style="display:none;align-items:center;gap:6px">
+              <input type="month" id="dre-pg-start" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit" onchange="renderDREPage()">
+              <span style="font-size:11px;color:var(--t3)">até</span>
+              <input type="month" id="dre-pg-end" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit" onchange="renderDREPage()">
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Strip -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 20px;margin-bottom:16px" id="dre-pg-kpi"></div>
+
+        <!-- DRE Table -->
+        <div style="margin:0 20px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
+          <div style="padding:6px 20px;background:var(--bg3);border-bottom:1px solid var(--bor);display:flex">
+            <div style="width:70px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Cód.</div>
+            <div style="flex:1;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Conta</div>
+            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:100px;text-align:right">Valor</div>
+            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:55px;text-align:right;margin-left:8px">% Rec.</div>
+          </div>
+          <div id="dre-pg-body"></div>
+        </div>
+
+        <!-- CMV por Produto -->
+        <div style="margin:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">CMV por Produto</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Custo dos itens vendidos no período</div>
+            <div id="dre-pg-cmv"></div>
+          </div>
+          <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">Despesas por Categoria</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Composição dos custos do período</div>
+            <div id="dre-pg-desp"></div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
 
     <!-- DASHBOARD -->
     <div class="pg on" id="pg-dashboard">
@@ -1955,7 +2012,7 @@ _sb.auth.getSession().then(async ({data:{session}}) => {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação'};
+const PAGE_TITLES={dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação'};
 const PAGE_ACTIONS={
   dashboard:()=>``,
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
@@ -1970,6 +2027,7 @@ const PAGE_ACTIONS={
     categorias:()=>'',
   config:()=>``,
   precificacao:()=>'',
+  dre:()=>'',
 };
 var currentPage='dashboard';
 function go(page,el){
@@ -1984,7 +2042,8 @@ function go(page,el){
     dashboard:renderDashboard,pedidos:renderPedidos,producao:renderProducao,estoque:renderEstoque,
     financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,
     materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,
-    precificacao:renderPrecificacao
+    precificacao:renderPrecificacao,
+    dre:renderDREPage
   };
   if(renders[page])renders[page]();
 }
@@ -2499,8 +2558,240 @@ function renderFluxoChart(){
 
 
 // ═══════════════════════════════════════════
-// DRE
+// DRE PAGE
 // ═══════════════════════════════════════════
+let _drePgPeriod='mes';
+function drePgSetPeriod(p){
+  _drePgPeriod=p;
+  ['mes','custom'].forEach(x=>{
+    const b=document.getElementById('dre-btn-'+x);
+    if(b){b.style.background=x===p?'var(--fox)':'transparent';b.style.color=x===p?'#fff':'var(--t3)';}
+  });
+  const range=document.getElementById('dre-pg-range');
+  if(range) range.style.display=p==='custom'?'flex':'none';
+  if(p!=='custom') renderDREPage();
+}
+
+function renderDREPage(){
+  const now=new Date();
+  const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  let filterFn, periodoLabel;
+  if(_drePgPeriod==='mes'){
+    const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    filterFn=dt=>dt.startsWith(mes);
+    periodoLabel=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  } else {
+    const s=document.getElementById('dre-pg-start')?.value;
+    const e=document.getElementById('dre-pg-end')?.value;
+    if(!s||!e) return;
+    filterFn=dt=>dt>=s.slice(0,7)&&dt<=e.slice(0,7)+'z';
+    periodoLabel=s===e?s:`${s} → ${e}`;
+  }
+
+  const histRaw=getHistorico();
+  const cacheHoje=getPedidosCache();
+  const histMapa={};
+  histRaw.forEach(p=>{histMapa[p.id]=p;});
+  cacheHoje.forEach(p=>{if(p.id)histMapa[p.id]={...histMapa[p.id],...p};});
+  const hist=Object.values(histMapa);
+
+  const histPeriod=hist.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';if(!dt)return false;
+    const dtBR=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    return filterFn(dtBR)&&!_stCancel.has(p.status||'');
+  });
+  const canceladosPeriod=hist.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';if(!dt)return false;
+    const dtBR=new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    return filterFn(dtBR)&&_stCancel.has(p.status||'');
+  });
+  const lancs=getLanc();
+  const lancPeriod=lancs.filter(l=>filterFn((l.data||l.dataPag||'').slice(0,10)));
+
+  const pgLabel=document.getElementById('dre-pg-periodo');
+  if(pgLabel) pgLabel.textContent=periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1);
+
+  // Calcular tudo
+  const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
+  const descontos=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0)+(p.discounts||[]).reduce((a,d)=>a+(d.value||d.total||0),0),0);
+  const taxaIF=histPeriod.reduce((s,p)=>s+(typeof p.total_fees==='number'?p.total_fees:0),0);
+  const simples=lancPeriod.filter(l=>(l.catCod||'').startsWith('3.9.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const recLiq=recBruta-cancelVal-descontos-taxaIF-simples;
+  const cmvMat=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const moDir=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const cif=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const cpv=cmvMat+moDir+cif;
+  const lucBruto=recLiq-cpv;
+  const margemBruta=recBruta>0?(lucBruto/recBruta*100):0;
+  const logistica=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.2.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const canaisVenda=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.2.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const despVendas=logistica+canaisVenda;
+  const ocupacao=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const utilidades=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const servProf=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const pessoalAdm=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.4')).reduce((s,l)=>s+(l.valor||0),0);
+  const manutGeral=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.5')).reduce((s,l)=>s+(l.valor||0),0);
+  const tecnologia=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.6')).reduce((s,l)=>s+(l.valor||0),0);
+  const tribLegal=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.3.7')).reduce((s,l)=>s+(l.valor||0),0);
+  const despAdmin=ocupacao+utilidades+servProf+pessoalAdm+manutGeral+tecnologia+tribLegal;
+  const ebit=lucBruto-despVendas-despAdmin;
+  const margemLiq=recBruta>0?(ebit/recBruta*100):0;
+
+  const pct=(v)=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'—';
+
+  // KPI Strip
+  const kpiEl=document.getElementById('dre-pg-kpi');
+  if(kpiEl) kpiEl.innerHTML=[
+    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)',ico:'💰'},
+    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)',ico:'📊'},
+    {lbl:'EBIT',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)',ico:'📈'},
+    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)',ico:'🎯'},
+  ].map(k=>`<div style="background:#fff;border:1px solid var(--bor);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+    <div style="font-size:24px">${k.ico}</div>
+    <div>
+      <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">${k.lbl}</div>
+      <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1">${k.val}</div>
+    </div>
+  </div>`).join('');
+
+  // DRE rows helpers
+  const row=(cod,nome,val,nivel=0,bold=false,color='')=>{
+    const indent=nivel*16;
+    const isNeg=val<0;
+    const fmt=`R$ ${fmtN(Math.abs(val))}`;
+    const display=isNeg?`(${fmt})`:(val===0?'—':fmt);
+    const cor=color||(bold?'var(--t)':val>0?'var(--t)':val<0?'var(--red)':'var(--t3)');
+    return `<div style="display:flex;align-items:center;padding:6px 20px;border-bottom:1px solid var(--bor2);${bold?'background:var(--bg2)':''}">
+      <div style="width:70px;font-size:10px;color:var(--t3);flex-shrink:0">${cod}</div>
+      <div style="flex:1;font-size:${bold?'12':'11.5'}px;font-weight:${bold?700:400};color:var(--t);padding-left:${indent}px">${nome}</div>
+      <div style="font-size:${bold?'12':'11.5'}px;font-weight:${bold?700:500};color:${cor};min-width:100px;text-align:right">${display}</div>
+      <div style="font-size:10px;color:var(--t3);min-width:55px;text-align:right;margin-left:8px">${pct(val)}</div>
+    </div>`;
+  };
+  const sep=(label)=>`<div style="padding:8px 20px 4px;background:var(--fox-l)"><div style="font-size:9px;font-weight:700;color:var(--fox);text-transform:uppercase;letter-spacing:.7px">${label}</div></div>`;
+  const result=(label,val)=>`<div style="display:flex;align-items:center;padding:9px 20px;background:${val>=0?'rgba(39,174,96,.07)':'rgba(231,76,60,.07)'};border-top:1.5px solid ${val>=0?'rgba(39,174,96,.2)':'rgba(231,76,60,.2)'}">
+    <div style="width:70px"></div>
+    <div style="flex:1;font-size:12.5px;font-weight:700;color:var(--t)">${label}</div>
+    <div style="font-size:13px;font-weight:800;color:${val>=0?'var(--green)':'var(--red)'};min-width:100px;text-align:right">R$ ${fmtN(val)}</div>
+    <div style="font-size:10.5px;font-weight:600;color:${val>=0?'var(--green)':'var(--red)'};min-width:55px;text-align:right;margin-left:8px">${pct(val)}</div>
+  </div>`;
+
+  // Pagamentos breakdown
+  const vendaPix=histPeriod.reduce((s,p)=>{return s+(p.payments||p.pagamentos||[]).filter(x=>(x.method||x.tipo||'').toLowerCase().includes('pix')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaDin=histPeriod.reduce((s,p)=>{return s+(p.payments||p.pagamentos||[]).filter(x=>(x.method||x.tipo||'').toLowerCase().includes('dinheiro')||(x.method||x.tipo||'').toLowerCase().includes('cash')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaCred=histPeriod.reduce((s,p)=>{return s+(p.payments||p.pagamentos||[]).filter(x=>(x.method||x.tipo||'').toLowerCase().includes('credit')||(x.method||x.tipo||'').toLowerCase().includes('crédit')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaDeb=histPeriod.reduce((s,p)=>{return s+(p.payments||p.pagamentos||[]).filter(x=>(x.method||x.tipo||'').toLowerCase().includes('debit')||(x.method||x.tipo||'').toLowerCase().includes('débit')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+  const vendaIF=histPeriod.reduce((s,p)=>{return s+(p.payments||p.pagamentos||[]).filter(x=>(x.method||x.tipo||'').toLowerCase().includes('ifood')||(x.method||x.tipo||'').toLowerCase().includes('online')).reduce((a,x)=>a+(x.value||x.valor||0),0);},0);
+
+  const dreBody=document.getElementById('dre-pg-body');
+  if(dreBody) dreBody.innerHTML=`
+    ${sep('3 — RECEITAS')}
+    ${row('3.1','Receita Bruta Operacional',recBruta,0,true,'var(--green)')}
+    ${vendaPix>0?row('3.1.1.1','Vendas Pix',vendaPix,2):''}
+    ${vendaDin>0?row('3.1.1.2','Vendas Dinheiro',vendaDin,2):''}
+    ${vendaCred>0?row('3.1.1.3','Vendas Cartão Crédito',vendaCred,2):''}
+    ${vendaDeb>0?row('3.1.1.4','Vendas Cartão Débito',vendaDeb,2):''}
+    ${vendaIF>0?row('3.1.1.5','Vendas iFood',vendaIF,2):''}
+    ${row('3.2','(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF+simples),1,false,'var(--red)')}
+    ${simples>0?row('3.2.1.1','(-) Simples Nacional (DAS)',-simples,2):''}
+    ${cancelVal>0?row('3.2.2.1','(-) Cancelamentos',-cancelVal,2):''}
+    ${descontos>0?row('3.2.2.3','(-) Descontos Concedidos',-descontos,2):''}
+    ${taxaIF>0?row('3.2.3.1','(-) Taxas iFood',-taxaIF,2):''}
+    ${result('(=) Receita Líquida Operacional',recLiq)}
+
+    ${sep('4.1 — CUSTO DOS PRODUTOS VENDIDOS (CPV)')}
+    ${row('4.1.1','(-) Matérias-Primas e Ingredientes',-cmvMat,1)}
+    ${row('4.1.2','(-) Mão de Obra Direta (MOD)',-moDir,1)}
+    ${cif>0?row('4.1.3','(-) Custos Indiretos de Fabricação',-cif,1):''}
+    ${result('(=) Resultado Bruto — Margem Bruta '+margemBruta.toFixed(1)+'%',lucBruto)}
+
+    ${sep('4.2 — DESPESAS COM VENDAS')}
+    ${logistica>0?row('4.2.1','(-) Logística e Entrega',-logistica,1):''}
+    ${canaisVenda>0?row('4.2.3','(-) Canais de Venda',-canaisVenda,1):''}
+    ${despVendas===0?'<div style="padding:8px 20px;font-size:11px;color:var(--t3)">—</div>':''}
+
+    ${sep('4.3 — DESPESAS ADMINISTRATIVAS')}
+    ${ocupacao>0?row('4.3.1','(-) Ocupação',-ocupacao,1):''}
+    ${utilidades>0?row('4.3.2','(-) Utilidades',-utilidades,1):''}
+    ${servProf>0?row('4.3.3','(-) Serviços Profissionais',-servProf,1):''}
+    ${pessoalAdm>0?row('4.3.4','(-) Pessoal Administrativo',-pessoalAdm,1):''}
+    ${manutGeral>0?row('4.3.5','(-) Manutenção Geral',-manutGeral,1):''}
+    ${tecnologia>0?row('4.3.6','(-) Tecnologia e Sistemas',-tecnologia,1):''}
+    ${tribLegal>0?row('4.3.7','(-) Tributário e Legal',-tribLegal,1):''}
+    ${result('(=) EBIT — Resultado Operacional Líquido',ebit)}
+    ${result('(=) Resultado Líquido do Exercício',ebit)}
+  `;
+
+  // CMV por produto
+  const fichas=getFichas();
+  const mp=getMP();
+  const prods=getProdutos();
+  const cmvProd=[];
+  histPeriod.forEach(p=>{
+    (p.items||p.itens||[]).forEach(i=>{
+      const prod=prods.find(x=>x.nome===i.name||x.nome===i.nome);
+      const qtd=i.quantity||i.qtd||1;
+      const custo=prod?(prod.custo||0):0;
+      if(prod&&custo>0){
+        const ex=cmvProd.find(x=>x.nome===prod.nome);
+        if(ex){ex.qtd+=qtd;ex.total+=custo*qtd;}
+        else cmvProd.push({nome:prod.nome,qtd,total:custo*qtd});
+      }
+    });
+  });
+  cmvProd.sort((a,b)=>b.total-a.total);
+  const totalCMVProd=cmvProd.reduce((s,x)=>s+x.total,0);
+  const maxCMV=cmvProd[0]?.total||1;
+  const cmvEl=document.getElementById('dre-pg-cmv');
+  if(cmvEl) cmvEl.innerHTML=cmvProd.length?cmvProd.slice(0,10).map(x=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11.5px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%">${x.nome}</span>
+        <div>
+          <span style="font-size:10px;color:var(--t3)">${x.qtd} un · </span>
+          <span style="font-size:11.5px;font-weight:700;color:var(--red)">R$ ${fmtN(x.total)}</span>
+        </div>
+      </div>
+      <div style="height:4px;background:var(--bg3);border-radius:4px"><div style="height:100%;background:var(--red);border-radius:4px;width:${(x.total/maxCMV*100).toFixed(0)}%;opacity:.6"></div></div>
+    </div>`).join('')+`<div style="padding-top:8px;border-top:1px solid var(--bor2);display:flex;justify-content:space-between">
+      <span style="font-size:11px;font-weight:700;color:var(--t)">Total CMV</span>
+      <span style="font-size:11px;font-weight:700;color:var(--red)">R$ ${fmtN(totalCMVProd)}</span>
+    </div>`
+  :'<div style="font-size:11px;color:var(--t3)">Sem dados de CMV no período</div>';
+
+  // Despesas por categoria
+  const despCats=[
+    {lbl:'Logística/Entrega',val:logistica,cor:'var(--red)'},
+    {lbl:'Canais de Venda',val:canaisVenda,cor:'var(--amber)'},
+    {lbl:'Pessoal Admin.',val:pessoalAdm,cor:'var(--blue)'},
+    {lbl:'Serviços Prof.',val:servProf,cor:'var(--purple)'},
+    {lbl:'Tecnologia',val:tecnologia,cor:'var(--fox)'},
+    {lbl:'Manutenção',val:manutGeral,cor:'var(--t2)'},
+    {lbl:'Ocupação',val:ocupacao,cor:'var(--green)'},
+    {lbl:'Utilidades',val:utilidades,cor:'#8E44AD'},
+  ].filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+  const totalDesp=despCats.reduce((s,x)=>s+x.val,0);
+  const maxDesp=despCats[0]?.val||1;
+  const despEl=document.getElementById('dre-pg-desp');
+  if(despEl) despEl.innerHTML=despCats.length?despCats.map(x=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:11.5px;color:var(--t)">${x.lbl}</span>
+        <div>
+          <span style="font-size:10px;color:var(--t3)">${(x.val/totalDesp*100).toFixed(1)}% · </span>
+          <span style="font-size:11.5px;font-weight:700;color:${x.cor}">R$ ${fmtN(x.val)}</span>
+        </div>
+      </div>
+      <div style="height:4px;background:var(--bg3);border-radius:4px"><div style="height:100%;background:${x.cor};border-radius:4px;width:${(x.val/maxDesp*100).toFixed(0)}%;opacity:.7"></div></div>
+    </div>`).join('')+`<div style="padding-top:8px;border-top:1px solid var(--bor2);display:flex;justify-content:space-between">
+      <span style="font-size:11px;font-weight:700;color:var(--t)">Total Despesas</span>
+      <span style="font-size:11px;font-weight:700;color:var(--red)">R$ ${fmtN(totalDesp)}</span>
+    </div>`
+  :'<div style="font-size:11px;color:var(--t3)">Sem despesas no período</div>';
+}
+
+
 let _dreExpanded=false;
 function toggleDRE(){
   _dreExpanded=!_dreExpanded;
