@@ -2234,7 +2234,7 @@ function renderDashboard(){
     const _totProd=histPeriod.reduce((s,p)=>{return s+(p.items||p.itens||[]).reduce((si,i)=>si+((i.price||i.unit_price||0)*(i.quantity||1)),0);},0);
     const _taxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
-    const _descIF=histPeriod.reduce((s,p)=>s+(p.benefits?.reduce?.((si,b)=>si+(b.value||0),0)||0),0);
+    const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
 
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F5F6FA;border-bottom:none';
     if(strip) strip.innerHTML=[
@@ -5557,6 +5557,7 @@ function slim(p){
     delivery_fee:p.delivery_fee||p.deliveryFee||0,
     discount:p.discount||p.desconto||p.store_discount||0,
     benefits:p.benefits||[],
+    discounts:p.discounts||[],
     customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||''},
     items:itens,
     payments:pag,
@@ -5734,7 +5735,7 @@ function renderHistorico(){
   const taxasEntrega=validos.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
   const taxasServico=validos.reduce((s,p)=>s+(p.service_tax||p.serviceTax||0),0);
   const taxasAdicionais=validos.reduce((s,p)=>s+(p.additional_fees||0),0);
-  const descontosIfood=validos.reduce((s,p)=>s+(p.benefits?.reduce?.((si,b)=>si+(b.value||0),0)||0),0);
+  const descontosIfood=validos.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
   const descontosLoja=validos.reduce((s,p)=>s+(p.discount||p.desconto||0),0);
   const faturamento=validos.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
   const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
