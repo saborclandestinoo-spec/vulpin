@@ -6170,7 +6170,7 @@ async function verPedidoHist(id){
   const hist=getHistorico();
   let p=hist.find(x=>String(x.id)===String(id)||String(x.displayId)===String(id)||String(x.display_id)===String(id));
   if(!p)return;
-  if(!(p.items||[]).length||!(p.total||p.totalAmount||0)){
+  if(!(p.items||[]).length||!(p.total||p.totalAmount||0)||!p.order_type){
     try{
       const cfg=getCWConfig();
       const r=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(10000)});
