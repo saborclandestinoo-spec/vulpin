@@ -1295,7 +1295,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       </div>
       <div class="fi-row">
         <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
-        <div><label class="fl">Nome no iFood</label><input class="fi" id="mprod-nome-ifood" type="text" placeholder="Ex: OVO NUTELLA"></div>
         <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Ex: moh909rb..."></div>
       </div>
       <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
@@ -5349,7 +5348,7 @@ function renderProdutos(){
     return`<tr>
       <td style="font-weight:500;color:var(--t)">${p.nome}</td>
       <td>${p.cat}</td>
-      <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span>${p.nome_ifood?`<br><span style="font-size:9px;background:#FEF2EC;color:var(--fox);padding:1px 6px;border-radius:10px;font-weight:600">iF: ${p.nome_ifood}</span>`:''}</td>
+      <td><span style="font-size:10px;font-family:monospace;background:var(--bg3);padding:2px 7px;border-radius:5px;color:${p.codigo_pdv?'var(--fox)':'var(--t3)'}">${p.codigo_pdv||'—'}</span></td>
       <td>R$ ${fmtN(p.custo)}</td>
       <td style="font-weight:600">R$ ${fmtN(p.preco)}</td>
       <td style="color:var(--green)">R$ ${fmtN(lucro)}</td>
@@ -5507,7 +5506,6 @@ function openProd(id){
       document.getElementById('mprod-preco').value=p.preco||'';
       document.getElementById('mprod-status').value=p.status||'ativo';
       document.getElementById('mprod-codigo-pdv').value=p.codigo_pdv||'';
-      document.getElementById('mprod-nome-ifood').value=p.nome_ifood||'';
       document.getElementById('mprod-codigo-interno').value=p.id||'';
       document.getElementById('mprod-del').style.display='block';
       const est=getEstProd();
@@ -5528,7 +5526,7 @@ function openProd(id){
   } else {
     document.getElementById('mprod-title-input').value='';
     document.getElementById('mprod-subtitle').textContent='';
-    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv','mprod-nome-ifood'].forEach(i=>document.getElementById(i).value='');
+    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('mprod-codigo-interno').value='(gerado ao salvar)';
     document.getElementById('mprod-estoque').value='0';
     document.getElementById('mprod-status').value='ativo';
@@ -5640,7 +5638,6 @@ function saveProd(){
     preco:parseFloat(document.getElementById('mprod-preco').value)||0,
     status:document.getElementById('mprod-status').value,
     codigo_pdv:(document.getElementById('mprod-codigo-pdv').value||'').trim()||null,
-    nome_ifood:(document.getElementById('mprod-nome-ifood').value||'').trim().toUpperCase()||null,
     id_externo:(document.getElementById('mprod-codigo-interno').value||'').trim()||null,
   };
   // apply ficha custo if toggle is on
@@ -6480,7 +6477,7 @@ function mergeNaHistoria(novos){
     const isCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']).has(p.status||'');
 
     // Só baixa estoque de pedidos a partir do corte (29/04/2026 16:00 BRT)
-    const ESTOQUE_CORTE=new Date('2026-04-29T19:00:00.000Z'); // UTC equivalente de 16h BRT
+    const ESTOQUE_CORTE=new Date('2026-04-30T03:00:00.000Z'); // UTC equivalente de 00h BRT 30/04/2026
     const pedidoData=new Date(p.created_at||p.createdAt||0);
     if(pedidoData<ESTOQUE_CORTE){
       if(!processados[p.id]) processados[p.id]='ignorado';
@@ -6498,11 +6495,9 @@ function mergeNaHistoria(novos){
         itens.forEach(i=>{
           const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
           const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
-          // Busca: 1) PDV code, 2) nome exato, 3) alias iFood
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
           if(prod&&!revertidosNestePedido.has(prod.id)){
             revertidosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
@@ -6537,8 +6532,7 @@ function mergeNaHistoria(novos){
           // Só nome EXATO — sem parcial (parcial causava duplicação)
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
-            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW);
           if(prod&&!baixadosNestePedido.has(prod.id)){
             baixadosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
