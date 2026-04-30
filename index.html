@@ -408,10 +408,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     <div class="pg on" id="pg-dashboard">
       <div class="scroll" style="background:#F5F6FA;padding:0">
 
-        <!-- HEADER: Filtro de período -->
+        <!-- HEADER -->
         <div style="background:#fff;border-bottom:1px solid #eee;padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <div id="dash-header-title" style="font-size:15px;font-weight:700;color:#1a1a2e;flex:1;min-width:180px">Carregando...</div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
             <div style="display:flex;gap:4px;background:#f0f0f0;border-radius:20px;padding:3px">
               <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#888">Hoje</button>
               <button onclick="dashSetPeriod('mes')" id="dbtn-mes" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Este Mês</button>
@@ -426,18 +426,16 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         </div>
 
         <!-- KPI STRIP -->
-        <div id="dash-kpi-strip" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0;border-bottom:1px solid #eee;background:#fff"></div>
+        <div id="dash-kpi-strip" style="display:grid;gap:0;background:#fff;border-bottom:1px solid #eee"></div>
 
-        <!-- MAIN CONTENT -->
-        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-main-content">
-
-          <!-- ROW 1: Chart + Alertas -->
+        <!-- MES/PERIODO CONTENT -->
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
           <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
                 <div>
                   <div style="font-size:14px;font-weight:700;color:#1a1a2e">Receitas × Despesas × Lucro</div>
-                  <div style="font-size:11px;color:#999;margin-top:2px" id="dash-chart-subtitle">Últimos 6 meses</div>
+                  <div style="font-size:11px;color:#999;margin-top:2px">Últimos 6 meses</div>
                 </div>
                 <div style="display:flex;gap:12px;font-size:10px;color:#999;align-items:center">
                   <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#27AE60;display:inline-block"></span>Receitas</span>
@@ -452,8 +450,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
               <div id="dash-alerts" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto"></div>
             </div>
           </div>
-
-          <!-- ROW 2: DRE + Ranking + Projeção -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -474,8 +470,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
               <div style="height:160px"><canvas id="chart-fluxo"></canvas></div>
             </div>
           </div>
-
-          <!-- ROW 3: Lançamentos + Produções + Estoque -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Últimos Lançamentos</div>
@@ -490,35 +484,43 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
               <div id="dash-estoque-valor"></div>
             </div>
           </div>
+        </div>
 
-          <!-- ROW 4 (HOJE only): Pedidos do dia + Despesas do dia -->
-          <div id="dash-hoje-row" style="display:none;grid-template-columns:1fr 1fr;gap:14px">
+        <!-- HOJE CONTENT -->
+        <div style="display:none;padding:16px 20px;flex-direction:column;gap:14px" id="dash-hoje-content">
+          <!-- ROW 1: Pedidos + Cancelados -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
-              <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+              <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:14px">
-              <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                  <div style="font-size:14px;font-weight:700;color:#1a1a2e">Despesas de Hoje</div>
-                  <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
-                </div>
-                <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto"></div>
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:14px;font-weight:700;color:#E74C3C">Cancelados de Hoje</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-                <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-                  <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px">Por Pagamento</div>
-                  <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:6px"></div>
-                </div>
-                <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-                  <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:10px">Top Produtos</div>
-                  <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
-                </div>
-              </div>
+              <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
             </div>
           </div>
-
+          <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">🏆 Produtos Vendidos Hoje</div>
+              <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas de Hoje</div>
+                <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
+              </div>
+              <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
+            </div>
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">💳 Por Pagamento</div>
+              <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
     <!-- PEDIDOS -->
@@ -2029,6 +2031,12 @@ function dashSetPeriod(p){
   });
   const cr=document.getElementById('dash-custom-range');
   if(cr)cr.style.display=p==='custom'?'flex':'none';
+  // Toggle panels
+  const mc=document.getElementById('dash-mes-content');
+  const hc=document.getElementById('dash-hoje-content');
+  const isHoje=p==='hoje';
+  if(mc)mc.style.display=isHoje?'none':'flex';
+  if(hc)hc.style.display=isHoje?'flex':'none';
   if(p!=='custom')renderDashboard();
 }
 
@@ -2041,6 +2049,116 @@ function dashApplyCustom(){
 function fmtPag(pm){
   const m={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};
   return m[pm]||pm||'Outro';
+}
+
+function renderHoje(){
+  const hoje=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+  const _stC=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  const histRaw=getHistorico();
+  const cache=getPedidosCache();
+  const mapa={};
+  histRaw.forEach(p=>{mapa[p.id]=p;});
+  cache.forEach(p=>{if(p.id)mapa[p.id]={...mapa[p.id],...p};});
+  const all=Object.values(mapa);
+  const _pm={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito'};
+
+  const pedidos=all.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';
+    return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===hoje&&!_stC.has(p.status||'');
+  });
+  const cancelados=all.filter(p=>{
+    const dt=p.created_at||p.createdAt||'';
+    return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===hoje&&_stC.has(p.status||'');
+  });
+
+  // Pedidos lista
+  const lista=document.getElementById('hoje-pedidos-lista');
+  if(lista){
+    if(!pedidos.length){lista.innerHTML='<div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center">Nenhum pedido hoje ainda</div>';}
+    else lista.innerHTML=[...pedidos].reverse().map(p=>{
+      const cliente=p.customer?.name||p.clienteNome||'—';
+      const itens=(p.items||p.itens||[]);
+      const itensTxt=itens.length?itens.slice(0,2).map(i=>`${i.quantity||1}x ${i.name||'?'}`).join(', ')+(itens.length>2?'…':''):'—';
+      const pag=(p.payments||[])[0];
+      const pagStr=pag?(_pm[pag.payment_method]||pag.payment_method||'—'):'—';
+      const tot=p.total||p.totalAmount||p.valor||0;
+      const canal=p.sales_channel||'';
+      const badge=canal==='ifood'?'<span style="background:#EA1D2C;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">iF</span>':canal==='whatsapp_extension'||canal==='whatsapp'?'<span style="background:#25D366;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">WPP</span>':'';
+      const hora=new Date(p.created_at||p.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+      return`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #f0f0f0">
+        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:#1a1a2e">#${p.display_id||p.id}</div><div style="font-size:10px;color:#aaa">${hora}</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:#1a1a2e">${cliente}${badge}</div><div style="font-size:11px;color:#aaa">${itensTxt}</div></div>
+        <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#FF6B35">R$ ${fmtN(tot)}</div><div style="font-size:10px;color:#aaa">${pagStr}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Cancelados lista
+  const cancelLista=document.getElementById('hoje-cancelados-lista');
+  if(cancelLista){
+    if(!cancelados.length){cancelLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:12px 0;text-align:center">Nenhum cancelamento hoje 🎉</div>';}
+    else cancelLista.innerHTML=[...cancelados].reverse().map(p=>{
+      const cliente=p.customer?.name||p.clienteNome||'—';
+      const tot=p.total||p.totalAmount||p.valor||0;
+      const hora=new Date(p.created_at||p.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
+      const itens=(p.items||p.itens||[]);
+      const itensTxt=itens.length?itens.slice(0,2).map(i=>`${i.quantity||1}x ${i.name||'?'}`).join(', ')+(itens.length>2?'…':''):'—';
+      return`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #FFE0E0;background:#FFF5F5">
+        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:#E74C3C">#${p.display_id||p.id}</div><div style="font-size:10px;color:#aaa">${hora}</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:#E74C3C">${cliente}</div><div style="font-size:11px;color:#aaa">${itensTxt}</div></div>
+        <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#E74C3C;text-decoration:line-through">R$ ${fmtN(tot)}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Top produtos
+  const prodCount={};
+  pedidos.forEach(p=>(p.items||p.itens||[]).forEach(i=>{
+    const nome=i.name||i.nome||'?';
+    prodCount[nome]=(prodCount[nome]||0)+(i.quantity||i.qtd||1);
+  }));
+  const topProds=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]);
+  const maxQtd=topProds[0]?.[1]||1;
+  let totalCookiesHoje=topProds.reduce((s,[,q])=>s+q,0);
+  const topEl=document.getElementById('hoje-top-prods');
+  if(topEl)topEl.innerHTML=(topProds.length?`<div style="font-size:11px;color:#999;margin-bottom:8px">Total: <b style="color:#FF6B35">${totalCookiesHoje} cookies</b></div>`+topProds.map(([nome,qtd])=>`
+    <div><div style="display:flex;justify-content:space-between;margin-bottom:2px">
+      <span style="font-size:12px;color:#333;font-weight:500">${nome}</span>
+      <span style="font-size:12px;font-weight:700;color:#FF6B35">${qtd} un</span>
+    </div>
+    <div style="height:4px;background:#f0f0f0;border-radius:3px"><div style="height:4px;background:linear-gradient(90deg,#FF6B35,#ff9a6c);border-radius:3px;width:${(qtd/maxQtd*100).toFixed(0)}%"></div></div>
+    </div>`).join(''):'<div style="color:#aaa;font-size:12px">Sem vendas ainda</div>');
+
+  // Despesas
+  const despHoje=getLanc().filter(l=>l.tipo==='despesa'&&(l.data||l.dataPag||'').startsWith(hoje));
+  const totDesp=despHoje.reduce((s,l)=>s+(l.valor||0),0);
+  const despLista=document.getElementById('hoje-desp-lista');
+  if(despLista){
+    if(!despHoje.length){despLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:12px 0;text-align:center">Nenhuma despesa hoje</div>';}
+    else despLista.innerHTML=`<div style="font-size:11px;font-weight:700;color:#E74C3C;margin-bottom:8px">Total: R$ ${fmtN(totDesp)}</div>`+
+      despHoje.sort((a,b)=>new Date(b.data||0)-new Date(a.data||0)).map(l=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border:1px solid #f0f0f0">
+        <div><div style="font-size:12px;font-weight:600;color:#1a1a2e">${l.desc||'Sem descrição'}</div>
+        <div style="font-size:10px;color:#aaa">${l.catCod||'Despesa'}</div></div>
+        <div style="font-size:13px;font-weight:800;color:#E74C3C">−R$ ${fmtN(l.valor||0)}</div>
+      </div>`).join('');
+  }
+
+  // Por pagamento
+  const pagMap={};
+  pedidos.forEach(p=>{
+    const pag=(p.payments||[])[0];
+    const pm=pag?fmtPag(pag.payment_method):'Outro';
+    if(!pagMap[pm])pagMap[pm]={count:0,total:0};
+    pagMap[pm].count++;
+    pagMap[pm].total+=(p.total||0);
+  });
+  const pagEl=document.getElementById('hoje-pagamentos');
+  if(pagEl)pagEl.innerHTML=Object.entries(pagMap).sort((a,b)=>b[1].total-a[1].total).map(([pm,d])=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5">
+      <div style="font-size:12px;color:#333">${pm} <span style="color:#aaa;font-size:11px">(${d.count})</span></div>
+      <div style="font-size:13px;font-weight:700;color:#1a1a2e">R$ ${fmtN(d.total)}</div>
+    </div>`).join('')||'<div style="color:#aaa;font-size:12px">Sem dados</div>';
 }
 
 function renderDashboard(){
@@ -2121,14 +2239,16 @@ function renderDashboard(){
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#FF6B35'},
       {ico:'💸',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos do dia',cor:'#E74C3C'},
       {ico:'⏰',lbl:'Último Pedido',val:(()=>{const last=histPeriod[histPeriod.length-1];return last?new Date(last.created_at||last.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}):'--:--';})(),sub:'horário BRT',cor:'#8E44AD'},
-    ].map(k=>`<div style="padding:18px 20px;border-right:1px solid #f0f0f0;display:flex;align-items:center;gap:14px">
-      <div style="font-size:28px">${k.ico}</div>
+    ].map(k=>`<div style="padding:16px 20px;border-right:1px solid #eee;display:flex;align-items:center;gap:14px">
+      <div style="font-size:26px">${k.ico}</div>
       <div>
         <div style="font-size:10px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">${k.lbl}</div>
-        <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
+        <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
         <div style="font-size:10px;color:#aaa;margin-top:2px">${k.sub}</div>
       </div>
     </div>`).join('');
+    // Render hoje content
+    renderHoje();
   } else {
     if(strip) strip.style.gridTemplateColumns='repeat(auto-fit,minmax(140px,1fr))';
     if(strip) strip.innerHTML=[
@@ -2146,12 +2266,7 @@ function renderDashboard(){
     </div>`).join('');
   }
 
-  // Show/hide hoje row
-  const hojeRow=document.getElementById('dash-hoje-row');
-  if(hojeRow){
-    if(isHoje){hojeRow.style.display='grid';renderHoje();}
-    else hojeRow.style.display='none';
-  }
+  // Panel visibility handled by dashSetPeriod
 
   // Chart subtitle
   const cs=document.getElementById('dash-chart-subtitle');
