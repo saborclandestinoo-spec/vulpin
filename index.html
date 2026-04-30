@@ -5577,32 +5577,7 @@ function mergeNaHistoria(novos){
     const isNovo=!mapa[p.id]; // pedido que nunca foi visto
     mapa[p.id]=slim(p); // upsert comprimido
 
-    // Auto-lançamento de receita para pedidos DELIVERED/CONCLUDED
-    const lancsProc=S.get('pedidos_lanc_criado')||{};
-    if(isNovo&&!lancsProc[p.id]&&(p.status==='DELIVERED'||p.status==='CONCLUDED'||p.status==='COMPLETED'||p.status==='closed'||p.status==='released')){
-      const total=p.total||p.total_price||p.totalPrice||p.valor||0;
-      if(total>0){
-        const dt=(p.created_at||p.createdAt||new Date().toISOString()).slice(0,10);
-        const novoLanc={
-          id:uid(),
-          tipo:'receita',
-          desc:`Pedido #${p.display_id||p.displayId||p.id} — Cardápio Web`,
-          valor:total,
-          data:dt,
-          dataPag:dt,
-          pago:true,
-          catCod:'3.1.1.6',
-          ccId:'',
-          bancoId:'',
-          obs:`Auto-lançado via sync Cardápio Web`
-        };
-        const lancsArr=getLanc();
-        lancsArr.push(novoLanc);
-        S.set('lancamentos',lancsArr);
-        lancsProc[p.id]=true;
-        S.set('pedidos_lanc_criado',lancsProc);
-      }
-    }
+
 
     const isCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']).has(p.status||'');
 
