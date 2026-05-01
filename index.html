@@ -6135,62 +6135,79 @@ function cwScheduleAuto(){
 async function syncPedidos(){
   const cfg=getCWConfig();
   const aviso=document.getElementById('ped-config-aviso');
-  if(!cfg.storeCode||!cfg.token){
-    if(aviso)aviso.style.display='block';
-    return;
-  }
+  if(!cfg.storeCode||!cfg.token){if(aviso)aviso.style.display='block';return;}
   if(aviso)aviso.style.display='none';
   const btn=document.getElementById('btn-sync-ped');
   const st=document.getElementById('ped-sync-status');
   if(btn)btn.disabled=true;
   if(st)st.textContent='Sincronizando...';
 
-  // Build status params
-  const statusList=cfg.statusFilter||['PENDING','CONFIRMED','DELIVERED'];
-  const statusParam=statusList.join(',');
-
   try{
     const dateFilter=(document.getElementById('ped-date-filter')||{}).value||'';
-    const dateParam=dateFilter?`&date=${dateFilter}`:'';
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}${dateParam}`;
-    const res=await fetch(url,{signal:AbortSignal.timeout(15000),cache:'no-store'});
-    if(!res.ok){
-      const errTxt=await res.text();
-      if(st)st.textContent=`Erro ${res.status}`;
-      if(btn)btn.disabled=false;
-      return;
+    // Parse date range: "01/04/2026 - 30/04/2026" or single date
+    let startDate=null,endDate=null;
+    if(dateFilter){
+      const parts=dateFilter.split(' - ');
+      if(parts.length===2){
+        const parseDate=s=>{const[d,m,y]=s.trim().split('/');return`${y}-${m}-${d}`;};
+        startDate=parseDate(parts[0]);
+        endDate=parseDate(parts[1]);
+      } else if(parts.length===1&&parts[0].includes('/')){
+        const[d,m,y]=parts[0].trim().split('/');
+        startDate=endDate=`${y}-${m}-${d}`;
+      }
     }
-    const list=await res.json();
-    const arr=Array.isArray(list)?list:[];
+
+    let allPedidos=[];
+
+    if(startDate&&endDate&&startDate!==endDate){
+      // Busca dia a dia para pegar todos do período
+      const start=new Date(startDate+'T12:00:00');
+      const end=new Date(endDate+'T12:00:00');
+      const total=Math.round((end-start)/(1000*60*60*24))+1;
+      let dia=0;
+      for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+        dia++;
+        const dateStr=d.toLocaleDateString('sv-SE');
+        if(st)st.textContent=`Buscando ${dia}/${total} dias...`;
+        try{
+          const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&date=${dateStr}`,{signal:AbortSignal.timeout(15000),cache:'no-store'});
+          if(res.ok){
+            const list=await res.json();
+            if(Array.isArray(list))allPedidos=allPedidos.concat(list);
+          }
+        }catch(e){}
+        await new Promise(r=>setTimeout(r,200));
+      }
+    } else {
+      // Sem filtro ou data única — busca normal
+      const dateParam=startDate?`&date=${startDate}`:'';
+      const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}${dateParam}`,{signal:AbortSignal.timeout(15000),cache:'no-store'});
+      if(res.ok){
+        const list=await res.json();
+        if(Array.isArray(list))allPedidos=list;
+      }
+    }
+
+    // Deduplica
+    const mapaSync={};
+    allPedidos.forEach(p=>{if(p.id)mapaSync[p.id]=p;});
+    const arr=Object.values(mapaSync);
+
     S.set('pedidos_cache',arr);
     S.set('pedidos_last_sync',new Date().toISOString());
-    // ── SALVA NO HISTÓRICO PERSISTENTE ──
     if(typeof mergeNaHistoria==='function')mergeNaHistoria(arr);
+
     if(st){
       const now=new Date();
-      st.textContent=`Atualizado ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+      st.textContent=`✓ ${arr.length} pedidos · ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
     }
     renderPedidos();
-    // enriquece itens em background
     setTimeout(()=>enriquecerHistoricoECache(arr),500);
+
   }catch(e){
-    if(st)st.textContent='Erro de conexão (CORS)';
-    // Load cached if available
+    if(st)st.textContent='Erro de conexão';
     renderPedidos();
-    // Show CORS tip
-    const tbody=document.getElementById('tbody-pedidos');
-    if(tbody&&getPedidosCache().length===0){
-      tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:24px">
-        <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px">⚠️ CORS bloqueado pelo navegador</div>
-        <div style="font-size:11px;color:var(--t3);max-width:400px;margin:0 auto;line-height:1.7">
-          A API do Cardápio Web não permite chamadas diretas do navegador (CORS).<br>
-          <b>Soluções:</b><br>
-          1. Use a extensão <a href="https://chrome.google.com/webstore/detail/allow-cors/lhobafahddgcelffkeicbaginigeejlf" target="_blank" style="color:var(--fox)">Allow CORS</a> no Chrome<br>
-          2. Hospede este app em um servidor com proxy<br>
-          3. Use o app no Electron/desktop
-        </div>
-      </td></tr>`;
-    }
   }
   if(btn)btn.disabled=false;
 }
