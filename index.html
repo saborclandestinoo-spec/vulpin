@@ -6349,7 +6349,13 @@ function verPedido(id){
     <div style="background:#fff;border:1px solid var(--bor);border-radius:10px;margin-bottom:12px">
       <div style="padding:10px 14px;border-bottom:1px solid var(--bor2);font-size:11px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.3px">Itens do Pedido</div>
       ${itens.length?itens.map(i=>{
-        const subTotal=i.total_price||i.totalPrice||(i.unit_price||i.price||i.preco||0)*(i.quantity||i.qtd||1);
+        let subTotal=i.total_price||i.totalPrice||(i.unit_price||i.price||i.preco||0)*(i.quantity||i.qtd||1);
+        // Se preço zerado, tenta pegar do catálogo Vulpin
+        if(!subTotal){
+          const nomeLow=(i.name||i.nome||'').toLowerCase();
+          const prodCat=getProdutos().find(x=>(x.nome||'').toLowerCase()===nomeLow);
+          if(prodCat) subTotal=(prodCat.preco||0)*(i.quantity||i.qtd||1);
+        }
         const obs2=i.observations||i.observacao||'';
         const comps=(i.options||i.complementos||[]).map(c=>`<div style="font-size:10px;color:var(--t3);padding-left:8px">+ ${c.name||c.nome||c} ${c.price?('+R$'+fmtN(c.price)):''}</div>`).join('');
         const pdvCode=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
@@ -6905,15 +6911,18 @@ async function enriquecerHistorico(){
   const cfg=getCWConfig();
   if(!cfg.token)return;
   const hist=getHistorico();
-  // Enriquece pedidos sem itens OU sem cliente
-  // Pula pedidos cancelados E pedidos que já foram tentados antes (evita 404 loop)
+  // Enriquece pedidos sem itens OU sem cliente OU CONFIRMED antigos (>2h)
   const _stCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
   const jaTestados=S.get('pedidos_enrich_tentado')||{};
-  const zerados=hist.filter(p=>
-    !_stCancelado.has(p.status||'') &&
-    !jaTestados[p.id] &&
-    (!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type))
-  );
+  const agora=Date.now();
+  const zerados=hist.filter(p=>{
+    if(_stCancelado.has(p.status||'')) return false;
+    if(jaTestados[p.id]) return false;
+    const semItens=!(p.items||p.itens||[]).length||!p.customer?.name;
+    // Re-enrich CONFIRMED pedidos older than 2 hours
+    const isConfirmadoAntigo=(p.status==='CONFIRMED'||p.status==='confirmed')&&p.created_at&&(agora-new Date(p.created_at).getTime())>2*60*60*1000;
+    return semItens||isConfirmadoAntigo;
+  });
   if(!zerados.length)return;
   _enriquecendo=true;
   const CHUNK=5;
