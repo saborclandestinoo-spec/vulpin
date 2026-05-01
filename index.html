@@ -1306,7 +1306,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       </div>
       <div class="fi-row">
         <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
-        <div><label class="fl">Nome no iFood (alias)</label><input class="fi" id="mprod-nome-ifood" type="text" placeholder="Ex: OVO NUTELLA" style="text-transform:uppercase"></div>
+        <div><label class="fl">Aliases iFood (separe com |)</label><input class="fi" id="mprod-nome-ifood" type="text" placeholder="Ex: NUTELLA - CLANDESTINO|Nutella Clandestino"></div>
         <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Ex: moh909rb..."></div>
       </div>
       <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
@@ -1960,6 +1960,31 @@ function findProdByPdv(codigoPdv){
   const code=String(codigoPdv).trim();
   return getProdutos().find(p=>(p.codigo_pdv&&String(p.codigo_pdv).trim()===code)||(p.id_externo&&String(p.id_externo).trim()===code))||null;
 }
+// Resolve nome canônico do produto dado nome do iFood/CW + código PDV
+// Retorna nome do produto cadastrado, ou nome original se não encontrar
+function resolveNomeProd(nomeBruto, codigoPdv){
+  const prods=getProdutos();
+  const nLow=(nomeBruto||'').trim().toLowerCase();
+  // 1) por código PDV
+  if(codigoPdv){
+    const p=findProdByPdv(codigoPdv);
+    if(p)return p.nome;
+  }
+  // 2) nome exato
+  let p=prods.find(x=>(x.nome||'').trim().toLowerCase()===nLow);
+  if(p)return p.nome;
+  // 3) alias iFood (pode ter múltiplos separados por |)
+  p=prods.find(x=>(x.nome_ifood||'').split('|').map(a=>a.trim().toLowerCase()).includes(nLow));
+  if(p)return p.nome;
+  // 4) nome do cadastro contém o nome do pedido (substring)
+  p=prods.find(x=>nLow&&(x.nome||'').trim().toLowerCase().includes(nLow));
+  if(p)return p.nome;
+  // 5) nome do pedido contém o nome do cadastro
+  p=prods.find(x=>nLow&&nLow.includes((x.nome||'').trim().toLowerCase()));
+  if(p)return p.nome;
+  // não encontrou — retorna nome original capitalizado para agrupar case-insensitive
+  return (nomeBruto||'?').trim();
+}
 const getEstMP=()=>S.get('est_mp')||defaultEstMP();
 const getEstProd=()=>S.get('est_prod')||{};
 
@@ -2325,10 +2350,11 @@ function renderHoje(){
     }).join('');
   }
 
-  // Top produtos
+  // Top produtos — resolve nome canônico para agrupar variações do iFood
   const prodCount={};
   pedidos.forEach(p=>(p.items||p.itens||[]).forEach(i=>{
-    const nome=i.name||i.nome||'?';
+    const pdv=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
+    const nome=resolveNomeProd(i.name||i.nome||'?', pdv);
     prodCount[nome]=(prodCount[nome]||0)+(i.quantity||i.qtd||1);
   }));
   const topProds=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]);
@@ -2928,7 +2954,7 @@ function renderDREPage(){
     (p.items||p.itens||[]).forEach(i=>{
       const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
       const prod=prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-                 prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+                 prods.find(x=>(x.nome_ifood||'').split('|').map(a=>a.trim().toLowerCase()).includes(nomeCW));
       if(!prod) return;
       const qtd=i.quantity||i.qtd||1;
       let custoUn=prod.custo||0;
@@ -6856,7 +6882,7 @@ function mergeNaHistoria(novos){
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
             prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome_ifood||'').split('|').map(a=>a.trim().toLowerCase()).includes(nomeCW));
           if(prod&&!revertidosNestePedido.has(prod.id)){
             revertidosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
@@ -6892,7 +6918,7 @@ function mergeNaHistoria(novos){
           const prod=
             (pdvCode?findProdByPdv(pdvCode):null)||
             prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
-            prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+            prods.find(x=>(x.nome_ifood||'').split('|').map(a=>a.trim().toLowerCase()).includes(nomeCW));
           if(prod&&!baixadosNestePedido.has(prod.id)){
             baixadosNestePedido.add(prod.id);
             const qtd=i.quantity||i.qtd||1;
