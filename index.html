@@ -2883,9 +2883,43 @@ function renderDREPage(){
   const taxaIF=histPeriod.reduce((s,p)=>s+(typeof p.total_fees==='number'?p.total_fees:0),0);
   const simples=lancPeriod.filter(l=>(l.catCod||'').startsWith('3.9.1')).reduce((s,l)=>s+(l.valor||0),0);
   const recLiq=recBruta-cancelVal-descontos-taxaIF-simples;
-  const cmvMat=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.1')).reduce((s,l)=>s+(l.valor||0),0);
+
+  // CMV = ficha técnica (custo/un) × qtd vendida no período
+  const prods=getProdutos();
+  const fichas=getFichas();
+  const mp=getMP();
+  let cmvFicha=0;
+  const cmvPorProduto=[];
+  histPeriod.forEach(p=>{
+    (p.items||p.itens||[]).forEach(i=>{
+      const nomeCW=(i.name||i.nome||'').trim().toLowerCase();
+      const prod=prods.find(x=>(x.nome||'').trim().toLowerCase()===nomeCW)||
+                 prods.find(x=>(x.nome_ifood||'').trim().toLowerCase()===nomeCW);
+      if(!prod) return;
+      const qtd=i.quantity||i.qtd||1;
+      // Custo: usa ficha técnica se disponível, senão p.custo
+      let custoUn=prod.custo||0;
+      const ft=fichas[prod.id]||[];
+      if(ft.length>0){
+        custoUn=0;
+        ft.forEach(it=>{
+          const m=mp.find(x=>x.id===it.mpId);
+          if(m) custoUn+=getValorPorG(m)*(it.qtd||0);
+        });
+      }
+      const total=custoUn*qtd;
+      cmvFicha+=total;
+      const ex=cmvPorProduto.find(x=>x.nome===prod.nome);
+      if(ex){ex.qtd+=qtd;ex.total+=total;}
+      else cmvPorProduto.push({nome:prod.nome,qtd,total,custoUn});
+    });
+  });
+  cmvPorProduto.sort((a,b)=>b.total-a.total);
+
+  // MO direta dos lançamentos
   const moDir=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.2')).reduce((s,l)=>s+(l.valor||0),0);
   const cif=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.1.3')).reduce((s,l)=>s+(l.valor||0),0);
+  const cmvMat=cmvFicha; // CMV por ficha técnica
   const cpv=cmvMat+moDir+cif;
   const lucBruto=recLiq-cpv;
   const margemBruta=recBruta>0?(lucBruto/recBruta*100):0;
@@ -2988,42 +3022,28 @@ function renderDREPage(){
     ${result('(=) Resultado Líquido do Exercício',ebit)}
   `;
 
-  // CMV por produto
-  const fichas=getFichas();
-  const mp=getMP();
-  const prods=getProdutos();
-  const cmvProd=[];
-  histPeriod.forEach(p=>{
-    (p.items||p.itens||[]).forEach(i=>{
-      const prod=prods.find(x=>x.nome===i.name||x.nome===i.nome);
-      const qtd=i.quantity||i.qtd||1;
-      const custo=prod?(prod.custo||0):0;
-      if(prod&&custo>0){
-        const ex=cmvProd.find(x=>x.nome===prod.nome);
-        if(ex){ex.qtd+=qtd;ex.total+=custo*qtd;}
-        else cmvProd.push({nome:prod.nome,qtd,total:custo*qtd});
-      }
-    });
-  });
-  cmvProd.sort((a,b)=>b.total-a.total);
-  const totalCMVProd=cmvProd.reduce((s,x)=>s+x.total,0);
-  const maxCMV=cmvProd[0]?.total||1;
+  // CMV por produto (já calculado acima via ficha técnica)
+  const totalCMVProd=cmvFicha;
+  const maxCMV=cmvPorProduto[0]?.total||1;
   const cmvEl=document.getElementById('dre-pg-cmv');
-  if(cmvEl) cmvEl.innerHTML=cmvProd.length?cmvProd.slice(0,10).map(x=>`
+  if(cmvEl) cmvEl.innerHTML=cmvPorProduto.length?
+    `<div style="font-size:10px;color:var(--t3);margin-bottom:10px">Baseado na ficha técnica × qtd vendida</div>`+
+    cmvPorProduto.slice(0,10).map(x=>`
     <div style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;margin-bottom:3px">
         <span style="font-size:11.5px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%">${x.nome}</span>
         <div>
-          <span style="font-size:10px;color:var(--t3)">${x.qtd} un · </span>
+          <span style="font-size:10px;color:var(--t3)">${x.qtd} un · R$ ${fmtN(x.custoUn)}/un · </span>
           <span style="font-size:11.5px;font-weight:700;color:var(--red)">R$ ${fmtN(x.total)}</span>
         </div>
       </div>
       <div style="height:4px;background:var(--bg3);border-radius:4px"><div style="height:100%;background:var(--red);border-radius:4px;width:${(x.total/maxCMV*100).toFixed(0)}%;opacity:.6"></div></div>
-    </div>`).join('')+`<div style="padding-top:8px;border-top:1px solid var(--bor2);display:flex;justify-content:space-between">
+    </div>`).join('')+
+    `<div style="padding-top:8px;border-top:1px solid var(--bor2);display:flex;justify-content:space-between">
       <span style="font-size:11px;font-weight:700;color:var(--t)">Total CMV</span>
       <span style="font-size:11px;font-weight:700;color:var(--red)">R$ ${fmtN(totalCMVProd)}</span>
     </div>`
-  :'<div style="font-size:11px;color:var(--t3)">Sem dados de CMV no período</div>';
+  :'<div style="font-size:11px;color:var(--t3)">Sem dados de CMV no período.<br>Verifique as fichas técnicas dos produtos.</div>';
 
   // Despesas por categoria
   const despCats=[
