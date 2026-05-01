@@ -706,7 +706,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div class="est-tabs">
           <div class="est-tab on" onclick="estTab('mp',this)">🧂 Insumos</div>
           <div class="est-tab" onclick="estTab('recheios',this)">🍫 Recheios</div>
-          <div class="est-tab" onclick="estTab('congelados',this)">🧊 Congelados</div>
           <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
         </div>
         <div id="est-content"></div>
@@ -1313,9 +1312,15 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     </div>
     <!-- FICHA TÉCNICA -->
     <div id="mpp-ficha" style="display:none">
-      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Insumos utilizados para produzir <b id="ft-prod-nome">este produto</b> por unidade.</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Insumos e recheios utilizados para produzir <b id="ft-prod-nome">este produto</b> por unidade.</div>
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
-        <div style="flex:2"><label class="fl" style="margin-top:0">Insumo</label><select class="fi" id="ft-mp-sel"><option value="">Selecione...</option></select></div>
+        <div style="flex:1"><label class="fl" style="margin-top:0">Tipo</label>
+          <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()">
+            <option value="insumo">🧂 Insumo</option>
+            <option value="recheio">🍫 Recheio</option>
+          </select>
+        </div>
+        <div style="flex:2"><label class="fl" style="margin-top:0">Item</label><select class="fi" id="ft-mp-sel"><option value="">Selecione...</option></select></div>
         <div style="flex:1"><label class="fl" style="margin-top:0">Qtd / unidade</label><input class="fi" id="ft-qtd" type="number" step="0.01" min="0" placeholder="Ex: 150"></div>
         <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftAddItem()">+ Adicionar</button>
       </div>
@@ -3317,6 +3322,35 @@ function saveProd2(){
   if(editProd2Id){data=data.map(x=>x.id===editProd2Id?obj:x);}
   else data.push(obj);
   S.set('producao',data);
+
+  // Baixa estoque de insumos E recheios conforme ficha técnica
+  if(!editProd2Id){
+    const fichas=getFichas();
+    const ficha=fichas[produtoId]||[];
+    if(ficha.length){
+      const estMp=getEstMP(); // insumos (context mp)
+      _mpContext='recheios'; const estRec=getEstMP(); _mpContext='mp'; // recheios
+      let mudouMp=false, mudouRec=false;
+      ficha.forEach(it=>{
+        const consumo=(it.qtd||0)*qtd;
+        if(!consumo)return;
+        const data_iso=obj.data||new Date().toISOString().slice(0,10);
+        const obs=`Produção ${qtd}x produto #${produtoId}`;
+        if(it.tipo==='recheio'){
+          if(!estRec[it.mpId])estRec[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],consumo:0};
+          estRec[it.mpId].consumo=(estRec[it.mpId].consumo||0)+consumo;
+          mudouRec=true;
+        } else {
+          if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],consumo:0};
+          estMp[it.mpId].consumo=(estMp[it.mpId].consumo||0)+consumo;
+          mudouMp=true;
+        }
+      });
+      if(mudouMp)S.set('est_mp',estMp);
+      if(mudouRec){_mpContext='recheios';S.set(getEstMPKey(),estRec);_mpContext='mp';}
+    }
+  }
+
   closeM('modal-producao');
   if(currentPage==='producao')renderProducao();
   if(currentPage==='estoque')renderEstoque();
@@ -3353,7 +3387,6 @@ function estTab(tab,el){
 function renderEstoque(){
   if(estCurrentTab==='mp'){_mpContext='mp';renderEstMP();}
   else if(estCurrentTab==='recheios'){_mpContext='recheios';renderEstRecheios();}
-  else if(estCurrentTab==='congelados') renderEstCongelados();
   else{_mpContext='mp';renderEstProd();}
 }
 function renderEstMP(){
@@ -5445,152 +5478,6 @@ function renderEstRecheios(){
   },0);
 }
 
-// ═══════════════════════════════════════════
-// CONGELADOS — estoque de cookies congelados (unidades)
-// Storage: 'congelados' = [{id,nome,cat,min}]
-//          'est_congelados' = {id:{entradas:[],saidas:[]}}
-// ═══════════════════════════════════════════
-const getCongelados=()=>S.get('congelados')||[];
-const getEstCongelados=()=>S.get('est_congelados')||{};
-
-function getEstoqueAtualCong(id){
-  const est=getEstCongelados()[id]||{entradas:[],saidas:[]};
-  const ent=est.entradas.reduce((s,e)=>s+(e.qtd||0),0);
-  const sai=est.saidas.reduce((s,e)=>s+(e.qtd||0),0);
-  return ent-sai;
-}
-
-let editCongId=null;
-
-function renderEstCongelados(){
-  const items=getCongelados();
-  let totalUn=0,atencao=0,zerado=0,ok=0;
-  items.forEach(c=>{const at=getEstoqueAtualCong(c.id);totalUn+=Math.max(0,at);if(at<=0)zerado++;else if(at<(c.min||0))atencao++;else ok++;});
-  const cats=[...new Set(items.map(c=>c.cat||''))].filter(Boolean).sort();
-
-  document.getElementById('est-content').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🧊</div>
-        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Total Congelados</div>
-        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${totalUn}</div>
-        <div style="font-size:10px;color:var(--t3);margin-top:2px">unidades</div></div>
-      </div>
-      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✅</div>
-        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">OK</div>
-        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${ok}</div></div>
-      </div>
-      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚠️</div>
-        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Atenção</div>
-        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${atencao}</div></div>
-      </div>
-      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🚨</div>
-        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Zerado</div>
-        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${zerado}</div></div>
-      </div>
-    </div>
-    <div class="toolbar">
-      <div class="search-wrap" style="flex:1;min-width:180px;max-width:340px">
-        <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-        <input class="search-in" id="est-cong-search" placeholder="Buscar cookie..." oninput="renderEstCongTable()">
-      </div>
-      <select class="filter-sel" id="est-cong-cat" onchange="renderEstCongTable()">
-        <option value="">Todas categorias</option>
-        ${cats.map(c=>`<option>${c}</option>`).join('')}
-      </select>
-      <div style="margin-left:auto"></div>
-      <button class="btn-p" onclick="openCong()" style="font-size:12px">+ Novo Cookie</button>
-    </div>
-    <div class="card">
-      <div style="font-size:10px;color:var(--t3);margin-bottom:8px">Clique em uma linha para editar ou movimentar</div>
-      <div class="tbl-wrap"><table class="tbl" id="tbl-est-cong">
-        <thead><tr><th>Cookie</th><th>Categoria</th><th>Estoque</th><th>Mínimo</th><th>Status</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-    </div>`;
-  renderEstCongTable();
-}
-
-function renderEstCongTable(){
-  const items=getCongelados();
-  const s=(document.getElementById('est-cong-search')||{}).value?.toLowerCase()||'';
-  const ct=(document.getElementById('est-cong-cat')||{}).value||'';
-  let filtered=items;
-  if(s)filtered=filtered.filter(c=>c.nome.toLowerCase().includes(s));
-  if(ct)filtered=filtered.filter(c=>c.cat===ct);
-  const tbody=document.querySelector('#tbl-est-cong tbody');
-  if(!tbody)return;
-  tbody.innerHTML=filtered.map(c=>{
-    const at=getEstoqueAtualCong(c.id);
-    let status='OK',pClass='pill-ok';
-    if(at<=0){status='ZERADO';pClass='pill-zero';}
-    else if(at<(c.min||0)){status='ATENÇÃO';pClass='pill-warn';}
-    return`<tr style="cursor:pointer" onclick="openCong('${c.id}')">
-      <td style="font-weight:500;color:var(--t)">${c.nome}</td>
-      <td><span style="font-size:10px;background:var(--bg3);padding:2px 7px;border-radius:5px;color:var(--t2)">${c.cat||'—'}</span></td>
-      <td style="font-weight:700;font-size:13px;color:${at<=0?'var(--red)':at<(c.min||0)?'var(--amber)':'var(--t)'}">${at}</td>
-      <td style="color:var(--t3)">${c.min||0}</td>
-      <td><span class="pill ${pClass}">${status}</span></td>
-      <td><button class="btn-o" style="padding:4px 8px;font-size:10px" onclick="event.stopPropagation();openCongMov('${c.id}')">Movimentar</button></td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--t3);padding:20px">Nenhum cookie cadastrado</td></tr>';
-}
-
-function openCong(id){
-  editCongId=id||null;
-  const c=id?getCongelados().find(x=>x.id===id):null;
-  document.getElementById('mcong-nome').value=c?c.nome:'';
-  document.getElementById('mcong-cat').value=c?c.cat:'';
-  document.getElementById('mcong-min').value=c?c.min:'';
-  document.getElementById('mcong-del').style.display=id?'block':'none';
-  openM('modal-cong');
-}
-function saveCong(){
-  const nome=document.getElementById('mcong-nome').value.trim();
-  if(!nome){alert('Informe o nome');return;}
-  const obj={id:editCongId||uid(),nome,cat:document.getElementById('mcong-cat').value.trim(),min:parseInt(document.getElementById('mcong-min').value)||0};
-  let data=getCongelados();
-  if(editCongId)data=data.map(x=>x.id===editCongId?obj:x);
-  else{data.push(obj);const est=getEstCongelados();if(!est[obj.id])est[obj.id]={entradas:[],saidas:[]};S.set('est_congelados',est);}
-  S.set('congelados',data);
-  closeM('modal-cong');
-  renderEstoque();
-}
-function deleteCong(){
-  showConfirm('Excluir cookie','Excluir este cookie do estoque congelado?','🗑️',()=>{
-    S.set('congelados',getCongelados().filter(x=>x.id!==editCongId));
-    closeM('modal-cong');renderEstoque();
-  });
-}
-
-let _congMovId=null;
-function openCongMov(id){
-  _congMovId=id;
-  const c=getCongelados().find(x=>x.id===id);
-  const at=getEstoqueAtualCong(id);
-  document.getElementById('mcong-mov-info').textContent=(c?c.nome:'')+' · Estoque: '+at+' un';
-  document.getElementById('mcong-mov-tipo').value='entrada';
-  document.getElementById('mcong-mov-qtd').value='';
-  document.getElementById('mcong-mov-obs').value='';
-  openM('modal-cong-mov');
-}
-function saveCongMov(){
-  const qtd=parseInt(document.getElementById('mcong-mov-qtd').value)||0;
-  if(!qtd){alert('Informe a quantidade');return;}
-  const tipo=document.getElementById('mcong-mov-tipo').value;
-  const obs=document.getElementById('mcong-mov-obs').value.trim();
-  const est=getEstCongelados();
-  if(!est[_congMovId])est[_congMovId]={entradas:[],saidas:[]};
-  const mov={id:uid(),data:new Date().toISOString(),qtd:Math.abs(qtd),obs};
-  if(tipo==='saida')est[_congMovId].saidas.push(mov);
-  else est[_congMovId].entradas.push(mov);
-  S.set('est_congelados',est);
-  closeM('modal-cong-mov');
-  renderEstoque();
-}
 
 // ═══════════════════════════════════════════
 // PRODUTOS
@@ -5643,26 +5530,35 @@ function mprodTab(tab){
 // Storage: fichas = {prodId: [{mpId, qtd}]}
 let ftItems=[]; // current editing items
 
-function ftRender(){
-  const mp=getMP();
-  // populate select
+// Retorna lista do storage correto conforme tipo ('insumo'|'recheio')
+function ftGetList(tipo){
+  if(tipo==='recheio'){_mpContext='recheios';const r=getMP();_mpContext='mp';return r;}
+  return getMP();
+}
+// Popula o select de itens conforme tipo selecionado
+function ftPopulateSel(){
+  const tipo=(document.getElementById('ft-tipo-sel')||{}).value||'insumo';
+  const lista=ftGetList(tipo);
   const sel=document.getElementById('ft-mp-sel');
-  if(sel){
-    sel.innerHTML='<option value="">Selecione o insumo...</option>'+
-      mp.map(m=>`<option value="${m.id}">${m.nome} (${m.un})</option>`).join('');
-  }
+  if(sel)sel.innerHTML='<option value="">Selecione...</option>'+
+    lista.map(m=>`<option value="${m.id}">${m.nome} (${m.un})</option>`).join('');
+}
+function ftRender(){
+  ftPopulateSel();
   // render list
   const lista=document.getElementById('ft-lista');
   if(!lista)return;
-  if(!ftItems.length){lista.innerHTML='<div style="font-size:11px;color:var(--t3);padding:10px 0">Nenhum insumo adicionado ainda.</div>';
+  if(!ftItems.length){lista.innerHTML='<div style="font-size:11px;color:var(--t3);padding:10px 0">Nenhum item adicionado ainda.</div>';
     document.getElementById('ft-custo-calc').style.display='none';return;}
   lista.innerHTML=ftItems.map((it,i)=>{
-    const m=mp.find(x=>x.id===it.mpId);
+    const src=ftGetList(it.tipo||'insumo');
+    const m=src.find(x=>x.id===it.mpId);
     const vg=m?getValorPorG(m):0;
     const custo=vg*it.qtd;
+    const tipoLabel=it.tipo==='recheio'?'🍫':'🧂';
     return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--bor2);border-radius:8px;background:#fff">
       <div style="flex:2">
-        <div style="font-size:12px;font-weight:500;color:var(--t)">${m?m.nome:'?'}</div>
+        <div style="font-size:12px;font-weight:500;color:var(--t)">${tipoLabel} ${m?m.nome:'?'}</div>
         <div style="font-size:10px;color:var(--t3)">${it.qtd} ${m?m.un:''} &nbsp;·&nbsp; Custo: R$ ${fmtN(custo)}</div>
       </div>
       <input type="number" value="${it.qtd}" min="0" step="0.01"
@@ -5692,10 +5588,10 @@ function ftToggle(){
 }
 
 function ftCalcCusto(){
-  const mp=getMP();
   let total=0;
   ftItems.forEach(it=>{
-    const m=mp.find(x=>x.id===it.mpId);
+    const src=ftGetList(it.tipo||'insumo');
+    const m=src.find(x=>x.id===it.mpId);
     if(m)total+=getValorPorG(m)*(it.qtd||0);
   });
   const el=document.getElementById('ft-custo-calc');
@@ -5722,11 +5618,12 @@ function ftCalcCusto(){
 function ftAddItem(){
   const mpId=document.getElementById('ft-mp-sel').value;
   const qtd=parseFloat(document.getElementById('ft-qtd').value)||0;
-  if(!mpId){alert('Selecione um insumo');return;}
+  const tipo=(document.getElementById('ft-tipo-sel')||{}).value||'insumo';
+  if(!mpId){alert('Selecione um item');return;}
   if(!qtd){alert('Informe a quantidade');return;}
-  const existing=ftItems.findIndex(x=>x.mpId===mpId);
+  const existing=ftItems.findIndex(x=>x.mpId===mpId&&x.tipo===tipo);
   if(existing>-1)ftItems[existing].qtd+=qtd;
-  else ftItems.push({mpId,qtd});
+  else ftItems.push({mpId,qtd,tipo});
   document.getElementById('ft-mp-sel').value='';
   document.getElementById('ft-qtd').value='';
   ftRender();
@@ -7042,44 +6939,7 @@ async function syncMes(){
 
 </script>
 
-<!-- Modal: cadastro cookie congelado -->
-<div class="overlay" id="modal-cong" onclick="if(event.target===this)closeM('modal-cong')">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-t"><span id="mcong-title">Cookie Congelado</span><button class="modal-close" onclick="closeM('modal-cong')">×</button></div>
-    <label class="fl">Nome do Cookie</label>
-    <input class="fi" id="mcong-nome" placeholder="Ex: Nut-09 Congelado">
-    <label class="fl">Categoria</label>
-    <input class="fi" id="mcong-cat" placeholder="Ex: Recheado, Simples...">
-    <label class="fl">Estoque Mínimo (un)</label>
-    <input class="fi" id="mcong-min" type="number" min="0" placeholder="0">
-    <div class="modal-actions">
-      <button class="btn-danger modal-del" id="mcong-del" onclick="deleteCong()" style="display:none">Excluir</button>
-      <button class="btn-o" onclick="closeM('modal-cong')">Cancelar</button>
-      <button class="btn-p" onclick="saveCong()">Salvar</button>
-    </div>
-  </div>
-</div>
 
-<!-- Modal: movimentação congelados -->
-<div class="overlay" id="modal-cong-mov" onclick="if(event.target===this)closeM('modal-cong-mov')">
-  <div class="modal" style="max-width:360px">
-    <div class="modal-t"><span>Movimentar Estoque</span><button class="modal-close" onclick="closeM('modal-cong-mov')">×</button></div>
-    <div id="mcong-mov-info" style="font-size:11px;color:var(--t2);background:var(--bg2);padding:8px 12px;border-radius:8px;margin-bottom:12px"></div>
-    <label class="fl">Tipo</label>
-    <select class="fi" id="mcong-mov-tipo" style="margin-bottom:10px">
-      <option value="entrada">Entrada (produziu / recebeu)</option>
-      <option value="saida">Saída (vendeu / perdeu)</option>
-    </select>
-    <label class="fl">Quantidade (unidades)</label>
-    <input class="fi" id="mcong-mov-qtd" type="number" min="1" placeholder="Ex: 10">
-    <label class="fl">Observação (opcional)</label>
-    <input class="fi" id="mcong-mov-obs" placeholder="Ex: Produção lote 01/05">
-    <div class="modal-actions">
-      <button class="btn-o" onclick="closeM('modal-cong-mov')">Cancelar</button>
-      <button class="btn-p" onclick="saveCongMov()">Salvar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
 <script>
