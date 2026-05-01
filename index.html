@@ -541,12 +541,12 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <!-- ROW 1: Pedidos + Despesas -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos de Hoje</div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos</div>
               <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas de Hoje</div>
+                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas</div>
                 <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
               </div>
               <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
@@ -555,7 +555,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">🏆 Produtos Vendidos Hoje</div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">🏆 Produtos Vendidos</div>
               <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
@@ -2448,7 +2448,7 @@ function renderHoje(){
     </div>`).join(''):'<div style="color:#aaa;font-size:12px">Sem vendas ainda</div>');
 
   // Despesas
-  const despHoje=getLanc().filter(l=>l.tipo==='despesa'&&filterDt((l.data||l.dataPag||'').slice(0,10)));
+  const despHoje=getLanc().filter(l=>l.tipo==='despesa'&&l.pago&&filterDt((l.dataPag||'').slice(0,10)));
   const totDesp=despHoje.reduce((s,l)=>s+(l.valor||0),0);
   const despLista=document.getElementById('hoje-desp-lista');
   if(despLista){
