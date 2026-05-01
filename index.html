@@ -436,12 +436,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
         <!-- DRE Table -->
         <div style="margin:0 20px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
-          <div style="padding:6px 20px;background:var(--bg3);border-bottom:1px solid var(--bor);display:flex">
-            <div style="width:70px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Cód.</div>
-            <div style="flex:1;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Conta</div>
-            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:100px;text-align:right">Valor</div>
-            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:55px;text-align:right;margin-left:8px">% Rec.</div>
-          </div>
           <div id="dre-pg-body"></div>
         </div>
 
@@ -2846,10 +2840,16 @@ function renderDREPage(){
     periodoLabel=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
   } else {
     const s=document.getElementById('dre-pg-start')?.value;
-    if(!s) return;
-    filterFn=dt=>dt.startsWith(s);
-    const d=new Date(s+'-01');
-    periodoLabel=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    if(!s) {
+      // Se não tem valor, usa mês atual
+      const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      filterFn=dt=>dt.startsWith(mes);
+      periodoLabel=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    } else {
+      filterFn=dt=>dt.startsWith(s);
+      const d=new Date(s+'-01');
+      periodoLabel=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    }
   }
 
   const pgLabel=document.getElementById('dre-pg-periodo');
