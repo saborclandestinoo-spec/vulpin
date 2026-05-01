@@ -6913,7 +6913,14 @@ async function enriquecerHistorico(){
   if(!cfg.token)return;
   const hist=getHistorico();
   // Enriquece pedidos sem itens OU sem cliente — independente do total
-  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type));
+  // Enriquece: sem itens, sem cliente, OU tem itens mas todos com price=0 (history endpoint retorna lite)
+  const zerados=hist.filter(p=>{
+    const itens=p.items||p.itens||[];
+    const semItens=!itens.length;
+    const semCliente=!p.customer?.name;
+    const precosZerados=itens.length>0&&itens.every(i=>!(i.price||i.total_price||0));
+    return semItens||semCliente||precosZerados;
+  });
   if(!zerados.length)return;
   _enriquecendo=true;
   const CHUNK=5;
