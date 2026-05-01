@@ -473,8 +473,28 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div id="dash-header-title" style="font-size:15px;font-weight:700;color:#1a1a2e;flex:1;min-width:180px">Carregando...</div>
           <div style="display:flex;align-items:center;gap:8px">
             <!-- Seletor de dia (visível só no modo Hoje) -->
-            <div id="dash-dia-picker" style="display:none;align-items:center;gap:6px">
-              <input type="date" id="dash-dia-input" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--t)" onchange="renderDashboard()">
+            <div id="dash-dia-picker" style="display:none;align-items:center;gap:6px;position:relative">
+              <button onclick="toggleDiaPicker()" id="dash-dia-btn" style="background:#fff;border:1px solid var(--bor);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:500;color:var(--t);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;white-space:nowrap">
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 1v2M10 1v2M1 5h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span id="dash-dia-label">Hoje</span>
+              </button>
+              <!-- Picker dropdown -->
+              <div id="dash-dia-drop" style="display:none;position:absolute;top:36px;left:0;background:#fff;border:1px solid var(--bor);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:999;flex-direction:row;min-width:520px">
+                <!-- Atalhos -->
+                <div style="width:160px;padding:10px 8px;border-right:1px solid var(--bor2);flex-shrink:0">
+                  <div id="dp-shortcuts" style="display:flex;flex-direction:column;gap:1px"></div>
+                </div>
+                <!-- Calendário -->
+                <div style="padding:14px 16px;flex:1">
+                  <div style="text-align:center;font-size:13px;font-weight:600;color:var(--t);margin-bottom:12px" id="dp-cal-title"></div>
+                  <div id="dp-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:10px;border-top:1px solid var(--bor2)">
+                    <button onclick="closeDiaPicker()" style="background:#fff;border:1px solid var(--bor);border-radius:8px;padding:6px 16px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--t2)">Cancelar</button>
+                    <button onclick="applyDiaPicker()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:6px 18px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit">OK</button>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="dash-dia-input">
             </div>
             <div style="display:flex;gap:4px;background:#f0f0f0;border-radius:20px;padding:3px">
               <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#888">Hoje</button>
@@ -2205,9 +2225,11 @@ function dashSetPeriod(p){
   if(dp){
     dp.style.display=p==='hoje'?'flex':'none';
     const di=document.getElementById('dash-dia-input');
+    const lbl=document.getElementById('dash-dia-label');
     if(di&&!di.value){
-      const now=new Date();
-      di.value=now.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+      const todayStr=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+      di.value=todayStr;
+      if(lbl)lbl.textContent='Hoje';
     }
   }
   // Toggle panels
@@ -2637,8 +2659,165 @@ function renderFluxoChart(){
 
 
 // ═══════════════════════════════════════════
-// DRE PAGE
+// CUSTOM DAY PICKER
 // ═══════════════════════════════════════════
+let _dpSelectedDate = null; // YYYY-MM-DD
+let _dpCalMonth = null; // Date object for current cal month
+
+function toggleDiaPicker(){
+  const drop = document.getElementById('dash-dia-drop');
+  if(!drop) return;
+  const isOpen = drop.style.display === 'flex';
+  if(isOpen){ closeDiaPicker(); return; }
+  drop.style.display = 'flex';
+  const now = new Date();
+  _dpCalMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  _dpSelectedDate = document.getElementById('dash-dia-input').value || now.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+  renderDpShortcuts();
+  renderDpCal();
+  // Close on outside click
+  setTimeout(()=>document.addEventListener('click', _dpOutside), 10);
+}
+
+function _dpOutside(e){
+  const drop = document.getElementById('dash-dia-drop');
+  const btn = document.getElementById('dash-dia-btn');
+  if(drop && !drop.contains(e.target) && !btn.contains(e.target)){
+    closeDiaPicker();
+  }
+}
+
+function closeDiaPicker(){
+  const drop = document.getElementById('dash-dia-drop');
+  if(drop) drop.style.display = 'none';
+  document.removeEventListener('click', _dpOutside);
+}
+
+function renderDpShortcuts(){
+  const el = document.getElementById('dp-shortcuts');
+  if(!el) return;
+  const now = new Date();
+  const tz = {timeZone:'America/Sao_Paulo'};
+  const todayStr = now.toLocaleDateString('sv-SE', tz);
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+  const yestStr = yesterday.toLocaleDateString('sv-SE', tz);
+
+  const shortcuts = [
+    {lbl:'Hoje', val: todayStr},
+    {lbl:'Ontem', val: yestStr},
+  ];
+  // Últimos 7 dias
+  for(let i=2;i<=6;i++){
+    const d=new Date(now); d.setDate(d.getDate()-i);
+    // not adding these, just the named ones
+  }
+  // Add last 30 days options
+  const opts = [
+    {lbl:'Hoje', val: todayStr},
+    {lbl:'Ontem', val: yestStr},
+    {lbl:'2 dias atrás', val: fmtDpDate(now,-2)},
+    {lbl:'3 dias atrás', val: fmtDpDate(now,-3)},
+    {lbl:'1 semana atrás', val: fmtDpDate(now,-7)},
+    {lbl:'15 dias atrás', val: fmtDpDate(now,-15)},
+    {lbl:'1 mês atrás', val: fmtDpDate(now,-30)},
+  ];
+
+  el.innerHTML = opts.map(o=>{
+    const isSel = _dpSelectedDate===o.val;
+    return `<div onclick="selectDpShortcut('${o.val}')" style="padding:7px 10px;border-radius:8px;font-size:12px;cursor:pointer;color:${isSel?'var(--fox)':'var(--t2)'};background:${isSel?'var(--fox-l)':'transparent'};font-weight:${isSel?600:400}">${o.lbl}</div>`;
+  }).join('');
+}
+
+function fmtDpDate(base, offsetDays){
+  const d = new Date(base);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString('sv-SE', {timeZone:'America/Sao_Paulo'});
+}
+
+function selectDpShortcut(val){
+  _dpSelectedDate = val;
+  // Navigate cal to that month
+  const d = new Date(val+'T12:00:00');
+  _dpCalMonth = new Date(d.getFullYear(), d.getMonth(), 1);
+  renderDpShortcuts();
+  renderDpCal();
+}
+
+function renderDpCal(){
+  const titleEl = document.getElementById('dp-cal-title');
+  const gridEl = document.getElementById('dp-cal-grid');
+  if(!titleEl||!gridEl||!_dpCalMonth) return;
+
+  const year = _dpCalMonth.getFullYear();
+  const month = _dpCalMonth.getMonth();
+  titleEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <button onclick="dpCalNav(-1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:0 8px">‹</button>
+      <span>${_dpCalMonth.toLocaleString('pt-BR',{month:'long',year:'numeric'})}</span>
+      <button onclick="dpCalNav(1)" style="background:none;border:none;cursor:pointer;color:var(--t2);font-size:16px;padding:0 8px">›</button>
+    </div>`;
+
+  const days = ['Do','Se','Te','Qu','Qu','Se','Sá'];
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const now = new Date();
+  const todayStr = now.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+
+  let html = days.map(d=>`<div style="font-size:10px;font-weight:700;color:var(--t3);padding:3px 0">${d}</div>`).join('');
+
+  // empty cells
+  for(let i=0;i<firstDay;i++) html+=`<div></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isSelected = dateStr === _dpSelectedDate;
+    const isToday = dateStr === todayStr;
+    const isFuture = dateStr > todayStr;
+    const bg = isSelected?'var(--fox)':'transparent';
+    const col = isSelected?'#fff':isToday?'var(--fox)':isFuture?'var(--t3)':'var(--t)';
+    const fw = (isSelected||isToday)?700:400;
+    const bord = (isToday&&!isSelected)?'1.5px solid var(--fox)':'1.5px solid transparent';
+    const click = isFuture?'':` onclick="selectDpDay('${dateStr}')"`;
+    html+=`<div${click} style="padding:5px 2px;border-radius:8px;font-size:12px;cursor:${isFuture?'default':'pointer'};background:${bg};color:${col};font-weight:${fw};border:${bord};text-align:center">${d}</div>`;
+  }
+  gridEl.innerHTML = html;
+}
+
+function dpCalNav(dir){
+  if(!_dpCalMonth) return;
+  _dpCalMonth = new Date(_dpCalMonth.getFullYear(), _dpCalMonth.getMonth()+dir, 1);
+  renderDpCal();
+}
+
+function selectDpDay(val){
+  _dpSelectedDate = val;
+  renderDpShortcuts();
+  renderDpCal();
+}
+
+function applyDiaPicker(){
+  if(!_dpSelectedDate) return;
+  const inp = document.getElementById('dash-dia-input');
+  if(inp) inp.value = _dpSelectedDate;
+  // Update button label
+  const lbl = document.getElementById('dash-dia-label');
+  if(lbl){
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+    const yestStr = yesterday.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    if(_dpSelectedDate===todayStr) lbl.textContent='Hoje';
+    else if(_dpSelectedDate===yestStr) lbl.textContent='Ontem';
+    else{
+      const d=new Date(_dpSelectedDate+'T12:00:00');
+      lbl.textContent=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+    }
+  }
+  closeDiaPicker();
+  renderDashboard();
+}
+
+
 let _drePgPeriod='mes';
 function drePgSetPeriod(p){
   _drePgPeriod=p;
