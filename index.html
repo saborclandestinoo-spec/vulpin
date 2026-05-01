@@ -6290,8 +6290,22 @@ function renderPedidos(){
 }
 
 function verPedido(id){
-  const pedidos=getPedidosCache();
-  const p=pedidos.find(x=>(x.id||x.displayId)==id||(String(x.displayId)===String(id)));
+  const cache=getPedidosCache();
+  const hist=getHistorico();
+  // Merge: histórico tem status atualizado, cache tem dados mais completos
+  const histMapa=Object.fromEntries(hist.map(p=>[p.id,p]));
+  const cacheMapa=Object.fromEntries(cache.map(p=>[p.id,p]));
+  const merged={...histMapa,...cacheMapa};
+  // Prefer historico status if it's more final
+  Object.values(merged).forEach(p=>{
+    const hst=histMapa[p.id];
+    if(hst&&hst.status&&hst.status!==p.status){
+      const finalStatuses=new Set(['closed','CLOSED','CONCLUDED','concluded','DELIVERED','delivered','COMPLETED','completed','CANCELLED','CANCELED','cancelled','canceled']);
+      if(finalStatuses.has(hst.status)) p.status=hst.status;
+    }
+  });
+  const allPedidos=Object.values(merged);
+  const p=allPedidos.find(x=>(x.id||x.displayId)==id||(String(x.display_id||x.displayId)===String(id)));
   if(!p)return;
   const num=p.display_id||p.displayId||p.id||'—';
   // Canal badge
@@ -6310,7 +6324,7 @@ function verPedido(id){
   const _pags2=(p.payments||[]);const _pm2={'money':'Dinheiro','credit_card':'Cartão Crédito','debit_card':'Cartão Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};const pagTxt=_pags2.length?_pags2.map(pg=>(_pm2[pg.payment_method]||pg.payment_method)+(pg.change_for?' (troco p/ R$'+Number(pg.change_for).toFixed(2)+')':'')).join(' + '):'—';
 
   // Faixa de conclusão
-  const isClosed=p.status==='closed';
+  const isClosed=new Set(['closed','CLOSED','CONCLUDED','concluded','DELIVERED','delivered','COMPLETED','completed']).has(p.status||'');
   const updatedAt=p.updated_at||p.updatedAt||'';
   const conclusaoTxt=updatedAt?new Date(updatedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
   const faixaConclusao=isClosed?`<div style="background:#27AE60;color:#fff;border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:12px;font-weight:600;text-align:center">✅ Concluído${conclusaoTxt?' às '+conclusaoTxt:''}</div>`:'';
@@ -6918,8 +6932,10 @@ async function enriquecerHistorico(){
   const zerados=hist.filter(p=>{
     if(_stCancelado.has(p.status||'')) return false;
     if(jaTestados[p.id]) return false;
+    // Pula IDs numéricos longos (>100000) — são pedidos externos antigos sem dados na API
+    if(typeof p.id==='number'&&p.id>100000) return false;
+    if(typeof p.id==='string'&&/^\d{8,}$/.test(p.id)) return false;
     const semItens=!(p.items||p.itens||[]).length||!p.customer?.name;
-    // Re-enrich CONFIRMED pedidos older than 2 hours
     const isConfirmadoAntigo=(p.status==='CONFIRMED'||p.status==='confirmed')&&p.created_at&&(agora-new Date(p.created_at).getTime())>2*60*60*1000;
     return semItens||isConfirmadoAntigo;
   });
