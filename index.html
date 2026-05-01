@@ -714,28 +714,49 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
     <!-- FINANCEIRO / FLUXO -->
     <div class="pg" id="pg-financeiro">
+      <!-- TOOLBAR -->
+      <div style="background:#fff;border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
+          <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:6px 14px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif">Tabela</button>
+          <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:6px 14px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:#fff;color:var(--t2);font-family:'Poppins',sans-serif">Gráfico</button>
+        </div>
+        <!-- Período -->
+        <div style="display:flex;align-items:center;gap:6px">
+          <select id="fc-periodo-tipo" class="filter-sel" onchange="fcPeriodoChange()" style="font-size:11px">
+            <option value="semana">Semana</option>
+            <option value="mes" selected>Mês</option>
+            <option value="custom">Personalizado</option>
+          </select>
+          <button class="fc-month-btn" onclick="fcNav(-1)">‹</button>
+          <span id="fc-label" style="font-size:12px;font-weight:600;color:var(--t);min-width:140px;text-align:center">—</span>
+          <button class="fc-month-btn" onclick="fcNav(1)">›</button>
+        </div>
+        <div id="fc-custom-range" style="display:none;align-items:center;gap:6px">
+          <input type="date" id="fc-range-start" class="filter-sel" style="font-size:11px" onchange="renderFluxo()">
+          <span style="font-size:11px;color:var(--t3)">até</span>
+          <input type="date" id="fc-range-end" class="filter-sel" style="font-size:11px" onchange="renderFluxo()">
+        </div>
+        <!-- Filtros -->
+        <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:11px"><option value="">Todas as contas</option></select>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn-o" style="font-size:11px" onclick="fcExportar()">⬇ Exportar</button>
+        </div>
+      </div>
       <div class="scroll">
-        <div class="fc-header">
-          <div class="fc-month-nav">
-            <button class="fc-month-btn" onclick="fcMonth(-1)">‹</button>
-            <span class="fc-month-label" id="fc-label">—</span>
-            <button class="fc-month-btn" onclick="fcMonth(1)">›</button>
-          </div>
-          <div style="margin-left:auto;display:flex;gap:7px">
-            <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()"><option value="">Todos os bancos</option></select>
+        <!-- KPIs -->
+        <div id="fc-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+        <!-- Tabela view -->
+        <div id="fc-view-tabela">
+          <div class="card" style="overflow-x:auto">
+            <div id="fc-table-wrap"></div>
           </div>
         </div>
-        <div class="fin-summary" id="fin-summary"></div>
-        <div class="card">
-          <div class="card-t">Fluxo de Caixa</div>
-          <div class="chart-area" style="height:200px"><canvas id="chart-fluxo"></canvas></div>
-        </div>
-        <div class="card" style="margin-top:14px">
-          <div class="card-t">Movimentações do mês</div>
-          <div class="tbl-wrap"><table class="tbl" id="tbl-fluxo">
-            <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Banco</th><th>Tipo</th><th>Valor</th><th>Saldo</th></tr></thead>
-            <tbody></tbody>
-          </table></div>
+        <!-- Gráfico view -->
+        <div id="fc-view-grafico" style="display:none">
+          <div class="card">
+            <div class="chart-area" style="height:280px"><canvas id="chart-fluxo"></canvas></div>
+          </div>
         </div>
       </div>
     </div>
@@ -969,6 +990,9 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4 5h6M4 7h4M4 9h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
             Cardápio Web
           </div>
+          <div class="cfg-tab" id="cfg-t-pagamentos" onclick="cfgTab('pagamentos',this)" style="padding:10px 18px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:7px">
+            💳 Pagamentos
+          </div>
         </div>
 
         <!-- PAINEL IMPRESSÃO -->
@@ -1154,6 +1178,36 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
             <div style="margin-top:12px;padding:10px 14px;background:var(--blue-bg);border-radius:8px;font-size:11px;color:var(--blue)">
               ℹ️ O token funciona como senha. Não compartilhe com ninguém.
             </div>
+          </div>
+        </div>
+
+        <!-- PAINEL PAGAMENTOS -->
+        <div id="cfg-panel-pagamentos" style="display:none;padding:20px 0">
+          <!-- Formas de pagamento financeiro -->
+          <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">Formas de pagamento do financeiro</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:14px">Estas formas de pagamento são usadas para registrar as entradas e saídas financeiras.</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div class="search-wrap" style="max-width:220px">
+              <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <input class="search-in" id="fpag-search" placeholder="Pesquise pelo nome" oninput="renderFormasPag()">
+            </div>
+            <button class="btn-p" onclick="openFormaPag()" style="font-size:12px">+ Nova forma de pagamento</button>
+          </div>
+          <div class="card" style="margin-bottom:24px">
+            <div class="tbl-wrap"><table class="tbl" id="tbl-formas-pag">
+              <thead><tr><th>Nome</th><th>Status</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+
+          <!-- Formas de pagamento dos pedidos -->
+          <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">Configurar formas de pagamentos dos pedidos</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:14px">Estas são as formas de pagamento usadas nos pedidos, com conta de recebimento, prazo e taxas.</div>
+          <div class="card">
+            <div class="tbl-wrap"><table class="tbl" id="tbl-formas-pedido">
+              <thead><tr><th>Nome</th><th>Conta de recebimento</th><th>Dias para recebimento</th><th>Taxa percentual</th><th>Taxa fixa</th><th>Status</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table></div>
           </div>
         </div>
 
@@ -3829,67 +3883,365 @@ function fcMonth(delta){
   if(fcMonthNum<1){fcMonthNum=12;fcYear--;}
   renderFluxo();
 }
-function renderFluxo(){
-  const label=new Date(fcYear,fcMonthNum-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  document.getElementById('fc-label').textContent=label.charAt(0).toUpperCase()+label.slice(1);
+// ═══════════════════════════════════════════
+// FLUXO DE CAIXA — versão completa
+// ═══════════════════════════════════════════
+let _fcTab='tabela';
+let _fcPeriodo='mes'; // semana | mes | custom
+let _fcRangeStart='';
+let _fcRangeEnd='';
+
+function fcSetTab(tab){
+  _fcTab=tab;
+  document.getElementById('fc-tab-tabela').style.background=tab==='tabela'?'var(--fox)':'#fff';
+  document.getElementById('fc-tab-tabela').style.color=tab==='tabela'?'#fff':'var(--t2)';
+  document.getElementById('fc-tab-grafico').style.background=tab==='grafico'?'var(--fox)':'#fff';
+  document.getElementById('fc-tab-grafico').style.color=tab==='grafico'?'#fff':'var(--t2)';
+  document.getElementById('fc-view-tabela').style.display=tab==='tabela'?'block':'none';
+  document.getElementById('fc-view-grafico').style.display=tab==='grafico'?'block':'none';
+  renderFluxo();
+}
+
+function fcPeriodoChange(){
+  _fcPeriodo=document.getElementById('fc-periodo-tipo').value;
+  const cr=document.getElementById('fc-custom-range');
+  if(cr)cr.style.display=_fcPeriodo==='custom'?'flex':'none';
+  renderFluxo();
+}
+
+function fcNav(dir){
+  if(_fcPeriodo==='mes'){
+    fcMonthNum+=dir;
+    if(fcMonthNum>12){fcMonthNum=1;fcYear++;}
+    if(fcMonthNum<1){fcMonthNum=12;fcYear--;}
+  } else if(_fcPeriodo==='semana'){
+    // advance/back 7 days from current range start
+    const base=_fcRangeStart?new Date(_fcRangeStart+'T12:00:00'):new Date();
+    base.setDate(base.getDate()+dir*7);
+    _fcRangeStart=base.toLocaleDateString('sv-SE');
+    const e2=new Date(base);e2.setDate(e2.getDate()+6);
+    _fcRangeEnd=e2.toLocaleDateString('sv-SE');
+  }
+  renderFluxo();
+}
+// keep fcMonth for backward compat
+function fcMonth(dir){fcNav(dir);}
+
+function _fcGetRange(){
+  if(_fcPeriodo==='custom'){
+    const s=document.getElementById('fc-range-start')?.value||'';
+    const e=document.getElementById('fc-range-end')?.value||'';
+    return{start:s,end:e||s};
+  }
+  if(_fcPeriodo==='semana'){
+    if(!_fcRangeStart){
+      const n=new Date();
+      const dow=n.getDay();
+      const mon=new Date(n);mon.setDate(n.getDate()-dow+1);
+      _fcRangeStart=mon.toLocaleDateString('sv-SE');
+      const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+      _fcRangeEnd=sun.toLocaleDateString('sv-SE');
+    }
+    return{start:_fcRangeStart,end:_fcRangeEnd};
+  }
+  // mes
   const m=`${fcYear}-${String(fcMonthNum).padStart(2,'0')}`;
+  const days=new Date(fcYear,fcMonthNum,0).getDate();
+  return{start:`${m}-01`,end:`${m}-${String(days).padStart(2,'0')}`};
+}
+
+function renderFluxo(){
+  const range=_fcGetRange();
+  if(!range.start){document.getElementById('fc-label').textContent='Selecione período';return;}
+
+  // Label
+  const startD=new Date(range.start+'T12:00:00');
+  const endD=new Date(range.end+'T12:00:00');
+  let label='';
+  if(_fcPeriodo==='mes'){
+    label=startD.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    label=label.charAt(0).toUpperCase()+label.slice(1);
+  } else if(_fcPeriodo==='semana'){
+    label=`${startD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} ~ ${endD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`;
+  } else {
+    label=`${startD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})} ~ ${endD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
+  }
+  document.getElementById('fc-label').textContent=label;
+
   const bancos=getBancos();
   const bSel=document.getElementById('fc-bank-filter');
-  bSel.innerHTML='<option value="">Todos os bancos</option>'+bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');
-  const bFilter=bSel.value;
-  let lancs=getLanc().filter(l=>l.data&&l.data.startsWith(m));
+  if(bSel){bSel.innerHTML='<option value="">Todas as contas</option>'+bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');}
+  const bFilter=bSel?bSel.value:'';
+
+  let lancs=getLanc().filter(l=>{
+    const d=l.data||'';
+    return d>=range.start&&d<=range.end;
+  });
   if(bFilter)lancs=lancs.filter(l=>l.bancoId===bFilter);
-  lancs.sort((a,b)=>a.data.localeCompare(b.data));
+  lancs.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+
   const rec=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
   const desp=lancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
   const sal=rec-desp;
-  document.getElementById('fin-summary').innerHTML=`
-    <div class="fin-card"><div class="fin-l">Receitas</div><div class="fin-v rec">R$ ${fmtN(rec)}</div><div class="fin-sub">${lancs.filter(l=>l.tipo==='receita').length} lançamentos</div></div>
-    <div class="fin-card"><div class="fin-l">Despesas</div><div class="fin-v desp">R$ ${fmtN(desp)}</div><div class="fin-sub">${lancs.filter(l=>l.tipo==='despesa').length} lançamentos</div></div>
-    <div class="fin-card"><div class="fin-l">Saldo do Período</div><div class="fin-v sal" style="color:${sal>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(sal)}</div><div class="fin-sub">${sal>=0?'Positivo':'Negativo'}</div></div>
-  `;
-  // table
-  let saldoAcc=0;
-  const tbody=document.querySelector('#tbl-fluxo tbody');
-  tbody.innerHTML=lancs.length?lancs.map(l=>{
-    saldoAcc+=l.tipo==='receita'?(l.valor||0):-(l.valor||0);
-    const bk=bancos.find(b=>b.id===l.bancoId);
-    const cc=getCC().find(c=>c.id===l.ccId);
-    return`<tr class="fc-row-${l.tipo}">
-      <td>${fmtDate(l.data)}</td>
-      <td style="font-weight:500;color:var(--t)">${l.desc}</td>
-      <td style="color:var(--t3)">${cc?cc.nome:'—'}</td>
-      <td style="color:var(--t3)">${bk?bk.nome:'—'}</td>
-      <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
-      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
-      <td style="font-weight:600;color:${saldoAcc>=0?'var(--t)':'var(--red)'}">R$ ${fmtN(saldoAcc)}</td>
-    </tr>`;
-  }).join(''):
-  '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento neste período</td></tr>';
-  // chart
-  renderFluxoChart(m);
+
+  // Saldo inicial = saldo de todos os bancos no dia anterior ao range
+  const saldoInicial=bancos.reduce((s,b)=>{
+    if(bFilter&&b.id!==bFilter)return s;
+    const allL=getLanc().filter(l=>l.bancoId===b.id&&(l.data||'')<range.start);
+    const r2=allL.filter(l=>l.tipo==='receita').reduce((ss,l)=>ss+(l.valor||0),0);
+    const d2=allL.filter(l=>l.tipo==='despesa').reduce((ss,l)=>ss+(l.valor||0),0);
+    return s+(b.saldoInicial||0)+r2-d2;
+  },0);
+
+  // KPIs
+  const kpiEl=document.getElementById('fc-kpis');
+  if(kpiEl)kpiEl.innerHTML=[
+    {ico:'💰',l:'Saldo Inicial',v:`R$ ${fmtN(saldoInicial)}`,cor:'var(--blue)'},
+    {ico:'📈',l:'Total Receitas',v:`R$ ${fmtN(rec)}`,cor:'var(--green)'},
+    {ico:'📉',l:'Total Despesas',v:`R$ ${fmtN(desp)}`,cor:'var(--red)'},
+    {ico:'🏦',l:'Saldo Final',v:`R$ ${fmtN(saldoInicial+sal)}`,cor:sal>=0?'var(--green)':'var(--red)'},
+  ].map(k=>`<div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:14px 16px">
+    <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${k.ico} ${k.l}</div>
+    <div style="font-size:20px;font-weight:700;color:${k.cor}">${k.v}</div>
+  </div>`).join('');
+
+  if(_fcTab==='grafico'){renderFluxoChart(range);return;}
+
+  // Build tabela por dia
+  const allDays=[];
+  const cur=new Date(startD);
+  while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
+
+  // Agrupa por categoria
+  const catNames={};
+  getCC().forEach(c=>{catNames[c.id]=c.nome;});
+
+  let html=`<table class="tbl" style="min-width:${Math.max(600,allDays.length*80+200)}px">
+  <thead><tr>
+    <th style="min-width:160px;position:sticky;left:0;background:#fff;z-index:1"></th>
+    ${allDays.map(d=>`<th style="text-align:right;min-width:80px;white-space:nowrap">${new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</th>`).join('')}
+    <th style="text-align:right;min-width:90px;font-weight:700">Total</th>
+  </tr></thead><tbody>`;
+
+  // Saldo inicial row
+  let saldoAcc=saldoInicial;
+  html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:var(--bg2);padding:10px 12px">Saldo inicial do período</td>
+    ${allDays.map((_,i)=>i===0?`<td style="text-align:right;font-weight:600;color:var(--blue)">${fmtN(saldoInicial)}</td>`:'<td></td>').join('')}
+    <td style="text-align:right;font-weight:700;color:var(--blue)">${fmtN(saldoInicial)}</td></tr>`;
+
+  // Receitas
+  const recLancs=lancs.filter(l=>l.tipo==='receita');
+  const recTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
+  html+=`<tr style="background:rgba(39,174,96,.06)"><td style="font-weight:700;color:var(--green);position:sticky;left:0;background:rgba(39,174,96,.06);padding:10px 12px">📈 Total de receitas</td>
+    ${allDays.map(d=>{const v=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:600">${v?fmtN(v):''}</td>`;}).join('')}
+    <td style="text-align:right;font-weight:700;color:var(--green)">${fmtN(recTotal)}</td></tr>`;
+  // Receitas por categoria
+  const recCats=[...new Set(recLancs.map(l=>l.ccId||''))];
+  recCats.forEach(catId=>{
+    const catL=recLancs.filter(l=>(l.ccId||'')===(catId||''));
+    const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
+    const catNome=catId?catNames[catId]||catId:'Sem categoria';
+    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">▸ ${catNome}</td>
+      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:12px;color:var(--t2)">${fmtN(catTotal)}</td></tr>`;
+  });
+
+  // Despesas
+  const despLancs=lancs.filter(l=>l.tipo==='despesa');
+  const despTotal=despLancs.reduce((s,l)=>s+(l.valor||0),0);
+  html+=`<tr style="background:rgba(231,76,60,.06)"><td style="font-weight:700;color:var(--red);position:sticky;left:0;background:rgba(231,76,60,.06);padding:10px 12px">📉 Total de despesas</td>
+    ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--red);font-weight:600">${v?'−'+fmtN(v):''}</td>`;}).join('')}
+    <td style="text-align:right;font-weight:700;color:var(--red)">−${fmtN(despTotal)}</td></tr>`;
+  // Despesas por categoria
+  const despCats=[...new Set(despLancs.map(l=>l.ccId||''))];
+  despCats.forEach(catId=>{
+    const catL=despLancs.filter(l=>(l.ccId||'')===(catId||''));
+    const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
+    const catNome=catId?catNames[catId]||catId:'Sem categoria';
+    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">▸ ${catNome}</td>
+      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:12px;color:var(--t2)">−${fmtN(catTotal)}</td></tr>`;
+  });
+
+  // Saldo final row — calc por dia
+  html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:var(--bg2);padding:10px 12px">Saldo final do período</td>`;
+  let acc=0;
+  allDays.forEach(d=>{
+    const r=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    acc+=r-dv;
+    html+=`<td style="text-align:right;font-weight:600;color:${acc>=0?'var(--green)':'var(--red)'}">${fmtN(acc)}</td>`;
+  });
+  html+=`<td style="text-align:right;font-weight:700;color:${sal>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(sal)}</td></tr>`;
+
+  // Saldo total row
+  html+=`<tr style="border-top:2px solid var(--bor)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:#fff;padding:10px 12px">Saldo total</td>`;
+  let accTotal=saldoInicial;
+  allDays.forEach(d=>{
+    const r=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    accTotal+=r-dv;
+    html+=`<td style="text-align:right;font-weight:700;color:${accTotal>=0?'var(--green)':'var(--red)'}">${fmtN(accTotal)}</td>`;
+  });
+  html+=`<td style="text-align:right;font-weight:700;color:${(saldoInicial+sal)>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(saldoInicial+sal)}</td></tr>`;
+
+  html+='</tbody></table>';
+  const wrap=document.getElementById('fc-table-wrap');
+  if(wrap)wrap.innerHTML=html;
 }
-function renderFluxoChart(m){
+
+function renderFluxoChart(range){
   const ctx=document.getElementById('chart-fluxo');if(!ctx)return;
   const ex=Chart.getChart(ctx);if(ex)ex.destroy();
-  const [yr,mo]=m.split('-').map(Number);
-  const dias=new Date(yr,mo,0).getDate();
-  const labels=Array.from({length:dias},(_,i)=>String(i+1));
-  const lancs=getLanc().filter(l=>l.data&&l.data.startsWith(m));
-  const recArr=new Array(dias).fill(0);
-  const despArr=new Array(dias).fill(0);
-  lancs.forEach(l=>{
-    const d=parseInt(l.data.split('-')[2])-1;
-    if(d>=0&&d<dias){
-      if(l.tipo==='receita')recArr[d]+=(l.valor||0);
-      else despArr[d]+=(l.valor||0);
-    }
-  });
-  new Chart(ctx,{type:'line',data:{labels,datasets:[
-    {label:'Receitas',data:recArr,borderColor:'#27AE60',backgroundColor:'rgba(39,174,96,.08)',fill:true,tension:0.4,pointRadius:2,borderWidth:2},
-    {label:'Despesas',data:despArr,borderColor:'#E74C3C',backgroundColor:'rgba(231,76,60,.06)',fill:true,tension:0.4,pointRadius:2,borderWidth:2},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Poppins',size:11},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',maxTicksLimit:10}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:11},color:'#A0A0B8',callback:v=>'R$'+v}}}}});
+  if(!range||!range.start)return;
+  const allDays=[];
+  const cur=new Date(range.start+'T12:00:00');
+  const endD=new Date(range.end+'T12:00:00');
+  while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
+  const lancs=getLanc().filter(l=>{const d=l.data||'';return d>=range.start&&d<=range.end;});
+  const recArr=allDays.map(d=>lancs.filter(l=>l.tipo==='receita'&&l.data===d).reduce((s,l)=>s+(l.valor||0),0));
+  const despArr=allDays.map(d=>lancs.filter(l=>l.tipo==='despesa'&&l.data===d).reduce((s,l)=>s+(l.valor||0),0));
+  const labels=allDays.map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+  new Chart(ctx,{type:'bar',data:{labels,datasets:[
+    {label:'Receitas',data:recArr,backgroundColor:'rgba(39,174,96,.7)',borderRadius:4},
+    {label:'Despesas',data:despArr,backgroundColor:'rgba(231,76,60,.6)',borderRadius:4},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Poppins',size:11},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',maxTicksLimit:14}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:11},color:'#A0A0B8',callback:v=>'R$'+v}}}}});
 }
+
+function fcExportar(){
+  const range=_fcGetRange();
+  if(!range.start){alert('Selecione um período');return;}
+  const lancs=getLanc().filter(l=>{const d=l.data||'';return d>=range.start&&d<=range.end;});
+  lancs.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const bancos=getBancos();
+  const rows=[['Data','Descrição','Categoria','Conta','Tipo','Valor']];
+  lancs.forEach(l=>{
+    const bk=bancos.find(b=>b.id===l.bancoId);
+    const cc=getCC().find(c=>c.id===l.ccId);
+    rows.push([l.data,l.desc,cc?cc.nome:'—',bk?bk.nome:'—',l.tipo,l.tipo==='receita'?l.valor:-(l.valor||0)]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=`fluxo_${range.start}_${range.end}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════
+// FORMAS DE PAGAMENTO
+// ═══════════════════════════════════════════
+const getFormasPag=()=>S.get('formas_pag')||[
+  {id:'fp1',nome:'Dinheiro',status:'ativa'},
+  {id:'fp2',nome:'Pix',status:'ativa'},
+  {id:'fp3',nome:'Cartão de crédito',status:'ativa'},
+  {id:'fp4',nome:'Cartão de débito',status:'ativa'},
+  {id:'fp5',nome:'Boleto',status:'ativa'},
+];
+const getFormasPedido=()=>S.get('formas_pedido')||[
+  {id:'fped1',nome:'Cartão de crédito',bancoId:'',dias:1,taxaPct:3.26,taxaFix:0,status:'ativa'},
+  {id:'fped2',nome:'Cartão de débito',bancoId:'',dias:1,taxaPct:1.39,taxaFix:0,status:'ativa'},
+  {id:'fped3',nome:'Pix',bancoId:'',dias:0,taxaPct:0,taxaFix:0,status:'ativa'},
+  {id:'fped4',nome:'iFood',bancoId:'',dias:0,taxaPct:17,taxaFix:0,status:'ativa'},
+];
+
+let _editFpagId=null, _editFpedId=null;
+
+function renderFormasPag(){
+  const s=(document.getElementById('fpag-search')||{}).value?.toLowerCase()||'';
+  let items=getFormasPag();
+  if(s)items=items.filter(f=>f.nome.toLowerCase().includes(s));
+  const tbody=document.querySelector('#tbl-formas-pag tbody');
+  if(!tbody)return;
+  tbody.innerHTML=items.map(f=>`<tr>
+    <td style="font-weight:500;color:var(--t)">${f.nome}</td>
+    <td><span class="pill ${f.status==='ativa'?'pill-ok':'pill-oculto'}">${f.status==='ativa'?'Ativa':'Inativa'}</span></td>
+    <td><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="openFormaPag('${f.id}')">Editar</button></td>
+  </tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--t3);padding:16px">Nenhuma forma cadastrada</td></tr>';
+  renderFormasPedido();
+}
+
+function renderFormasPedido(){
+  const bancos=getBancos();
+  const items=getFormasPedido();
+  const tbody=document.querySelector('#tbl-formas-pedido tbody');
+  if(!tbody)return;
+  tbody.innerHTML=items.map(f=>{
+    const bk=bancos.find(b=>b.id===f.bancoId);
+    const diasStr=f.dias===0?'Na hora':`D+${f.dias}`;
+    return`<tr>
+      <td style="font-weight:500;color:var(--t)">${f.nome}</td>
+      <td style="color:var(--t2)">${bk?bk.nome:'—'}</td>
+      <td style="color:var(--t2)">${diasStr}</td>
+      <td style="color:var(--t2)">${f.taxaPct?f.taxaPct+'%':'—'}</td>
+      <td style="color:var(--t2)">${f.taxaFix?'R$ '+fmtN(f.taxaFix):'—'}</td>
+      <td><span class="pill ${f.status==='ativa'?'pill-ok':'pill-oculto'}">${f.status==='ativa'?'Ativa':'Inativa'}</span></td>
+      <td><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="openFormaPedido('${f.id}')">✏️</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:16px">Nenhuma forma configurada</td></tr>';
+}
+
+function openFormaPag(id){
+  _editFpagId=id||null;
+  const f=id?getFormasPag().find(x=>x.id===id):null;
+  document.getElementById('mfpag-title').textContent=id?'Editar Forma de Pagamento':'Nova Forma de Pagamento';
+  document.getElementById('mfpag-nome').value=f?f.nome:'';
+  document.getElementById('mfpag-status').value=f?f.status:'ativa';
+  document.getElementById('mfpag-del').style.display=id?'block':'none';
+  openM('modal-forma-pag');
+}
+function saveFormaPag(){
+  const nome=document.getElementById('mfpag-nome').value.trim();
+  if(!nome){alert('Informe o nome');return;}
+  const obj={id:_editFpagId||uid(),nome,status:document.getElementById('mfpag-status').value};
+  let data=getFormasPag();
+  if(_editFpagId)data=data.map(x=>x.id===_editFpagId?obj:x);
+  else data.push(obj);
+  S.set('formas_pag',data);closeM('modal-forma-pag');renderFormasPag();
+}
+function deleteFormaPag(){
+  showConfirm('Excluir','Excluir esta forma de pagamento?','🗑️',()=>{
+    S.set('formas_pag',getFormasPag().filter(x=>x.id!==_editFpagId));
+    closeM('modal-forma-pag');renderFormasPag();
+  });
+}
+
+function openFormaPedido(id){
+  _editFpedId=id||null;
+  const f=id?getFormasPedido().find(x=>x.id===id):null;
+  document.getElementById('mfped-title').textContent=id?'Editar Pagamento':'Nova Forma de Pagamento';
+  document.getElementById('mfped-nome').value=f?f.nome:'';
+  document.getElementById('mfped-dias').value=f?String(f.dias):'0';
+  document.getElementById('mfped-taxa-pct').value=f?f.taxaPct:'';
+  document.getElementById('mfped-taxa-fix').value=f?f.taxaFix:'';
+  document.getElementById('mfped-status').value=f?f.status:'ativa';
+  const bSel=document.getElementById('mfped-banco');
+  bSel.innerHTML='<option value="">Selecione...</option>'+getBancos().map(b=>`<option value="${b.id}"${f&&f.bancoId===b.id?' selected':''}>${b.nome}</option>`).join('');
+  document.getElementById('mfped-del').style.display=id?'block':'none';
+  openM('modal-forma-pedido');
+}
+function saveFormaPedido(){
+  const nome=document.getElementById('mfped-nome').value.trim();
+  if(!nome){alert('Informe o nome');return;}
+  const obj={
+    id:_editFpedId||uid(),nome,
+    bancoId:document.getElementById('mfped-banco').value,
+    dias:parseInt(document.getElementById('mfped-dias').value)||0,
+    taxaPct:parseFloat(document.getElementById('mfped-taxa-pct').value)||0,
+    taxaFix:parseFloat(document.getElementById('mfped-taxa-fix').value)||0,
+    status:document.getElementById('mfped-status').value,
+  };
+  let data=getFormasPedido();
+  if(_editFpedId)data=data.map(x=>x.id===_editFpedId?obj:x);
+  else data.push(obj);
+  S.set('formas_pedido',data);closeM('modal-forma-pedido');renderFormasPedido();
+}
+function deleteFormaPedido(){
+  showConfirm('Excluir','Excluir esta configuração?','🗑️',()=>{
+    S.set('formas_pedido',getFormasPedido().filter(x=>x.id!==_editFpedId));
+    closeM('modal-forma-pedido');renderFormasPedido();
+  });
+}
+
 
 // ═══════════════════════════════════════════
 // PLANO DE CONTAS
@@ -6497,12 +6849,13 @@ function renderConfig(){
   if(typeof qzConnect==='function')qzConnect();
 }
 function cfgTab(tab,el){
-  ['impressao','loja','cardapioweb'].forEach(t=>{
+  ['impressao','loja','cardapioweb','pagamentos'].forEach(t=>{
     const p=document.getElementById('cfg-panel-'+t);
     const bt=document.getElementById('cfg-t-'+t);
     if(p)p.style.display=t===tab?'block':'none';
     if(bt){bt.style.color=t===tab?'var(--fox)':'var(--t3)';bt.style.borderBottomColor=t===tab?'var(--fox)':'transparent';bt.style.fontWeight=t===tab?'600':'500';}
   });
+  if(tab==='pagamentos')renderFormasPag();
 }
 function cwConfigChanged(){}
 function toggleCwToken(){
@@ -7352,6 +7705,63 @@ async function syncMes(){
     <div class="modal-actions">
       <button class="btn-o" onclick="closeM('modal-prod-rec')">Cancelar</button>
       <button class="btn-p" onclick="saveProdRecheio()">Salvar Produção</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Forma de Pagamento Financeiro -->
+<div class="overlay" id="modal-forma-pag" onclick="if(event.target===this)closeM('modal-forma-pag')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-t"><span id="mfpag-title">Nova Forma de Pagamento</span><button class="modal-close" onclick="closeM('modal-forma-pag')">×</button></div>
+    <label class="fl">Nome</label>
+    <input class="fi" id="mfpag-nome" placeholder="Ex: Pix, Dinheiro..." style="margin-bottom:12px">
+    <label class="fl">Status</label>
+    <select class="fi" id="mfpag-status" style="margin-bottom:4px">
+      <option value="ativa">Ativa</option>
+      <option value="inativa">Inativa</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-danger modal-del" id="mfpag-del" onclick="deleteFormaPag()" style="display:none">Excluir</button>
+      <button class="btn-o" onclick="closeM('modal-forma-pag')">Cancelar</button>
+      <button class="btn-p" onclick="saveFormaPag()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Forma de Pagamento Pedido -->
+<div class="overlay" id="modal-forma-pedido" onclick="if(event.target===this)closeM('modal-forma-pedido')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-t"><span id="mfped-title">Configurar Pagamento</span><button class="modal-close" onclick="closeM('modal-forma-pedido')">×</button></div>
+    <label class="fl">Nome</label>
+    <input class="fi" id="mfped-nome" placeholder="Ex: Cartão de crédito" style="margin-bottom:12px">
+    <label class="fl">Conta de recebimento</label>
+    <select class="fi" id="mfped-banco" style="margin-bottom:12px"><option value="">Selecione...</option></select>
+    <div class="fi-row" style="margin-bottom:12px">
+      <div><label class="fl">Dias para recebimento</label>
+        <select class="fi" id="mfped-dias">
+          <option value="0">Na hora (D+0)</option>
+          <option value="1">D+1</option>
+          <option value="2">D+2</option>
+          <option value="7">D+7</option>
+          <option value="14">D+14</option>
+          <option value="30">D+30</option>
+        </select>
+      </div>
+      <div><label class="fl">Status</label>
+        <select class="fi" id="mfped-status">
+          <option value="ativa">Ativa</option>
+          <option value="inativa">Inativa</option>
+        </select>
+      </div>
+    </div>
+    <div class="fi-row" style="margin-bottom:4px">
+      <div><label class="fl">Taxa percentual (%)</label><input class="fi" id="mfped-taxa-pct" type="number" step="0.01" min="0" placeholder="Ex: 3.26"></div>
+      <div><label class="fl">Taxa fixa (R$)</label><input class="fi" id="mfped-taxa-fix" type="number" step="0.01" min="0" placeholder="Ex: 0.50"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger modal-del" id="mfped-del" onclick="deleteFormaPedido()" style="display:none">Excluir</button>
+      <button class="btn-o" onclick="closeM('modal-forma-pedido')">Cancelar</button>
+      <button class="btn-p" onclick="saveFormaPedido()">Salvar</button>
     </div>
   </div>
 </div>
