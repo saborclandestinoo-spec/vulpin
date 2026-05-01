@@ -1952,6 +1952,8 @@ function getEstoqueAtualProd(prodId){
   return (e.inicial||0) + totalEntradas + totalProd - totalPerdas - totalSaidas;
 }
 const getProducao=()=>S.get('producao')||[];
+const _stCancel_global=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+const _stDone_global=new Set(['DELIVERED','CONCLUDED','COMPLETED','closed','released','CLOSED','done','DONE']);
 const getLanc=()=>S.get('lancamentos')||[];
 // Data de competência: usa l.comp se preenchido, senão l.dataPag, senão l.data
 const getCompData=(l)=>(l.comp||l.dataPag||l.data||'').slice(0,10);
@@ -2486,19 +2488,9 @@ function renderDashboard(){
     // Render mes widgets
     renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel, lancPeriodComp);
   }
-
-  // Panel visibility handled by dashSetPeriod
-
-  // Chart subtitle
-  const cs=document.getElementById('dash-chart-subtitle');
-  if(cs)cs.textContent=isHoje?'Hoje vs ontem':'Últimos 6 meses';
-
-  new Chart(ctx,{type:'bar',data:{labels,datasets:[
-    {label:'Receitas',data:recData,backgroundColor:'rgba(39,174,96,.75)',borderRadius:6,order:2},
-    {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.65)',borderRadius:6,order:2},
-    {label:'Lucro',data:lucroData,type:'line',borderColor:'var(--fox)',backgroundColor:'rgba(231,130,70,.1)',borderWidth:2,pointRadius:4,pointBackgroundColor:'var(--fox)',fill:true,tension:.3,order:1},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
 }
+
+
 
 function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel, lancPeriodComp){
   // === TOP PRODUTOS ===
@@ -6909,7 +6901,12 @@ async function enriquecerHistorico(){
   if(!cfg.token)return;
   const hist=getHistorico();
   // Enriquece pedidos sem itens OU sem cliente — independente do total
-  const zerados=hist.filter(p=>!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type));
+  // Ignora pedidos já finalizados (closed/concluded) — evita 404s
+  const _stFinalizado=new Set(['DELIVERED','CONCLUDED','COMPLETED','closed','released','CLOSED','done','DONE','CANCELLED','CANCELED','cancelled','canceled']);
+  const zerados=hist.filter(p=>
+    !_stFinalizado.has(p.status||'') &&
+    (!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type))
+  );
   if(!zerados.length)return;
   _enriquecendo=true;
   const CHUNK=5;
