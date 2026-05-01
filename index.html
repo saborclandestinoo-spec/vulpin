@@ -6380,7 +6380,7 @@ function verPedido(id){
       }).join(''):'<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Sem itens</div>'}
       <div style="padding:10px 14px;border-top:1px solid var(--bor2)">
         ${(()=>{
-          const subtotal=itens.reduce((s,i)=>s+(i.total_price||0),0);
+          const subtotal=itens.reduce((s,i)=>s+(i.total_price||i.price||0),0);
           const taxaEntrega=p.delivery_fee||0;
           const taxaAdicional=p.additional_fee||0;
           const taxaServico=p.service_fee||0;
@@ -6511,9 +6511,12 @@ function slim(p){
     quantity:i.quantity||i.qtd||1,
     name:i.name||i.nome||'',
     external_code:i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'',
-    price:i.price||i.totalPrice||i.valor||0,
+    price:i.total_price||i.totalPrice||i.price||i.valor||0,
+    unit_price:i.unit_price||0,
+    options:(i.options||[]).map(o=>({name:o.name||'',price:o.price||0})),
   }));
-  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.value||pg.valor||0}));
+  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.total||pg.value||pg.valor||0,payment_type:pg.payment_type||'',change_of:pg.change_of||null}));
+  const addr=p.delivery_address||p.deliveryAddress||null;
   return{
     id:p.id,
     display_id:p.display_id||p.displayId,
@@ -6521,12 +6524,14 @@ function slim(p){
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
     sales_channel:p.sales_channel||'',
-    order_type:p.order_type||'',
+    order_type:p.order_type||p.orderType||'',
     delivery_fee:p.delivery_fee||p.deliveryFee||0,
     discount:p.discount||p.desconto||p.store_discount||0,
     benefits:p.benefits||[],
     discounts:p.discounts||[],
-    customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||''},
+    customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||'',phone:p.customer?.phone||p.customer?.cellphone||''},
+    delivery_address:addr,
+    table_number:p.table_number||null,
     items:itens,
     payments:pag,
   };
