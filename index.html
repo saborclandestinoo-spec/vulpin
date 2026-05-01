@@ -2917,11 +2917,13 @@ function renderDREPage(){
       let custoUn=prod.custo||0;
       const ft=fichas[prod.id]||[];
       if(ft.length>0){
-        custoUn=0;
+        let custoFicha=0;
         ft.forEach(it=>{
           const m=mp.find(x=>x.id===it.mpId);
-          if(m) custoUn+=getValorPorG(m)*(it.qtd||0);
+          if(m) custoFicha+=getValorPorG(m)*(it.qtd||0);
         });
+        // Usa ficha técnica só se retornar valor > 0, senão fallback p.custo
+        if(custoFicha>0) custoUn=custoFicha;
       }
       const total=custoUn*qtd;
       cmvFicha+=total;
