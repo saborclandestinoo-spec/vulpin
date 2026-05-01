@@ -6932,9 +6932,9 @@ async function enriquecerHistorico(){
   const zerados=hist.filter(p=>{
     if(_stCancelado.has(p.status||'')) return false;
     if(jaTestados[p.id]) return false;
-    // Pula IDs numéricos longos (>100000) — são pedidos externos antigos sem dados na API
-    if(typeof p.id==='number'&&p.id>100000) return false;
-    if(typeof p.id==='string'&&/^\d{8,}$/.test(p.id)) return false;
+    // Pula apenas IDs sem display_id correspondente (pedidos externos sem dados)
+    if(!p.display_id && typeof p.id==='number'&&p.id>1000000) return false;
+    if(!p.display_id && typeof p.id==='string'&&/^\d{8,}$/.test(p.id)&&!p.total) return false;
     const semItens=!(p.items||p.itens||[]).length||!p.customer?.name;
     const isConfirmadoAntigo=(p.status==='CONFIRMED'||p.status==='confirmed')&&p.created_at&&(agora-new Date(p.created_at).getTime())>2*60*60*1000;
     return semItens||isConfirmadoAntigo;
