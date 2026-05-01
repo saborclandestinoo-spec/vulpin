@@ -423,12 +423,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div style="display:flex;gap:8px;align-items:center">
             <div style="display:flex;gap:3px;background:#F1F1F4;border-radius:22px;padding:3px">
               <button onclick="drePgSetPeriod('mes')" id="dre-btn-mes" style="background:var(--fox);color:#fff;border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Este Mês</button>
-              <button onclick="drePgSetPeriod('custom')" id="dre-btn-custom" style="background:transparent;color:var(--t3);border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Período</button>
+              <button onclick="drePgSetPeriod('custom')" id="dre-btn-custom" style="background:transparent;color:var(--t3);border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Outro Mês</button>
             </div>
             <div id="dre-pg-range" style="display:none;align-items:center;gap:6px">
-              <input type="month" id="dre-pg-start" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit" onchange="renderDREPage()">
-              <span style="font-size:11px;color:var(--t3)">até</span>
-              <input type="month" id="dre-pg-end" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit" onchange="renderDREPage()">
+              <input type="month" id="dre-pg-start" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--t)" onchange="renderDREPage()">
             </div>
           </div>
         </div>
@@ -2848,10 +2846,10 @@ function renderDREPage(){
     periodoLabel=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
   } else {
     const s=document.getElementById('dre-pg-start')?.value;
-    const e=document.getElementById('dre-pg-end')?.value;
-    if(!s||!e) return;
-    filterFn=dt=>dt>=s.slice(0,7)&&dt<=e.slice(0,7)+'z';
-    periodoLabel=s===e?s:`${s} → ${e}`;
+    if(!s) return;
+    filterFn=dt=>dt.startsWith(s);
+    const d=new Date(s+'-01');
+    periodoLabel=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
   }
 
   const pgLabel=document.getElementById('dre-pg-periodo');
@@ -2875,21 +2873,24 @@ function renderDREPage(){
     return filterFn(dtBR)&&_stCancel.has(p.status||'');
   });
   const lancs=getLanc();
+  // Despesas por COMPETÊNCIA, receitas por data pagamento
   const lancPeriod=lancs.filter(l=>filterFn(getCompData(l)));
 
   // ── RECEITAS ──────────────────────────────
   const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
-  const pgMap={'pix':'Pix','pix_auto':'Pix','money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','online_credit_card':'Crédito','ifood':'iFood','CREDIT':'Crédito','DEBIT':'Débito','PIX':'Pix','CASH':'Dinheiro','ONLINE':'iFood'};
+
+  // Pagamentos — suporta payment_method, method, type, tipo
   let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
   histPeriod.forEach(p=>{
     (p.payments||p.pagamentos||[]).forEach(pg=>{
-      const m=(pg.method||pg.type||pg.tipo||'').toLowerCase();
+      const m=(pg.payment_method||pg.method||pg.type||pg.tipo||'').toLowerCase();
       const v=pg.value||pg.valor||pg.amount||0;
-      if(m.includes('pix'))vPix+=v;
-      else if(m.includes('dinheiro')||m.includes('cash')||m.includes('money'))vDin+=v;
-      else if(m.includes('credit')||m.includes('crédit'))vCred+=v;
-      else if(m.includes('debit')||m.includes('débit'))vDeb+=v;
-      else if(m.includes('ifood')||m.includes('online'))vIF+=v;
+      if(m.includes('pix')) vPix+=v;
+      else if(m==='money'||m.includes('dinheiro')||m.includes('cash')) vDin+=v;
+      else if(m.includes('credit')||m.includes('crédit')) vCred+=v;
+      else if(m.includes('debit')||m.includes('débit')) vDeb+=v;
+      else if(m.includes('ifood')||m.includes('online')) vIF+=v;
+      else vDin+=v; // fallback
     });
   });
 
