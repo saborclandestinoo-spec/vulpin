@@ -2879,19 +2879,20 @@ function renderDREPage(){
   // ── RECEITAS ──────────────────────────────
   const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
 
-  // Pagamentos — suporta payment_method, method, type, tipo
+  // Pagamentos — value sempre 0 na API, usa total do pedido × método
   let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
   histPeriod.forEach(p=>{
-    (p.payments||p.pagamentos||[]).forEach(pg=>{
-      const m=(pg.payment_method||pg.method||pg.type||pg.tipo||'').toLowerCase();
-      const v=pg.value||pg.valor||pg.amount||0;
-      if(m.includes('pix')) vPix+=v;
-      else if(m==='money'||m.includes('dinheiro')||m.includes('cash')) vDin+=v;
-      else if(m.includes('credit')||m.includes('crédit')) vCred+=v;
-      else if(m.includes('debit')||m.includes('débit')) vDeb+=v;
-      else if(m.includes('ifood')||m.includes('online')) vIF+=v;
-      else vDin+=v; // fallback
-    });
+    const total=p.total||0;
+    const pgs=p.payments||[];
+    if(!pgs.length) return;
+    // Pega o método do primeiro pagamento (pedidos têm 1 método)
+    const m=(pgs[0].payment_method||'').toLowerCase();
+    if(m==='pix'||m==='pix_auto') vPix+=total;
+    else if(m==='money'||m==='cash') vDin+=total;
+    else if(m.includes('credit')) vCred+=total;
+    else if(m.includes('debit')) vDeb+=total;
+    else if(m.includes('ifood')||m.includes('online')) vIF+=total;
+    else vDin+=total; // fallback
   });
 
   const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
