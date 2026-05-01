@@ -6025,7 +6025,7 @@ document.getElementById('lanc-month').value=`${new Date().getFullYear()}-${Strin
 // ═══════════════════════════════════════════
 // CARDÁPIO WEB — CONFIG
 // ═══════════════════════════════════════════
-function getCWConfig(){return S.get('cw_config')||{storeCode:'',token:'',interval:0,statusFilter:['PENDING','CONFIRMED','DELIVERED']};}
+function getCWConfig(){return S.get('cw_config')||{storeCode:'',token:'',interval:0,statusFilter:['PENDING','CONFIRMED','DELIVERED','CANCELLED']};}
 function renderConfig(){
   // existing panels
   const p=document.getElementById('cfg-panel-impressao');
@@ -6504,9 +6504,12 @@ function slim(p){
     quantity:i.quantity||i.qtd||1,
     name:i.name||i.nome||'',
     external_code:i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'',
-    price:i.price||i.totalPrice||i.valor||0,
+    price:i.total_price||i.totalPrice||i.price||i.valor||0,
   }));
   const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.value||pg.valor||0}));
+  // order_type: delivery se tem delivery_address, senão usa campo original
+  const hasAddr=p.delivery_address&&(p.delivery_address.streetName||p.delivery_address.street||p.delivery_address.formattedAddress);
+  const orderType=hasAddr?'delivery':(p.order_type||p.orderType||'takeout');
   return{
     id:p.id,
     display_id:p.display_id||p.displayId,
@@ -6514,12 +6517,14 @@ function slim(p){
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
     sales_channel:p.sales_channel||'',
-    order_type:p.order_type||'',
+    order_type:orderType,
     delivery_fee:p.delivery_fee||p.deliveryFee||0,
     discount:p.discount||p.desconto||p.store_discount||0,
     benefits:p.benefits||[],
     discounts:p.discounts||[],
+    total_fees:p.total_fees||p.totalFees||0,
     customer:{name:p.customer?.name||p.cliente?.nome||p.clienteNome||''},
+    delivery_address:p.delivery_address||null,
     items:itens,
     payments:pag,
   };
