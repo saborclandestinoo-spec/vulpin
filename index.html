@@ -1200,6 +1200,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div><label class="fl">Valor Pago NF (R$)</label><input class="fi" id="mmp-valor" type="number" step="0.01" placeholder="0,00" oninput="mmpCalcCusto()"></div>
       </div>
       <div id="mmp-custo-preview" style="display:none;font-size:11px;background:var(--bg2);padding:7px 11px;border-radius:7px;color:var(--t2);margin-top:2px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;background:var(--fox-l);border-radius:8px;border:1px solid var(--fox-m)">
+        <input type="checkbox" id="mmp-recheio" style="width:16px;height:16px;accent-color:var(--fox);cursor:pointer">
+        <label for="mmp-recheio" style="font-size:12px;font-weight:600;color:var(--fox);cursor:pointer">🍫 Este insumo é um recheio</label>
+      </div>
     </div>
 
     <!-- PANEL: ESTOQUE -->
@@ -1942,13 +1946,8 @@ function defaultBancos(){return[
 // ═══════════════════════════════════════════
 // DATA GETTERS
 // ═══════════════════════════════════════════
-// ── CONTEXTO DE INSUMO (insumos vs recheios) ──
-// Permite reutilizar todo o modal/CRUD de MP para Recheios
-let _mpContext='mp'; // 'mp' | 'recheios'
-function getMPKey(){return _mpContext==='recheios'?'recheios':'mp';}
-function getEstMPKey(){return _mpContext==='recheios'?'est_recheios':'est_mp';}
-const getMP=()=>S.get(getMPKey())||defaultMP();
-const getRawEstMP=()=>S.get(getEstMPKey())||defaultEstMP();
+// Insumos (inclui recheios — flag m.recheio=true)
+const getMP=()=>S.get('mp')||defaultMP();
 const getProdutos=()=>S.get('produtos')||defaultProdutos();
 // Busca produto pelo codigo_pdv (usado na integração Cardápio Web)
 function findProdByPdv(codigoPdv){
@@ -1956,7 +1955,7 @@ function findProdByPdv(codigoPdv){
   const code=String(codigoPdv).trim();
   return getProdutos().find(p=>(p.codigo_pdv&&String(p.codigo_pdv).trim()===code)||(p.id_externo&&String(p.id_externo).trim()===code))||null;
 }
-const getEstMP=()=>S.get(getEstMPKey())||defaultEstMP();
+const getEstMP=()=>S.get('est_mp')||defaultEstMP();
 const getEstProd=()=>S.get('est_prod')||{};
 
 function getEstoqueAtualProd(prodId){
@@ -3323,31 +3322,21 @@ function saveProd2(){
   else data.push(obj);
   S.set('producao',data);
 
-  // Baixa estoque de insumos E recheios conforme ficha técnica
+  // Baixa estoque de insumos e recheios (mesmo est_mp) conforme ficha técnica
   if(!editProd2Id){
     const fichas=getFichas();
     const ficha=fichas[produtoId]||[];
     if(ficha.length){
-      const estMp=getEstMP(); // insumos (context mp)
-      _mpContext='recheios'; const estRec=getEstMP(); _mpContext='mp'; // recheios
-      let mudouMp=false, mudouRec=false;
+      const estMp=getEstMP();
+      let mudou=false;
       ficha.forEach(it=>{
         const consumo=(it.qtd||0)*qtd;
         if(!consumo)return;
-        const data_iso=obj.data||new Date().toISOString().slice(0,10);
-        const obs=`Produção ${qtd}x produto #${produtoId}`;
-        if(it.tipo==='recheio'){
-          if(!estRec[it.mpId])estRec[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],consumo:0};
-          estRec[it.mpId].consumo=(estRec[it.mpId].consumo||0)+consumo;
-          mudouRec=true;
-        } else {
-          if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],consumo:0};
-          estMp[it.mpId].consumo=(estMp[it.mpId].consumo||0)+consumo;
-          mudouMp=true;
-        }
+        if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],consumo:0};
+        estMp[it.mpId].consumo=(estMp[it.mpId].consumo||0)+consumo;
+        mudou=true;
       });
-      if(mudouMp)S.set('est_mp',estMp);
-      if(mudouRec){_mpContext='recheios';S.set(getEstMPKey(),estRec);_mpContext='mp';}
+      if(mudou)S.set('est_mp',estMp);
     }
   }
 
@@ -3385,9 +3374,9 @@ function estTab(tab,el){
   renderEstoque();
 }
 function renderEstoque(){
-  if(estCurrentTab==='mp'){_mpContext='mp';renderEstMP();}
-  else if(estCurrentTab==='recheios'){_mpContext='recheios';renderEstRecheios();}
-  else{_mpContext='mp';renderEstProd();}
+  if(estCurrentTab==='mp') renderEstMP();
+  else if(estCurrentTab==='recheios') renderEstRecheios();
+  else renderEstProd();
 }
 function renderEstMP(){
   const mp=getMP();
@@ -3724,9 +3713,9 @@ function saveEntrada(){
   if(valor>0){
     const mp=getMP();
     const idx=mp.findIndex(x=>x.id===entradaMPId);
-    if(idx>-1){mp[idx].valor=valor;S.set(getMPKey(),mp);}
+    if(idx>-1){mp[idx].valor=valor;S.set('mp',mp);}
   }
-  S.set(getEstMPKey(),est);
+  S.set('est_mp',est);
   closeM('modal-entrada');
   renderEstoque();
   updateAlertBadge();
@@ -5382,9 +5371,9 @@ function mmpSalvarAlt(){
   est[editMPId].entradas.push({id:uid(),data,qtd:qtdReal,valor,obs,tipo});
   if(valor>0&&(tipo==='entrada'||tipo==='ajuste-mais')){
     const mp=getMP();const idx=mp.findIndex(x=>x.id===editMPId);
-    if(idx>-1){mp[idx].valor=valor;S.set(getMPKey(),mp);}
+    if(idx>-1){mp[idx].valor=valor;S.set('mp',mp);}
   }
-  S.set(getEstMPKey(),est);
+  S.set('est_mp',est);
   closeM('modal-mp-alterar');
   mmpRenderEst();
   const atualEl=document.getElementById('mmp-est-atual');
@@ -5414,6 +5403,7 @@ function openMP(id){
       document.getElementById('mmp-valor').value=m.valor||'';
       document.getElementById('mmp-min').value=m.min;
       document.getElementById('mmp-del').style.display='block';
+      const rechEl=document.getElementById('mmp-recheio');if(rechEl)rechEl.checked=!!(m.recheio);
       mmpCalcCusto();
     }
   } else {
@@ -5422,11 +5412,11 @@ function openMP(id){
     ['mmp-cat','mmp-nome','mmp-qtd','mmp-valor','mmp-min'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('mmp-un').value='g';
     document.getElementById('mmp-del').style.display='none';
+    const rechEl2=document.getElementById('mmp-recheio');if(rechEl2)rechEl2.checked=false;
   }
   // Ajusta placeholder/título conforme contexto
-  const titulo=_mpContext==='recheios'?'Nome do recheio':'Nome do insumo';
   const ti=document.getElementById('mmp-title-input');
-  if(ti)ti.placeholder=titulo;
+  if(ti)ti.placeholder='Nome do insumo / recheio';
   openM('modal-mp');
 }
 
@@ -5442,6 +5432,7 @@ function saveMP(){
     qtd:parseFloat(document.getElementById('mmp-qtd').value)||0,
     valor:parseFloat(document.getElementById('mmp-valor').value)||0,
     min:parseFloat(document.getElementById('mmp-min').value)||0,
+    recheio:!!(document.getElementById('mmp-recheio')||{}).checked,
   };
   let data=getMP();
   if(editMPId)data=data.map(x=>x.id===editMPId?obj:x);
@@ -5449,9 +5440,9 @@ function saveMP(){
     data.push(obj);
     const est=getEstMP();
     if(!est[obj.id])est[obj.id]={mpId:obj.id,inicial:0,entradas:[],consumo:0};
-    S.set(getEstMPKey(),est);
+    S.set('est_mp',est);
   }
-  S.set(getMPKey(),data);
+  S.set('mp',data);
   closeM('modal-mp');
   renderMP();
   updateAlertBadge();
@@ -5459,23 +5450,105 @@ function saveMP(){
 }
 function deleteMP(){
   showConfirm('Excluir insumo','Tem certeza que deseja excluir este insumo?','🗑️',()=>{
-    S.set(getMPKey(),getMP().filter(x=>x.id!==editMPId));
+    S.set('mp',getMP().filter(x=>x.id!==editMPId));
     closeM('modal-mp');renderMP();updateAlertBadge();
     if(currentPage==='estoque')renderEstoque();
   });
 }
 
 // ═══════════════════════════════════════════
-// RECHEIOS — reutiliza infra de Insumos com _mpContext='recheios'
+// RECHEIOS — insumos com flag recheio=true
 // ═══════════════════════════════════════════
 function renderEstRecheios(){
-  // _mpContext já foi setado para 'recheios' no estTab
-  renderEstMP(); // renderEstMP usa getMP() que é context-aware
-  // Troca label do botão novo
-  setTimeout(()=>{
-    const btn=document.querySelector('#est-content .btn-p');
-    if(btn&&btn.textContent.includes('Insumo'))btn.textContent='+ Novo Recheio';
-  },0);
+  // Renderiza igual renderEstMP mas filtra só recheios
+  const mpAll=getMP();
+  const recheios=mpAll.filter(m=>m.recheio);
+  const summary={ok:0,atencao:0,zerado:0,totalCusto:0};
+  recheios.forEach(m=>{
+    const at=getEstoqueAtualMP(m.id);
+    const vg=getValorPorG(m);
+    summary.totalCusto+=at>0?at*vg:0;
+    if(at<=0)summary.zerado++;else if(at<m.min)summary.atencao++;else summary.ok++;
+  });
+  const cats=[...new Set(recheios.map(m=>m.cat))].sort();
+  document.getElementById('est-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✅</div>
+        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">OK</div>
+        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${summary.ok}</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚠️</div>
+        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Atenção</div>
+        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${summary.atencao}</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🚨</div>
+        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Zerado</div>
+        <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${summary.zerado}</div></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💰</div>
+        <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Custo total</div>
+        <div style="font-size:18px;font-weight:700;color:var(--t);line-height:1">R$ ${fmtN(summary.totalCusto)}</div></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap" style="flex:1;min-width:180px;max-width:340px">
+        <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <input class="search-in" id="est-rec-search" placeholder="Buscar recheio..." oninput="renderEstRecheiosTable()">
+      </div>
+      <select class="filter-sel" id="est-rec-cat" onchange="renderEstRecheiosTable()">
+        <option value="">Todas categorias</option>
+        ${cats.map(c=>`<option>${c}</option>`).join('')}
+      </select>
+      <div style="margin-left:auto"></div>
+      <button class="btn-p" onclick="openMP()" style="font-size:12px">+ Novo Insumo como Recheio</button>
+    </div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:10px;padding:8px 12px;background:var(--fox-l);border-radius:8px;border:1px solid var(--fox-m)">
+      💡 Recheios são insumos marcados com <b>🍫 Este insumo é um recheio</b>. Cadastre pelo modal de insumos ou pelo botão acima.
+    </div>
+    <div class="card">
+      <div class="tbl-wrap"><table class="tbl" id="tbl-est-rec">
+        <thead><tr><th>Recheio</th><th>Categoria</th><th>Un</th><th>Estoque Atual</th><th>Mínimo</th><th>Custo/Un</th><th>Valor Total</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>`;
+  renderEstRecheiosTable();
+}
+
+function renderEstRecheiosTable(){
+  const recheios=getMP().filter(m=>m.recheio);
+  const s=(document.getElementById('est-rec-search')||{}).value?.toLowerCase()||'';
+  const ct=(document.getElementById('est-rec-cat')||{}).value||'';
+  let filtered=recheios;
+  if(s)filtered=filtered.filter(m=>m.nome.toLowerCase().includes(s));
+  if(ct)filtered=filtered.filter(m=>m.cat===ct);
+  const tbody=document.querySelector('#tbl-est-rec tbody');
+  if(!tbody)return;
+  tbody.innerHTML=filtered.map(m=>{
+    const at=getEstoqueAtualMP(m.id);
+    const vg=getValorPorG(m);
+    const valorTotal=at>0?at*vg:0;
+    let status='OK',pClass='pill-ok';
+    if(at<=0){status='ZERADO';pClass='pill-zero';}
+    else if(at<m.min){status='ATENÇÃO';pClass='pill-warn';}
+    const pct=m.min>0?Math.min(100,(at/m.min*100)):100;
+    return`<tr style="cursor:pointer" onclick="openMP('${m.id}')">
+      <td><div style="font-weight:500;color:var(--t)">${m.nome}</div>
+        <div style="height:3px;background:var(--bg3);border-radius:3px;margin-top:4px;width:80px">
+          <div style="height:3px;border-radius:3px;background:${at<=0?'var(--red)':at<m.min?'var(--amber)':'var(--green)'};width:${pct}%"></div>
+        </div></td>
+      <td><span style="font-size:10px;background:var(--bg3);padding:2px 7px;border-radius:5px;color:var(--t2)">${m.cat}</span></td>
+      <td style="color:var(--t3)">${m.un}</td>
+      <td style="font-weight:700;font-size:13px;color:${at<=0?'var(--red)':at<m.min?'var(--amber)':'var(--t)'}">${fmtN2(at)}</td>
+      <td style="color:var(--t3)">${m.min}</td>
+      <td style="color:var(--t2)">${vg?'R$ '+vg.toFixed(4):'—'}</td>
+      <td style="font-weight:500;color:var(--t)">${valorTotal>0?'R$ '+fmtN(valorTotal):'—'}</td>
+      <td><span class="pill ${pClass}">${status}</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:20px">Nenhum recheio cadastrado. Marque insumos como recheio no modal de edição.</td></tr>';
 }
 
 
@@ -5532,8 +5605,8 @@ let ftItems=[]; // current editing items
 
 // Retorna lista do storage correto conforme tipo ('insumo'|'recheio')
 function ftGetList(tipo){
-  if(tipo==='recheio'){_mpContext='recheios';const r=getMP();_mpContext='mp';return r;}
-  return getMP();
+  if(tipo==='recheio') return getMP().filter(m=>m.recheio);
+  return getMP().filter(m=>!m.recheio); // insumos normais
 }
 // Popula o select de itens conforme tipo selecionado
 function ftPopulateSel(){
