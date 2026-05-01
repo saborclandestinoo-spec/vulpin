@@ -472,6 +472,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div style="background:#fff;border-bottom:1px solid #eee;padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <div id="dash-header-title" style="font-size:15px;font-weight:700;color:#1a1a2e;flex:1;min-width:180px">Carregando...</div>
           <div style="display:flex;align-items:center;gap:8px">
+            <!-- Seletor de dia (visível só no modo Hoje) -->
+            <div id="dash-dia-picker" style="display:none;align-items:center;gap:6px">
+              <input type="date" id="dash-dia-input" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--t)" onchange="renderDashboard()">
+            </div>
             <div style="display:flex;gap:4px;background:#f0f0f0;border-radius:20px;padding:3px">
               <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#888">Hoje</button>
               <button onclick="dashSetPeriod('mes')" id="dbtn-mes" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Este Mês</button>
@@ -2196,6 +2200,16 @@ function dashSetPeriod(p){
   });
   const cr=document.getElementById('dash-custom-range');
   if(cr)cr.style.display=p==='custom'?'flex':'none';
+  // Show dia picker only on hoje
+  const dp=document.getElementById('dash-dia-picker');
+  if(dp){
+    dp.style.display=p==='hoje'?'flex':'none';
+    const di=document.getElementById('dash-dia-input');
+    if(di&&!di.value){
+      const now=new Date();
+      di.value=now.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
+    }
+  }
   // Toggle panels
   const mc=document.getElementById('dash-mes-content');
   const hc=document.getElementById('dash-hoje-content');
@@ -2335,8 +2349,12 @@ function renderDashboard(){
   let filterFn, periodoLabel, isHoje=false;
   if(_dashPeriod==='hoje'){
     isHoje=true;
-    filterFn=dt=>dt.startsWith(todayStr);
-    periodoLabel=`Hoje · ${now.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'})}`;
+    const diaInput=document.getElementById('dash-dia-input');
+    const diaStr=diaInput?.value||todayStr;
+    const diaDate=new Date(diaStr+'T12:00:00');
+    filterFn=dt=>dt.startsWith(diaStr);
+    const isToday=diaStr===todayStr;
+    periodoLabel=`${isToday?'Hoje · ':''}${diaDate.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}`;
   } else if(_dashPeriod==='mes'){
     const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
     filterFn=dt=>dt.startsWith(mes);
