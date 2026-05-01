@@ -5081,12 +5081,16 @@ function populateProdDrop(dropId){
 }
 
 // ─── SAVE ───
+let _salvandoLanc=false;
 function saveLancTipo(tipo,andAnother){
+  if(_salvandoLanc)return;
+  _salvandoLanc=true;
+  try{
   const isDesp=tipo==='desp';
   const prefix=isDesp?'mdesp':'mrec';
   const desc=document.getElementById(prefix+'-desc').value.trim();
   const valor=parseFloat(document.getElementById(prefix+'-valor').value)||0;
-  if(!desc||!valor){alert('Preencha descrição e valor');return;}
+  if(!desc||!valor){_salvandoLanc=false;alert('Preencha descrição e valor');return;}
   const pago=isDesp?despPagoAtivo:recRecAtivo;
   const dataPag=document.getElementById(prefix+(isDesp?'-data-pag':'-data-rec')).value;
   const obj={
@@ -5230,6 +5234,7 @@ function saveLancTipo(tipo,andAnother){
   if(currentPage==='financeiro')renderFluxo();
   if(currentPage==='dashboard')renderDashboard();
   if(currentPage==='estoque')renderEstoque();
+  }finally{_salvandoLanc=false;}
 }
 
 // ─── TRANSFERÊNCIA ───
