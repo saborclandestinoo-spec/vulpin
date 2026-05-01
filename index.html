@@ -2233,7 +2233,7 @@ function dashApplyCustom(){
 }
 
 function fmtPag(pm){
-  const m={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online'};
+  const m={'money':'Dinheiro','credit_card':'Crédito','debit_card':'Débito','pix':'Pix','pix_auto':'Pix','ifood':'iFood','online_credit_card':'Crédito Online','meal_voucher':'Vale Ref.'};
   return m[pm]||pm||'Outro';
 }
 
@@ -2880,19 +2880,19 @@ function renderDREPage(){
   const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
 
   // Pagamentos — value sempre 0 na API, usa total do pedido × método
-  let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
+  let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0,vVale=0;
   histPeriod.forEach(p=>{
     const total=p.total||0;
     const pgs=p.payments||[];
     if(!pgs.length) return;
-    // Pega o método do primeiro pagamento (pedidos têm 1 método)
     const m=(pgs[0].payment_method||'').toLowerCase();
     if(m==='pix'||m==='pix_auto') vPix+=total;
-    else if(m==='money'||m==='cash') vDin+=total;
-    else if(m.includes('credit')) vCred+=total;
-    else if(m.includes('debit')) vDeb+=total;
-    else if(m.includes('ifood')||m.includes('online')) vIF+=total;
-    else vDin+=total; // fallback
+    else if(m==='money') vDin+=total;
+    else if(m==='credit_card'||m==='online_credit_card') vCred+=total;
+    else if(m==='debit_card') vDeb+=total;
+    else if(m==='ifood'||m.includes('ifood')||m.includes('online')) vIF+=total;
+    else if(m==='meal_voucher'||m.includes('voucher')||m.includes('vale')) vVale+=total;
+    else vDin+=total;
   });
 
   const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
@@ -3006,6 +3006,7 @@ function renderDREPage(){
     ${R('3.1.1.3','Vendas Cartão de Crédito',vCred,3)}
     ${R('3.1.1.4','Vendas Cartão de Débito',vDeb,3)}
     ${R('3.1.1.5','Vendas iFood',vIF,3)}
+    ${vVale>0?R('3.1.1.6','Vendas Vale Refeição',vVale,3):''}
     ${R('3.2','(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF+simples),1,false,'var(--red)')}
     ${simples>0?R('3.2.1.1','(-) Simples Nacional sobre Vendas (DAS)',-simples,3):''}
     ${cancelVal>0?R('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,3):''}
