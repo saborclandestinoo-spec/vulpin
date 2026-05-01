@@ -1529,6 +1529,29 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div style="font-size:11px;color:var(--t3);margin-top:6px">Ao salvar, o estoque deste insumo será aumentado pela quantidade informada.</div>
       </div>
     </div>
+    <!-- Seção: Dar cookies a funcionário -->
+    <div id="mdesp-prod-section" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="checkbox" id="mdesp-prod-chk" onchange="toggleDespProdSection()" style="width:16px;height:16px;accent-color:var(--fox);cursor:pointer">
+        <span style="font-size:13px;font-weight:600;color:var(--t)">🍪 Dar cookies a funcionário (baixa estoque)</span>
+      </div>
+      <div id="mdesp-prod-fields" style="display:none;background:var(--fox-l);border:1px solid var(--fox-m);border-radius:10px;padding:14px">
+        <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Selecione o produto e quantidade. O estoque será baixado e o valor de custo será preenchido automaticamente.</div>
+        <div class="mfg-row mfg-row-2" style="margin-bottom:10px">
+          <div style="position:relative">
+            <div class="flt-custom-wrap" id="mdesp-prod-wrap" onclick="toggleCustomDrop('mdesp-prod-drop','mdesp-prod-lbl')">
+              <label class="flt-lbl flt-lbl-sel" id="mdesp-prod-lbl">Produto</label>
+              <div class="flt-custom-in" id="mdesp-prod-display" style="color:var(--t3)">Selecione o produto</div>
+              <input type="hidden" id="mdesp-prod-id">
+              <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="custom-drop" id="mdesp-prod-drop"></div>
+          </div>
+          <div class="flt-wrap"><input class="flt-in" id="mdesp-prod-qtd" type="number" min="1" step="1" placeholder=" " oninput="despProdCalcCusto()"><label class="flt-lbl">Quantidade (un)</label></div>
+        </div>
+        <div id="mdesp-prod-custo-info" style="font-size:11px;color:var(--fox);font-weight:600;display:none"></div>
+      </div>
+    </div>
     <details style="margin-bottom:8px">
       <summary style="font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;user-select:none;padding:4px 0">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -4465,6 +4488,15 @@ function openDesp(id){
     if(despChk){despChk.checked=false;document.getElementById('mdesp-est-fields').style.display='none';}
     resetCustomDrop('mdesp-mp-display','mdesp-mp','Selecione o insumo');
     const dQtd=document.getElementById('mdesp-est-qtd');if(dQtd)dQtd.value='';
+    // Reset cookies section
+    const prodChk=document.getElementById('mdesp-prod-chk');
+    if(prodChk){prodChk.checked=false;}
+    const prodFields=document.getElementById('mdesp-prod-fields');
+    if(prodFields)prodFields.style.display='none';
+    const prodId=document.getElementById('mdesp-prod-id');if(prodId)prodId.value='';
+    const prodQtd=document.getElementById('mdesp-prod-qtd');if(prodQtd)prodQtd.value='';
+    const prodDisp=document.getElementById('mdesp-prod-display');if(prodDisp){prodDisp.textContent='Selecione o produto';prodDisp.style.color='var(--t3)';}
+    const prodInfo=document.getElementById('mdesp-prod-custo-info');if(prodInfo)prodInfo.style.display='none';
   }
   const tog=document.getElementById('mdesp-pago-tog'),fields=document.getElementById('mdesp-pago-fields');
   if(tog){tog.style.background=despPagoAtivo?'var(--fox)':'#ccc';tog.querySelector('div').style.left=despPagoAtivo?'21px':'3px';}
@@ -4958,6 +4990,52 @@ function setModoEstoque(modo){
   populateProdDrop('mrec-prod-drop');
 }
 
+// ── Cookies para funcionário ──
+function toggleDespProdSection(){
+  const chk=document.getElementById('mdesp-prod-chk');
+  const fields=document.getElementById('mdesp-prod-fields');
+  if(!fields)return;
+  fields.style.display=chk.checked?'block':'none';
+  if(chk.checked){
+    // Popula dropdown de produtos
+    const prods=getProdutos().filter(p=>(p.status||'ativo')==='ativo');
+    const drop=document.getElementById('mdesp-prod-drop');
+    if(drop){
+      let html=`<div class="cd-search"><input class="cd-search-in" placeholder="Buscar produto..." oninput="filterCustomDrop('mdesp-prod-drop',this.value)"></div>`;
+      prods.forEach(p=>{
+        const at=getEstoqueAtualProd(p.id);
+        html+=`<div class="cd-item cd-item-l1" data-cod="${p.id}" onclick="despProdSelect('${p.id}','${p.nome.replace(/'/g,"\'")}',event)">${p.nome} <span style="color:var(--t3);font-size:10px">— ${at} un</span></div>`;
+      });
+      drop.innerHTML=html;
+    }
+  }
+}
+function despProdSelect(id,nome,e){
+  if(e)e.stopPropagation();
+  document.getElementById('mdesp-prod-id').value=id;
+  document.getElementById('mdesp-prod-display').textContent=nome;
+  document.getElementById('mdesp-prod-display').style.color='var(--t)';
+  const drop=document.getElementById('mdesp-prod-drop');
+  if(drop)drop.style.display='none';
+  despProdCalcCusto();
+}
+function despProdCalcCusto(){
+  const prodId=document.getElementById('mdesp-prod-id').value;
+  const qtd=parseInt(document.getElementById('mdesp-prod-qtd').value)||0;
+  const info=document.getElementById('mdesp-prod-custo-info');
+  if(!prodId||!qtd){if(info)info.style.display='none';return;}
+  const prod=getProdutos().find(x=>x.id===prodId);
+  if(!prod){if(info)info.style.display='none';return;}
+  const custoTotal=(prod.custo||0)*qtd;
+  if(info){
+    info.textContent=`Custo total: R$ ${fmtN(custoTotal)} (${qtd}x R$ ${fmtN(prod.custo||0)} custo unit)`;
+    info.style.display='block';
+  }
+  // Preenche valor da despesa automaticamente
+  const valEl=document.getElementById('mdesp-valor');
+  if(valEl&&!valEl.value)valEl.value=custoTotal.toFixed(2);
+}
+
 function toggleEstSection(tipo){
   const isDesp=tipo==='desp';
   const pfx=isDesp?'mdesp':'mrec';
@@ -5095,6 +5173,19 @@ function saveLancTipo(tipo,andAnother){
           valor,obs:'Entrada via lançamento: '+obj.desc,tipo:'entrada'
         });
         S.set('est_mp',est);
+        updateAlertBadge();
+      }
+    }
+    // Cookies para funcionário — baixa est_prod
+    const prodChk2=document.getElementById('mdesp-prod-chk');
+    if(prodChk2&&prodChk2.checked){
+      const prodId=document.getElementById('mdesp-prod-id').value;
+      const qtdProd=parseInt(document.getElementById('mdesp-prod-qtd').value)||0;
+      if(prodId&&qtdProd>0){
+        const est=getEstProd();
+        if(!est[prodId])est[prodId]={inicial:0,entradas:[],saidas:[]};
+        est[prodId].saidas.push({id:uid(),data:obj.data||obj.venc,qtd:qtdProd,obs:'Benefício funcionário: '+obj.desc});
+        S.set('est_prod',est);
         updateAlertBadge();
       }
     }
