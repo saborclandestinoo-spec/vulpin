@@ -6900,11 +6900,13 @@ async function enriquecerHistorico(){
   const cfg=getCWConfig();
   if(!cfg.token)return;
   const hist=getHistorico();
-  // Enriquece pedidos sem itens OU sem cliente — independente do total
-  // Ignora pedidos já finalizados (closed/concluded) — evita 404s
-  const _stFinalizado=new Set(['DELIVERED','CONCLUDED','COMPLETED','closed','released','CLOSED','done','DONE','CANCELLED','CANCELED','cancelled','canceled']);
+  // Enriquece pedidos sem itens OU sem cliente
+  // Pula pedidos cancelados E pedidos que já foram tentados antes (evita 404 loop)
+  const _stCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
+  const jaTestados=S.get('pedidos_enrich_tentado')||{};
   const zerados=hist.filter(p=>
-    !_stFinalizado.has(p.status||'') &&
+    !_stCancelado.has(p.status||'') &&
+    !jaTestados[p.id] &&
     (!(p.items||p.itens||[]).length||!p.customer?.name||(p.sales_channel==='ifood'&&!p.order_type))
   );
   if(!zerados.length)return;
@@ -6920,8 +6922,12 @@ async function enriquecerHistorico(){
           const res=await fetch(`/api/pedidos?token=${encodeURIComponent(cfg.token)}&id=${p.id}`,{signal:AbortSignal.timeout(12000)});
           if(res.ok){
             const det=await res.json();
-            if(det&&det.id)return det; // aceita mesmo total=0
+            if(det&&det.id)return det;
           }
+          // Marca como tentado mesmo em falha para evitar loop de 404
+          const jt=S.get('pedidos_enrich_tentado')||{};
+          jt[p.id]=true;
+          S.set('pedidos_enrich_tentado',jt);
         }catch(e){}
         return null;
       }));
