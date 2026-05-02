@@ -5427,7 +5427,17 @@ setTimeout(() => qzConnect(), 1500);
 function deleteDesp(){
   if(!editLancId)return;
   showConfirm('Excluir despesa','Tem certeza que deseja excluir este lançamento?','🗑️',()=>{
-    S.set('lancamentos',getLanc().filter(x=>x.id!==editLancId));
+    const _lid=editLancId;
+    // Remove entrada de insumo vinculada ao lançamento
+    const _est=getEstMP();
+    let _mudou=false;
+    Object.keys(_est).forEach(k=>{
+      const antes=(_est[k].entradas||[]).length;
+      _est[k].entradas=(_est[k].entradas||[]).filter(e=>e.lancId!==_lid);
+      if(_est[k].entradas.length!==antes)_mudou=true;
+    });
+    if(_mudou){S.set('est_mp',_est);updateAlertBadge();}
+    S.set('lancamentos',getLanc().filter(x=>x.id!==_lid));
     closeM('modal-desp');editLancId=null;
     renderLanc();if(typeof renderFluxo==='function')renderFluxo();
     if(currentPage==='dashboard')renderDashboard();
