@@ -515,7 +515,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
 
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
             <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:#999;margin-bottom:4px">Volume vendido no período</div><div id="dash-top-sub" style="font-size:11px;color:var(--t2);margin-bottom:12px"></div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:#999;margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
@@ -523,11 +523,11 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
               <div id="dash-estoque-valor"></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">💸 Lançamentos</div><div style="font-size:11px;color:#999;margin-bottom:4px">Do período</div><div id="dash-lanc-header" style="font-size:11px;color:var(--t2);margin-bottom:12px"></div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">💸 Lançamentos</div><div style="font-size:11px;color:#999;margin-bottom:10px">Do período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
             </div>
             <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🍪 Produções</div><div style="font-size:11px;color:#999;margin-bottom:4px">Do período</div><div id="dash-prods-header" style="font-size:11px;color:var(--t2);margin-bottom:12px"></div>
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🍪 Produções</div><div style="font-size:11px;color:#999;margin-bottom:10px">Do período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
@@ -2634,7 +2634,7 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     const sorted=Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const max=sorted[0]?sorted[0][1]:1;
     const totalCookiesMes=Object.values(contagem).reduce((s,v)=>s+v,0);
-    const topSub=document.getElementById('dash-top-sub');if(topSub)topSub.innerHTML=`Total: <b style="color:var(--fox)">${totalCookiesMes} cookies</b>`;
+    const topSub=document.getElementById('dash-top-sub');if(topSub)topSub.innerHTML=`${totalCookiesMes} cookies`;
     rankEl.innerHTML=sorted.length?sorted.map(([nome,qtd],i)=>`
       <div style="display:flex;align-items:center;gap:10px">
         <div style="font-size:11px;font-weight:700;color:#C0C0D8;width:16px;text-align:right">${i+1}</div>
