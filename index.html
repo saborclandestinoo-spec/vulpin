@@ -2782,7 +2782,7 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     // Atualiza título com total
     const lancHeader=document.getElementById('dash-lanc-header');
     if(lancHeader)lancHeader.innerHTML=`<span style="font-size:10px;color:var(--green);font-weight:600;margin-left:4px">+R$ ${fmtN(totalLancsRec)}</span> <span style="font-size:10px;color:var(--red);font-weight:600;margin-left:4px">-R$ ${fmtN(totalLancsDes)}</span>`;
-    lancTbody.innerHTML=todosLancs.length?todosLancs.map(l=>`<tr>
+    lancTbody.innerHTML=todosLancs.length?todosLancs.map(l=>`<tr style="cursor:pointer" onclick="openLancView('${l.id}')">
       <td style="white-space:nowrap">${fmtDate(l.data)}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         <span style="margin-right:4px">${l.tipo==='receita'?'📈':'📉'}</span>${l.desc||'—'}
@@ -4671,6 +4671,31 @@ function renderLanc(){
 
 function lancCheckAll(cb){document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=cb.checked);}
 
+function openLancView(id){
+  // Abre modal em modo somente leitura
+  openLancEdit(id);
+  // Desabilita todos os inputs/selects/buttons após abrir
+  setTimeout(()=>{
+    const modal=document.getElementById('modal-desp')||document.getElementById('modal-rec');
+    if(!modal||modal.style.display==='none')return;
+    // Descobre qual modal abriu
+    const mDesp=document.getElementById('modal-desp');
+    const mRec=document.getElementById('modal-rec');
+    const m=mDesp&&mDesp.style.display!=='none'?mDesp:mRec;
+    if(!m)return;
+    m.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=true;el.style.opacity='.7';});
+    m.querySelectorAll('button:not(.modal-close)').forEach(el=>{el.style.display='none';});
+    // Adiciona botão Fechar se não existir
+    const actions=m.querySelector('.modal-actions');
+    if(actions&&!actions.querySelector('.btn-view-close')){
+      const btn=document.createElement('button');
+      btn.className='btn-o btn-view-close';
+      btn.textContent='Fechar';
+      btn.onclick=()=>closeM(m.id);
+      actions.appendChild(btn);
+    }
+  },50);
+}
 function openLancEdit(id){
   const l=getLanc().find(x=>x.id===id);
   if(!l)return;
