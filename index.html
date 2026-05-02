@@ -2300,23 +2300,7 @@ function ctxDo(action){
     showConfirm('Excluir '+( labels[type]||'item'),'Tem certeza que deseja excluir?','🗑️',()=>{
       if(type==='mp'){const d=getMP().filter(x=>x.id!==id);S.set('mp',d);renderMP();updateAlertBadge();if(currentPage==='estoque')renderEstoque();}
       else if(type==='prod'){const d=getProdutos().filter(x=>x.id!==id);S.set('produtos',d);renderProdutos();if(currentPage==='estoque')renderEstoque();}
-      else if(type==='producao'){
-        // Reverte estoque antes de excluir
-        const _prod=getProducao().find(x=>x.id===id);
-        if(_prod){
-          const _prefixId='prod_'+_prod.id+'_';
-          const _estMp=getEstMP();const _estRec=getEstRecheios();
-          let _mudMp=false,_mudRec=false;
-          Object.keys(_estMp).forEach(k=>{const b=(_estMp[k].saidas||[]).length;_estMp[k].saidas=(_estMp[k].saidas||[]).filter(s=>!s.id.startsWith(_prefixId));if(_estMp[k].saidas.length!==b)_mudMp=true;});
-          Object.keys(_estRec).forEach(k=>{const b=(_estRec[k].saidas||[]).length;_estRec[k].saidas=(_estRec[k].saidas||[]).filter(s=>!s.id.startsWith(_prefixId));if(_estRec[k].saidas.length!==b)_mudRec=true;});
-          // Legado: reverte consumo se ficha existe
-          const _ficha=_prod.fichaSnapshot||getFichas()[_prod.produtoId]||[];
-          _ficha.forEach(it=>{if(it.tipo!=='recheio'&&_estMp[it.mpId]&&(_estMp[it.mpId].consumo||0)>0){const c=(it.qtd||0)*(_prod.qtd||0);_estMp[it.mpId].consumo=Math.max(0,(_estMp[it.mpId].consumo||0)-c);_mudMp=true;}});
-          if(_mudMp)S.set('est_mp',_estMp);if(_mudRec)S.set('est_recheios',_estRec);
-          updateAlertBadge();
-        }
-        const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);renderProducao();if(currentPage==='lancamentos')renderLanc();
-      }
+      else if(type==='producao'){const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);recalcularEstoqueProducao();renderProducao();if(currentPage==='lancamentos')renderLanc();}
       else if(type==='lanc'){const d=getLanc().filter(x=>x.id!==id);S.set('lancamentos',d);renderLanc();if(typeof renderFluxo==='function')renderFluxo();}
       else if(type==='banco'){const d=getBancos().filter(x=>x.id!==id);S.set('bancos',d);renderBancos();}
       else if(type==='cc'){const d=getCC().filter(x=>x.id!==id);S.set('centrocustos',d);renderCC();}
@@ -3582,32 +3566,8 @@ function saveProd2(){
   else data.push(obj);
   S.set('producao',data);
 
-  // Baixa insumos (est_mp saidas) e recheios (est_recheios saidas) — usa saidas para poder reverter ao excluir
-  if(!editProd2Id){
-    const fichas=getFichas();
-    const ficha=fichas[produtoId]||[];
-    if(ficha.length){
-      const estMp=getEstMP();
-      const estRec=getEstRecheios();
-      let mudouMp=false,mudouRec=false;
-      ficha.forEach(it=>{
-        const consumo=(it.qtd||0)*qtd;
-        if(!consumo)return;
-        if(it.tipo==='recheio'){
-          if(!estRec[it.mpId])estRec[it.mpId]={entradas:[],saidas:[]};
-          estRec[it.mpId].saidas.push({id:'prod_'+obj.id+'_'+it.mpId,data:obj.data,qtd:consumo,obs:`Produção #${obj.id}`});
-          mudouRec=true;
-        } else {
-          if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
-          if(!estMp[it.mpId].saidas)estMp[it.mpId].saidas=[];
-          estMp[it.mpId].saidas.push({id:'prod_'+obj.id+'_'+it.mpId,data:obj.data,qtd:consumo,obs:`Produção #${obj.id}`});
-          mudouMp=true;
-        }
-      });
-      if(mudouMp)S.set('est_mp',estMp);
-      if(mudouRec)S.set('est_recheios',estRec);
-    }
-  }
+  // Recalcula estoque baseado em todas as produções ativas
+  recalcularEstoqueProducao();
 
   closeM('modal-producao');
   if(currentPage==='producao')renderProducao();
@@ -3618,62 +3578,53 @@ function saveProd2(){
   // Offer etiqueta only for new records
   if(!editProd2Id) setTimeout(()=>{ _etiqData=obj; printEtiquetas(); }, 200);
 }
+// Recalcula saídas de produção no est_mp e est_recheios baseado nas produções ativas
+function recalcularEstoqueProducao(){
+  const prods=getProducao();
+  const fichas=getFichas();
+  const estMp=getEstMP();
+  const estRec=getEstRecheios();
+
+  // Remove TODAS as saídas de produção (prefixo prod_)
+  Object.keys(estMp).forEach(k=>{
+    estMp[k].saidas=(estMp[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith('prod_'));
+    estMp[k].consumo=0; // zera consumo legado também
+  });
+  Object.keys(estRec).forEach(k=>{
+    estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith('prod_'));
+  });
+
+  // Reaplica saídas apenas das produções ativas
+  prods.forEach(prod=>{
+    const ficha=prod.fichaSnapshot||fichas[prod.produtoId]||[];
+    const prefixId='prod_'+prod.id+'_';
+    ficha.forEach(it=>{
+      const consumo=(it.qtd||0)*(prod.qtd||0);
+      if(!consumo)return;
+      if(it.tipo==='recheio'){
+        if(!estRec[it.mpId])estRec[it.mpId]={entradas:[],saidas:[]};
+        estRec[it.mpId].saidas.push({id:prefixId+it.mpId,data:prod.data,qtd:consumo,obs:`Produção #${prod.id}`});
+      } else {
+        if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+        estMp[it.mpId].saidas.push({id:prefixId+it.mpId,data:prod.data,qtd:consumo,obs:`Produção #${prod.id}`});
+      }
+    });
+  });
+
+  S.set('est_mp',estMp);
+  S.set('est_recheios',estRec);
+  updateAlertBadge();
+}
+
 function deleteProd2(){
   showConfirm('Excluir produção','Tem certeza que deseja excluir este registro de produção?','🍪',()=>{
-    const prod=getProducao().find(x=>x.id===editProd2Id);
-    // Reverte consumo de insumos e recheios
-    if(prod){
-      const fichas=getFichas();
-      const ficha=prod.fichaSnapshot||fichas[prod.produtoId]||[];
-      const prefixId='prod_'+prod.id+'_';
-      const estMp=getEstMP();
-      const estRec=getEstRecheios();
-      let mudouMp=false,mudouRec=false;
-
-      // Método 1: remove saidas pelo prefixId em TODOS os insumos (não depende da ficha)
-      Object.keys(estMp).forEach(k=>{
-        const antes=(estMp[k].saidas||[]).length;
-        estMp[k].saidas=(estMp[k].saidas||[]).filter(s=>!s.id.startsWith(prefixId));
-        if(estMp[k].saidas.length!==antes)mudouMp=true;
-      });
-      Object.keys(estRec).forEach(k=>{
-        const antes=(estRec[k].saidas||[]).length;
-        estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id.startsWith(prefixId));
-        if(estRec[k].saidas.length!==antes)mudouRec=true;
-      });
-
-      // Método 2: se ficha existe e não achou saidas, usa estorno (legado)
-      if(ficha.length){
-        ficha.forEach(it=>{
-          const mpKey=it.mpId;
-          if(!mpKey)return;
-          if(it.tipo==='recheio'){
-            // já tratado acima pelo Object.keys
-          } else {
-            if(!estMp[mpKey])estMp[mpKey]={mpId:mpKey,inicial:0,entradas:[],saidas:[],consumo:0};
-            // Verifica se a remoção acima pegou algo — se não, estorno legado
-            const temSaida=(estMp[mpKey].saidas||[]).some(s=>s.id.startsWith(prefixId));
-            // Como já removemos acima, verifica se existia antes via entradas de estorno já adicionadas
-            const consumo=(it.qtd||0)*(prod.qtd||0);
-            // Só adiciona estorno se não houve remoção de saida (consumo era via campo consumo legado)
-            if(consumo>0&&(estMp[mpKey].consumo||0)>0){
-              estMp[mpKey].consumo=Math.max(0,(estMp[mpKey].consumo||0)-consumo);
-              mudouMp=true;
-            }
-          }
-        });
-      }
-
-      if(mudouMp)S.set('est_mp',estMp);
-      if(mudouRec)S.set('est_recheios',estRec);
-    }
     S.set('producao',getProducao().filter(x=>x.id!==editProd2Id));
+    recalcularEstoqueProducao();
     closeM('modal-producao');
     if(currentPage==='producao')renderProducao();
     if(currentPage==='lancamentos')renderLanc();
     if(currentPage==='estoque')renderEstoque();
     if(currentPage==='dashboard')renderDashboard();
-    updateAlertBadge();
   });
 }
 
