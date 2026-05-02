@@ -1448,7 +1448,13 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <span id="mprod2-title" style="font-size:18px;font-weight:700;color:var(--t)">Nova Produção</span>
       <button class="modal-close" onclick="closeM('modal-producao')" style="font-size:22px">×</button>
     </div>
-    <!-- Produto custom dropdown -->
+    <!-- Tipo: Cookie ou Recheio -->
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button id="mprod2-btn-cookie" onclick="mprod2SetTipo('cookie')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--fox);background:var(--fox);color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">🍪 Cookie</button>
+      <button id="mprod2-btn-recheio" onclick="mprod2SetTipo('recheio')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--bor);background:#fff;color:var(--t2);font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">🍫 Recheio</button>
+      <input type="hidden" id="mprod2-tipo" value="cookie">
+    </div>
+    <!-- Produto/Recheio custom dropdown -->
     <div style="position:relative;margin-bottom:14px">
       <div class="flt-custom-wrap" id="mprod2-produto-wrap" onclick="toggleCustomDrop('mprod2-produto-drop','mprod2-produto-lbl')">
         <label class="flt-lbl flt-lbl-sel" id="mprod2-produto-lbl">Produto *</label>
