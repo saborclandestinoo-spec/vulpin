@@ -2300,7 +2300,23 @@ function ctxDo(action){
     showConfirm('Excluir '+( labels[type]||'item'),'Tem certeza que deseja excluir?','🗑️',()=>{
       if(type==='mp'){const d=getMP().filter(x=>x.id!==id);S.set('mp',d);renderMP();updateAlertBadge();if(currentPage==='estoque')renderEstoque();}
       else if(type==='prod'){const d=getProdutos().filter(x=>x.id!==id);S.set('produtos',d);renderProdutos();if(currentPage==='estoque')renderEstoque();}
-      else if(type==='producao'){const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);renderProducao();if(currentPage==='lancamentos')renderLanc();}
+      else if(type==='producao'){
+        // Reverte estoque antes de excluir
+        const _prod=getProducao().find(x=>x.id===id);
+        if(_prod){
+          const _prefixId='prod_'+_prod.id+'_';
+          const _estMp=getEstMP();const _estRec=getEstRecheios();
+          let _mudMp=false,_mudRec=false;
+          Object.keys(_estMp).forEach(k=>{const b=(_estMp[k].saidas||[]).length;_estMp[k].saidas=(_estMp[k].saidas||[]).filter(s=>!s.id.startsWith(_prefixId));if(_estMp[k].saidas.length!==b)_mudMp=true;});
+          Object.keys(_estRec).forEach(k=>{const b=(_estRec[k].saidas||[]).length;_estRec[k].saidas=(_estRec[k].saidas||[]).filter(s=>!s.id.startsWith(_prefixId));if(_estRec[k].saidas.length!==b)_mudRec=true;});
+          // Legado: reverte consumo se ficha existe
+          const _ficha=_prod.fichaSnapshot||getFichas()[_prod.produtoId]||[];
+          _ficha.forEach(it=>{if(it.tipo!=='recheio'&&_estMp[it.mpId]&&(_estMp[it.mpId].consumo||0)>0){const c=(it.qtd||0)*(_prod.qtd||0);_estMp[it.mpId].consumo=Math.max(0,(_estMp[it.mpId].consumo||0)-c);_mudMp=true;}});
+          if(_mudMp)S.set('est_mp',_estMp);if(_mudRec)S.set('est_recheios',_estRec);
+          updateAlertBadge();
+        }
+        const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);renderProducao();if(currentPage==='lancamentos')renderLanc();
+      }
       else if(type==='lanc'){const d=getLanc().filter(x=>x.id!==id);S.set('lancamentos',d);renderLanc();if(typeof renderFluxo==='function')renderFluxo();}
       else if(type==='banco'){const d=getBancos().filter(x=>x.id!==id);S.set('bancos',d);renderBancos();}
       else if(type==='cc'){const d=getCC().filter(x=>x.id!==id);S.set('centrocustos',d);renderCC();}
