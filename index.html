@@ -3756,7 +3756,7 @@ function renderEstMP(){
     <div class="card">
       <div style="font-size:10px;color:var(--t3);margin-bottom:8px">Clique em uma linha para editar o insumo</div>
       <div class="tbl-wrap"><table class="tbl" id="tbl-est-mp">
-        <thead><tr><th>Insumo</th><th>Categoria</th><th>Un</th><th>Estoque Atual</th><th>Mínimo</th><th>Custo/Un</th><th>Valor Total</th><th>Status</th></tr></thead>
+        <thead><tr><th>Insumo</th><th>Categoria</th><th>Un</th><th>Estoque Atual</th><th>Pcts</th><th>Mínimo</th><th>Custo/Un</th><th>Valor Total</th><th>Status</th></tr></thead>
         <tbody></tbody>
       </table></div>
     </div>`;
@@ -3803,6 +3803,7 @@ function renderEstMPTable(){
       <td><span style="font-size:10px;background:var(--bg3);padding:2px 7px;border-radius:5px;color:var(--t2)">${m.cat}</span></td>
       <td style="color:var(--t3)">${m.un}</td>
       <td style="font-weight:700;font-size:13px;color:${at<=0?'var(--red)':at<m.min?'var(--amber)':'var(--t)'}">${fmtN2(at)}</td>
+      <td style="font-weight:600;color:var(--t2)">${m.qtd>0?Math.floor(at/m.qtd)+' pcts':'—'}</td>
       <td style="color:var(--t3)">${m.min}</td>
       <td style="color:var(--t2)">${vg?'R$ '+vg.toFixed(4):'—'}</td>
       <td style="font-weight:500;color:var(--t)">${valorTotal>0?'R$ '+fmtN(valorTotal):'—'}</td>
@@ -5733,7 +5734,7 @@ function saveLancTipo(tipo,andAnother){
         const _mp=getMP();
         const _mpIdx=_mp.findIndex(x=>x.id===mpId);
         // valor por embalagem = total pago / qtd comprada
-        if(_mpIdx>-1&&valor>0&&qtd>0){_mp[_mpIdx].valor=valor;_mp[_mpIdx].qtd=qtd;S.set('mp',_mp);}
+        if(_mpIdx>-1&&valor>0){_mp[_mpIdx].valor=valor;S.set('mp',_mp);} // qtd_embalagem não muda
         updateAlertBadge();
       }
     }
