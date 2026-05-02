@@ -5732,7 +5732,8 @@ function saveLancTipo(tipo,andAnother){
         // Atualiza valor da NF no cadastro do insumo com o último lançamento
         const _mp=getMP();
         const _mpIdx=_mp.findIndex(x=>x.id===mpId);
-        if(_mpIdx>-1&&valor>0){_mp[_mpIdx].valor=valor;S.set('mp',_mp);}
+        // valor por embalagem = total pago / qtd comprada
+        if(_mpIdx>-1&&valor>0&&qtd>0){_mp[_mpIdx].valor=valor;_mp[_mpIdx].qtd=qtd;S.set('mp',_mp);}
         updateAlertBadge();
       }
     }
