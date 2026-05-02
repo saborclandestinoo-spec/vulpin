@@ -1287,6 +1287,10 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <div><label class="fl">Valor Pago NF (R$)</label><input class="fi" id="mmp-valor" type="number" step="0.01" placeholder="0,00" oninput="mmpCalcCusto()"></div>
       </div>
       <div id="mmp-custo-preview" style="display:none;font-size:11px;background:var(--bg2);padding:7px 11px;border-radius:7px;color:var(--t2);margin-top:2px"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+        <input type="checkbox" id="mmp-inativo" style="width:16px;height:16px;cursor:pointer">
+        <label for="mmp-inativo" style="font-size:12px;font-weight:600;color:var(--t3);cursor:pointer">Marcar como Inativo</label>
+      </div>
 
     </div>
 
@@ -1388,7 +1392,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <div class="fi-row">
         <div><label class="fl">Estoque Inicial (un)</label><input class="fi" id="mprod-estoque" type="number" placeholder="0" min="0" step="1"></div>
         <div><label class="fl">Status</label>
-          <select class="fi" id="mprod-status"><option value="ativo">Ativo</option><option value="oculto">Oculto</option><option value="falta">Em falta</option></select>
+          <select class="fi" id="mprod-status"><option value="ativo">Ativo</option><option value="oculto">Oculto</option><option value="falta">Em falta</option><option value="inativo">Inativo</option></select>
         </div>
       </div>
       <div class="fi-row">
@@ -3734,10 +3738,11 @@ function renderEstMP(){
         <input class="search-in" id="est-mp-search" placeholder="Buscar por nome ou código..." oninput="renderEstMPTable()">
       </div>
       <select class="filter-sel" id="est-mp-status" onchange="renderEstMPTable()">
-        <option value="">Todos os status</option>
+        <option value="">Ativos</option>
         <option value="OK">✅ OK</option>
         <option value="ATENÇÃO">⚠️ Atenção</option>
         <option value="ZERADO">🚨 Zerado</option>
+        <option value="INATIVO">🔘 Inativos</option>
       </select>
       <select class="filter-sel" id="est-mp-cat" onchange="renderEstMPTable()">
         <option value="">Todas categorias</option>
@@ -3767,17 +3772,20 @@ function renderEstMPTable(){
   const st=(document.getElementById('est-mp-status')||{}).value||'';
   const ct=(document.getElementById('est-mp-cat')||{}).value||'';
   let filtered=mp;
-  if(s)filtered=filtered.filter(m=>m.nome.toLowerCase().includes(s)||m.cod.toString().includes(s));
+  if(s)filtered=filtered.filter(m=>m.nome.toLowerCase().includes(s)||(m.cod||'').toString().includes(s));
   if(ct)filtered=filtered.filter(m=>m.cat===ct);
-  if(st)filtered=filtered.filter(m=>{
-    const at=getEstoqueAtualMP(m.id);
-    if(st==='OK')return at>0&&at>=m.min;
-    if(st==='ATENÇÃO')return at>0&&at<m.min;
-    if(st==='ZERADO')return at<=0;
-  });
+  if(st==='INATIVO'){filtered=filtered.filter(m=>m.inativo);}
+  else{
+    const _at=filtered.filter(m=>!m.inativo);
+    const _in=filtered.filter(m=>m.inativo);
+    if(st){filtered=_at.filter(m=>{const at=getEstoqueAtualMP(m.id);if(st==='OK')return at>0&&at>=m.min;if(st==='ATENÇÃO')return at>0&&at<m.min;if(st==='ZERADO')return at<=0;return true;});}
+    else filtered=[..._at,...(_in.length?[{_sep:true,_label:`Inativos (${_in.length})`},..._in]:[])];
+  }
   const tbody=document.querySelector('#tbl-est-mp tbody');
   if(!tbody)return;
   tbody.innerHTML=filtered.map(m=>{
+    if(m._sep)return`<tr><td colspan="9" style="background:var(--bg2);padding:8px 12px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${m._label}</td></tr>`;
+    const _op=m.inativo?'opacity:.45;':'';
     const at=getEstoqueAtualMP(m.id);
     const vg=getValorPorG(m);
     const valorTotal=at>0?at*vg:0;
@@ -3785,7 +3793,7 @@ function renderEstMPTable(){
     if(at<=0){status='ZERADO';pClass='pill-zero';}
     else if(at<m.min){status='ATENÇÃO';pClass='pill-warn';}
     const pct=m.min>0?Math.min(100,(at/m.min*100)):100;
-    return`<tr style="cursor:pointer" onclick="openMP('${m.id}')">
+    return`<tr style="cursor:pointer;${_op}" onclick="openMP('${m.id}')">
       <td>
         <div style="font-weight:500;color:var(--t)">${m.nome}</div>
         <div style="height:3px;background:var(--bg3);border-radius:3px;margin-top:4px;width:80px">
@@ -3900,6 +3908,11 @@ function renderEstProd(){
         <option value="">Todas categorias</option>
         ${cats.map(c=>`<option>${c}</option>`).join('')}
       </select>
+      <select class="filter-sel" id="est-prod-status-f" onchange="renderEstProdTable()">
+        <option value="ativos">Ativos</option>
+        <option value="inativos">Inativos</option>
+        <option value="">Todos</option>
+      </select>
       <div style="margin-left:auto"></div>
       <button class="btn-o" style="border-color:var(--fox);color:var(--fox);font-size:12px" onclick="importarCatalogoCW()">⬇ Importar CW</button>
       <button class="btn-p" onclick="openProd()" style="font-size:12px">+ Novo Produto</button>
@@ -3922,12 +3935,23 @@ function renderEstProdTable(){
   const producoes=getProducao();
   const s=(document.getElementById('est-prod-search')||{}).value?.toLowerCase()||'';
   const ct=(document.getElementById('est-prod-cat')||{}).value||'';
+  const sf=(document.getElementById('est-prod-status-f')||{}).value;
   let filtered=prods;
   if(s)filtered=filtered.filter(p=>p.nome.toLowerCase().includes(s));
   if(ct)filtered=filtered.filter(p=>p.cat===ct);
+  // Separa ativos e inativos
+  const ativos=filtered.filter(p=>!p.inativo&&(p.status||'ativo')!=='inativo');
+  const inativos=filtered.filter(p=>p.inativo||(p.status||'ativo')==='inativo');
+  let renderList=[];
+  if(!sf||sf==='ativos'){renderList=[...ativos];if(inativos.length&&!sf)renderList.push({_sep:true,_label:`Inativos (${inativos.length})`},...inativos);}
+  else if(sf==='inativos'){renderList=[...inativos];}
+  else renderList=[...ativos,{_sep:true,_label:`Inativos (${inativos.length})`},...inativos];
   const tbody=document.querySelector('#tbl-est-prod tbody');
   if(!tbody)return;
-  tbody.innerHTML=filtered.map(p=>{
+  tbody.innerHTML=renderList.map(p=>{
+    if(p._sep)return`<tr><td colspan="10" style="background:var(--bg2);padding:8px 12px;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${p._label}</td></tr>`;
+    const opacity=p.inativo||(p.status||'ativo')==='inativo'?'opacity:.45;':'';
+    p=p;
     const dispon=getEstoqueAtualProd(p.id);
     const lucro=(p.preco||0)-(p.custo||0);
     const margem=p.preco>0?((lucro/p.preco)*100):0;
@@ -3935,7 +3959,7 @@ function renderEstProdTable(){
     const pct=Math.min(100,margem);
     const statusLabel=p.status==='ativo'?'Ativo':p.status==='oculto'?'Oculto':'Em falta';
     const statusClass=p.status==='ativo'?'pill-ativo':p.status==='oculto'?'pill-oculto':'pill-falta';
-    return`<tr style="cursor:pointer" onclick="openProd('${p.id}')">
+    return`<tr style="cursor:pointer;${opacity}" onclick="openProd('${p.id}')">
       <td>
         <div style="font-weight:500;color:var(--t)">${p.nome}</div>
         <div style="height:3px;background:var(--bg3);border-radius:3px;margin-top:4px;width:80px">
@@ -6080,6 +6104,7 @@ function openMP(id){
       document.getElementById('mmp-valor').value=m.valor||'';
       document.getElementById('mmp-min').value=m.min;
       document.getElementById('mmp-del').style.display='block';
+      const inEl=document.getElementById('mmp-inativo');if(inEl)inEl.checked=!!(m.inativo);
       mmpCalcCusto();
     }
   } else {
@@ -6088,6 +6113,7 @@ function openMP(id){
     ['mmp-cat','mmp-nome','mmp-qtd','mmp-valor','mmp-min'].forEach(i=>document.getElementById(i).value='');
     document.getElementById('mmp-un').value='g';
     document.getElementById('mmp-del').style.display='none';
+    const inEl2=document.getElementById('mmp-inativo');if(inEl2)inEl2.checked=false;
   }
   // Ajusta placeholder/título conforme contexto
   const ti=document.getElementById('mmp-title-input');
@@ -6107,6 +6133,7 @@ function saveMP(){
     qtd:parseFloat(document.getElementById('mmp-qtd').value)||0,
     valor:parseFloat(document.getElementById('mmp-valor').value)||0,
     min:parseFloat(document.getElementById('mmp-min').value)||0,
+    inativo:!!(document.getElementById('mmp-inativo')||{}).checked,
   };
   let data=getMP();
   if(editMPId)data=data.map(x=>x.id===editMPId?obj:x);
