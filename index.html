@@ -5000,6 +5000,13 @@ function openDesp(id){
       else resetCustomDrop('mdesp-cc-display','mdesp-cc','—');
       despPagoAtivo=!!l.pago;
       document.getElementById('mdesp-del').style.display='block';
+      if(l.mpId){
+        const _chk=document.getElementById('mdesp-est-chk');
+        if(_chk){_chk.checked=true;const _f=document.getElementById('mdesp-est-fields');if(_f)_f.style.display='block';}
+        const _m=getMP().find(x=>x.id===l.mpId);
+        if(_m){const _d=document.getElementById('mdesp-mp-display');const _h=document.getElementById('mdesp-mp');if(_d)_d.textContent=_m.nome+' (atual: '+fmtN2(getEstoqueAtualMP(_m.id))+' '+_m.un+')';if(_h)_h.value=l.mpId;}
+        const _qEl=document.getElementById('mdesp-est-qtd');if(_qEl)_qEl.value=l.qtdInsumo||'';
+      }
     }
   } else {
     document.getElementById('mdesp-title').textContent='Adicionar despesa';
@@ -5623,8 +5630,12 @@ function saveLancTipo(tipo,andAnother){
   if(!desc||!valor){_salvandoLanc=false;alert('Preencha descrição e valor');return;}
   const pago=isDesp?despPagoAtivo:recRecAtivo;
   const dataPag=document.getElementById(prefix+(isDesp?'-data-pag':'-data-rec')).value;
+  const _mpIdV=isDesp&&document.getElementById('mdesp-est-chk')?.checked?document.getElementById('mdesp-mp')?.value||null:null;
+  const _qtdInsV=_mpIdV?parseFloat(document.getElementById('mdesp-est-qtd')?.value)||0:0;
   const obj={
-    id:editLancId||uid(),tipo:isDesp?'despesa':'receita',desc,valor,
+    id:editLancId||uid(),tipo:isDesp?'despesa':'receita',
+    mpId:_mpIdV||undefined,qtdInsumo:_qtdInsV||undefined,
+    desc,valor,
     bancoId:document.getElementById(prefix+'-banco').value,
     venc:document.getElementById(prefix+'-venc').value,
     comp:document.getElementById(prefix+'-comp').value,
@@ -5701,9 +5712,10 @@ function saveLancTipo(tipo,andAnother){
       const qtd=parseFloat(document.getElementById('mdesp-est-qtd').value)||0;
       if(mpId&&qtd>0){
         const est=getEstMP();
+        if(editLancId){Object.keys(est).forEach(k=>{est[k].entradas=(est[k].entradas||[]).filter(e=>e.lancId!==editLancId);});}
         if(!est[mpId])est[mpId]={mpId,inicial:0,entradas:[],consumo:0};
         est[mpId].entradas.push({
-          id:uid(),data:obj.data||obj.venc,qtd,
+          id:uid(),lancId:obj.id,data:obj.data||obj.venc,qtd,
           valor,obs:'Entrada via lançamento: '+obj.desc,tipo:'entrada'
         });
         S.set('est_mp',est);
