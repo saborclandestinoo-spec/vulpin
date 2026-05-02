@@ -2300,7 +2300,17 @@ function ctxDo(action){
     showConfirm('Excluir '+( labels[type]||'item'),'Tem certeza que deseja excluir?','🗑️',()=>{
       if(type==='mp'){const d=getMP().filter(x=>x.id!==id);S.set('mp',d);renderMP();updateAlertBadge();if(currentPage==='estoque')renderEstoque();}
       else if(type==='prod'){const d=getProdutos().filter(x=>x.id!==id);S.set('produtos',d);renderProdutos();if(currentPage==='estoque')renderEstoque();}
-      else if(type==='producao'){const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);recalcularEstoqueProducao();renderProducao();if(currentPage==='lancamentos')renderLanc();}
+      else if(type==='producao'){
+        const _p=getProducao().find(x=>x.id===id);
+        if(_p){
+          const _pfx='prod_'+_p.id+'_';
+          const _em=getEstMP();const _er=getEstRecheios();
+          Object.keys(_em).forEach(k=>{_em[k].saidas=(_em[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(_pfx));});
+          Object.keys(_er).forEach(k=>{_er[k].saidas=(_er[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(_pfx));});
+          S.set('est_mp',_em);S.set('est_recheios',_er);updateAlertBadge();
+        }
+        const d=getProducao().filter(x=>x.id!==id);S.set('producao',d);renderProducao();if(currentPage==='lancamentos')renderLanc();
+      }
       else if(type==='lanc'){const d=getLanc().filter(x=>x.id!==id);S.set('lancamentos',d);renderLanc();if(typeof renderFluxo==='function')renderFluxo();}
       else if(type==='banco'){const d=getBancos().filter(x=>x.id!==id);S.set('bancos',d);renderBancos();}
       else if(type==='cc'){const d=getCC().filter(x=>x.id!==id);S.set('centrocustos',d);renderCC();}
@@ -3566,8 +3576,29 @@ function saveProd2(){
   else data.push(obj);
   S.set('producao',data);
 
-  // Recalcula estoque baseado em todas as produções ativas
-  recalcularEstoqueProducao();
+  // Desconta insumos apenas para NOVA produção (não ao editar)
+  if(!editProd2Id){
+    const fichas=getFichas();
+    const ficha=fichas[produtoId]||[];
+    const estMp=getEstMP();
+    const estRec=getEstRecheios();
+    let mudouMp=false,mudouRec=false;
+    ficha.forEach(it=>{
+      const consumo=(it.qtd||0)*qtd;
+      if(!consumo)return;
+      if(it.tipo==='recheio'){
+        if(!estRec[it.mpId])estRec[it.mpId]={entradas:[],saidas:[]};
+        estRec[it.mpId].saidas.push({id:'prod_'+obj.id+'_'+it.mpId,data:obj.data,qtd:consumo,obs:`Produção #${obj.id}`});
+        mudouRec=true;
+      } else {
+        if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+        estMp[it.mpId].saidas.push({id:'prod_'+obj.id+'_'+it.mpId,data:obj.data,qtd:consumo,obs:`Produção #${obj.id}`});
+        mudouMp=true;
+      }
+    });
+    if(mudouMp)S.set('est_mp',estMp);
+    if(mudouRec)S.set('est_recheios',estRec);
+  }
 
   closeM('modal-producao');
   if(currentPage==='producao')renderProducao();
@@ -3618,8 +3649,17 @@ function recalcularEstoqueProducao(){
 
 function deleteProd2(){
   showConfirm('Excluir produção','Tem certeza que deseja excluir este registro de produção?','🍪',()=>{
+    const prod=getProducao().find(x=>x.id===editProd2Id);
+    if(prod){
+      const prefixId='prod_'+prod.id+'_';
+      const estMp=getEstMP();const estRec=getEstRecheios();
+      let mudMp=false,mudRec=false;
+      Object.keys(estMp).forEach(k=>{const b=(estMp[k].saidas||[]).length;estMp[k].saidas=(estMp[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(prefixId));if(estMp[k].saidas.length!==b)mudMp=true;});
+      Object.keys(estRec).forEach(k=>{const b=(estRec[k].saidas||[]).length;estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(prefixId));if(estRec[k].saidas.length!==b)mudRec=true;});
+      if(mudMp)S.set('est_mp',estMp);if(mudRec)S.set('est_recheios',estRec);
+      updateAlertBadge();
+    }
     S.set('producao',getProducao().filter(x=>x.id!==editProd2Id));
-    recalcularEstoqueProducao();
     closeM('modal-producao');
     if(currentPage==='producao')renderProducao();
     if(currentPage==='lancamentos')renderLanc();
