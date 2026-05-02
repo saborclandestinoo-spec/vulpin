@@ -708,6 +708,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div class="est-tab" onclick="estTab('recheios',this)">🍫 Recheios</div>
           <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
         </div>
+        <div id="est-lista-compras" style="display:none"></div>
         <div id="est-content"></div>
       </div>
     </div>
@@ -2088,7 +2089,7 @@ function getValorPorG(mp){
   return (mp.valor||0)/mp.qtd;
 }
 
-function getEstoqueAtualMP(mpId){
+function _calcEstoqueMP(mpId){
   const est=getEstMP();
   const e=est[mpId];
   if(!e) return 0;
@@ -2096,6 +2097,8 @@ function getEstoqueAtualMP(mpId){
   const totalSaidas=(e.saidas||[]).reduce((s,x)=>s+(x.qtd||0),0);
   return (e.inicial||0)+totalEntradas-(e.consumo||0)-totalSaidas;
 }
+// Retorna 0 no mínimo — nunca exibe negativo
+function getEstoqueAtualMP(mpId){return Math.max(0,_calcEstoqueMP(mpId));}
 
 function getSaldoBanco(bancoId){
   const bk=getBancos().find(b=>b.id===bancoId);
@@ -6811,8 +6814,46 @@ function fmtDate(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}
 function updateAlertBadge(){
   const mp=getMP();
   const criticos=mp.filter(m=>getEstoqueAtualMP(m.id)<=0).length;
+  const atencao=mp.filter(m=>{const at=getEstoqueAtualMP(m.id);return at>0&&m.min>0&&at<=m.min;}).length;
+  const total=criticos+atencao;
   const badge=document.getElementById('nb-est');
-  if(badge){badge.textContent=criticos;badge.style.display=criticos?'inline':'none';}
+  if(badge){badge.textContent=total;badge.style.display=total?'inline':'none';}
+  // Painel lista de compras no estoque
+  renderListaCompras();
+}
+function renderListaCompras(){
+  const el=document.getElementById('est-lista-compras');
+  if(!el)return;
+  const mp=getMP();
+  const precisam=mp.filter(m=>{
+    const at=getEstoqueAtualMP(m.id);
+    return at<=0||(m.min>0&&at<=m.min);
+  }).sort((a,b)=>{
+    const aa=getEstoqueAtualMP(a.id),bb=getEstoqueAtualMP(b.id);
+    return aa-bb; // zerados primeiro
+  });
+  if(!precisam.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px">🛒 Lista de Compras — ${precisam.length} insumo${precisam.length!==1?'s':''} precisam de reposição</div>
+    ${precisam.map(m=>{
+      const at=getEstoqueAtualMP(m.id);
+      const zerado=at<=0;
+      const falta=m.min>0?Math.max(0,m.min-at):0;
+      return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.06)">
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--t)">${m.nome}</span>
+          <span style="font-size:10px;color:var(--t3);margin-left:6px">${m.cat||''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:11px;color:var(--t2)">Atual: <b style="color:${zerado?'var(--red)':'var(--amber)'}">${fmtN2(at)} ${m.un}</b></span>
+          ${m.min>0?`<span style="font-size:11px;color:var(--t2)">Mín: <b>${m.min} ${m.un}</b></span>`:''}
+          ${falta>0?`<span style="font-size:10px;background:var(--red-bg);color:var(--red);padding:2px 7px;border-radius:5px;font-weight:600">Comprar: ${fmtN2(falta)} ${m.un}</span>`:''}
+          <span class="pill ${zerado?'pill-zero':'pill-warn'}">${zerado?'ZERADO':'ATENÇÃO'}</span>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 // init month filters
