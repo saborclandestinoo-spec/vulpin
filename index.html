@@ -2665,7 +2665,6 @@ function renderDashFatChart(){
   const mo=fcMonthNum||now.getMonth()+1;
   const mes=`${yr}-${String(mo).padStart(2,'0')}`;
   const days=new Date(yr,mo,0).getDate();
-  // mês anterior
   const prevMo=mo===1?12:mo-1;
   const prevYr=mo===1?yr-1:yr;
   const prevMes=`${prevYr}-${String(prevMo).padStart(2,'0')}`;
@@ -2673,9 +2672,23 @@ function renderDashFatChart(){
 
   const hist=Object.values((()=>{const m={};getHistorico().forEach(p=>{m[p.id]=p;});getPedidosCache().forEach(p=>{if(p.id)m[p.id]={...m[p.id],...p};});return m;})());
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
-  const validos=hist.filter(p=>!_stCancel.has(p.status||''));
 
-  // Agrupa por dia — atual e anterior
+  // PRÉ-AGRUPAMENTO — 1 passagem, evita O(N×dias)
+  const mapaAtual={};const mapaAnterior={};
+  let pedAtual=0,pedAnterior=0;
+  hist.forEach(p=>{
+    if(_stCancel.has(p.status||''))return;
+    const dt=p.created_at||p.createdAt||'';if(!dt)return;
+    // Usa slice para evitar new Date() + toLocaleDateString (caro)
+    // ISO string começa com YYYY-MM-DD em UTC; ajusta -3h para BRT
+    const ms=new Date(dt).getTime()-3*60*60*1000;
+    const d=new Date(ms);
+    const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+    const tot=p.total||0;
+    if(dStr.startsWith(mes)){mapaAtual[dStr]=(mapaAtual[dStr]||0)+tot;pedAtual++;}
+    else if(dStr.startsWith(prevMes)){mapaAnterior[dStr]=(mapaAnterior[dStr]||0)+tot;pedAnterior++;}
+  });
+
   const group=(document.getElementById('dash-fat-group')||{}).value||'dia';
   const labels=[];const dataAtual=[];const dataAnterior=[];
 
@@ -2683,27 +2696,24 @@ function renderDashFatChart(){
     for(let d=1;d<=Math.max(days,prevDays);d++){
       const dl=String(d).padStart(2,'0');
       labels.push(`${dl} ${new Date(yr,mo-1,d).toLocaleString('pt-BR',{month:'short'})}`);
-      const dayStr=`${mes}-${dl}`;
-      const prevDayStr=`${prevMes}-${dl}`;
-      dataAtual.push(validos.filter(p=>{const dt=p.created_at||p.createdAt||'';return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===dayStr;}).reduce((s,p)=>s+(p.total||0),0));
-      dataAnterior.push(d<=prevDays?validos.filter(p=>{const dt=p.created_at||p.createdAt||'';return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'})===prevDayStr;}).reduce((s,p)=>s+(p.total||0),0):null);
+      dataAtual.push(mapaAtual[`${mes}-${dl}`]||0);
+      dataAnterior.push(d<=prevDays?(mapaAnterior[`${prevMes}-${dl}`]||0):null);
     }
   } else {
-    // semana
     for(let w=1;w<=5;w++){
       labels.push(`Sem ${w}`);
       const s=(w-1)*7+1,e=Math.min(w*7,days);
       const ps=(w-1)*7+1,pe=Math.min(w*7,prevDays);
-      dataAtual.push(validos.filter(p=>{const dt=p.created_at||p.createdAt||'';if(!dt)return false;const d=new Date(dt);const dStr=d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});if(!dStr.startsWith(mes))return false;const day=parseInt(dStr.split('-')[2]);return day>=s&&day<=e;}).reduce((s,p)=>s+(p.total||0),0));
-      dataAnterior.push(pe>=ps?validos.filter(p=>{const dt=p.created_at||p.createdAt||'';if(!dt)return false;const d=new Date(dt);const dStr=d.toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});if(!dStr.startsWith(prevMes))return false;const day=parseInt(dStr.split('-')[2]);return day>=ps&&day<=pe;}).reduce((s,p)=>s+(p.total||0),0):null);
+      let va=0;for(let d=s;d<=e;d++)va+=(mapaAtual[`${mes}-${String(d).padStart(2,'0')}`]||0);
+      let vp=0;for(let d=ps;d<=pe;d++)vp+=(mapaAnterior[`${prevMes}-${String(d).padStart(2,'0')}`]||0);
+      dataAtual.push(va);
+      dataAnterior.push(pe>=ps?vp:null);
     }
   }
 
   // KPIs
   const totalAtual=dataAtual.reduce((s,v)=>s+(v||0),0);
   const totalAnterior=dataAnterior.reduce((s,v)=>s+(v||0),0);
-  const pedAtual=validos.filter(p=>{const dt=p.created_at||p.createdAt||'';return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).startsWith(mes);}).length;
-  const pedAnterior=validos.filter(p=>{const dt=p.created_at||p.createdAt||'';return dt&&new Date(dt).toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'}).startsWith(prevMes);}).length;
   const ticketAtual=pedAtual?totalAtual/pedAtual:0;
   const ticketAnterior=pedAnterior?totalAnterior/pedAnterior:0;
 
