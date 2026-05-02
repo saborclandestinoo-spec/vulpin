@@ -3559,6 +3559,7 @@ function saveProd2(){
     qtd,
     perdas:parseInt(document.getElementById('mprod2-perdas').value)||0,
     obs:document.getElementById('mprod2-obs').value.trim(),
+    fichaSnapshot:getFichas()[produtoId]||[], // snapshot da ficha no momento da produção
   };
   let data=getProducao();
   if(editProd2Id){data=data.map(x=>x.id===editProd2Id?obj:x);}
@@ -3607,7 +3608,8 @@ function deleteProd2(){
     // Reverte consumo de insumos e recheios
     if(prod){
       const fichas=getFichas();
-      const ficha=fichas[prod.produtoId]||[];
+      // Usa snapshot da ficha salvo na produção para garantir reversão correta
+      const ficha=prod.fichaSnapshot||fichas[prod.produtoId]||[];
       if(ficha.length){
         const prefixId='prod_'+prod.id+'_';
         const estMp=getEstMP();
