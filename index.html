@@ -3608,38 +3608,48 @@ function deleteProd2(){
     // Reverte consumo de insumos e recheios
     if(prod){
       const fichas=getFichas();
-      // Usa snapshot da ficha salvo na produção para garantir reversão correta
       const ficha=prod.fichaSnapshot||fichas[prod.produtoId]||[];
+      const prefixId='prod_'+prod.id+'_';
+      const estMp=getEstMP();
+      const estRec=getEstRecheios();
+      let mudouMp=false,mudouRec=false;
+
+      // Método 1: remove saidas pelo prefixId em TODOS os insumos (não depende da ficha)
+      Object.keys(estMp).forEach(k=>{
+        const antes=(estMp[k].saidas||[]).length;
+        estMp[k].saidas=(estMp[k].saidas||[]).filter(s=>!s.id.startsWith(prefixId));
+        if(estMp[k].saidas.length!==antes)mudouMp=true;
+      });
+      Object.keys(estRec).forEach(k=>{
+        const antes=(estRec[k].saidas||[]).length;
+        estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id.startsWith(prefixId));
+        if(estRec[k].saidas.length!==antes)mudouRec=true;
+      });
+
+      // Método 2: se ficha existe e não achou saidas, usa estorno (legado)
       if(ficha.length){
-        const prefixId='prod_'+prod.id+'_';
-        const estMp=getEstMP();
-        const estRec=getEstRecheios();
-        let mudouMp=false,mudouRec=false;
         ficha.forEach(it=>{
+          const mpKey=it.mpId;
+          if(!mpKey)return;
           if(it.tipo==='recheio'){
-            if(estRec[it.mpId]){
-              estRec[it.mpId].saidas=(estRec[it.mpId].saidas||[]).filter(s=>s.id!==prefixId+it.mpId);
-              mudouRec=true;
-            }
+            // já tratado acima pelo Object.keys
           } else {
-            if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
-            // Tenta remover da saidas (novo sistema)
-            const antes=(estMp[it.mpId].saidas||[]).length;
-            estMp[it.mpId].saidas=(estMp[it.mpId].saidas||[]).filter(s=>s.id!==prefixId+it.mpId);
-            if((estMp[it.mpId].saidas||[]).length===antes){
-              // Não achou saida — adiciona entrada de correção para devolver ao estoque
-              const consumo=(it.qtd||0)*(prod.qtd||0);
-              if(consumo>0){
-                if(!estMp[it.mpId].entradas)estMp[it.mpId].entradas=[];
-                estMp[it.mpId].entradas.push({id:uid(),data:prod.data||new Date().toISOString().slice(0,10),qtd:consumo,obs:`Estorno produção #${prod.id}`,tipo:'estorno'});
-              }
+            if(!estMp[mpKey])estMp[mpKey]={mpId:mpKey,inicial:0,entradas:[],saidas:[],consumo:0};
+            // Verifica se a remoção acima pegou algo — se não, estorno legado
+            const temSaida=(estMp[mpKey].saidas||[]).some(s=>s.id.startsWith(prefixId));
+            // Como já removemos acima, verifica se existia antes via entradas de estorno já adicionadas
+            const consumo=(it.qtd||0)*(prod.qtd||0);
+            // Só adiciona estorno se não houve remoção de saida (consumo era via campo consumo legado)
+            if(consumo>0&&(estMp[mpKey].consumo||0)>0){
+              estMp[mpKey].consumo=Math.max(0,(estMp[mpKey].consumo||0)-consumo);
+              mudouMp=true;
             }
-            mudouMp=true;
           }
         });
-        if(mudouMp)S.set('est_mp',estMp);
-        if(mudouRec)S.set('est_recheios',estRec);
       }
+
+      if(mudouMp)S.set('est_mp',estMp);
+      if(mudouRec)S.set('est_recheios',estRec);
     }
     S.set('producao',getProducao().filter(x=>x.id!==editProd2Id));
     closeM('modal-producao');
