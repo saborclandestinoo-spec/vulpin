@@ -3514,6 +3514,18 @@ function renderProducao(){
   '<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum registro de produção</td></tr>';
 }
 
+function mprod2SetTipo(tipo){
+  const tipoEl=document.getElementById('mprod2-tipo');
+  if(tipoEl)tipoEl.value=tipo;
+  const bc=document.getElementById('mprod2-btn-cookie');
+  const br=document.getElementById('mprod2-btn-recheio');
+  if(bc){bc.style.background=tipo==='cookie'?'var(--fox)':'#fff';bc.style.color=tipo==='cookie'?'#fff':'var(--t2)';bc.style.borderColor=tipo==='cookie'?'var(--fox)':'var(--bor)';}
+  if(br){br.style.background=tipo==='recheio'?'var(--fox)':'#fff';br.style.color=tipo==='recheio'?'#fff':'var(--t2)';br.style.borderColor=tipo==='recheio'?'var(--fox)':'var(--bor)';}
+  const lbl=document.getElementById('mprod2-produto-lbl');
+  if(lbl)lbl.textContent=tipo==='recheio'?'Recheio *':'Produto *';
+  resetCustomDrop('mprod2-produto-display','mprod2-produto',tipo==='recheio'?'Selecione o recheio':'Selecione o produto');
+  buildProdDrop('mprod2-produto-drop');
+}
 function buildProdDrop(dropId){
   const prods=getProdutos();
   const cats=[...new Set(prods.map(p=>p.cat))].sort();
