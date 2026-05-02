@@ -2115,6 +2115,7 @@ const getBancos=()=>S.get('bancos')||defaultBancos();
 const getCC=()=>{const d=S.get('centrocustos');if(d&&d.length&&d[0].id==='cc1'){S.set('centrocustos',null);}return S.get('centrocustos')||defaultCC();};
 
 function getValorPorG(mp){
+  if(mp.custoG!=null&&mp.custoG>0) return mp.custoG; // custo fixo salvo no lançamento
   if(!mp.qtd||mp.qtd===0) return 0;
   return (mp.valor||0)/mp.qtd;
 }
@@ -5734,7 +5735,13 @@ function saveLancTipo(tipo,andAnother){
         const _mp=getMP();
         const _mpIdx=_mp.findIndex(x=>x.id===mpId);
         // valor por embalagem = total pago / qtd comprada
-        if(_mpIdx>-1&&valor>0){_mp[_mpIdx].valor=valor;S.set('mp',_mp);} // qtd_embalagem não muda
+        if(_mpIdx>-1&&valor>0){
+          _mp[_mpIdx].valor=valor;
+          // Salva custo/g fixo baseado na qtd_embalagem atual
+          const _qtdEmb=_mp[_mpIdx].qtd||0;
+          if(_qtdEmb>0)_mp[_mpIdx].custoG=valor/_qtdEmb;
+          S.set('mp',_mp);
+        }
         updateAlertBadge();
       }
     }
@@ -6162,6 +6169,8 @@ function saveMP(){
     valor:parseFloat(document.getElementById('mmp-valor').value)||0,
     min:parseFloat(document.getElementById('mmp-min').value)||0,
     inativo:!!(document.getElementById('mmp-inativo')||{}).checked,
+    // Recalcula custoG ao editar manualmente
+    custoG:(()=>{const v=parseFloat(document.getElementById('mmp-valor').value)||0;const q=parseFloat(document.getElementById('mmp-qtd').value)||0;return q>0?v/q:0;})(),
   };
   let data=getMP();
   if(editMPId)data=data.map(x=>x.id===editMPId?obj:x);
