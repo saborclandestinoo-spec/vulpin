@@ -5002,6 +5002,11 @@ function openDesp(id){
       else resetCustomDrop('mdesp-cc-display','mdesp-cc','—');
       despPagoAtivo=!!l.pago;
       document.getElementById('mdesp-del').style.display='block';
+      // Sempre reseta o vinculo de insumo antes de carregar
+      const _chkRst=document.getElementById('mdesp-est-chk');
+      if(_chkRst){_chkRst.checked=false;const _fRst=document.getElementById('mdesp-est-fields');if(_fRst)_fRst.style.display='none';}
+      resetCustomDrop('mdesp-mp-display','mdesp-mp','Selecione o insumo');
+      const _qRst=document.getElementById('mdesp-est-qtd');if(_qRst)_qRst.value='';
       if(l.mpId){
         const _chk=document.getElementById('mdesp-est-chk');
         if(_chk){_chk.checked=true;const _f=document.getElementById('mdesp-est-fields');if(_f)_f.style.display='block';}
