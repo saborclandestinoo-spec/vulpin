@@ -513,22 +513,24 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <!-- MES/PERIODO CONTENT -->
         <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
 
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:3px">🏆 Top Produtos</div>
-              <div style="font-size:10px;color:#999;margin-bottom:12px">Volume vendido no período</div>
-              <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">🏆 Top Produtos</div>
+              <div style="font-size:11px;color:#999;margin-bottom:14px">Volume vendido no período</div>
+              <div id="dash-ranking" style="display:flex;flex-direction:column;gap:10px"></div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">📦 Estoque em Valor</div>
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">📦 Estoque em Valor</div>
               <div id="dash-estoque-valor"></div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Últimos Lançamentos</div>
-              <div class="tbl-wrap"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Tipo</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div id="dash-lanc-header" style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Lançamentos</div>
+              <div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Últimas Produções</div>
+            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+              <div id="dash-prods-header" style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Produções</div>
               <div class="tbl-wrap"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
@@ -2634,7 +2636,8 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     }));
     const sorted=Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,8);
     const max=sorted[0]?sorted[0][1]:1;
-    rankEl.innerHTML=sorted.length?sorted.map(([nome,qtd],i)=>`
+    const totalCookiesMes=Object.values(contagem).reduce((s,v)=>s+v,0);
+    rankEl.innerHTML=sorted.length?`<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Total: <b style="color:var(--fox)">${totalCookiesMes} cookies</b></div>`+sorted.map(([nome,qtd],i)=>`
       <div style="display:flex;align-items:center;gap:10px">
         <div style="font-size:11px;font-weight:700;color:#C0C0D8;width:16px;text-align:right">${i+1}</div>
         <div style="flex:1;min-width:0">
@@ -2650,17 +2653,24 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     :'<div style="font-size:11px;color:var(--t3);padding:8px 0">Nenhum produto vendido no período</div>';
   }
 
-  // === ÚLTIMOS LANÇAMENTOS ===
+  // === LANÇAMENTOS DO PERÍODO ===
   const lancTbody=document.querySelector('#dash-lanc tbody');
+  const lancTit=document.querySelector('#dash-lanc')?.closest('div')?.querySelector('div');
   if(lancTbody){
-    const ultLancs=[...lancPeriod].sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,8);
-    lancTbody.innerHTML=ultLancs.length?ultLancs.map(l=>`<tr>
+    const todosLancs=[...lancPeriod].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    const totalLancsRec=todosLancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+    const totalLancsDes=todosLancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+    // Atualiza título com total
+    const lancHeader=document.getElementById('dash-lanc-header');
+    if(lancHeader)lancHeader.innerHTML=`Lançamentos <span style="font-size:10px;color:var(--green);font-weight:600;margin-left:4px">+R$ ${fmtN(totalLancsRec)}</span> <span style="font-size:10px;color:var(--red);font-weight:600;margin-left:4px">-R$ ${fmtN(totalLancsDes)}</span>`;
+    lancTbody.innerHTML=todosLancs.length?todosLancs.map(l=>`<tr>
       <td style="white-space:nowrap">${fmtDate(l.data)}</td>
-      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc||'—'}</td>
-      <td><span class="pill ${l.tipo==='receita'?'pill-rec':'pill-desp'}">${l.tipo==='receita'?'Rec':'Desp'}</span></td>
-      <td style="font-weight:600;color:${l.tipo==='receita'?'var(--green)':'var(--red)'}">R$ ${fmtN(l.valor)}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        <span style="margin-right:4px">${l.tipo==='receita'?'📈':'📉'}</span>${l.desc||'—'}
+      </td>
+      <td style="font-weight:600;color:${l.tipo==='receita'?'var(--green)':'var(--red)'}">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
     </tr>`).join('')
-    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:16px">Nenhum lançamento</td></tr>';
+    :'<tr><td colspan="3" style="text-align:center;color:var(--t3);padding:16px">Nenhum lançamento</td></tr>';
   }
 
   // === ÚLTIMAS PRODUÇÕES ===
@@ -2670,13 +2680,17 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     const producoes=[...getProducao()].filter(p=>{
       const dt=(p.data||'').slice(0,10);
       try{return filterFn(dt);}catch{return true;}
-    }).sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,8);
+    }).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    const totalProduzido=producoes.reduce((s,p)=>s+(p.qtd||0),0);
+    // Atualiza título com total
+    const prodHeader=document.getElementById('dash-prods-header');
+    if(prodHeader)prodHeader.innerHTML=`Produções <span style="font-size:10px;color:var(--fox);font-weight:600;margin-left:4px">${totalProduzido} un produzidas</span>`;
     prodTbody.innerHTML=producoes.length?producoes.map(p=>{
       const pr=prods.find(x=>x.id===p.produtoId);
       return`<tr>
         <td style="white-space:nowrap">${fmtDate(p.data)}</td>
-        <td style="font-weight:500;color:var(--t);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pr?pr.nome:'—'}</td>
-        <td style="color:var(--green);font-weight:600">${p.qtd}</td>
+        <td style="font-weight:500;color:var(--t);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pr?pr.nome:'—'}</td>
+        <td style="color:var(--green);font-weight:700">${p.qtd}</td>
         <td style="color:${p.perdas>0?'var(--red)':'var(--t3)'}">${p.perdas||0}</td>
       </tr>`;
     }).join('')
