@@ -740,7 +740,6 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
           <div class="est-tab" onclick="estTab('recheios',this)">🍫 Recheios</div>
           <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
         </div>
-        <div id="est-lista-compras" style="display:none"></div>
         <div id="est-content"></div>
       </div>
     </div>
@@ -7059,7 +7058,6 @@ function updateAlertBadge(){
   const badge=document.getElementById('nb-est');
   if(badge){badge.textContent=total;badge.style.display=total?'inline':'none';}
   // Painel lista de compras no estoque
-  renderListaCompras();
 }
 function renderListaCompras(){
   const el=document.getElementById('est-lista-compras');
