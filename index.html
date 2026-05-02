@@ -513,24 +513,22 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
         <!-- MES/PERIODO CONTENT -->
         <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:4px">🏆 Top Produtos</div>
-              <div style="font-size:11px;color:#999;margin-bottom:14px">Volume vendido no período</div>
-              <div id="dash-ranking" style="display:flex;flex-direction:column;gap:10px"></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:3px">🏆 Top Produtos</div>
+              <div style="font-size:10px;color:#999;margin-bottom:12px">Volume vendido no período</div>
+              <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">📦 Estoque em Valor</div>
+            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">📦 Estoque em Valor</div>
               <div id="dash-estoque-valor"></div>
             </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Últimos Lançamentos</div>
+            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Últimos Lançamentos</div>
               <div class="tbl-wrap"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Tipo</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
             </div>
-            <div style="background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Últimas Produções</div>
+            <div style="background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
+              <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:12px">Últimas Produções</div>
               <div class="tbl-wrap"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
