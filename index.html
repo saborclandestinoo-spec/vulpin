@@ -3622,17 +3622,19 @@ function deleteProd2(){
               mudouRec=true;
             }
           } else {
-            if(estMp[it.mpId]){
-              // Remove da saidas se existe, caso contrário reverte consumo legado
-              const antes=(estMp[it.mpId].saidas||[]).length;
-              estMp[it.mpId].saidas=(estMp[it.mpId].saidas||[]).filter(s=>s.id!==prefixId+it.mpId);
-              if((estMp[it.mpId].saidas||[]).length===antes){
-                // registro legado sem saidas — reverte consumo
-                const consumo=(it.qtd||0)*(prod.qtd||0);
-                estMp[it.mpId].consumo=Math.max(0,(estMp[it.mpId].consumo||0)-consumo);
+            if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+            // Tenta remover da saidas (novo sistema)
+            const antes=(estMp[it.mpId].saidas||[]).length;
+            estMp[it.mpId].saidas=(estMp[it.mpId].saidas||[]).filter(s=>s.id!==prefixId+it.mpId);
+            if((estMp[it.mpId].saidas||[]).length===antes){
+              // Não achou saida — adiciona entrada de correção para devolver ao estoque
+              const consumo=(it.qtd||0)*(prod.qtd||0);
+              if(consumo>0){
+                if(!estMp[it.mpId].entradas)estMp[it.mpId].entradas=[];
+                estMp[it.mpId].entradas.push({id:uid(),data:prod.data||new Date().toISOString().slice(0,10),qtd:consumo,obs:`Estorno produção #${prod.id}`,tipo:'estorno'});
               }
-              mudouMp=true;
             }
+            mudouMp=true;
           }
         });
         if(mudouMp)S.set('est_mp',estMp);
