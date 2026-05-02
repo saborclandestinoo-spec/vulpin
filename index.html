@@ -2630,7 +2630,8 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
   if(rankEl){
     const contagem={};
     histPeriod.forEach(p=>(p.items||p.itens||[]).forEach(i=>{
-      const nome=i.name||i.nome||'?';
+      const pdv=i.external_code||i.externalCode||i.sku||i.codigo_pdv||i.product_id||'';
+      const nome=resolveNomeProd(i.name||i.nome||'?', pdv);
       contagem[nome]=(contagem[nome]||0)+(i.quantity||i.qtd||1);
     }));
     const sorted=Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,8);
