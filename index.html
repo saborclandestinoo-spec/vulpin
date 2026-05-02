@@ -2776,14 +2776,14 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
   const lancTbody=document.querySelector('#dash-lanc tbody');
   const lancTit=document.querySelector('#dash-lanc')?.closest('div')?.querySelector('div');
   if(lancTbody){
-    const todosLancs=[...lancPeriod].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+    const todosLancs=[...lancPeriod].sort((a,b)=>(b.data||b.dataPag||'').localeCompare(a.data||a.dataPag||''));
     const totalLancsRec=todosLancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
     const totalLancsDes=todosLancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
     // Atualiza título com total
     const lancHeader=document.getElementById('dash-lanc-header');
     if(lancHeader)lancHeader.innerHTML=`<span style="font-size:10px;color:var(--green);font-weight:600;margin-left:4px">+R$ ${fmtN(totalLancsRec)}</span> <span style="font-size:10px;color:var(--red);font-weight:600;margin-left:4px">-R$ ${fmtN(totalLancsDes)}</span>`;
     lancTbody.innerHTML=todosLancs.length?todosLancs.map(l=>`<tr style="cursor:pointer" onclick="openLancView('${l.id}')">
-      <td style="white-space:nowrap">${fmtDate(l.data)}</td>
+      <td style="white-space:nowrap">${fmtDate(l.data||l.dataPag||'')}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         <span style="margin-right:4px">${l.tipo==='receita'?'📈':'📉'}</span>${l.desc||'—'}
       </td>
