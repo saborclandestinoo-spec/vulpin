@@ -3495,9 +3495,11 @@ function renderProducao(){
   `;
   const tbody=document.querySelector('#tbl-producao tbody');
   tbody.innerHTML=data.length?data.map(p=>{
-    const pr=prods.find(x=>x.id===p.produtoId);
+    const pr=p.tipoProducao==='recheio'
+      ? (()=>{const r=getRecheios().find(x=>x.id===p.recheioId);return r?{nome:'🍫 '+r.nome,custo:0}:null;})()
+      : prods.find(x=>x.id===p.produtoId);
     const apr=(p.qtd||0)-(p.perdas||0);
-    const custoMP=pr?(pr.custo*(p.qtd||0)).toFixed(2):0;
+    const custoMP=pr&&pr.custo?(pr.custo*(p.qtd||0)).toFixed(2):0;
     return`<tr>
       <td>${fmtDate(p.data)}</td>
       <td style="font-weight:500;color:var(--t)">${pr?pr.nome:'—'}</td>
@@ -3551,16 +3553,46 @@ function openProd2(id){
     document.getElementById('mprod2-perdas').value='0';
     document.getElementById('mprod2-obs').value='';
     document.getElementById('mprod2-del').style.display='none';
-    resetCustomDrop('mprod2-produto-display','mprod2-produto','Selecione o produto');
+    mprod2SetTipo('cookie');
   }
   openM('modal-producao');
 }
 
 function saveProd2(){
+  const tipo=(document.getElementById('mprod2-tipo')||{}).value||'cookie';
   const qtd=parseInt(document.getElementById('mprod2-qtd').value)||0;
   const produtoId=document.getElementById('mprod2-produto').value;
-  if(!produtoId){alert('Selecione o produto');return;}
+  if(!produtoId){alert(tipo==='recheio'?'Selecione o recheio':'Selecione o produto');return;}
   if(!qtd){alert('Informe a quantidade produzida');return;}
+  // Se recheio, delega para saveProdRecheio adaptado inline
+  if(tipo==='recheio'&&!editProd2Id){
+    const r=getRecheios().find(x=>x.id===produtoId);
+    // Baixa insumos conforme ficha do recheio
+    const estMp=getEstMP();
+    (r?r.fichaMP||[]:[]). forEach(it=>{
+      const consumo=(it.qtd||0)*qtd;
+      if(!consumo)return;
+      if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+      const prodId2=uid();
+      estMp[it.mpId].saidas.push({id:'prod_'+prodId2+'_'+it.mpId,data:document.getElementById('mprod2-data').value,qtd:consumo,obs:`Produção Recheio #${prodId2}`});
+    });
+    S.set('est_mp',estMp);
+    // Adiciona ao est_recheios
+    const est=getEstRecheios();
+    if(!est[produtoId])est[produtoId]={entradas:[],saidas:[]};
+    est[produtoId].entradas.push({id:uid(),data:document.getElementById('mprod2-data').value,qtd,obs:document.getElementById('mprod2-obs').value.trim()||'Produção'});
+    S.set('est_recheios',est);
+    // Salva registro de produção (tipo recheio)
+    const recProds=getProducao();
+    const newId=uid();
+    recProds.push({id:newId,data:document.getElementById('mprod2-data').value,recheioId:produtoId,produtoId:null,tipoProducao:'recheio',qtd,perdas:0,obs:document.getElementById('mprod2-obs').value.trim()});
+    S.set('producao',recProds);
+    closeM('modal-producao');
+    if(currentPage==='producao')renderProducao();
+    if(currentPage==='estoque')renderEstoque();
+    updateAlertBadge();
+    return;
+  }
   const obj={
     id:editProd2Id||uid(),
     data:document.getElementById('mprod2-data').value,
