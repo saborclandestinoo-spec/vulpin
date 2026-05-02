@@ -5707,6 +5707,10 @@ function saveLancTipo(tipo,andAnother){
           valor,obs:'Entrada via lançamento: '+obj.desc,tipo:'entrada'
         });
         S.set('est_mp',est);
+        // Atualiza valor da NF no cadastro do insumo com o último lançamento
+        const _mp=getMP();
+        const _mpIdx=_mp.findIndex(x=>x.id===mpId);
+        if(_mpIdx>-1&&valor>0){_mp[_mpIdx].valor=valor;S.set('mp',_mp);}
         updateAlertBadge();
       }
     }
