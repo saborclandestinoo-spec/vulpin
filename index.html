@@ -112,7 +112,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg2)}
 #login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#fff8f5,#fff 60%,#f0f4ff);display:flex;align-items:center;justify-content:center;z-index:9999}
 .lcard{background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:36px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
 .llogo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px}
-.llogo-t{font-size:24px;font-weight:800;color:var(--fox);letter-spacing:-0.5px}
+.llogo-t{font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-1px}
 .ltabs{display:flex;border-bottom:1px solid var(--bor);margin-bottom:20px}
 .ltab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .ltab.on{color:var(--fox);border-bottom-color:var(--fox);font-weight:600}
@@ -400,8 +400,11 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 <div id="login-screen">
   <div class="lcard">
     <div class="llogo">
-      <svg width="32" height="32" viewBox="0 0 34 34" fill="none"><path d="M4 8L10 17L4 21L12 19L17 27L22 19L30 21L24 17L30 8L22 12L17 5L12 12Z" fill="#FF6B2B"/><circle cx="13" cy="15.5" r="1.5" fill="white"/><circle cx="21" cy="15.5" r="1.5" fill="white"/><path d="M14 20Q17 22 20 20" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
-      <span class="llogo-t">vulpin ERP</span>
+      <svg width="40" height="47" viewBox="0 0 100 116" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27 0 L8 52 L32 44 Q41 38 50 42 Q59 38 68 44 L92 52 L73 0 L61 20 Q50 10 39 20 Z" fill="#FF6B2B"/><path d="M8 52 Q4 63 9 73 L50 116 L91 73 Q96 63 92 52 L68 44 Q59 38 50 42 Q41 38 32 44 Z" fill="#FF6B2B"/><path d="M34 62 Q27 54 25 65 Q23 77 34 81 Q41 76 41 65 Q41 55 34 62 Z" fill="white" transform="rotate(-8 34 70)"/><path d="M66 62 Q59 55 59 65 Q59 76 66 81 Q77 77 75 65 Q73 54 66 62 Z" fill="white" transform="rotate(8 66 70)"/></svg>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span class="llogo-t" style="display:flex;align-items:center;gap:2px;line-height:1">vulpin<span style="width:6px;height:6px;background:#FF6B2B;border-radius:50%;display:inline-block;margin-left:2px;margin-bottom:9px;flex-shrink:0"></span></span>
+        <span style="font-size:10px;font-weight:600;color:#A0A0B8;letter-spacing:2px;text-transform:uppercase;margin-left:1px">ERP</span>
+      </div>
     </div>
     <div class="ltabs">
       <div class="ltab on" id="lt-login" onclick="lTab('login')">Entrar</div>
@@ -432,9 +435,12 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 
 <!-- SIDEBAR -->
 <div class="sb">
-  <div class="sb-logo">
-    <svg width="30" height="30" viewBox="0 0 34 34" fill="none"><path d="M4 8L10 17L4 21L12 19L17 27L22 19L30 21L24 17L30 8L22 12L17 5L12 12Z" fill="#FF6B2B"/><circle cx="13" cy="15.5" r="1.5" fill="white"/><circle cx="21" cy="15.5" r="1.5" fill="white"/><path d="M14 20Q17 22 20 20" stroke="white" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
-    <div><div class="sb-logo-t">vulpin</div><div class="sb-logo-s">ERP</div></div>
+<div class="sb-logo">
+    <svg width="30" height="35" viewBox="0 0 100 116" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27 0 L8 52 L32 44 Q41 38 50 42 Q59 38 68 44 L92 52 L73 0 L61 20 Q50 10 39 20 Z" fill="#FF6B2B"/><path d="M8 52 Q4 63 9 73 L50 116 L91 73 Q96 63 92 52 L68 44 Q59 38 50 42 Q41 38 32 44 Z" fill="#FF6B2B"/><path d="M34 62 Q27 54 25 65 Q23 77 34 81 Q41 76 41 65 Q41 55 34 62 Z" fill="white" transform="rotate(-8 34 70)"/><path d="M66 62 Q59 55 59 65 Q59 76 66 81 Q77 77 75 65 Q73 54 66 62 Z" fill="white" transform="rotate(8 66 70)"/></svg>
+    <div>
+      <div class="sb-logo-t" style="display:flex;align-items:center;gap:2px">vulpin<span style="width:5px;height:5px;background:#FF6B2B;border-radius:50%;display:inline-block;margin-left:1px;margin-bottom:7px;flex-shrink:0"></span></div>
+      <div class="sb-logo-s">ERP</div>
+    </div>
   </div>
   <div class="sb-store">
     <div class="sb-sname" id="sb-sname">Minha Loja</div>
