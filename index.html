@@ -71,6 +71,8 @@ html.dark .overlay{background:rgba(0,0,0,.7)}
 html.dark .custom-drop,html.dark .rp-wrap{background:var(--bg);border-color:var(--bor)}
 html.dark .bank-card{background:var(--bg);border-color:var(--bor)}
 html.dark .fc-month-btn{background:var(--bg2);color:var(--t);border-color:var(--bor)}
+html.dark .pill-purple{background:rgba(124,58,237,0.15);color:#c084fc}
+
 /* ===== DARK MODE COMPLETO — cobre inline styles e classes extras ===== */
 html.dark .metric{background:var(--bg);border-color:var(--bor);color:var(--t)}
 html.dark .alert-item{background:var(--bg);border-color:var(--bor)}
@@ -521,7 +523,7 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
             <div style="font-size:11px;color:var(--t3);margin-top:2px" id="dre-pg-periodo">—</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center">
-            <div style="display:flex;gap:3px;background:#F1F1F4;border-radius:22px;padding:3px">
+            <div style="display:flex;gap:3px;background:var(--bg3);border-radius:22px;padding:3px">
               <button onclick="drePgSetPeriod('mes')" id="dre-btn-mes" style="background:var(--fox);color:#fff;border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Este Mês</button>
               <button onclick="drePgSetPeriod('custom')" id="dre-btn-custom" style="background:transparent;color:var(--t3);border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Outro Mês</button>
             </div>
@@ -564,11 +566,11 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 
     <!-- DASHBOARD -->
     <div class="pg on" id="pg-dashboard">
-      <div class="scroll" style="background:#F5F6FA;padding:0">
+      <div class="scroll" style="background:var(--bg2);padding:0">
 
         <!-- HEADER -->
         <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <div id="dash-header-title" style="font-size:15px;font-weight:700;color:#1a1a2e;flex:1;min-width:180px">Carregando...</div>
+          <div id="dash-header-title" style="font-size:15px;font-weight:700;color:var(--t);flex:1;min-width:180px">Carregando...</div>
           <div style="display:flex;align-items:center;gap:8px">
             <!-- Seletor de dia (visível só no modo Hoje) -->
             <div id="dash-dia-picker" style="display:none;align-items:center;gap:6px;position:relative">
@@ -594,15 +596,15 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
               </div>
               <input type="hidden" id="dash-dia-input">
             </div>
-            <div style="display:flex;gap:4px;background:#f0f0f0;border-radius:20px;padding:3px">
-              <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#888">Hoje</button>
+            <div style="display:flex;gap:4px;background:var(--bg3);border-radius:20px;padding:3px">
+              <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--t3)">Hoje</button>
               <button onclick="dashSetPeriod('mes')" id="dbtn-mes" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Este Mês</button>
-              <button onclick="dashSetPeriod('custom')" id="dbtn-custom" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#888">Período</button>
+              <button onclick="dashSetPeriod('custom')" id="dbtn-custom" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--t3)">Período</button>
             </div>
             <div id="dash-custom-range" style="display:none;align-items:center;gap:6px">
-              <input type="month" id="dash-range-start" style="border:1px solid #ddd;border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
-              <span style="font-size:11px;color:#999">até</span>
-              <input type="month" id="dash-range-end" style="border:1px solid #ddd;border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
+              <input type="month" id="dash-range-start" style="border:1px solid var(--bor);border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
+              <span style="font-size:11px;color:var(--t3)">até</span>
+              <input type="month" id="dash-range-end" style="border:1px solid var(--bor);border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
             </div>
           </div>
         </div>
@@ -617,23 +619,23 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
           <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
             <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
               <div id="dash-fat-kpi-atual" style="min-width:160px">
-                <div style="font-size:11px;color:#999;margin-bottom:2px">Faturamento</div>
+                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Faturamento</div>
                 <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-val" style="font-size:22px;font-weight:800;color:#1a1a2e">R$ 0,00</span>
+                  <span id="dash-fat-val" style="font-size:22px;font-weight:800;color:var(--t)">R$ 0,00</span>
                   <span id="dash-fat-var" style="font-size:12px;font-weight:600"></span>
                 </div>
               </div>
               <div id="dash-fat-kpi-ped" style="min-width:100px">
-                <div style="font-size:11px;color:#999;margin-bottom:2px">Pedidos</div>
+                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Pedidos</div>
                 <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-ped" style="font-size:22px;font-weight:800;color:#1a1a2e">0</span>
+                  <span id="dash-fat-ped" style="font-size:22px;font-weight:800;color:var(--t)">0</span>
                   <span id="dash-fat-ped-var" style="font-size:12px;font-weight:600"></span>
                 </div>
               </div>
               <div id="dash-fat-kpi-ticket" style="min-width:130px">
-                <div style="font-size:11px;color:#999;margin-bottom:2px">Ticket médio</div>
+                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Ticket médio</div>
                 <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-ticket" style="font-size:22px;font-weight:800;color:#1a1a2e">R$ 0,00</span>
+                  <span id="dash-fat-ticket" style="font-size:22px;font-weight:800;color:var(--t)">R$ 0,00</span>
                   <span id="dash-fat-ticket-var" style="font-size:12px;font-weight:600"></span>
                 </div>
               </div>
@@ -645,24 +647,24 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
               </div>
             </div>
             <div style="height:220px"><canvas id="chart-dash-fat"></canvas></div>
-            <div id="dash-fat-legend" style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:#999"></div>
+            <div id="dash-fat-legend" style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--t3)"></div>
           </div>
 
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:#999;margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">📦 Estoque em Valor</div><div style="font-size:11px;color:#999;margin-bottom:12px">Valor atual no estoque</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">📦 Estoque em Valor</div><div style="font-size:11px;color:var(--t3);margin-bottom:12px">Valor atual no estoque</div>
               <div id="dash-estoque-valor"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">💸 Lançamentos</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">💸 Lançamentos</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:2px">🍪 Produções</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🍪 Produções</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
@@ -673,12 +675,12 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
           <!-- ROW 1: Pedidos + Despesas -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">Pedidos</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">Pedidos</div>
               <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:#1a1a2e">💸 Despesas</div>
+                <div style="font-size:14px;font-weight:700;color:var(--t)">💸 Despesas</div>
                 <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
               </div>
               <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
@@ -687,7 +689,7 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
           <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">🏆 Produtos Vendidos</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">🏆 Produtos Vendidos</div>
               <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
@@ -695,7 +697,7 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
               <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#1a1a2e;margin-bottom:14px">💳 Por Pagamento</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">💳 Por Pagamento</div>
               <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
           </div>
@@ -2542,7 +2544,7 @@ function renderHoje(){
   // Pedidos lista
   const lista=document.getElementById('hoje-pedidos-lista');
   if(lista){
-    if(!pedidos.length){lista.innerHTML='<div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center">Nenhum pedido hoje ainda</div>';}
+    if(!pedidos.length){lista.innerHTML='<div style="color:var(--t3);font-size:13px;padding:20px 0;text-align:center">Nenhum pedido hoje ainda</div>';}
     else lista.innerHTML=[...pedidos].reverse().map(p=>{
       const cliente=p.customer?.name||p.clienteNome||'—';
       const itens=(p.items||p.itens||[]);
@@ -2554,9 +2556,9 @@ function renderHoje(){
       const badge=canal==='ifood'?'<span style="background:#EA1D2C;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">iF</span>':canal==='whatsapp_extension'||canal==='whatsapp'?'<span style="background:#25D366;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px">WPP</span>':'';
       const hora=new Date(p.created_at||p.createdAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'});
       return`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #f0f0f0">
-        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:#1a1a2e">#${p.display_id||p.id}</div><div style="font-size:10px;color:#aaa">${hora}</div></div>
-        <div><div style="font-size:12px;font-weight:600;color:#1a1a2e">${cliente}${badge}</div><div style="font-size:11px;color:#aaa">${itensTxt}</div></div>
-        <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#FF6B35">R$ ${fmtN(tot)}</div><div style="font-size:10px;color:#aaa">${pagStr}</div></div>
+        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:var(--t)">#${p.display_id||p.id}</div><div style="font-size:10px;color:var(--t3)">${hora}</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--t)">${cliente}${badge}</div><div style="font-size:11px;color:var(--t3)">${itensTxt}</div></div>
+        <div style="text-align:right"><div style="font-size:13px;font-weight:700;color:#FF6B35">R$ ${fmtN(tot)}</div><div style="font-size:10px;color:var(--t3)">${pagStr}</div></div>
       </div>`;
     }).join('');
   }
@@ -2564,7 +2566,7 @@ function renderHoje(){
   // Cancelados lista
   const cancelLista=document.getElementById('hoje-cancelados-lista');
   if(cancelLista){
-    if(!cancelados.length){cancelLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:12px 0;text-align:center">Nenhum cancelamento hoje 🎉</div>';}
+    if(!cancelados.length){cancelLista.innerHTML='<div style="color:var(--t3);font-size:12px;padding:12px 0;text-align:center">Nenhum cancelamento hoje 🎉</div>';}
     else cancelLista.innerHTML=[...cancelados].reverse().map(p=>{
       const cliente=p.customer?.name||p.clienteNome||'—';
       const tot=p.total||p.totalAmount||p.valor||0;
@@ -2572,8 +2574,8 @@ function renderHoje(){
       const itens=(p.items||p.itens||[]);
       const itensTxt=itens.length?itens.slice(0,2).map(i=>`${i.quantity||1}x ${i.name||'?'}`).join(', ')+(itens.length>2?'…':''):'—';
       return`<div style="display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid #FFE0E0;background:#FFF5F5">
-        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:#E74C3C">#${p.display_id||p.id}</div><div style="font-size:10px;color:#aaa">${hora}</div></div>
-        <div><div style="font-size:12px;font-weight:600;color:#E74C3C">${cliente}</div><div style="font-size:11px;color:#aaa">${itensTxt}</div></div>
+        <div style="text-align:center"><div style="font-size:11px;font-weight:700;color:#E74C3C">#${p.display_id||p.id}</div><div style="font-size:10px;color:var(--t3)">${hora}</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:#E74C3C">${cliente}</div><div style="font-size:11px;color:var(--t3)">${itensTxt}</div></div>
         <div style="text-align:right"><div style="font-size:12px;font-weight:700;color:#E74C3C;text-decoration:line-through">R$ ${fmtN(tot)}</div></div>
       </div>`;
     }).join('');
@@ -2590,25 +2592,25 @@ function renderHoje(){
   const maxQtd=topProds[0]?.[1]||1;
   let totalCookiesHoje=topProds.reduce((s,[,q])=>s+q,0);
   const topEl=document.getElementById('hoje-top-prods');
-  if(topEl)topEl.innerHTML=(topProds.length?`<div style="font-size:11px;color:#999;margin-bottom:8px">Total: <b style="color:#FF6B35">${totalCookiesHoje} cookies</b></div>`+topProds.map(([nome,qtd])=>`
+  if(topEl)topEl.innerHTML=(topProds.length?`<div style="font-size:11px;color:var(--t3);margin-bottom:8px">Total: <b style="color:#FF6B35">${totalCookiesHoje} cookies</b></div>`+topProds.map(([nome,qtd])=>`
     <div><div style="display:flex;justify-content:space-between;margin-bottom:2px">
-      <span style="font-size:12px;color:#333;font-weight:500">${nome}</span>
+      <span style="font-size:12px;color:var(--t);font-weight:500">${nome}</span>
       <span style="font-size:12px;font-weight:700;color:#FF6B35">${qtd} un</span>
     </div>
-    <div style="height:4px;background:#f0f0f0;border-radius:3px"><div style="height:4px;background:linear-gradient(90deg,#FF6B35,#ff9a6c);border-radius:3px;width:${(qtd/maxQtd*100).toFixed(0)}%"></div></div>
-    </div>`).join(''):'<div style="color:#aaa;font-size:12px">Sem vendas ainda</div>');
+    <div style="height:4px;background:var(--bg3);border-radius:3px"><div style="height:4px;background:linear-gradient(90deg,#FF6B35,#ff9a6c);border-radius:3px;width:${(qtd/maxQtd*100).toFixed(0)}%"></div></div>
+    </div>`).join(''):'<div style="color:var(--t3);font-size:12px">Sem vendas ainda</div>');
 
   // Despesas
   const despHoje=getLanc().filter(l=>l.tipo==='despesa'&&l.pago&&filterDt((l.dataPag||'').slice(0,10)));
   const totDesp=despHoje.reduce((s,l)=>s+(l.valor||0),0);
   const despLista=document.getElementById('hoje-desp-lista');
   if(despLista){
-    if(!despHoje.length){despLista.innerHTML='<div style="color:#aaa;font-size:12px;padding:12px 0;text-align:center">Nenhuma despesa hoje</div>';}
+    if(!despHoje.length){despLista.innerHTML='<div style="color:var(--t3);font-size:12px;padding:12px 0;text-align:center">Nenhuma despesa hoje</div>';}
     else despLista.innerHTML=`<div style="font-size:11px;font-weight:700;color:#E74C3C;margin-bottom:8px">Total: R$ ${fmtN(totDesp)}</div>`+
       despHoje.sort((a,b)=>new Date(b.data||0)-new Date(a.data||0)).map(l=>`
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;border:1px solid #f0f0f0">
-        <div><div style="font-size:12px;font-weight:600;color:#1a1a2e">${l.desc||'Sem descrição'}</div>
-        <div style="font-size:10px;color:#aaa">${l.catCod||'Despesa'}</div></div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--t)">${l.desc||'Sem descrição'}</div>
+        <div style="font-size:10px;color:var(--t3)">${l.catCod||'Despesa'}</div></div>
         <div style="font-size:13px;font-weight:800;color:#E74C3C">−R$ ${fmtN(l.valor||0)}</div>
       </div>`).join('');
   }
@@ -2625,9 +2627,9 @@ function renderHoje(){
   const pagEl=document.getElementById('hoje-pagamentos');
   if(pagEl)pagEl.innerHTML=Object.entries(pagMap).sort((a,b)=>b[1].total-a[1].total).map(([pm,d])=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5">
-      <div style="font-size:12px;color:#333">${pm} <span style="color:#aaa;font-size:11px">(${d.count})</span></div>
-      <div style="font-size:13px;font-weight:700;color:#1a1a2e">R$ ${fmtN(d.total)}</div>
-    </div>`).join('')||'<div style="color:#aaa;font-size:12px">Sem dados</div>';
+      <div style="font-size:12px;color:var(--t)">${pm} <span style="color:var(--t3);font-size:11px">(${d.count})</span></div>
+      <div style="font-size:13px;font-weight:700;color:var(--t)">R$ ${fmtN(d.total)}</div>
+    </div>`).join('')||'<div style="color:var(--t3);font-size:12px">Sem dados</div>';
 }
 
 function renderDashboard(){
@@ -2725,7 +2727,7 @@ function renderDashboard(){
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
 
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:#F8F8FB;border-bottom:none';
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
     if(strip) strip.innerHTML=[
       {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'total do dia',cor:'#27AE60'},
       {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas/descontos',cor:'#FF6B35'},
@@ -2733,33 +2735,33 @@ function renderDashboard(){
       {ico:'🏷️',lbl:'Descontos Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'promoções',cor:'#E74C3C'},
       {ico:'🍔',lbl:'Descontos iFood',val:`R$ ${fmtN(_descIF)}`,sub:'plataforma',cor:'#EA1D2C'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'#1a1a2e'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
     ].map(k=>`<div style="background:var(--bg);border-radius:16px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px">
       <div style="font-size:24px">${k.ico}</div>
       <div>
-        <div style="font-size:9px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">${k.lbl}</div>
+        <div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">${k.lbl}</div>
         <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
-        <div style="font-size:9px;color:#aaa;margin-top:1px">${k.sub}</div>
+        <div style="font-size:9px;color:var(--t3);margin-top:1px">${k.sub}</div>
       </div>
     </div>`).join('');
     // Render hoje content
     renderHoje();
   } else {
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:#F8F8FB;border-bottom:none';
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
     if(strip) strip.innerHTML=[
       {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
       {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
       {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'#1a1a2e'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'var(--t)'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
-    ].map(k=>`<div style="background:var(--bg);border:1px solid #EEEEF2;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+    ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
       <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
       <div>
-        <div style="font-size:9px;font-weight:700;color:#A0A0B8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${k.lbl}</div>
+        <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${k.lbl}</div>
         <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1;letter-spacing:-.3px">${k.val}</div>
-        <div style="font-size:10px;color:#B0B0C8;margin-top:2px">${k.sub}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">${k.sub}</div>
       </div>
     </div>`).join('');
 
@@ -2778,7 +2780,7 @@ function renderDashboard(){
     {label:'Receitas',data:recData,backgroundColor:'rgba(39,174,96,.75)',borderRadius:6,order:2},
     {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.65)',borderRadius:6,order:2},
     {label:'Lucro',data:lucroData,type:'line',borderColor:'var(--fox)',backgroundColor:'rgba(231,130,70,.1)',borderWidth:2,pointRadius:4,pointBackgroundColor:'var(--fox)',fill:true,tension:.3,order:1},
-  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'var(--t3)'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:10},color:'var(--t3)',callback:v=>'R$'+fmtN(v)}}}}});
 }
 
 function renderDashFatChart(){
@@ -2863,7 +2865,7 @@ function renderDashFatChart(){
   new Chart(ctx,{type:'line',data:{labels,datasets:[
     {label:`Faturamento ${mesNome}`,data:dataAtual,borderColor:'rgba(39,130,220,.8)',backgroundColor:'rgba(39,130,220,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'rgba(39,130,220,.9)',borderWidth:2},
     {label:`Faturamento ${prevMesNome}`,data:dataAnterior,borderColor:'rgba(250,180,80,.8)',backgroundColor:'rgba(250,180,80,.06)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'rgba(250,180,80,.9)',borderWidth:2,borderDash:[4,3]},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8',maxTicksLimit:16}},y:{grid:{color:'rgba(0,0,0,.03)'},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8',callback:v=>'R$ '+fmtN(v)}}}}});
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:9},color:'var(--t3)',maxTicksLimit:16}},y:{grid:{color:'rgba(0,0,0,.03)'},ticks:{font:{family:'Poppins',size:9},color:'var(--t3)',callback:v=>'R$ '+fmtN(v)}}}}});
 }
 
 function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel, lancPeriodComp){
@@ -2888,7 +2890,7 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
             <span style="font-size:12px;font-weight:500;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${nome}</span>
             <span style="font-size:11px;font-weight:700;color:var(--fox)">${qtd} un</span>
           </div>
-          <div style="height:4px;background:#F0F0F5;border-radius:4px;overflow:hidden">
+          <div style="height:4px;background:var(--bg3);border-radius:4px;overflow:hidden">
             <div style="height:100%;background:var(--fox);border-radius:4px;width:${(qtd/max*100).toFixed(0)}%;transition:width .4s"></div>
           </div>
         </div>
@@ -3031,7 +3033,7 @@ function renderFluxoChart(){
     acum+=diario;
     data.push(Math.round(acum));
   }
-  new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Saldo projetado',data,borderColor:data[data.length-1]>=saldoAtual?'#27AE60':'#E74C3C',backgroundColor:data[data.length-1]>=saldoAtual?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:0,pointHoverRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:9},color:'#A0A0B8',callback:v=>'R$'+fmtN(v)}}}}});
+  new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Saldo projetado',data,borderColor:data[data.length-1]>=saldoAtual?'#27AE60':'#E74C3C',backgroundColor:data[data.length-1]>=saldoAtual?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:0,pointHoverRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`R$ ${fmtN(ctx.parsed.y)}`}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:9},color:'var(--t3)'}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:9},color:'var(--t3)',callback:v=>'R$'+fmtN(v)}}}}});
 }
 
 
@@ -4570,7 +4572,7 @@ function renderFluxoChart(range){
   new Chart(ctx,{type:'bar',data:{labels,datasets:[
     {label:'Receitas',data:recArr,backgroundColor:'rgba(39,174,96,.7)',borderRadius:4},
     {label:'Despesas',data:despArr,backgroundColor:'rgba(231,76,60,.6)',borderRadius:4},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Poppins',size:11},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'#A0A0B8',maxTicksLimit:14}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:11},color:'#A0A0B8',callback:v=>'R$'+v}}}}});
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Poppins',size:11},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'Poppins',size:10},color:'var(--t3)',maxTicksLimit:14}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Poppins',size:11},color:'var(--t3)',callback:v=>'R$'+v}}}}});
 }
 
 function fcExportar(){
@@ -5613,15 +5615,15 @@ function renderEtiquetas(){
   const etiq=`<div style="width:${w};height:${h};border:2px solid #FF6B2B;border-radius:10px;padding:10px 12px;background:var(--bg);display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.08);font-family:'Poppins',sans-serif">
     <div style="display:flex;align-items:center;justify-content:space-between">
       <div style="font-size:8px;font-weight:700;color:#FF6B2B;text-transform:uppercase;letter-spacing:.5px">${loja.nome}</div>
-      <div style="font-size:8px;color:#A0A0B8">${dataStr} ${agora}</div>
+      <div style="font-size:8px;color:var(--t3)">${dataStr} ${agora}</div>
     </div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:6px 0">
-      <div style="font-size:${fs};font-weight:800;color:#1A1A2E;line-height:1.1">${nome}</div>
-      <div style="font-size:9px;color:#A0A0B8;margin-top:3px">${cat}</div>
+      <div style="font-size:${fs};font-weight:800;color:var(--t);line-height:1.1">${nome}</div>
+      <div style="font-size:9px;color:var(--t3);margin-top:3px">${cat}</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #EFEFF5;padding-top:6px">
-      <div><div style="font-size:7px;color:#A0A0B8;text-transform:uppercase">Produzido</div><div style="font-size:${size==='sm'?'13px':'16px'};font-weight:800;color:#FF6B2B">${apr} un</div></div>
-      <div style="font-size:8px;color:#A0A0B8;font-style:italic">${loja.frase}</div>
+      <div><div style="font-size:7px;color:var(--t3);text-transform:uppercase">Produzido</div><div style="font-size:${size==='sm'?'13px':'16px'};font-weight:800;color:#FF6B2B">${apr} un</div></div>
+      <div style="font-size:8px;color:var(--t3);font-style:italic">${loja.frase}</div>
     </div>
   </div>`;
   const preview=document.getElementById('etiqueta-preview');
@@ -5673,15 +5675,15 @@ async function printEtiquetas(){
   const etiq=`<div style="width:${w};height:${h};border:1.5pt solid #FF6B2B;border-radius:6pt;padding:7pt 9pt;display:inline-flex;flex-direction:column;justify-content:space-between;font-family:'Poppins',sans-serif;margin:3pt;box-sizing:border-box;break-inside:avoid;background:var(--bg)">
     <div style="display:flex;justify-content:space-between">
       <span style="font-size:6pt;font-weight:700;color:#FF6B2B;text-transform:uppercase">${loja.nome}</span>
-      <span style="font-size:6pt;color:#888">${dataStr} ${agora}</span>
+      <span style="font-size:6pt;color:var(--t3)">${dataStr} ${agora}</span>
     </div>
     <div style="flex:1;padding:4pt 0;display:flex;flex-direction:column;justify-content:center">
-      <div style="font-size:${fsPt};font-weight:800;color:#1A1A2E;line-height:1.1">${nome}</div>
-      <div style="font-size:6pt;color:#888;margin-top:2pt">${cat}</div>
+      <div style="font-size:${fsPt};font-weight:800;color:var(--t);line-height:1.1">${nome}</div>
+      <div style="font-size:6pt;color:var(--t3);margin-top:2pt">${cat}</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:.5pt solid #eee;padding-top:4pt">
-      <div><div style="font-size:5pt;color:#888;text-transform:uppercase">Produzido</div><div style="font-size:${size==='sm'?'11pt':'14pt'};font-weight:800;color:#FF6B2B">${apr} un</div></div>
-      <div style="font-size:6pt;color:#aaa;font-style:italic">${loja.frase}</div>
+      <div><div style="font-size:5pt;color:var(--t3);text-transform:uppercase">Produzido</div><div style="font-size:${size==='sm'?'11pt':'14pt'};font-weight:800;color:#FF6B2B">${apr} un</div></div>
+      <div style="font-size:6pt;color:var(--t3);font-style:italic">${loja.frase}</div>
     </div>
   </div>`;
   const win=window.open('','_blank','width=900,height=700');
@@ -5692,7 +5694,7 @@ async function printEtiquetas(){
     </head><body>
     <div style="margin-bottom:6mm;display:flex;gap:8px">
       <button onclick="window.print()" style="background:#FF6B2B;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">🖨️ Imprimir${printerName?' — '+printerName:''}</button>
-      <button onclick="window.close()" style="background:#f0f0f0;color:#333;border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer">Fechar</button>
+      <button onclick="window.close()" style="background:var(--bg3);color:var(--t);border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer">Fechar</button>
     </div>
     <div class="wrap">${Array(qtd).fill(etiq).join('')}</div>
 <!-- MODAL EQUIPAMENTO -->
