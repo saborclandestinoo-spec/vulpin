@@ -3533,17 +3533,23 @@ function mprod2SetTipo(tipo){
   buildProdDrop('mprod2-produto-drop');
 }
 function buildProdDrop(dropId){
-  const prods=getProdutos();
-  const cats=[...new Set(prods.map(p=>p.cat))].sort();
   const drop=document.getElementById(dropId);if(!drop)return;
-  let html=`<div class="cd-search"><input class="cd-search-in" placeholder="Buscar produto..." oninput="filterCustomDrop('${dropId}',this.value)"></div>`;
-  cats.forEach(cat=>{
-    const items=prods.filter(p=>p.cat===cat);
-    html+=`<div class="cd-group"><div class="cd-group-dot" style="background:var(--fox)"></div>${cat}</div>`;
-    items.forEach(p=>{
-      html+=`<div class="cd-item cd-item-l1" data-cod="${p.id}" onclick="selectCustomDrop('${dropId}','${p.id}','${p.nome.replace(/'/g,"\\'")}',event)">${p.nome}</div>`;
+  const tipo=(document.getElementById('mprod2-tipo')||{}).value||'cookie';
+  let html=`<div class="cd-search"><input class="cd-search-in" placeholder="Buscar..." oninput="filterCustomDrop('${dropId}',this.value)"></div>`;
+  if(tipo==='recheio'){
+    const recheios=getRecheios();
+    if(!recheios.length){html+='<div style="padding:12px;color:var(--t3);font-size:12px">Nenhum recheio cadastrado.</div>';}
+    else{recheios.forEach(r=>{html+=`<div class="cd-item" data-cod="${r.id}" onclick="selectCustomDrop('${dropId}','${r.id}','${r.nome.replace(/'/g,"\'")}',event)">🍫 ${r.nome} (${r.un||'un'})</div>`;});}
+  } else {
+    const prods=getProdutos().filter(p=>(p.status||'ativo')!=='inativo'&&!p.inativo);
+    const cats=[...new Set(prods.map(p=>p.cat))].filter(Boolean).sort();
+    cats.forEach(cat=>{
+      const items=prods.filter(p=>p.cat===cat);
+      if(!items.length)return;
+      html+=`<div class="cd-group"><div class="cd-group-dot" style="background:var(--fox)"></div>${cat}</div>`;
+      items.forEach(p=>{html+=`<div class="cd-item cd-item-l1" data-cod="${p.id}" onclick="selectCustomDrop('${dropId}','${p.id}','${p.nome.replace(/'/g,"\'")}',event)">${p.nome}</div>`;});
     });
-  });
+  }
   drop.innerHTML=html;
 }
 
