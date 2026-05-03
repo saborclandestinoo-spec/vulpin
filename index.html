@@ -844,6 +844,7 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
     <!-- BANCOS -->
     <div class="pg" id="pg-bancos">
       <div class="scroll">
+        <div id="bank-totals" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
         <div class="bank-grid" id="bank-grid"></div>
         <div class="card">
           <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
@@ -6038,6 +6039,20 @@ function updateCCSelect(){}
 let editBancoId=null,selectedBancoId=null;
 function renderBancos(){
   const bancos=getBancos();
+  // Totais por tipo
+  const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
+  const totBanco=bancos.filter(b=>b.tipo!=='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
+  const totGeral=totCaixa+totBanco;
+  const totalsEl=document.getElementById('bank-totals');
+  if(totalsEl)totalsEl.innerHTML=[
+    {label:'💵 Total em Caixa',val:totCaixa,cor:'var(--fox)'},
+    {label:'🏦 Total em Bancos',val:totBanco,cor:'var(--blue)'},
+    {label:'💰 Total Geral',val:totGeral,cor:'var(--green)',bold:true},
+  ].map(t=>`<div style="background:#fff;border:1px solid var(--bor);border-radius:12px;padding:16px 20px">
+    <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${t.label}</div>
+    <div style="font-size:${t.bold?'22px':'18px'};font-weight:${t.bold?800:700};color:${t.cor}">R$ ${fmtN(t.val)}</div>
+  </div>`).join('');
+
   const grid=document.getElementById('bank-grid');
   grid.innerHTML=bancos.map(b=>{
     const sal=getSaldoBanco(b.id);
