@@ -7838,6 +7838,57 @@ function mergeNaHistoria(novos){
         }
       }
     }
+
+    // Gera lançamento bancário para pedidos NOVOS não cancelados
+    const LANC_CORTE=new Date('2026-05-03T03:00:00.000Z'); // só pedidos a partir de hoje
+    if(isNovo&&!isCancelado&&pedidoData>=LANC_CORTE){
+      const lancProcessados=S.get('pedidos_lanc_gerado')||{};
+      if(!lancProcessados[p.id]){
+        const formasPedido=getFormasPedido();
+        const pagamentos=p.payments||[];
+        const data=(p.created_at||p.createdAt||'').slice(0,10)||new Date().toLocaleDateString('sv-SE');
+        let mudouLanc=false;
+        pagamentos.forEach(pg=>{
+          const pmKey=(pg.payment_method||'').toLowerCase();
+          // Busca forma de pagamento pelo nome compatível
+          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito',ifood:'ifood',online_credit_card:'cartão de crédito'};
+          const pmNome=_pmMap[pmKey]||pmKey;
+          const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
+          if(!forma||!forma.bancoId)return;
+          const valor=pg.total||pg.value||0;
+          if(!valor)return;
+          // Aplica taxa
+          const taxa=forma.taxaPct?valor*(forma.taxaPct/100):0;
+          const valorLiq=valor-taxa;
+          // Considera dias para recebimento
+          const diasRec=forma.dias||0;
+          const dtRec=new Date(data+'T12:00:00');
+          dtRec.setDate(dtRec.getDate()+diasRec);
+          const dataRec=dtRec.toLocaleDateString('sv-SE');
+          // Cria lançamento de receita
+          const lancs=getLanc();
+          lancs.push({
+            id:uid(),
+            tipo:'receita',
+            desc:`Pedido #${p.display_id||p.displayId||p.id} — ${forma.nome}`,
+            valor:valorLiq,
+            data:dataRec,
+            venc:dataRec,
+            dataPag:dataRec,
+            bancoId:forma.bancoId,
+            pago:diasRec===0, // pago na hora se D+0
+            obs:`Gerado automaticamente. Taxa: R$ ${fmtN(taxa)}`,
+            pedidoId:p.id,
+          });
+          S.set('lancamentos',lancs);
+          mudouLanc=true;
+        });
+        if(mudouLanc){
+          lancProcessados[p.id]=true;
+          S.set('pedidos_lanc_gerado',lancProcessados);
+        }
+      }
+    }
   });
 
   setHistorico(Object.values(mapa));
