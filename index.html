@@ -5877,9 +5877,12 @@ function saveLancTipo(tipo,andAnother){
         const _mpIdx=_mp.findIndex(x=>x.id===mpId);
         // valor por embalagem = total pago / qtd comprada
         if(_mpIdx>-1&&valor>0){
-          _mp[_mpIdx].valor=valor;
-          // custoG = valor total pago / quantidade recebida no lançamento
-          if(qtd>0)_mp[_mpIdx].custoG=valor/qtd;
+          // custoG = custo por grama = valor total / qtd recebida
+          const _custoG=qtd>0?valor/qtd:0;
+          // valorNF = custo por grama × qtd por embalagem (custo de 1 embalagem)
+          const _qtdEmb=_mp[_mpIdx].qtd||0;
+          _mp[_mpIdx].valor=_qtdEmb>0?_custoG*_qtdEmb:valor;
+          if(_custoG>0)_mp[_mpIdx].custoG=_custoG;
           S.set('mp',_mp);
         }
         updateAlertBadge();
