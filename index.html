@@ -4124,6 +4124,13 @@ let _fcPeriodo='mes'; // semana | mes | custom
 let _fcRangeStart='';
 let _fcRangeEnd='';
 
+function fcToggleCat(key){
+  const rows=document.querySelectorAll('.'+key+'-item');
+  const ico=document.getElementById(key+'-ico');
+  const hidden=rows.length&&rows[0].style.display==='none';
+  rows.forEach(r=>r.style.display=hidden?'table-row':'none');
+  if(ico)ico.textContent=hidden?'▾':'▸';
+}
 function fcSetTab(tab){
   _fcTab=tab;
   document.getElementById('fc-tab-tabela').style.background=tab==='tabela'?'var(--fox)':'#fff';
@@ -4267,10 +4274,18 @@ function renderFluxo(){
     <th style="text-align:right;min-width:90px;font-weight:700">Total</th>
   </tr></thead><tbody>`;
 
-  // Saldo inicial row
-  let saldoAcc=saldoInicial;
+  // Saldo inicial por dia = saldo acumulado do dia anterior
+  // Pré-calcula saldo acumulado de cada dia para usar no saldo inicial
+  let _saldoAcumDia={};
+  let _saldoCorr=saldoInicial;
+  allDays.forEach(d=>{
+    _saldoAcumDia[d]=_saldoCorr; // saldo no início do dia = acumulado até dia anterior
+    const r=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    _saldoCorr+=r-dv;
+  });
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:var(--bg2);padding:10px 12px">Saldo inicial do período</td>
-    ${allDays.map((_,i)=>i===0?`<td style="text-align:right;font-weight:600;color:var(--blue)">${fmtN(saldoInicial)}</td>`:'<td></td>').join('')}
+    ${allDays.map(d=>`<td style="text-align:right;font-weight:600;color:var(--blue)">${fmtN(_saldoAcumDia[d])}</td>`).join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue)">${fmtN(saldoInicial)}</td></tr>`;
 
   // ── RECEITAS = Pedidos do histórico por dia ──
@@ -4320,15 +4335,26 @@ function renderFluxo(){
   html+=`<tr style="background:rgba(231,76,60,.06)"><td style="font-weight:700;color:var(--red);position:sticky;left:0;background:rgba(231,76,60,.06);padding:10px 12px">📉 Total de despesas</td>
     ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--red);font-weight:600">${v?'−'+fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--red)">−${fmtN(despTotal)}</td></tr>`;
-  // Despesas por categoria
+  // Despesas por categoria expandível com lista de lançamentos
   const despCats=[...new Set(despLancs.map(l=>l.ccId||''))];
   despCats.forEach(catId=>{
     const catL=despLancs.filter(l=>(l.ccId||'')===(catId||''));
     const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
     const catNome=catId?catNames[catId]||catId:'Sem categoria';
-    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">▸ ${catNome}</td>
+    const catKey='fc-cat-'+catId;
+    html+=`<tr style="cursor:pointer" onclick="fcToggleCat('${catKey}')"><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">
+      <span id="${catKey}-ico">▸</span> ${catNome}</td>
       ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
       <td style="text-align:right;font-size:12px;color:var(--t2)">−${fmtN(catTotal)}</td></tr>`;
+    // Linhas de lançamentos dentro da categoria (ocultas por default)
+    catL.forEach(l=>{
+      html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2)">
+        <td style="padding:5px 12px 5px 44px;color:var(--t3);font-size:11px;position:sticky;left:0;background:var(--bg2)">
+          ${fmtDate(l.data||l.dataPag||'')} — ${l.desc||'—'}
+        </td>
+        ${allDays.map(d=>{const v=(l.data||'')==d?l.valor:0;return`<td style="text-align:right;font-size:10px;color:var(--t3)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
+        <td style="text-align:right;font-size:11px;color:var(--t3)">−${fmtN(l.valor)}</td></tr>`;
+    });
   });
 
   // Saldo final row — calc por dia
