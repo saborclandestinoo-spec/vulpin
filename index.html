@@ -44,32 +44,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg2)}
 
 /* ===== LAYOUT ===== */
 .app{display:flex;height:100vh;overflow:hidden}
-.sb{width:var(--sidebar);min-width:var(--sidebar);background:#fff;border-right:1px solid var(--bor);display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.sb-logo{padding:14px;border-bottom:1px solid var(--bor2);display:flex;align-items:center;gap:9px}
-.sb-logo-t{font-size:18px;font-weight:800;color:var(--fox);letter-spacing:-.5px;line-height:1}
-.sb-logo-s{font-size:9px;color:var(--t3);letter-spacing:.4px;text-transform:uppercase}
-.sb-store{padding:9px 14px 11px;border-bottom:1px solid var(--bor2)}
-.sb-sname{font-size:12px;font-weight:600;color:var(--t)}
-.sb-sloc{font-size:10px;color:var(--t3);margin-top:1px}
-.sb-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);color:#1E8449;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:6px}
-.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
-nav{flex:1;padding:6px;overflow-y:auto}
-nav::-webkit-scrollbar{width:3px}
-nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
-.nav-g{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;padding:8px 8px 3px;font-weight:600}
-.ni{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer;font-size:11.5px;color:var(--t2);transition:all .15s;margin-bottom:1px;white-space:nowrap}
-.ni:hover{background:var(--bg2);color:var(--t)}
-.ni.on{background:var(--fox-l);color:var(--fox);font-weight:600}
-.ni svg{flex-shrink:0;opacity:.65}.ni.on svg{opacity:1}
-.ni-plain{font-size:12.5px;color:var(--t2);padding:6px 10px}.ni-plain.on{background:none;color:var(--fox);font-weight:600}
-.ni-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px}
-.sb-foot{padding:9px 12px;border-top:1px solid var(--bor2)}
-.sb-user{display:flex;align-items:center;gap:8px;padding:5px;border-radius:8px;cursor:pointer}
-.sb-user:hover{background:var(--bg2)}
-.av{width:28px;height:28px;border-radius:50%;background:var(--fox-l);border:1px solid var(--fox-m);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--fox);flex-shrink:0}
-.sb-uname{font-size:11px;color:var(--t2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-out{background:none;border:none;cursor:pointer;color:var(--t3);display:flex;padding:2px}
-.sb-out:hover{color:var(--red)}
+.sb{width:var(--sidebar);min-width:var(--sidebar);background:#1c1c1e;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.sb-logo{padding:18px 16px 14px;display:flex;align-items:center;gap:10px}
+.sb-logo-t{font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1}
+.sb-logo-s{font-size:8px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.sb-store{padding:10px 12px 12px;margin:0 8px;background:rgba(255,255,255,.05);border-radius:10px;margin-bottom:6px}
+.sb-sname{font-size:12px;font-weight:600;color:#fff}
+.sb-sloc{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(52,199,89,.15);color:#34c759;font-size:9px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:6px}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:#34c759}
+nav{flex:1;padding:4px 8px;overflow-y:auto}
+nav::-webkit-scrollbar{width:2px}
+nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+.nav-g{font-size:9px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.9px;padding:12px 8px 4px;font-weight:600}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.55);transition:all .12s;margin-bottom:1px;white-space:nowrap;font-weight:400}
+.ni:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.ni.on{background:rgba(255,107,43,.15);color:#FF6B2B;font-weight:600}
+.ni svg{flex-shrink:0;opacity:1}
+.ni-plain{font-size:12px;color:rgba(255,255,255,.5);padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .12s;margin-bottom:1px;display:flex;align-items:center;gap:9px}
+.ni-plain:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.ni-plain.on{background:rgba(255,107,43,.15);color:#FF6B2B;font-weight:600}
+.ni-badge{margin-left:auto;background:#FF3B30;color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:16px;text-align:center}
+.sb-foot{padding:10px 12px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer}
+.sb-user:hover{background:rgba(255,255,255,.07)}
+.av{width:28px;height:28px;border-radius:50%;background:rgba(255,107,43,.2);border:1px solid rgba(255,107,43,.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#FF6B2B;flex-shrink:0}
+.sb-uname{font-size:11px;color:rgba(255,255,255,.55);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-out{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);display:flex;padding:2px;transition:color .12s}
+.sb-out:hover{color:#FF3B30}
 
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .topbar{background:#fff;border-bottom:1px solid var(--bor);padding:0 18px;height:50px;min-height:50px;display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -380,12 +382,24 @@ nav::-webkit-scrollbar-thumb{background:var(--bor);border-radius:2px}
       <span class="ni-badge" id="nb-est">0</span>
     </div>
     <div class="nav-g">Financeiro</div>
-    <div class="ni ni-plain" onclick="go('lancamentos',this)">Lançamentos</div>
-    <div class="ni ni-plain" onclick="go('financeiro',this)">Fluxo de caixa</div>
-    <div class="ni ni-plain" onclick="go('bancos',this)">Contas Bancárias</div>
-    <div class="ni ni-plain" onclick="go('centrocusto',this)">Centro de Custos</div>
-    <div class="ni ni-plain" onclick="go('categorias',this)">Categorias</div>
-    <div class="ni ni-plain" onclick="go('precificacao',this)">💰 Precificação</div>
+    <div class="ni ni-plain" onclick="go('lancamentos',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Lançamentos</div>
+    <div class="ni ni-plain" onclick="go('financeiro',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="1,10 4,6 7,8 10,4 13,5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Fluxo de caixa</div>
+    <div class="ni ni-plain" onclick="go('bancos',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="5" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 8h12M4 11h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 1l6 4H1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      Contas Bancárias</div>
+    <div class="ni ni-plain" onclick="go('centrocusto',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v6M5 5.5h3a1 1 0 010 2H6a1 1 0 000 2h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Centro de Custos</div>
+    <div class="ni ni-plain" onclick="go('categorias',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+      Categorias</div>
+    <div class="ni ni-plain" onclick="go('precificacao',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h4l6 6a2 2 0 010 2.83l-1.17 1.17a2 2 0 01-2.83 0L2 6V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>
+      Precificação</div>
     <div class="nav-g">Sistema</div>
     <div class="ni" onclick="go('config',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 107 12.5 5.5 5.5 0 007 1.5zm0 0v2m0 7v2M1.5 7h2m7 0h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
