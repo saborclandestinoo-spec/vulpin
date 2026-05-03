@@ -21,6 +21,26 @@
   --red:#E74C3C;--red-bg:#FDEDEC;
   --sidebar:210px;
 }
+html.dark{
+  --fox:#FF6B2B;--fox-d:#E55520;--fox-l:rgba(255,107,43,.12);--fox-m:rgba(255,107,43,.2);
+  --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+  --bor:#3a3a3c;--bor2:#2c2c2e;
+  --t:#f5f5f7;--t2:#aeaeb2;--t3:#6e6e73;
+  --green:#34c759;--green-bg:rgba(52,199,89,.12);
+  --amber:#ff9f0a;--amber-bg:rgba(255,159,10,.12);
+  --blue:#0a84ff;--blue-bg:rgba(10,132,255,.12);
+  --purple:#bf5af2;--purple-bg:rgba(191,90,242,.12);
+  --red:#ff453a;--red-bg:rgba(255,69,58,.12);
+}
+html.dark body{background:var(--bg2)}
+html.dark .topbar,html.dark .card,html.dark .modal,html.dark .btn-o,html.dark .search-in,html.dark .filter-sel,html.dark .fi,html.dark .lcard{background:var(--bg);border-color:var(--bor);color:var(--t)}
+html.dark .tbl th,html.dark .tbl td{background:var(--bg);border-color:var(--bor)}
+html.dark .tbl tr:hover td{background:var(--bg2)}
+html.dark select,html.dark input{background:var(--bg2);color:var(--t);border-color:var(--bor)}
+html.dark .overlay{background:rgba(0,0,0,.7)}
+html.dark .custom-drop,html.dark .rp-wrap{background:var(--bg);border-color:var(--bor)}
+html.dark .bank-card{background:var(--bg);border-color:var(--bor)}
+html.dark .fc-month-btn{background:var(--bg2);color:var(--t);border-color:var(--bor)}
 html,body{height:100%;overflow:hidden;background:var(--bg2)}
 
 /* ===== LOGIN ===== */
@@ -422,6 +442,9 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
   <div class="topbar">
     <div class="tb-title" id="tb-title">Dashboard</div>
     <div class="tb-r" id="tb-r"></div>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:1px solid var(--bor);border-radius:8px;padding:5px 8px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:5px;font-size:11px;font-family:'Poppins',sans-serif;transition:all .15s;margin-left:8px">
+      <span id="theme-ico">🌙</span>
+    </button>
   </div>
   <div class="content">
 
@@ -2219,6 +2242,7 @@ async function doLogout(){
   document.getElementById('login-screen').style.display='flex';
 }
 function bootApp(){
+  initTheme();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   const u=currentUser;
@@ -3537,6 +3561,15 @@ function renderProducao(){
   '<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum registro de produção</td></tr>';
 }
 
+function toggleTheme(){
+  const isDark=document.documentElement.classList.toggle('dark');
+  document.getElementById('theme-ico').textContent=isDark?'☀️':'🌙';
+  S.set('theme',isDark?'dark':'light');
+}
+function initTheme(){
+  const t=S.get('theme');
+  if(t==='dark'){document.documentElement.classList.add('dark');const i=document.getElementById('theme-ico');if(i)i.textContent='☀️';}
+}
 function mprod2SetTipo(tipo){
   const tipoEl=document.getElementById('mprod2-tipo');
   if(tipoEl)tipoEl.value=tipo;
