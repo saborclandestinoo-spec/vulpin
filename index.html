@@ -2616,7 +2616,8 @@ function renderDashboard(){
   if(isHoje){
     // Big cards para o dia
     // Calc faturamento details
-    const _totProd=histPeriod.reduce((s,p)=>{return s+(p.items||p.itens||[]).reduce((si,i)=>si+((i.price||i.unit_price||0)*(i.quantity||1)),0);},0);
+    // Total produtos = soma dos totais dos pedidos (não item.price que pode não incluir taxas/descontos)
+    const _totProd=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
     const _taxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
