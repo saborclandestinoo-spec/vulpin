@@ -4213,7 +4213,18 @@ function renderFluxo(){
   if(bFilter)lancs=lancs.filter(l=>l.bancoId===bFilter);
   lancs.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
 
-  const rec=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  // Receitas = pedidos + lançamentos receita; Despesas = lançamentos despesa
+  const _pedHistAll=getHistorico();
+  const _stCancelKpi=new Set(['canceled','canceling','CANCELLED','CANCELED','cancelled']);
+  const recPedKpi=_pedHistAll.filter(p=>!_stCancelKpi.has(p.status||'')).reduce((s,p)=>{
+    const dt=p.created_at||p.createdAt||'';if(!dt)return s;
+    const ms=new Date(dt).getTime()-3*60*60*1000;
+    const d=new Date(ms);
+    const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+    return dStr>=range.start&&dStr<=range.end?s+(p.total||0):s;
+  },0);
+  const recLancKpi=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const rec=recPedKpi+recLancKpi;
   const desp=lancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
   const sal=rec-desp;
 
@@ -4262,18 +4273,42 @@ function renderFluxo(){
     ${allDays.map((_,i)=>i===0?`<td style="text-align:right;font-weight:600;color:var(--blue)">${fmtN(saldoInicial)}</td>`:'<td></td>').join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue)">${fmtN(saldoInicial)}</td></tr>`;
 
-  // Receitas
+  // ── RECEITAS = Pedidos do histórico por dia ──
+  const _stCancel=new Set(['canceled','canceling','CANCELLED','CANCELED','cancelled']);
+  const hist=getHistorico();
+  // Mapa pedidos por data BRT
+  const pedMapaRec={};
+  hist.forEach(p=>{
+    if(_stCancel.has(p.status||''))return;
+    const dt=p.created_at||p.createdAt||'';if(!dt)return;
+    const ms=new Date(dt).getTime()-3*60*60*1000;
+    const d=new Date(ms);
+    const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+    if(dStr>=range.start&&dStr<=range.end){
+      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
+    }
+  });
+  // Receitas manuais (lançamentos tipo receita)
   const recLancs=lancs.filter(l=>l.tipo==='receita');
-  const recTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
+  const recLancTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
+  const recPedTotal=Object.values(pedMapaRec).reduce((s,v)=>s+v,0);
+  const recTotal=recPedTotal+recLancTotal;
   html+=`<tr style="background:rgba(39,174,96,.06)"><td style="font-weight:700;color:var(--green);position:sticky;left:0;background:rgba(39,174,96,.06);padding:10px 12px">📈 Total de receitas</td>
-    ${allDays.map(d=>{const v=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:600">${v?fmtN(v):''}</td>`;}).join('')}
+    ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:600">${v?fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--green)">${fmtN(recTotal)}</td></tr>`;
-  // Receitas por categoria
+  // Linha de pedidos
+  if(recPedTotal>0){
+    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">▸ 🛒 Pedidos</td>
+      ${allDays.map(d=>{const v=pedMapaRec[d]||0;return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:12px;color:var(--t2)">${fmtN(recPedTotal)}</td></tr>`;
+  }
+  // Receitas manuais por categoria
   const recCats=[...new Set(recLancs.map(l=>l.ccId||''))];
   recCats.forEach(catId=>{
     const catL=recLancs.filter(l=>(l.ccId||'')===(catId||''));
     const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
-    const catNome=catId?catNames[catId]||catId:'Sem categoria';
+    if(!catTotal)return;
+    const catNome=catId?catNames[catId]||catId:'Receitas avulsas';
     html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:#fff">▸ ${catNome}</td>
       ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
       <td style="text-align:right;font-size:12px;color:var(--t2)">${fmtN(catTotal)}</td></tr>`;
@@ -4300,7 +4335,7 @@ function renderFluxo(){
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:var(--bg2);padding:10px 12px">Saldo final do período</td>`;
   let acc=0;
   allDays.forEach(d=>{
-    const r=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    const r=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
     const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
     acc+=r-dv;
     html+=`<td style="text-align:right;font-weight:600;color:${acc>=0?'var(--green)':'var(--red)'}">${fmtN(acc)}</td>`;
@@ -4311,7 +4346,7 @@ function renderFluxo(){
   html+=`<tr style="border-top:2px solid var(--bor)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:#fff;padding:10px 12px">Saldo total</td>`;
   let accTotal=saldoInicial;
   allDays.forEach(d=>{
-    const r=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
+    const r=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
     const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
     accTotal+=r-dv;
     html+=`<td style="text-align:right;font-weight:700;color:${accTotal>=0?'var(--green)':'var(--red)'}">${fmtN(accTotal)}</td>`;
