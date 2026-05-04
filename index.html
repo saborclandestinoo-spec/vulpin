@@ -955,36 +955,20 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 
     <!-- LANÇAMENTOS -->
     <div class="pg" id="pg-lancamentos">
-      <!-- Summary bar -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
-          <span style="color:var(--t2)">Vencidos</span><span id="pv-val" style="color:var(--red);font-weight:700">R$ 0,00</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
-          <span style="color:var(--t2)">Vencem hoje</span><span id="ph-val" style="color:var(--amber);font-weight:700">R$ 0,00</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
-          <span style="color:var(--t2)">A vencer</span><span id="pa-val" style="color:var(--blue);font-weight:700">R$ 0,00</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--bor);font-size:11px;font-weight:500;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
-          <span style="color:var(--t2)">Pagos</span><span id="pp-val" style="color:var(--green);font-weight:700">R$ 0,00</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:var(--bg3);font-size:11px;font-weight:500;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
-          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t);font-weight:700">R$ 0,00</span>
-        </div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()"><option value="">Todas as contas</option></select>
-          <div class="search-wrap" style="max-width:200px">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
-          </div>
-        </div>
+      <!-- Tabs principais -->
+      <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
+        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
+        <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
+        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
       </div>
-      <!-- Date filter bar -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-        <div style="position:relative" id="lanc-range-wrap">
-          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <!-- Filtro inline -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
+        <!-- Conta -->
+        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:36px"><option value="">Todas as contas</option></select>
+        <!-- Nav ‹ label › -->
+        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
+        <div style="position:relative;flex:0 0 auto" id="lanc-range-wrap">
+          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:36px;white-space:nowrap;min-width:160px;justify-content:center">
             <span id="lanc-range-label">Este mês</span>
           </button>
           <div id="lanc-range-drop" class="grp-drop">
@@ -1027,16 +1011,40 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             </div>
           </div>
         </div>
-        <select id="lanc-month" style="display:none"></select>
+        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
+        <!-- Search -->
+        <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
+          <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
+        </div>
       </div>
-      <!-- Tabs: Todos / Despesas / Receitas / Produções / Transferências -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 18px;display:flex;gap:0;flex-shrink:0">
-        <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
-        <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
-        <div class="lanc-tab" id="lt-receita" onclick="lancTab('receita',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Receitas</div>
-        <div class="lanc-tab" id="lt-producao" onclick="lancTab('producao',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Produções</div>
-        <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
+      <!-- Pills de situação -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
+          <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(230,126,34,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
+          <span style="color:var(--amber)">Vencem hoje</span><span id="ph-val" style="color:var(--amber)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(41,128,185,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
+          <span style="color:var(--blue)">A vencer</span><span id="pa-val" style="color:var(--blue)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(39,174,96,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
+          <span style="color:var(--green)">Pagos</span><span id="pp-val" style="color:var(--green)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--bg3);font-size:12px;font-weight:600;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
+          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t)">R$ 0,00</span>
+        </div>
       </div>
+      <!-- Sub-tabs (ocultas quando main tab = pagar/receber) -->
+      <div id="lanc-subtabs" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;display:none;gap:0;flex-shrink:0">
+        <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
+        <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
+        <div class="lanc-tab" id="lt-receita" onclick="lancTab('receita',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Receitas</div>
+        <div class="lanc-tab" id="lt-producao" onclick="lancTab('producao',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Produções</div>
+        <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
+      </div>
+      <select id="lanc-month" style="display:none"></select>
       <div class="scroll">
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-lanc">
@@ -4970,6 +4978,38 @@ function lancTab(tab,el){
 
 function lancFilterPill(p){lancPillFilter=lancPillFilter===p?'':p;renderLanc();}
 
+let _lancMainTab='pagar'; // pagar | receber | todos
+
+function lancMainTab(tab, el){
+  _lancMainTab=tab;
+  // Update tab styles
+  ['pagar','receber','todos'].forEach(k=>{
+    const t=document.getElementById('lt-'+k+(k==='todos'?'-main':''));
+    if(!t)return;
+    t.style.color=k===tab?'var(--fox)':'var(--t3)';
+    t.style.borderBottomColor=k===tab?'var(--fox)':'transparent';
+  });
+  // Show subtabs only for "todos"
+  const sub=document.getElementById('lanc-subtabs');
+  if(sub)sub.style.display=tab==='todos'?'flex':'none';
+  // Set lancTab_current based on main tab
+  if(tab==='pagar'){lancTab_current='despesa';}
+  else if(tab==='receber'){lancTab_current='receita';}
+  else{lancTab_current='todos';}
+  renderLanc();
+}
+
+function lancNavMonth(dir){
+  grpInit('lanc');
+  const g=_grp['lanc'];
+  // Move by 1 month
+  const cur=g.start||new Date();
+  const d=new Date(cur.getFullYear(),cur.getMonth()+dir,1);
+  g.start=new Date(d.getFullYear(),d.getMonth(),1);
+  g.end=new Date(d.getFullYear(),d.getMonth()+1,0);
+  grpApply('lanc',renderLanc);
+}
+
 // ═══════════════════════════════════════════
 // GENERIC RANGE PICKER (grp) — usado em Lançamentos e Fluxo de Caixa
 // ═══════════════════════════════════════════
@@ -5064,6 +5104,8 @@ document.addEventListener('click',e=>{
 setTimeout(()=>{
   grpInit('lanc');grpPreset('lanc','mes');grpApply('lanc',null);
   grpInit('fc');grpPreset('fc','mes');grpApply('fc',null);
+  // Init lancamentos main tab
+  lancMainTab('pagar',null);
 },200);
 
 function lancGetRange(){return grpGetRange('lanc');}
