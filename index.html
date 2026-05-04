@@ -884,6 +884,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
           <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Gráfico</button>
         </div>
         <!-- Range picker igual ao de pedidos -->
+        <button class="fc-month-btn" onclick="fcNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
         <div style="position:relative" id="fc-range-wrap">
           <button onclick="grpToggle('fc')" id="fc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
@@ -929,6 +930,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             </div>
           </div>
         </div>
+        <button class="fc-month-btn" onclick="fcNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
         <!-- Conta -->
         <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:12px;min-width:160px"><option value="">Todas as contas</option></select>
         <div style="margin-left:auto;display:flex;gap:8px">
@@ -4456,27 +4458,21 @@ function fcPeriodoChange(){}
 function fcNav(){}
 function fcMonth(){}
 function _fcGetRange(){return grpGetRange('fc');}
+function fcNavMonth(dir){
+  grpInit('fc');
+  const g=_grp['fc'];
+  const cur=g.start||new Date();
+  const d=new Date(cur.getFullYear(),cur.getMonth()+dir,1);
+  g.start=new Date(d.getFullYear(),d.getMonth(),1);
+  g.end=new Date(d.getFullYear(),d.getMonth()+1,0);
+  grpApply('fc',renderFluxo);
+}
 
 function renderFluxo(){
+  // Init grp if not yet done
+  if(!_grp['fc']){grpInit('fc');grpPreset('fc','mes');grpApply('fc',null);}
   const range=_fcGetRange();
   if(!range.start)return;
-
-  // Label
-  const startD=new Date(range.start+'T12:00:00');
-  const endD=new Date(range.end+'T12:00:00');
-  let label='';
-  if(_fcPeriodo==='mes'){
-    label=startD.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-    label=label.charAt(0).toUpperCase()+label.slice(1);
-  } else if(_fcPeriodo==='dia'){
-    label=startD.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-    label=label.charAt(0).toUpperCase()+label.slice(1);
-  } else if(_fcPeriodo==='semana'){
-    label=`${startD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} ~ ${endD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`;
-  } else {
-    label=`${startD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})} ~ ${endD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
-  }
-  document.getElementById('fc-label').textContent=label;
 
   const bancos=getBancos();
   const bSel=document.getElementById('fc-bank-filter');
@@ -5106,7 +5102,9 @@ setTimeout(()=>{
   grpInit('fc');grpPreset('fc','mes');grpApply('fc',null);
   // Init lancamentos main tab
   lancMainTab('pagar',null);
-},200);
+  // Render fluxo if already on that page
+  if(typeof currentPage!=='undefined'&&currentPage==='financeiro')renderFluxo();
+},300);
 
 function lancGetRange(){return grpGetRange('lanc');}
 function lancUpdateLabel(){}// handled by grpApply
