@@ -4936,7 +4936,7 @@ function renderLanc(){
     <th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th>
     <th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Vencimento</th><th>Situação</th><th>Valor</th>`;
 
-  let data=getLanc();
+  let data=getLanc().filter(l=>!l.pedidoId);
   if(lancTab_current!=='todos')data=data.filter(l=>l.tipo===lancTab_current);
   if(month)data=data.filter(l=>(l.venc||l.data||'').startsWith(month));
   if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter);
