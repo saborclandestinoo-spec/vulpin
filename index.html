@@ -4514,67 +4514,43 @@ function renderFluxo(){
     _saldoCorr+=r-dv;
   });
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;background:var(--bg2);padding:11px 16px;font-size:13px">Saldo inicial do período</td>
-    ${allDays.map(d=>`<td style="text-align:right;font-weight:600;color:var(--blue);font-size:13px;padding:11px 10px">${fmtN(_saldoAcumDia[d])}</td>`).join('')}
+    ${allDays.map(d=>`<td style="text-align:right;font-weight:600;color:var(--blue);font-size:13px;padding:11px 10px">${_saldoAcumDia[d]?fmtN(_saldoAcumDia[d]):''}</td>`).join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue);font-size:13px;padding:11px 10px">${fmtN(saldoInicial)}</td></tr>`;
 
   // ── RECEITAS HEADER ──
   html+=`<tr style="background:rgba(39,174,96,.07);border-left:3px solid var(--green)">
     <td style="font-weight:700;color:var(--green);position:sticky;left:0;background:rgba(39,174,96,.07);padding:12px 16px;font-size:14px;border-left:3px solid var(--green)">Total de receitas</td>
-    ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:700;font-size:13px;padding:12px 10px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
+    ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:700;font-size:13px;padding:12px 10px">${v?fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--green);font-size:13px;padding:12px 10px">${fmtN(recTotal)}</td></tr>`;
 
-  // Pedidos — agrupado como categoria única, expansível com sub-itens por dia
-  if(recPedTotal>0){
+  // Pedidos = histórico + receitas manuais juntos (tudo é pedido)
+  const recPedCombTotal=recPedTotal+recLancTotal;
+  if(recPedCombTotal>0){
     const recPedKey='fc-cat-pedidos';
     html+=`<tr style="cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${recPedKey}')">
-      <td style="padding:10px 16px 10px 24px;position:sticky;left:0;background:var(--bg)">
+      <td style="padding:10px 16px 10px 24px;position:sticky;left:0;background:var(--bg);max-width:220px;overflow:hidden">
         <span style="display:inline-flex;align-items:center;gap:8px">
-          <span id="${recPedKey}-ico" style="color:var(--green);font-size:11px;transition:transform .15s">›</span>
+          <span id="${recPedKey}-ico" style="color:var(--green);font-size:11px">›</span>
           <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--green);flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:600;color:var(--t)">🛒 Pedidos</span>
+          <span style="font-size:13px;font-weight:600;color:var(--t);white-space:nowrap">🛒 Pedidos</span>
         </span>
       </td>
-      ${allDays.map(d=>{const v=pedMapaRec[d]||0;return`<td style="text-align:right;font-size:13px;color:var(--t2);padding:10px 10px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
-      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">${fmtN(recPedTotal)}</td></tr>`;
-    // Sub-itens: valor por dia como linha de detalhe
-    html+=`<tr class="${recPedKey}-item" style="display:none;background:var(--bg2)">
-      <td style="padding:8px 16px 8px 52px;position:sticky;left:0;background:var(--bg2);color:var(--t3);font-size:12px">Receitas de pedidos</td>
-      ${allDays.map(d=>{const v=pedMapaRec[d]||0;return`<td style="text-align:right;font-size:12px;color:var(--t3);padding:8px 10px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
-      <td style="text-align:right;font-size:12px;color:var(--t3);padding:8px 10px">${fmtN(recPedTotal)}</td></tr>`;
-  }
-
-  // Receitas manuais por catCod — hierarquia expandível
-  const recCatCods=[...new Set(recLancs.map(l=>l.catCod||'avulso'))];
-  recCatCods.forEach(catId=>{
-    const catL=recLancs.filter(l=>(l.catCod||'avulso')===catId);
-    const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
-    if(!catTotal)return;
-    const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(c=>c.cod===catId):null;
-    const catNome=plano?`${catId} ${plano.nome}`:(catId==='avulso'?'Receitas manuais':catId);
-    const catKey='fc-rec-'+catId.replace(/\./g,'_');
-    html+=`<tr style="cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${catKey}')">
-      <td style="padding:10px 16px 10px 24px;position:sticky;left:0;background:var(--bg)">
-        <span style="display:inline-flex;align-items:center;gap:8px">
-          <span id="${catKey}-ico" style="color:var(--green);font-size:11px">›</span>
-          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--green);flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:600;color:var(--t)">${catNome}</span>
-        </span>
-      </td>
-      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2);padding:10px 10px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
-      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">${fmtN(catTotal)}</td></tr>`;
-    catL.forEach(l=>{
-      html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2)">
+      ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2);padding:10px 10px">${v?fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">${fmtN(recPedCombTotal)}</td></tr>`;
+    // Sub-itens por lançamento manual
+    recLancs.forEach(l=>{
+      html+=`<tr class="${recPedKey}-item" style="display:none;background:var(--bg2)">
         <td style="padding:7px 16px 7px 52px;position:sticky;left:0;background:var(--bg2);color:var(--t3);font-size:12px">↳ ${l.desc||'—'}</td>
-        ${allDays.map(d=>{const v=(l.data||'')==d?l.valor:0;return`<td style="text-align:right;font-size:12px;color:var(--t3);padding:7px 10px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
+        ${allDays.map(d=>{const v=(l.data||'')==d?l.valor:0;return`<td style="text-align:right;font-size:12px;color:var(--t3);padding:7px 10px">${v?fmtN(v):''}</td>`;}).join('')}
         <td style="text-align:right;font-size:12px;color:var(--t3);padding:7px 10px">${fmtN(l.valor)}</td></tr>`;
     });
-  });
+  }
 
   // ── DESPESAS HEADER ──
   const despTotal=despLancs.reduce((s,l)=>s+(l.valor||0),0);
   html+=`<tr style="background:rgba(231,76,60,.07);border-left:3px solid var(--red)">
     <td style="font-weight:700;color:var(--red);position:sticky;left:0;background:rgba(231,76,60,.07);padding:12px 16px;font-size:14px;border-left:3px solid var(--red)">Total de despesas</td>
-    ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--red);font-weight:700;font-size:13px;padding:12px 10px">${v?'- '+fmtN(v):'0,00'}</td>`;}).join('')}
+    ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--red);font-weight:700;font-size:13px;padding:12px 10px">${v?'- '+fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--red);font-size:13px;padding:12px 10px">- ${fmtN(despTotal)}</td></tr>`;
 
   // Despesas por catCod — hierarquia expansível com sub-itens
@@ -4587,14 +4563,14 @@ function renderFluxo(){
     let catNome=plano?`${catId} ${plano.nome}`:(catId?catNames[catId]||catId:'Sem categoria');
     const catKey='fc-cat-'+catId.replace(/\./g,'_');
     html+=`<tr style="cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${catKey}')">
-      <td style="padding:10px 16px 10px 24px;position:sticky;left:0;background:var(--bg)">
+      <td style="padding:10px 16px 10px 24px;position:sticky;left:0;background:var(--bg);max-width:220px;overflow:hidden">
         <span style="display:inline-flex;align-items:center;gap:8px">
           <span id="${catKey}-ico" style="color:var(--red);font-size:11px">›</span>
           <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--red);flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:600;color:var(--t)">${catNome}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${catNome}</span>
         </span>
       </td>
-      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2);padding:10px 10px">${v?'- '+fmtN(v):'0,00'}</td>`;}).join('')}
+      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2);padding:10px 10px">${v?'- '+fmtN(v):''}</td>`;}).join('')}
       <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">- ${fmtN(catTotal)}</td></tr>`;
     catL.forEach(l=>{
       html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2)">
