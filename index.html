@@ -941,16 +941,37 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:var(--bg3);font-size:11px;font-weight:500;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
           <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t);font-weight:700">R$ 0,00</span>
         </div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()"><option value="">Todas as contas</option></select>
-          <div class="search-wrap" style="max-width:220px">
+          <div class="search-wrap" style="max-width:200px">
             <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
             <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
           </div>
-          <select class="filter-sel" id="lanc-month" onchange="renderLanc()" style="min-width:60px">
-            <option value="">Todos os meses</option>
-          </select>
         </div>
+      </div>
+      <!-- Date filter bar -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+        <!-- Pills -->
+        <div style="display:flex;gap:3px;background:var(--bg2);border-radius:10px;padding:3px">
+          <button onclick="lancSetPeriodo('dia')" id="lanc-pill-dia" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Dia</button>
+          <button onclick="lancSetPeriodo('semana')" id="lanc-pill-semana" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Semana</button>
+          <button onclick="lancSetPeriodo('mes')" id="lanc-pill-mes" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:var(--fox);color:#fff">Mês</button>
+          <button onclick="lancSetPeriodo('custom')" id="lanc-pill-custom" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Personalizado</button>
+        </div>
+        <!-- Nav -->
+        <div id="lanc-nav-row" style="display:flex;align-items:center;gap:6px">
+          <button class="fc-month-btn" onclick="lancNavPeriodo(-1)" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px">‹</button>
+          <span id="lanc-periodo-label" style="font-size:13px;font-weight:600;color:var(--t);min-width:150px;text-align:center">—</span>
+          <button class="fc-month-btn" onclick="lancNavPeriodo(1)" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px">›</button>
+        </div>
+        <!-- Custom range -->
+        <div id="lanc-custom-range" style="display:none;align-items:center;gap:6px">
+          <input type="date" id="lanc-range-start" class="filter-sel" style="font-size:12px" onchange="renderLanc()">
+          <span style="font-size:12px;color:var(--t3);font-weight:500">até</span>
+          <input type="date" id="lanc-range-end" class="filter-sel" style="font-size:12px" onchange="renderLanc()">
+        </div>
+        <!-- Hidden legacy select (keep for compat) -->
+        <select id="lanc-month" style="display:none"></select>
       </div>
       <!-- Tabs: Todos / Despesas / Receitas / Produções / Transferências -->
       <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 18px;display:flex;gap:0;flex-shrink:0">
@@ -4963,11 +4984,97 @@ function lancTab(tab,el){
 
 function lancFilterPill(p){lancPillFilter=lancPillFilter===p?'':p;renderLanc();}
 
+// ── LANCAMENTOS DATE FILTER ──
+let _lancPeriodo='mes';
+let _lancY=new Date().getFullYear();
+let _lancM=new Date().getMonth()+1;
+let _lancRangeStart='';
+let _lancRangeEnd='';
+
+function lancSetPeriodo(p){
+  _lancPeriodo=p;
+  ['dia','semana','mes','custom'].forEach(k=>{
+    const el=document.getElementById('lanc-pill-'+k);
+    if(!el)return;
+    el.style.background=k===p?'var(--fox)':'transparent';
+    el.style.color=k===p?'#fff':'var(--t2)';
+  });
+  const cr=document.getElementById('lanc-custom-range');
+  const nav=document.getElementById('lanc-nav-row');
+  if(cr)cr.style.display=p==='custom'?'flex':'none';
+  if(nav)nav.style.display=p==='custom'?'none':'flex';
+  if(p==='dia'&&!_lancRangeStart)_lancRangeStart=new Date().toLocaleDateString('sv-SE');
+  renderLanc();
+}
+
+function lancNavPeriodo(dir){
+  if(_lancPeriodo==='mes'){
+    _lancM+=dir;
+    if(_lancM>12){_lancM=1;_lancY++;}
+    if(_lancM<1){_lancM=12;_lancY--;}
+  } else if(_lancPeriodo==='semana'){
+    const base=_lancRangeStart?new Date(_lancRangeStart+'T12:00:00'):new Date();
+    base.setDate(base.getDate()+dir*7);
+    _lancRangeStart=base.toLocaleDateString('sv-SE');
+    const e=new Date(base);e.setDate(e.getDate()+6);
+    _lancRangeEnd=e.toLocaleDateString('sv-SE');
+  } else if(_lancPeriodo==='dia'){
+    const base=_lancRangeStart?new Date(_lancRangeStart+'T12:00:00'):new Date();
+    base.setDate(base.getDate()+dir);
+    _lancRangeStart=base.toLocaleDateString('sv-SE');
+    _lancRangeEnd=_lancRangeStart;
+  }
+  renderLanc();
+}
+
+function lancGetRange(){
+  if(_lancPeriodo==='custom'){
+    const s=document.getElementById('lanc-range-start')?.value||'';
+    const e=document.getElementById('lanc-range-end')?.value||s;
+    return{start:s,end:e};
+  }
+  if(_lancPeriodo==='dia'){
+    const d=_lancRangeStart||new Date().toLocaleDateString('sv-SE');
+    return{start:d,end:d};
+  }
+  if(_lancPeriodo==='semana'){
+    if(!_lancRangeStart){
+      const n=new Date();const dow=n.getDay();
+      const mon=new Date(n);mon.setDate(n.getDate()-(dow===0?6:dow-1));
+      _lancRangeStart=mon.toLocaleDateString('sv-SE');
+      const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+      _lancRangeEnd=sun.toLocaleDateString('sv-SE');
+    }
+    return{start:_lancRangeStart,end:_lancRangeEnd};
+  }
+  // mes
+  const m=`${_lancY}-${String(_lancM).padStart(2,'0')}`;
+  const days=new Date(_lancY,_lancM,0).getDate();
+  return{start:`${m}-01`,end:`${m}-${String(days).padStart(2,'0')}`};
+}
+
+function lancUpdateLabel(){
+  const el=document.getElementById('lanc-periodo-label');
+  if(!el)return;
+  const r=lancGetRange();
+  if(_lancPeriodo==='mes'){
+    const d=new Date(_lancY,_lancM-1,1);
+    let l=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    el.textContent=l.charAt(0).toUpperCase()+l.slice(1);
+  } else if(_lancPeriodo==='dia'){
+    const d=new Date(r.start+'T12:00:00');
+    el.textContent=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+  } else if(_lancPeriodo==='semana'){
+    const s=new Date(r.start+'T12:00:00');const e=new Date(r.end+'T12:00:00');
+    el.textContent=`${s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} – ${e.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
+  }
+}
+
 function renderLancSummary(){
   const today=todayISO();
-  const month=(document.getElementById('lanc-month')||{}).value||'';
-  let lancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId); // pedidos em lançamentos separados
-  if(month)lancs=lancs.filter(l=>(l.venc||l.data||'').startsWith(month));
+  const r=lancGetRange();
+  let lancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
+  if(r.start)lancs=lancs.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
   const vencidos=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
   const hoje=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
   const avencer=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc>today).reduce((s,l)=>s+(l.valor||0),0);
@@ -4975,25 +5082,16 @@ function renderLancSummary(){
   const total=lancs.reduce((s,l)=>s+(l.valor||0),0);
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent='R$ '+fmtN(v);};
   set('pv-val',vencidos);set('ph-val',hoje);set('pa-val',avencer);set('pp-val',pagos);set('pt-val',total);
+  lancUpdateLabel();
 }
 
 function renderLanc(){
-  const ms=document.getElementById('lanc-month');
-  if(ms&&ms.options.length<=1){
-    const now=new Date();
-    for(let i=5;i>=-1;i--){
-      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-      const val=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      const opt=document.createElement('option');opt.value=val;
-      opt.textContent=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});ms.appendChild(opt);
-    }
-    ms.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  }
+  // period handled by lancGetRange()
   const bs=document.getElementById('lanc-bank-filter');
   if(bs){const bv=bs.value;bs.innerHTML='<option value="">Todas as contas</option>'+getBancos().map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');bs.value=bv;}
   renderLancSummary();
   const search=(document.getElementById('lanc-search')||{}).value?.toLowerCase()||'';
-  const month=(document.getElementById('lanc-month')||{}).value||'';
+  const r=lancGetRange();
   const bankFilter=(document.getElementById('lanc-bank-filter')||{}).value||'';
   const today=todayISO();
   const tbody=document.querySelector('#tbl-lanc tbody');
@@ -5003,7 +5101,7 @@ function renderLanc(){
   if(lancTab_current==='producao'){
     const prods=getProdutos();
     let producoes=getProducao();
-    if(month)producoes=producoes.filter(p=>(p.data||'').startsWith(month));
+    if(r.start)producoes=producoes.filter(p=>{const d=p.data||'';return d>=r.start&&d<=r.end;});
     if(search)producoes=producoes.filter(p=>{
       const pr=prods.find(x=>x.id===p.produtoId);
       return pr&&pr.nome.toLowerCase().includes(search);
@@ -5039,7 +5137,7 @@ function renderLanc(){
 
   let data=getLanc().filter(l=>!l.pedidoId);
   if(lancTab_current!=='todos')data=data.filter(l=>l.tipo===lancTab_current);
-  if(month)data=data.filter(l=>(l.venc||l.data||'').startsWith(month));
+  if(r.start)data=data.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
   if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter);
   if(search)data=data.filter(l=>l.desc.toLowerCase().includes(search));
   if(lancPillFilter==='vencidos')data=data.filter(l=>!l.pago&&l.venc<today);
@@ -5053,7 +5151,7 @@ function renderLanc(){
   if(lancTab_current==='todos'){
     const prods=getProdutos();
     let producoes=getProducao();
-    if(month)producoes=producoes.filter(p=>(p.data||'').startsWith(month));
+    if(r.start)producoes=producoes.filter(p=>{const d=p.data||'';return d>=r.start&&d<=r.end;});
     if(search)producoes=producoes.filter(p=>{
       const pr=prods.find(x=>x.id===p.produtoId);
       return pr&&pr.nome.toLowerCase().includes(search);
