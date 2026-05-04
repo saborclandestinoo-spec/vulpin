@@ -850,32 +850,34 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- FINANCEIRO / FLUXO -->
     <div class="pg" id="pg-financeiro">
       <!-- TOOLBAR -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
         <!-- Tabs -->
-        <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
-          <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:6px 14px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif">Tabela</button>
-          <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:6px 14px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif">Gráfico</button>
+        <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:10px;overflow:hidden">
+          <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">Tabela</button>
+          <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Gráfico</button>
         </div>
-        <!-- Período -->
-        <div style="display:flex;align-items:center;gap:6px">
-          <select id="fc-periodo-tipo" class="filter-sel" onchange="fcPeriodoChange()" style="font-size:11px">
-            <option value="semana">Semana</option>
-            <option value="mes" selected>Mês</option>
-            <option value="custom">Personalizado</option>
-          </select>
-          <button class="fc-month-btn" onclick="fcNav(-1)">‹</button>
-          <span id="fc-label" style="font-size:12px;font-weight:600;color:var(--t);min-width:140px;text-align:center">—</span>
-          <button class="fc-month-btn" onclick="fcNav(1)">›</button>
+        <!-- Período tipo pills -->
+        <div style="display:flex;gap:4px;background:var(--bg2);border-radius:10px;padding:3px">
+          <button onclick="fcSetPeriodo('dia')" id="fc-pill-dia" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Dia</button>
+          <button onclick="fcSetPeriodo('semana')" id="fc-pill-semana" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Semana</button>
+          <button onclick="fcSetPeriodo('mes')" id="fc-pill-mes" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:var(--fox);color:#fff">Mês</button>
+          <button onclick="fcSetPeriodo('custom')" id="fc-pill-custom" style="padding:5px 12px;font-size:11px;font-weight:600;border:none;cursor:pointer;border-radius:8px;font-family:'Poppins',sans-serif;transition:all .15s;background:transparent;color:var(--t2)">Personalizado</button>
+        </div>
+        <!-- Nav -->
+        <div id="fc-nav-row" style="display:flex;align-items:center;gap:6px">
+          <button class="fc-month-btn" onclick="fcNav(-1)" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px">‹</button>
+          <span id="fc-label" style="font-size:13px;font-weight:600;color:var(--t);min-width:140px;text-align:center">—</span>
+          <button class="fc-month-btn" onclick="fcNav(1)" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px">›</button>
         </div>
         <div id="fc-custom-range" style="display:none;align-items:center;gap:6px">
-          <input type="date" id="fc-range-start" class="filter-sel" style="font-size:11px" onchange="renderFluxo()">
-          <span style="font-size:11px;color:var(--t3)">até</span>
-          <input type="date" id="fc-range-end" class="filter-sel" style="font-size:11px" onchange="renderFluxo()">
+          <input type="date" id="fc-range-start" class="filter-sel" style="font-size:12px" onchange="renderFluxo()">
+          <span style="font-size:12px;color:var(--t3);font-weight:500">até</span>
+          <input type="date" id="fc-range-end" class="filter-sel" style="font-size:12px" onchange="renderFluxo()">
         </div>
-        <!-- Filtros -->
-        <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:11px"><option value="">Todas as contas</option></select>
+        <!-- Conta -->
+        <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:12px;min-width:160px"><option value="">Todas as contas</option></select>
         <div style="margin-left:auto;display:flex;gap:8px">
-          <button class="btn-o" style="font-size:11px" onclick="fcExportar()">⬇ Exportar</button>
+          <button class="btn-o" style="font-size:12px;padding:7px 14px" onclick="fcExportar()">⬇ Exportar</button>
         </div>
       </div>
       <div class="scroll">
@@ -2349,7 +2351,7 @@ const PAGE_ACTIONS={
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
   producao:()=>`<button class="btn-p" onclick="openProd2()">+ Novo Registro</button>`,
   estoque:()=>``,
-  financeiro:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
+  financeiro:()=>``,
   lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
   bancos:()=>`<button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
@@ -4297,7 +4299,7 @@ function fcMonth(delta){
 // FLUXO DE CAIXA — versão completa
 // ═══════════════════════════════════════════
 let _fcTab='tabela';
-let _fcPeriodo='mes'; // semana | mes | custom
+let _fcPeriodo='mes'; // dia | semana | mes | custom
 let _fcRangeStart='';
 let _fcRangeEnd='';
 
@@ -4319,11 +4321,32 @@ function fcSetTab(tab){
   renderFluxo();
 }
 
-function fcPeriodoChange(){
-  _fcPeriodo=document.getElementById('fc-periodo-tipo').value;
+function fcSetPeriodo(p){
+  _fcPeriodo=p;
+  // Update pills
+  ['dia','semana','mes','custom'].forEach(k=>{
+    const el=document.getElementById('fc-pill-'+k);
+    if(!el)return;
+    el.style.background=k===p?'var(--fox)':'transparent';
+    el.style.color=k===p?'#fff':'var(--t2)';
+  });
   const cr=document.getElementById('fc-custom-range');
-  if(cr)cr.style.display=_fcPeriodo==='custom'?'flex':'none';
+  const nav=document.getElementById('fc-nav-row');
+  if(cr)cr.style.display=p==='custom'?'flex':'none';
+  if(nav)nav.style.display=p==='custom'?'none':'flex';
+  // Init dia range to today if not set
+  if(p==='dia'){
+    const t=new Date().toLocaleDateString('sv-SE');
+    _fcRangeStart=_fcRangeStart||t;
+    _fcRangeEnd=_fcRangeStart;
+  }
   renderFluxo();
+}
+
+// Legacy compat
+function fcPeriodoChange(){
+  const v=document.getElementById('fc-periodo-tipo')?.value||'mes';
+  fcSetPeriodo(v);
 }
 
 function fcNav(dir){
@@ -4332,16 +4355,19 @@ function fcNav(dir){
     if(fcMonthNum>12){fcMonthNum=1;fcYear++;}
     if(fcMonthNum<1){fcMonthNum=12;fcYear--;}
   } else if(_fcPeriodo==='semana'){
-    // advance/back 7 days from current range start
     const base=_fcRangeStart?new Date(_fcRangeStart+'T12:00:00'):new Date();
     base.setDate(base.getDate()+dir*7);
     _fcRangeStart=base.toLocaleDateString('sv-SE');
     const e2=new Date(base);e2.setDate(e2.getDate()+6);
     _fcRangeEnd=e2.toLocaleDateString('sv-SE');
+  } else if(_fcPeriodo==='dia'){
+    const base=_fcRangeStart?new Date(_fcRangeStart+'T12:00:00'):new Date();
+    base.setDate(base.getDate()+dir);
+    _fcRangeStart=base.toLocaleDateString('sv-SE');
+    _fcRangeEnd=_fcRangeStart;
   }
   renderFluxo();
 }
-// keep fcMonth for backward compat
 function fcMonth(dir){fcNav(dir);}
 
 function _fcGetRange(){
@@ -4354,12 +4380,16 @@ function _fcGetRange(){
     if(!_fcRangeStart){
       const n=new Date();
       const dow=n.getDay();
-      const mon=new Date(n);mon.setDate(n.getDate()-dow+1);
+      const mon=new Date(n);mon.setDate(n.getDate()-(dow===0?6:dow-1));
       _fcRangeStart=mon.toLocaleDateString('sv-SE');
       const sun=new Date(mon);sun.setDate(mon.getDate()+6);
       _fcRangeEnd=sun.toLocaleDateString('sv-SE');
     }
     return{start:_fcRangeStart,end:_fcRangeEnd};
+  }
+  if(_fcPeriodo==='dia'){
+    if(!_fcRangeStart)_fcRangeStart=new Date().toLocaleDateString('sv-SE');
+    return{start:_fcRangeStart,end:_fcRangeStart};
   }
   // mes
   const m=`${fcYear}-${String(fcMonthNum).padStart(2,'0')}`;
@@ -4377,6 +4407,9 @@ function renderFluxo(){
   let label='';
   if(_fcPeriodo==='mes'){
     label=startD.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    label=label.charAt(0).toUpperCase()+label.slice(1);
+  } else if(_fcPeriodo==='dia'){
+    label=startD.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
     label=label.charAt(0).toUpperCase()+label.slice(1);
   } else if(_fcPeriodo==='semana'){
     label=`${startD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} ~ ${endD.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}`;
@@ -4486,49 +4519,39 @@ function renderFluxo(){
   html+=`<tr style="background:rgba(39,174,96,.06)"><td style="font-weight:700;color:var(--green);position:sticky;left:0;background:rgba(39,174,96,.06);padding:10px 12px">📈 Total de receitas</td>
     ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--green);font-weight:600">${v?fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--green)">${fmtN(recTotal)}</td></tr>`;
-  // Linha de pedidos
+  // Pedidos como sublinha de receitas (sem detalhe avulso)
   if(recPedTotal>0){
-    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:var(--bg)">▸ 🛒 Pedidos</td>
-      ${allDays.map(d=>{const v=pedMapaRec[d]||0;return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
-      <td style="text-align:right;font-size:12px;color:var(--t2)">${fmtN(recPedTotal)}</td></tr>`;
+    html+=`<tr><td style="padding:8px 12px 8px 28px;color:var(--t2);font-size:13px;font-weight:500;position:sticky;left:0;background:var(--bg)">🛒 Pedidos</td>
+      ${allDays.map(d=>{const v=pedMapaRec[d]||0;return`<td style="text-align:right;font-size:13px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2)">${fmtN(recPedTotal)}</td></tr>`;
   }
-  // Receitas manuais por categoria
-  const recCats=[...new Set(recLancs.map(l=>l.ccId||''))];
-  recCats.forEach(catId=>{
-    const catL=recLancs.filter(l=>(l.ccId||'')===(catId||''));
-    const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
-    if(!catTotal)return;
-    const catNome=catId?catNames[catId]||catId:'Receitas avulsas';
-    html+=`<tr><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:var(--bg)">▸ ${catNome}</td>
-      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
-      <td style="text-align:right;font-size:12px;color:var(--t2)">${fmtN(catTotal)}</td></tr>`;
-  });
+  // Receitas manuais — apenas se existirem, sem subdivisão por categoria
+  if(recLancTotal>0){
+    html+=`<tr><td style="padding:8px 12px 8px 28px;color:var(--t2);font-size:13px;font-weight:500;position:sticky;left:0;background:var(--bg)">💵 Receitas manuais</td>
+      ${allDays.map(d=>{const v=recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2)">${v?fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2)">${fmtN(recLancTotal)}</td></tr>`;
+  }
 
-  // Despesas
+  // Despesas — apenas linha por categoria, fonte maior, sem sub-itens expansíveis
   const despTotal=despLancs.reduce((s,l)=>s+(l.valor||0),0);
   html+=`<tr style="background:rgba(231,76,60,.06)"><td style="font-weight:700;color:var(--red);position:sticky;left:0;background:rgba(231,76,60,.06);padding:10px 12px">📉 Total de despesas</td>
     ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;color:var(--red);font-weight:600">${v?'−'+fmtN(v):''}</td>`;}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--red)">−${fmtN(despTotal)}</td></tr>`;
-  // Despesas por categoria expandível com lista de lançamentos
-  const despCats=[...new Set(despLancs.map(l=>l.ccId||''))];
+  // Despesas por categoria — apenas uma linha por cat, sem expansão
+  const despCats=[...new Set(despLancs.map(l=>l.catCod||l.ccId||''))];
   despCats.forEach(catId=>{
-    const catL=despLancs.filter(l=>(l.ccId||'')===(catId||''));
+    const catL=despLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
     const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
-    const catNome=catId?catNames[catId]||catId:'Sem categoria';
-    const catKey='fc-cat-'+catId;
-    html+=`<tr style="cursor:pointer" onclick="fcToggleCat('${catKey}')"><td style="padding:7px 12px 7px 28px;color:var(--t2);font-size:12px;position:sticky;left:0;background:var(--bg)">
-      <span id="${catKey}-ico">▸</span> ${catNome}</td>
-      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:var(--t2)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
-      <td style="text-align:right;font-size:12px;color:var(--t2)">−${fmtN(catTotal)}</td></tr>`;
-    // Linhas de lançamentos dentro da categoria (ocultas por default)
-    catL.forEach(l=>{
-      html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2)">
-        <td style="padding:5px 12px 5px 44px;color:var(--t3);font-size:11px;position:sticky;left:0;background:var(--bg2)">
-          ${fmtDate(l.data||l.dataPag||'')} — ${l.desc||'—'}
-        </td>
-        ${allDays.map(d=>{const v=(l.data||'')==d?l.valor:0;return`<td style="text-align:right;font-size:10px;color:var(--t3)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
-        <td style="text-align:right;font-size:11px;color:var(--t3)">−${fmtN(l.valor)}</td></tr>`;
-    });
+    if(!catTotal)return;
+    // Category name: prefer PLANO_CONTAS by catCod, then catNames by ccId, fallback
+    let catNome='Sem categoria';
+    if(catId){
+      const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(c=>c.cod===catId):null;
+      catNome=plano?plano.nome:(catNames[catId]||catId);
+    }
+    html+=`<tr><td style="padding:9px 12px 9px 28px;color:var(--t2);font-size:13px;font-weight:500;position:sticky;left:0;background:var(--bg)">${catNome}</td>
+      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:var(--t2)">${v?'−'+fmtN(v):''}</td>`;}).join('')}
+      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2)">−${fmtN(catTotal)}</td></tr>`;
   });
 
   // Saldo final row — calc por dia
