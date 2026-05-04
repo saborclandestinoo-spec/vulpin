@@ -8076,6 +8076,14 @@ function mergeNaHistoria(novos){
     const LANC_CORTE=new Date('2026-05-03T03:00:00.000Z'); // só pedidos a partir de hoje
     if(isNovo&&!isCancelado&&pedidoData>=LANC_CORTE){
       const lancProcessados=S.get('pedidos_lanc_gerado')||{};
+      // Reprocessa se lançamento gerado não tem bancoId (fix retroativo)
+      const lancGeradosSemBanco=getLanc().filter(l=>l.pedidoId===p.id&&!l.bancoId);
+      if(lancGeradosSemBanco.length>0){
+        // Remove lançamentos sem banco e reprocessa
+        S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
+        delete lancProcessados[p.id];
+        S.set('pedidos_lanc_gerado',lancProcessados);
+      }
       if(!lancProcessados[p.id]){
         const formasPedido=getFormasPedido();
         const pagamentos=p.payments||[];
@@ -8087,14 +8095,17 @@ function mergeNaHistoria(novos){
           const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito',ifood:'ifood',online_credit_card:'cartão de crédito'};
           const pmNome=_pmMap[pmKey]||pmKey;
           const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
-          if(!forma||!forma.bancoId)return;
+          // Se forma não tem banco vinculado, usa o banco tipo caixa como fallback
+          const caixaBank=getBancos().find(b=>b.tipo==='caixa');
+          const bancoIdFinal=(forma?.bancoId)||caixaBank?.id||'';
+          if(!bancoIdFinal)return;
           const valor=pg.total||pg.value||0;
           if(!valor)return;
           // Aplica taxa
-          const taxa=forma.taxaPct?valor*(forma.taxaPct/100):0;
+          const taxa=forma?.taxaPct?valor*(forma.taxaPct/100):0;
           const valorLiq=valor-taxa;
           // Considera dias para recebimento
-          const diasRec=forma.dias||0;
+          const diasRec=forma?.dias||0;
           const dtRec=new Date(data+'T12:00:00');
           dtRec.setDate(dtRec.getDate()+diasRec);
           const dataRec=dtRec.toLocaleDateString('sv-SE');
@@ -8103,13 +8114,13 @@ function mergeNaHistoria(novos){
           lancs.push({
             id:uid(),
             tipo:'receita',
-            desc:`Pedido #${p.display_id||p.displayId||p.id} — ${forma.nome}`,
+            desc:`Pedido #${p.display_id||p.displayId||p.id} — ${forma?.nome||pmNome}`,
             valor:valorLiq,
             data:dataRec,
             venc:dataRec,
             dataPag:dataRec,
-            bancoId:forma.bancoId,
-            pago:diasRec===0, // pago na hora se D+0
+            bancoId:bancoIdFinal,
+            pago:diasRec===0,
             obs:`Gerado automaticamente. Taxa: R$ ${fmtN(taxa)}`,
             pedidoId:p.id,
           });
