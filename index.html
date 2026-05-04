@@ -4526,7 +4526,10 @@ function renderFluxo(){
 
   if(_fcTab==='grafico'){renderFluxoChart(range);return;}
 
+  try{
   // Build tabela por dia
+  const startD=new Date(range.start+'T12:00:00');
+  const endD=new Date(range.end+'T12:00:00');
   const allDays=[];
   const cur=new Date(startD);
   while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
@@ -4668,6 +4671,11 @@ function renderFluxo(){
   html+='</tbody></table>';
   const wrap=document.getElementById('fc-table-wrap');
   if(wrap)wrap.innerHTML=html;
+  }catch(e){
+    const wrap=document.getElementById('fc-table-wrap');
+    if(wrap)wrap.innerHTML=`<div style="padding:20px;color:var(--red);font-size:13px;font-family:monospace">Erro: ${e.message}<br><small>${e.stack?.split('\n')[1]||''}</small></div>`;
+    console.error('renderFluxo error:',e);
+  }
 }
 
 function renderFluxoChart(range){
