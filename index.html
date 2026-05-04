@@ -416,6 +416,10 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 html.dark #sb-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 
+#fc-view-tabela .card{overflow:visible!important}
+#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#fc-table-wrap table{border-collapse:collapse}
+#fc-table-wrap td[style*="position:sticky"],#fc-table-wrap th[style*="position:sticky"]{position:sticky!important}
 .grp-drop{display:none;position:absolute;top:38px;left:0;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden}
 .grp-drop.right{left:auto;right:0}
 </style>
@@ -942,8 +946,8 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div id="fc-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
         <!-- Tabela view -->
         <div id="fc-view-tabela">
-          <div class="card" style="padding:0;overflow:hidden">
-            <div id="fc-table-wrap" style="overflow-x:auto;position:relative;-webkit-overflow-scrolling:touch"></div>
+          <div class="card" style="padding:0">
+            <div id="fc-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
           </div>
         </div>
         <!-- Gráfico view -->
