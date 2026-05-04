@@ -416,10 +416,12 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 html.dark #sb-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 
-#fc-view-tabela .card{overflow:visible!important}
-#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-#fc-table-wrap table{border-collapse:collapse}
-#fc-table-wrap td[style*="position:sticky"],#fc-table-wrap th[style*="position:sticky"]{position:sticky!important}
+/* Fluxo sticky fix */
+#pg-financeiro .scroll{overflow:visible!important}
+#fc-view-tabela{overflow-y:auto;max-height:calc(100vh - 200px)}
+#fc-view-tabela .card{overflow:visible!important;padding:0}
+#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+#fc-table-wrap td[style*="sticky"],#fc-table-wrap th[style*="sticky"]{position:sticky!important;z-index:2}
 .grp-drop{display:none;position:absolute;top:38px;left:0;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden}
 .grp-drop.right{left:auto;right:0}
 </style>
@@ -548,33 +550,73 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- DRE -->
     <div class="pg" id="pg-dre">
       <div class="scroll" style="background:var(--bg2)">
-        <!-- Header -->
-        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
-          <div style="flex:1">
-            <div style="font-size:13px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Demonstração do Resultado do Exercício</div>
-            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="dre-pg-periodo">—</div>
+        <!-- Header moderno -->
+        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0;flex-shrink:0">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">DRE</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t);margin-top:1px" id="dre-pg-periodo">—</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <div style="display:flex;gap:3px;background:var(--bg3);border-radius:22px;padding:3px">
-              <button onclick="drePgSetPeriod('mes')" id="dre-btn-mes" style="background:var(--fox);color:#fff;border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Este Mês</button>
-              <button onclick="drePgSetPeriod('custom')" id="dre-btn-custom" style="background:transparent;color:var(--t3);border:none;border-radius:18px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Outro Mês</button>
+          <!-- Nav + Range Picker -->
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="fc-month-btn" onclick="dreNavMonth(-1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+            <div style="position:relative" id="dre-range-wrap">
+              <button onclick="grpToggle('dre')" id="dre-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 18px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:34px;min-width:160px;justify-content:center;white-space:nowrap">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span id="dre-range-label">Este mês</span>
+              </button>
+              <div id="dre-range-drop" class="grp-drop" style="left:auto;right:0">
+                <div style="display:flex">
+                  <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
+                    <div class="rp-preset" onclick="grpPreset('dre','hoje')">Hoje</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','mes')">Este mês</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','mes_passado')">Mês passado</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','m2')">Últimos 2 meses</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','m3')">Últimos 3 meses</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','semana')">Esta semana</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','custom')">Personalizado</div>
+                  </div>
+                  <div style="flex:1;padding:14px 16px">
+                    <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="dre-rp-range-label">—</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <button onclick="grpNav('dre',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
+                          <span id="dre-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <div style="width:28px"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m1-days"></div>
+                      </div>
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <div style="width:28px"></div>
+                          <span id="dre-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <button onclick="grpNav('dre',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m2-days"></div>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
+                      <button onclick="grpClose('dre')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
+                      <button onclick="grpApply('dre',renderDREPage)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div id="dre-pg-range" style="display:none;align-items:center;gap:6px">
-              <input type="month" id="dre-pg-start" style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;color:var(--t)" onchange="renderDREPage()">
-            </div>
+            <button class="fc-month-btn" onclick="dreNavMonth(1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">›</button>
           </div>
         </div>
 
         <!-- KPI Strip -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:0 20px;margin-bottom:16px" id="dre-pg-kpi"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px" id="dre-pg-kpi"></div>
 
-        <!-- DRE Table -->
-        <div style="margin:0 20px;background:var(--bg);border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
-          <div style="padding:6px 20px;background:var(--bg3);border-bottom:1px solid var(--bor);display:flex">
-            <div style="width:70px;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Cód.</div>
-            <div style="flex:1;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase">Conta</div>
-            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:100px;text-align:right">Valor</div>
-            <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;min-width:55px;text-align:right;margin-left:8px">% Rec.</div>
+        <!-- DRE Table moderno -->
+        <div style="margin:0 20px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
+          <div style="padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--bor);display:flex">
+            <div style="width:70px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Cód.</div>
+            <div style="flex:1;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Conta</div>
+            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:110px;text-align:right">Valor</div>
+            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:60px;text-align:right;margin-left:8px">% Rec.</div>
           </div>
           <div id="dre-pg-body"></div>
         </div>
@@ -3320,35 +3362,34 @@ function applyDiaPicker(){
 
 
 let _drePgPeriod='mes';
-function drePgSetPeriod(p){
-  _drePgPeriod=p;
-  ['mes','custom'].forEach(x=>{
-    const b=document.getElementById('dre-btn-'+x);
-    if(b){b.style.background=x===p?'var(--fox)':'transparent';b.style.color=x===p?'#fff':'var(--t3)';}
-  });
-  const range=document.getElementById('dre-pg-range');
-  if(range) range.style.display=p==='custom'?'flex':'none';
-  if(p!=='custom') renderDREPage();
+function drePgSetPeriod(){}// replaced by grp
+function dreNavMonth(dir){
+  grpInit('dre');
+  const g=_grp['dre'];
+  const cur=g.start||new Date();
+  const d=new Date(cur.getFullYear(),cur.getMonth()+dir,1);
+  g.start=new Date(d.getFullYear(),d.getMonth(),1);
+  g.end=new Date(d.getFullYear(),d.getMonth()+1,0);
+  grpApply('dre',renderDREPage);
 }
 
 function renderDREPage(){
+  if(!_grp['dre']){grpInit('dre');grpPreset('dre','mes');grpApply('dre',null);}
+  const range=grpGetRange('dre');
+  if(!range.start)return;
   const now=new Date();
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
-  let filterFn, periodoLabel;
-  if(_drePgPeriod==='mes'){
-    const mes=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    filterFn=dt=>dt.startsWith(mes);
-    periodoLabel=now.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  const filterFn=dt=>dt>=range.start&&dt<=range.end;
+  // Label
+  const s=new Date(range.start+'T12:00:00'),e=new Date(range.end+'T12:00:00');
+  let periodoLabel;
+  if(s.getFullYear()===e.getFullYear()&&s.getMonth()===e.getMonth()&&s.getDate()===1&&e.getDate()===new Date(e.getFullYear(),e.getMonth()+1,0).getDate()){
+    periodoLabel=s.toLocaleString('pt-BR',{month:'long',year:'numeric'});
   } else {
-    const s=document.getElementById('dre-pg-start')?.value;
-    if(!s) return;
-    filterFn=dt=>dt.startsWith(s);
-    const d=new Date(s+'-01');
-    periodoLabel=d.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+    periodoLabel=`${s.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})} – ${e.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'})}`;
   }
-
   const pgLabel=document.getElementById('dre-pg-periodo');
-  if(pgLabel) pgLabel.textContent=periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1);
+  if(pgLabel)pgLabel.textContent=periodoLabel.charAt(0).toUpperCase()+periodoLabel.slice(1);
 
   const histRaw=getHistorico();
   const cacheHoje=getPedidosCache();
@@ -5103,7 +5144,7 @@ function grpGetRange(id){
 }
 // Close on outside click
 document.addEventListener('click',e=>{
-  ['lanc','fc'].forEach(id=>{
+  ['lanc','fc','dre'].forEach(id=>{
     const wrap=document.getElementById(id+'-range-wrap');
     if(wrap&&!wrap.contains(e.target))grpClose(id);
   });
@@ -5112,9 +5153,8 @@ document.addEventListener('click',e=>{
 setTimeout(()=>{
   grpInit('lanc');grpPreset('lanc','mes');grpApply('lanc',null);
   grpInit('fc');grpPreset('fc','mes');grpApply('fc',null);
-  // Init lancamentos main tab
+  grpInit('dre');grpPreset('dre','mes');grpApply('dre',null);
   lancMainTab('pagar',null);
-  // Render fluxo if already on that page
   if(typeof currentPage!=='undefined'&&currentPage==='financeiro')renderFluxo();
 },300);
 
