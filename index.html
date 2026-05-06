@@ -123,6 +123,7 @@ function receitaRender(){
     +'</div>';
 }
 // ─────────────────────────────────────────────────────────────────────
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
@@ -1280,29 +1281,37 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- CALCULADORA DE RECEITA -->
     <div class="pg" id="pg-receita">
       <div class="scroll" style="background:var(--bg2)">
-        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;flex-shrink:0">
-          <div style="flex:1">
-            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Calculadora de Receita</div>
-            <div style="font-size:13px;color:var(--t2);margin-top:2px">Ingredientes por quantidade de cookies</div>
+        <!-- Hero header -->
+        <div style="background:linear-gradient(135deg,var(--fox) 0%,var(--fox-d) 100%);padding:28px 28px 24px;margin-bottom:0;flex-shrink:0">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Vulpin ERP</div>
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px">Calculadora de Receita</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Escale ingredientes por quantidade de cookies</div>
+            </div>
+            <button onclick="window.print()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;padding:9px 20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:all .15s" onmouseenter="this.style.background='rgba(255,255,255,.25)'" onmouseleave="this.style.background='rgba(255,255,255,.15)'">🖨️ Imprimir</button>
           </div>
-          <button class="btn-p" onclick="window.print()" style="font-size:12px;padding:6px 16px">Imprimir</button>
         </div>
-        <div class="card" style="margin:0 20px 16px">
-          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
-            <div style="flex:1;min-width:200px">
-              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Produto</div>
-              <select id="rec-prod-sel" class="filter-sel" onchange="receitaRender()" style="width:100%;font-size:13px;height:38px">
-                <option value="">— Selecione um produto —</option>
-              </select>
+
+        <!-- Controles -->
+        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0">
+          <!-- Produto pills -->
+          <div style="flex:1;min-width:220px">
+            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Produto / Receita</div>
+            <select id="rec-prod-sel" class="filter-sel" onchange="receitaRender()" style="width:100%;font-size:13px;height:40px;border-radius:10px">
+              <option value="">— Selecione um produto —</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Peso unit. (g)</div>
+              <input type="number" id="rec-peso" value="70" min="1" class="fi" onchange="receitaRender()" style="width:90px;height:40px;font-size:14px;font-weight:700;text-align:center;border-radius:10px">
             </div>
             <div>
-              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Peso unitário (g)</div>
-              <input type="number" id="rec-peso" value="70" min="1" class="fi" onchange="receitaRender()" style="width:100px;height:38px;font-size:13px;text-align:center">
+              <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Quantidades</div>
+              <input type="text" id="rec-qtds" value="30,60,120" class="fi" onchange="receitaRender()" style="width:180px;height:40px;font-size:13px;border-radius:10px" placeholder="ex: 30,60,120">
             </div>
-            <div>
-              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Quantidades (ex: 30,60,120)</div>
-              <input type="text" id="rec-qtds" value="30,60,120" class="fi" onchange="receitaRender()" style="width:200px;height:38px;font-size:13px">
-            </div>
+            <button onclick="receitaRender()" style="height:40px;padding:0 20px;background:var(--fox);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Calcular</button>
           </div>
         </div>
         <div id="rec-table-wrap" style="margin:0 20px 20px"></div>
