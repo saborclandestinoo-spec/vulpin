@@ -3571,7 +3571,7 @@ function renderDREPage(){
 
   // ── DRE row helpers — estilo planilha profissional com cores Vulpin ──
   // niv: 0=grupo principal (fundo laranja), 1=subgrupo negrito, 2=subgrupo normal, 3=item detalhe
-  const _dreHov=(bg)=>`onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='${bg}'"`;
+  const _dreHov=(bg)=>'';
 
   const R=(cod,nome,val,niv=0,bold=false,cor='')=>{
     const isNeg=val<0;
@@ -3588,7 +3588,7 @@ function renderDREPage(){
     else if(niv===1){bg='var(--bg2)';fz=12.5;fw=700;codFz=10.5;rowPad='9px 20px';}
     else if(niv===2){bg='var(--bg)';fz=12;fw=600;codFz=10;rowPad='8px 20px';}
     else{bg='var(--bg)';fz=12;fw=400;codFz=10;rowPad='7px 20px';}
-    return `<div style="display:flex;align-items:center;padding:${rowPad};border-bottom:1px solid var(--bor2);background:${bg};transition:background .1s" ${_dreHov(bg)}>
+    return `<div style="display:flex;align-items:center;padding:${rowPad};border-bottom:1px solid var(--bor2);background:${bg}">
       <div style="width:80px;font-size:${codFz}px;font-weight:500;color:var(--t3);flex-shrink:0;font-variant-numeric:tabular-nums">${cod}</div>
       <div style="flex:1;font-size:${fz}px;font-weight:${fw};padding-left:${indent}px;color:var(--t)">${nome}</div>
       <div style="min-width:30px;text-align:right;font-size:11px;color:var(--t3);margin-right:4px;font-variant-numeric:tabular-nums">${val!==0?'R$':''}</div>
