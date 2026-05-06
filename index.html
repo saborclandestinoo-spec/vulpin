@@ -516,6 +516,9 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <div class="ni ni-plain" onclick="go('precificacao',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h4l6 6a2 2 0 010 2.83l-1.17 1.17a2 2 0 01-2.83 0L2 6V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="5" cy="5" r="1" fill="currentColor"/></svg>
       Precificação</div>
+    <div class="ni ni-plain" onclick="go('receita',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 4h6M4 7h6M4 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Calculadora</div>
     <div class="nav-g">Sistema</div>
     <div class="ni" onclick="go('config',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 107 12.5 5.5 5.5 0 007 1.5zm0 0v2m0 7v2M1.5 7h2m7 0h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -612,11 +615,12 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 
         <!-- DRE Table moderno -->
         <div style="margin:0 20px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
-          <div style="padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--bor);display:flex">
-            <div style="width:70px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Cód.</div>
-            <div style="flex:1;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Conta</div>
-            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:110px;text-align:right">Valor</div>
-            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:60px;text-align:right;margin-left:8px">% Rec.</div>
+          <div style="display:flex;align-items:center;padding:9px 20px;background:var(--t);border-bottom:1px solid var(--bor)">
+            <div style="width:80px;font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">CÓD</div>
+            <div style="flex:1;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);text-transform:uppercase;letter-spacing:.5px">CONTAS</div>
+            <div style="min-width:30px"></div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.9);text-transform:uppercase;letter-spacing:.5px;min-width:90px;text-align:right">MÊS CORRENTE</div>
+            <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;min-width:56px;text-align:right;margin-left:4px">%</div>
           </div>
           <div id="dre-pg-body"></div>
         </div>
@@ -1153,6 +1157,43 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             <tbody></tbody>
           </table></div>
         </div>
+      </div>
+    </div>
+
+    <!-- RECEITA / CALCULADORA -->
+    <div class="pg" id="pg-receita">
+      <div class="scroll" style="background:var(--bg2)">
+        <!-- Header -->
+        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0;margin-bottom:16px">
+          <div style="flex:1">
+            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Calculadora de Receita</div>
+            <div style="font-size:13px;color:var(--t2);margin-top:2px">Quantidades por ficha técnica</div>
+          </div>
+          <button class="btn-p" onclick="receitaImprimir()" style="font-size:12px;padding:6px 16px">🖨️ Imprimir</button>
+        </div>
+
+        <!-- Seletor de produto + quantidades -->
+        <div class="card" style="margin:0 20px 16px">
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Produto / Receita</div>
+              <select id="rec-prod-sel" class="filter-sel" onchange="receitaRender()" style="width:100%;font-size:13px;height:38px">
+                <option value="">— Selecione um produto —</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Peso unitário (g)</div>
+              <input type="number" id="rec-peso" placeholder="70" value="70" min="1" class="fi" onchange="receitaRender()" style="width:100px;height:38px;font-size:13px;text-align:center">
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Quantidades (ex: 30,60,120)</div>
+              <input type="text" id="rec-qtds" value="30,60,120" class="fi" onchange="receitaRender()" style="width:200px;height:38px;font-size:13px">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela de receita -->
+        <div id="rec-table-wrap" style="margin:0 20px 20px"></div>
       </div>
     </div>
 
@@ -2502,7 +2543,7 @@ _sb.auth.getSession().then(async ({data:{session}}) => {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação'};
+const PAGE_TITLES={dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação',receita:'Calculadora de Receita'};
 const PAGE_ACTIONS={
   dashboard:()=>``,
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
@@ -2532,7 +2573,7 @@ function go(page,el){
   const renders={
     dashboard:renderDashboard,pedidos:renderPedidos,producao:renderProducao,estoque:renderEstoque,
     financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,
-    materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,
+    materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,receita:receitaInit,
     precificacao:renderPrecificacao,
     dre:renderDREPage
   };
@@ -3527,29 +3568,56 @@ function renderDREPage(){
     <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1">${k.val}</div></div></div>`).join('');
 
   // DRE helpers
+
+  // ── DRE row helpers — estilo planilha profissional com cores Vulpin ──
+  // niv: 0=grupo principal (fundo laranja), 1=subgrupo negrito, 2=subgrupo normal, 3=item detalhe
+  const _dreHov=(bg)=>`onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='${bg}'"`;
+
   const R=(cod,nome,val,niv=0,bold=false,cor='')=>{
-    const indent=niv*20;
     const isNeg=val<0;
     const fmt=`R$ ${fmtN(Math.abs(val))}`;
     const disp=val===0?'—':isNeg?`(${fmt})`:fmt;
     const valColor=cor||(val<0?'var(--red)':val>0?'var(--t)':'var(--t3)');
-    const bg=bold?'background:var(--bg2);':'';
-    return `<div style="display:flex;align-items:center;padding:${bold?9:7}px 20px;border-bottom:1px solid var(--bor2);${bg}transition:background .1s" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='${bold?'var(--bg2)':'var(--bg)'}'">
-      <div style="width:76px;font-size:10px;font-weight:500;color:var(--t3);flex-shrink:0;font-family:'monospace'">${cod}</div>
-      <div style="flex:1;font-size:${bold?'13':'12'}px;font-weight:${bold?700:400};padding-left:${indent}px;color:var(--t)">${bold?`<strong>${nome}</strong>`:nome}</div>
-      <div style="font-size:${bold?'13':'12'}px;font-weight:${bold?700:500};color:${valColor};min-width:110px;text-align:right;font-variant-numeric:tabular-nums">${disp}</div>
-      <div style="font-size:10px;color:var(--t3);min-width:58px;text-align:right;margin-left:8px;font-variant-numeric:tabular-nums">${pct(val)}</div>
+    // niv 0: linha de grupo bold (fundo laranja suave)
+    // niv 1: subgrupo bold (fundo cinza leve)
+    // niv 2: subgrupo semi-bold (fundo branco)
+    // niv 3+: item detalhe indentado (fundo branco)
+    const indent=[0,0,16,32,48][Math.min(niv,4)];
+    let bg,fz,fw,codFz,rowPad;
+    if(niv===0){bg='rgba(249,115,22,.07)';fz=13;fw=700;codFz=11;rowPad='10px 20px';}
+    else if(niv===1){bg='var(--bg2)';fz=12.5;fw=700;codFz=10.5;rowPad='9px 20px';}
+    else if(niv===2){bg='var(--bg)';fz=12;fw=600;codFz=10;rowPad='8px 20px';}
+    else{bg='var(--bg)';fz=12;fw=400;codFz=10;rowPad='7px 20px';}
+    return `<div style="display:flex;align-items:center;padding:${rowPad};border-bottom:1px solid var(--bor2);background:${bg};transition:background .1s" ${_dreHov(bg)}>
+      <div style="width:80px;font-size:${codFz}px;font-weight:500;color:var(--t3);flex-shrink:0;font-variant-numeric:tabular-nums">${cod}</div>
+      <div style="flex:1;font-size:${fz}px;font-weight:${fw};padding-left:${indent}px;color:var(--t)">${nome}</div>
+      <div style="min-width:30px;text-align:right;font-size:11px;color:var(--t3);margin-right:4px;font-variant-numeric:tabular-nums">${val!==0?'R$':''}</div>
+      <div style="font-size:${niv<=1?13:12}px;font-weight:${niv<=1?700:500};color:${valColor};min-width:90px;text-align:right;font-variant-numeric:tabular-nums">${val===0?'—':fmtN(Math.abs(val))+(isNeg?' ':' ')}</div>
+      <div style="font-size:10.5px;font-weight:${niv<=1?700:400};color:${val<0?'var(--red)':val>0?'var(--t3)':'var(--t3)'};min-width:56px;text-align:right;margin-left:4px;font-variant-numeric:tabular-nums">${val===0?'':pct(val)}</div>
     </div>`;
   };
-  const SEP=lbl=>`<div style="padding:8px 20px 6px;background:var(--fox-l);border-top:1px solid var(--fox-m)">
-    <span style="font-size:10px;font-weight:700;color:var(--fox);text-transform:uppercase;letter-spacing:1px">${lbl}</span>
+
+  // Cabeçalho de seção — fundo laranja escuro tipo Excel azul mas Vulpin
+  const SEP=(lbl,sub='')=>`<div style="display:flex;align-items:center;padding:9px 20px;background:var(--fox);border-bottom:1px solid var(--fox-d)">
+    <div style="width:80px;font-size:11px;font-weight:700;color:rgba(255,255,255,.7)">${lbl.split('—')[0].trim()}</div>
+    <div style="flex:1;font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px">${lbl.includes('—')?lbl.split('—').slice(1).join('—').trim():lbl}</div>
+    <div style="min-width:30px"></div><div style="min-width:90px"></div><div style="min-width:56px;font-size:10px;color:rgba(255,255,255,.6);text-align:right">% Rec.</div>
   </div>`;
-  const TOT=(lbl,val)=>`<div style="display:flex;align-items:center;padding:10px 20px;background:${val>=0?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)'};border-top:2px solid ${val>=0?'rgba(39,174,96,.2)':'rgba(231,76,60,.2)'};border-bottom:1px solid var(--bor)">
-    <div style="width:76px"></div>
-    <div style="flex:1;font-size:13px;font-weight:700;color:var(--t)">${lbl}</div>
-    <div style="font-size:14px;font-weight:800;color:${val>=0?'var(--green)':'var(--red)'};min-width:110px;text-align:right;font-variant-numeric:tabular-nums">R$ ${fmtN(val)}</div>
-    <div style="font-size:11px;font-weight:700;color:${val>=0?'var(--green)':'var(--red)'};min-width:58px;text-align:right;margin-left:8px">${pct(val)}</div>
-  </div>`;
+
+  // Total de seção — destaque com borda e fundo
+  const TOT=(lbl,val,topBorder=true)=>{
+    const isNeg=val<0;
+    const col=isNeg?'var(--red)':'var(--green)';
+    const bgc=isNeg?'rgba(231,76,60,.07)':'rgba(39,174,96,.07)';
+    const bord=isNeg?'rgba(231,76,60,.3)':'rgba(39,174,96,.3)';
+    return `<div style="display:flex;align-items:center;padding:10px 20px;background:${bgc};${topBorder?`border-top:2px solid ${bord};`:''}border-bottom:2px solid ${bord}">
+      <div style="width:80px"></div>
+      <div style="flex:1;font-size:13px;font-weight:800;color:var(--t)">${lbl}</div>
+      <div style="min-width:30px;text-align:right;font-size:12px;font-weight:700;color:${col};margin-right:4px">R$</div>
+      <div style="font-size:14px;font-weight:800;color:${col};min-width:90px;text-align:right;font-variant-numeric:tabular-nums">${fmtN(Math.abs(val))}</div>
+      <div style="font-size:11px;font-weight:700;color:${col};min-width:56px;text-align:right;margin-left:4px">${pct(val)}</div>
+    </div>`;
+  };
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
@@ -5080,7 +5148,122 @@ function lancNavMonth(dir){
 }
 
 // ═══════════════════════════════════════════
-// GENERIC RANGE PICKER (grp) — usado em Lançamentos e Fluxo de Caixa
+// CALCULADORA DE RECEITA
+// ═══════════════════════════════════════════
+function receitaInit(){
+  const sel=document.getElementById('rec-prod-sel');
+  if(!sel)return;
+  const prods=getProdutos().filter(p=>p.status!=='inativo');
+  sel.innerHTML='<option value="">— Selecione um produto —</option>'+
+    prods.map(p=>`<option value="${p.id}">${p.nome}</option>`).join('');
+  receitaRender();
+}
+
+function receitaRender(){
+  const prodId=document.getElementById('rec-prod-sel')?.value||'';
+  const wrap=document.getElementById('rec-table-wrap');
+  if(!wrap)return;
+  if(!prodId){wrap.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);font-size:14px">Selecione um produto para ver a receita</div>';return;}
+
+  const prod=getProdutos().find(p=>p.id===prodId);
+  if(!prod){wrap.innerHTML='';return;}
+
+  const fichas=getFichas();
+  const ficha=fichas[prodId]||[];
+  if(!ficha.length){wrap.innerHTML=`<div class="card"><p style="color:var(--t3);font-size:13px;text-align:center;padding:20px">Este produto não tem ficha técnica cadastrada.</p></div>`;return;}
+
+  const mp=getMP();
+  const pesoUn=parseFloat(document.getElementById('rec-peso')?.value)||70;
+
+  // Parse quantidades
+  const qtdsRaw=(document.getElementById('rec-qtds')?.value||'30,60,120').split(',');
+  const qtds=qtdsRaw.map(q=>parseInt(q.trim())).filter(q=>q>0&&q<10000);
+  if(!qtds.length)return;
+
+  // Build table
+  let html=`
+  <div class="card" style="padding:0;overflow:hidden">
+    <!-- Header da receita -->
+    <div style="background:var(--t);padding:14px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px">Receita</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-top:2px">${prod.nome.toUpperCase()}</div>
+      </div>
+      <div style="text-align:center;background:rgba(255,255,255,.1);border-radius:8px;padding:8px 16px">
+        <div style="font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px">Peso unitário</div>
+        <div style="font-size:20px;font-weight:800;color:#fff">${pesoUn.toFixed(1)} g</div>
+      </div>
+    </div>
+
+    <!-- Sub-header colunas -->
+    <div style="display:grid;grid-template-columns:60px 1fr ${qtds.map(()=>'100px').join(' ')} 80px 80px;background:var(--fox);padding:9px 16px;gap:8px;align-items:center">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase">CÓD</div>
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.9);text-transform:uppercase">INGREDIENTE</div>
+      ${qtds.map(q=>`<div style="font-size:10px;font-weight:700;color:#fff;text-align:right;text-transform:uppercase">${q} 🍪</div>`).join('')}
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);text-align:right;text-transform:uppercase">R$/un</div>
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);text-align:right;text-transform:uppercase">CUSTO</div>
+    </div>
+
+    <!-- Linhas de ingredientes -->`;
+
+  let totalCustoUn=0;
+  ficha.forEach((it,idx)=>{
+    const m=mp.find(x=>x.id===it.mpId);
+    if(!m)return;
+    const qtdG=it.qtd||0; // g por 1 cookie
+    const custoUn=getValorPorG(m)*qtdG;
+    totalCustoUn+=custoUn;
+    const bg=idx%2===0?'var(--bg)':'var(--bg2)';
+    const cod=m.cod||m.id?.slice(-3)||'—';
+    html+=`<div style="display:grid;grid-template-columns:60px 1fr ${qtds.map(()=>'100px').join(' ')} 80px 80px;padding:8px 16px;gap:8px;align-items:center;background:${bg};border-bottom:1px solid var(--bor2);transition:background .1s" onmouseenter="this.style.background='rgba(249,115,22,.05)'" onmouseleave="this.style.background='${bg}'">
+      <div style="font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums">${cod}</div>
+      <div style="font-size:12.5px;font-style:italic;color:var(--t);font-weight:400">${m.nome}</div>
+      ${qtds.map(q=>{
+        const total=(qtdG*q).toFixed(1);
+        return `<div style="font-size:12.5px;font-style:italic;color:var(--t);text-align:right;font-variant-numeric:tabular-nums">${total} g</div>`;
+      }).join('')}
+      <div style="font-size:11px;color:var(--t3);text-align:right;font-variant-numeric:tabular-nums">—</div>
+      <div style="font-size:12px;font-weight:600;color:var(--t);text-align:right;font-variant-numeric:tabular-nums">R$ ${fmtN(custoUn)}</div>
+    </div>`;
+  });
+
+  // Totais por quantidade
+  html+=`<div style="display:grid;grid-template-columns:60px 1fr ${qtds.map(()=>'100px').join(' ')} 80px 80px;padding:11px 16px;gap:8px;align-items:center;background:var(--fox);border-top:2px solid var(--fox-d)">
+    <div></div>
+    <div style="font-size:13px;font-weight:800;color:#fff">TOTAL</div>
+    ${qtds.map(q=>{
+      const totalG=(ficha.reduce((s,it)=>s+(it.qtd||0),0)*q).toFixed(1);
+      const kg=(totalG/1000).toFixed(2);
+      return `<div style="font-size:12px;font-weight:700;color:#fff;text-align:right">${totalG} g<br><span style="font-size:10px;opacity:.7">(${kg} kg)</span></div>`;
+    }).join('')}
+    <div></div>
+    <div style="font-size:13px;font-weight:800;color:#fff;text-align:right">R$ ${fmtN(totalCustoUn)}</div>
+  </div>`;
+
+  // Custo por lote
+  html+=`<div style="background:var(--bg2);border-top:1px solid var(--bor);padding:12px 16px">
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Custo por lote</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      ${qtds.map(q=>{
+        const custTotal=totalCustoUn*q;
+        const custEmb=0; // pode adicionar custo de embalagem depois
+        return `<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:12px 18px;text-align:center;min-width:120px;flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--fox);margin-bottom:4px">${q} cookies</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Peso: ${(ficha.reduce((s,it)=>s+(it.qtd||0),0)*q/1000).toFixed(2)} kg</div>
+          <div style="font-size:18px;font-weight:800;color:var(--t)">R$ ${fmtN(custTotal)}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">R$ ${fmtN(totalCustoUn)} / un</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  </div>`;
+
+  wrap.innerHTML=html;
+}
+
+function receitaImprimir(){
+  window.print();
+} — usado em Lançamentos e Fluxo de Caixa
 // ═══════════════════════════════════════════
 const _grp={};
 function grpInit(id){
