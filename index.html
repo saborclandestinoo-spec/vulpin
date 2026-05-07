@@ -5441,9 +5441,9 @@ function renderLancSummary(){
   const today2=todayISO();
   // Pendentes: só vencimentos futuros ou sem data (a vencer) — não contar atrasados antigos que provavelmente já foram pagos fora do sistema
   // Só conta como pendente se tem banco vinculado E não está pago (pago===false explícito ou sem campo mas tem venc futura)
-  const despPendAll=allLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
-  const despVencAll=allLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId&&l.venc&&l.venc<today2).reduce((s,l)=>s+(l.valor||0),0);
-  const recPendAll=allLancs.filter(l=>l.tipo==='receita'&&l.pago!==true&&!l.pedidoId&&l.bancoId&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
+  const despPendAll=periodLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
+  const despVencAll=periodLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId&&l.venc&&l.venc<today2).reduce((s,l)=>s+(l.valor||0),0);
+  const recPendAll=periodLancs.filter(l=>l.tipo==='receita'&&l.pago!==true&&!l.pedidoId&&l.bancoId&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
   const saldoPrev=saldoAtual+recPendAll-despPendAll;
 
   function row(lbl,val,filter,cor,icon){
