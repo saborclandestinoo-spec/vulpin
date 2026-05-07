@@ -5438,8 +5438,11 @@ function renderLancSummary(){
 
   const bancos=getBancos();
   const saldoAtual=bancos.reduce((s,b)=>s+getSaldoBanco(b.id),0);
-  const despPendAll=allLancs.filter(l=>l.tipo==='despesa'&&!l.pago).reduce((s,l)=>s+(l.valor||0),0);
-  const recPendAll=allLancs.filter(l=>l.tipo==='receita'&&!l.pago).reduce((s,l)=>s+(l.valor||0),0);
+  const today2=todayISO();
+  // Pendentes: só vencimentos futuros ou sem data (a vencer) — não contar atrasados antigos que provavelmente já foram pagos fora do sistema
+  const despPendAll=allLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
+  const despVencAll=allLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc&&l.venc<today2).reduce((s,l)=>s+(l.valor||0),0);
+  const recPendAll=allLancs.filter(l=>l.tipo==='receita'&&!l.pago&&(!l.venc||l.venc>=today2)).reduce((s,l)=>s+(l.valor||0),0);
   const saldoPrev=saldoAtual+recPendAll-despPendAll;
 
   function row(lbl,val,filter,cor,icon){
@@ -5503,6 +5506,7 @@ function renderLancSummary(){
         +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">Saldo atual</span><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span></div>'
         +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">+ Entradas prev.</span><span style="font-size:11px;font-weight:700;color:#4ade80">R$ '+fmtN(recPendAll)+'</span></div>'
         +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">− Saídas prev.</span><span style="font-size:11px;font-weight:700;color:#f87171">R$ '+fmtN(despPendAll)+'</span></div>'
+        +(despVencAll>0?'<div style="display:flex;justify-content:space-between;margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1)"><span style="font-size:10px;color:#fca5a5">⚠ Vencidos atrasados</span><span style="font-size:11px;font-weight:700;color:#fca5a5">R$ '+fmtN(despVencAll)+'</span></div>':'')
       +'</div>'
     +'</div>'
 
