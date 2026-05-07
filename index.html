@@ -2943,7 +2943,7 @@ function renderDashboard(){
     window._dashCards=[
       {id:'fat_taxa_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_taxaEnt,active:true},
       {id:'fat_taxa_adic',ico:'➕',lbl:'Taxas Adicionais',val:_taxaAdic,active:true},
-      {id:'fat_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_descIF,active:true},
+      {id:'fat_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_descIF,active:true,negative:true},
       {id:'fat_desc_lj',ico:'🏷️',lbl:'Descontos Loja',val:_descLoja,active:true,negative:true},
     ];
     window._dashProd=_totProd;
@@ -2954,15 +2954,13 @@ function renderDashboard(){
     window._dashCancelVal=_cancelVal;
 
     function _calcDashTotal(){
-      // Faturamento = produtos + taxa_entrega + taxa_adicional - descontos_ifood
-      // Independente do toggle — esta é a fórmula fixa
-      var prod=window._dashProd||0;
-      var ent=(window._dashCards.find(function(c){return c.id==='fat_taxa_ent';})||{val:0}).val||0;
-      var adic=(window._dashCards.find(function(c){return c.id==='fat_taxa_adic';})||{val:0}).val||0;
-      var descIF=(window._dashCards.find(function(c){return c.id==='fat_desc_if';})||{val:0}).val||0;
-      var descLj=(window._dashCards.find(function(c){return c.id==='fat_desc_lj';})||{val:0,active:false});
-      // Fixed formula + optional desconto loja toggle
-      return prod+ent+adic-descIF+(descLj.active?-descLj.val:0);
+      // Faturamento = produtos (fixo) + cards ativos
+      // Cada card tem sinal: positivo soma, negative subtrai
+      var tot=window._dashProd||0;
+      window._dashCards.forEach(function(c){
+        if(c.active) tot+=c.negative?-c.val:c.val;
+      });
+      return tot;
     }
 
     function _renderDashStrip(){
