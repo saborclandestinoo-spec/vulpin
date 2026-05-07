@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vulpin </title>
+<title>Vulpin ERP v2.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
 </script>
@@ -5504,10 +5504,10 @@ function renderLancSummary(){
       +'<div style="font-size:26px;font-weight:900;color:'+(saldoPrev>=0?'#4ade80':'#f87171')+';letter-spacing:-.5px;line-height:1">R$ '+fmtN(saldoPrev)+'</div>'
       +'<div style="font-size:10px;color:rgba(255,255,255,.35)">após todos os pendentes</div>'
       +'<div style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;display:flex;flex-direction:column;gap:5px">'
-        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">Saldo atual</span><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">+ Entradas prev.</span><span style="font-size:11px;font-weight:700;color:#4ade80">R$ '+fmtN(recPendAll)+'</span></div>'
-        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">− Saídas prev.</span><span style="font-size:11px;font-weight:700;color:#f87171">R$ '+fmtN(despPendAll)+'</span></div>'
-        +(despVencAll>0?'<div style="display:flex;justify-content:space-between;margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1)"><span style="font-size:10px;color:#fca5a5">⚠ Vencidos atrasados</span><span style="font-size:11px;font-weight:700;color:#fca5a5">R$ '+fmtN(despVencAll)+'</span></div>':'')
+        +'<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:10px;color:rgba(255,255,255,.45)">Saldo atual</span><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span></div>'
+        +'<div onclick="lancFilterPill(\'rec_avencer\')" style="display:flex;justify-content:space-between;padding:4px 6px;border-radius:6px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:rgba(255,255,255,.55)">+ Entradas prev. 🔍</span><span style="font-size:11px;font-weight:700;color:#4ade80">R$ '+fmtN(recPendAll)+'</span></div>'
+        +'<div onclick="lancFilterPill(\'avencer\')" style="display:flex;justify-content:space-between;padding:4px 6px;border-radius:6px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:rgba(255,255,255,.55)">− Saídas prev. 🔍</span><span style="font-size:11px;font-weight:700;color:#f87171">R$ '+fmtN(despPendAll)+'</span></div>'
+        +(despVencAll>0?'<div onclick="lancFilterPill(\'vencidos\')" style="display:flex;justify-content:space-between;margin-top:4px;padding:4px 6px;border-radius:6px;border-top:1px solid rgba(255,255,255,.1);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:#fca5a5">⚠ Vencidos 🔍</span><span style="font-size:11px;font-weight:700;color:#fca5a5">R$ '+fmtN(despVencAll)+'</span></div>':'')
       +'</div>'
     +'</div>'
 
