@@ -6904,20 +6904,44 @@ function selectBanco(id){
   document.querySelectorAll('.bank-card').forEach(c=>{if(c.onclick.toString().includes(id))c.classList.add('on');});
   const bk=getBancos().find(b=>b.id===id);
   document.getElementById('bank-sel-name').textContent=bk?bk.nome:'—';
-  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>a.data.localeCompare(b.data));
+  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  // Só lançamentos que afetam o saldo (pago=true ou pedidos automáticos)
+  const lancsEfetivos=lancs.filter(l=>
+    (l.tipo==='receita'&&(l.pago||l.pedidoId))||
+    (l.tipo==='despesa'&&l.pago===true)||
+    l.tipo==='transferencia'
+  );
+  const lancsPendentes=lancs.filter(l=>
+    (l.tipo==='receita'&&!l.pago&&!l.pedidoId)||
+    (l.tipo==='despesa'&&!l.pago)
+  );
   let sal=(bk?bk.saldoInicial:0);
   const tbody=document.querySelector('#tbl-bank tbody');
-  tbody.innerHTML=lancs.length?lancs.map(l=>{
+  let rows=lancsEfetivos.length?lancsEfetivos.map(l=>{
     sal+=l.tipo==='receita'?(l.valor||0):-(l.valor||0);
     return`<tr>
       <td>${fmtDate(l.data)}</td>
       <td style="font-weight:500;color:var(--t)">${l.desc}</td>
       <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
-      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
+      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor||0)}</td>
       <td style="font-weight:600;color:${sal>=0?'var(--t)':'var(--red)'}">R$ ${fmtN(sal)}</td>
     </tr>`;
-  }).join(''):
-  '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:24px">Nenhuma movimentação neste banco</td></tr>';
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:24px">Nenhuma movimentação neste banco</td></tr>';
+
+  // Pendentes separados
+  if(lancsPendentes.length){
+    rows+='<tr><td colspan="5" style="background:var(--bg2);padding:6px 12px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">⏳ Pendentes (não afetam saldo)</td></tr>';
+    lancsPendentes.forEach(l=>{
+      rows+=`<tr style="opacity:.55">
+        <td>${fmtDate(l.venc||l.data||'')}</td>
+        <td style="font-weight:500;color:var(--t)">${l.desc} <span style="font-size:10px;color:var(--amber)">(pendente)</span></td>
+        <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
+        <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor||0)}</td>
+        <td style="color:var(--t3);font-size:11px">—</td>
+      </tr>`;
+    });
+  }
+  tbody.innerHTML=rows;
 }
 function openBanco(id){
   editBancoId=id||null;
