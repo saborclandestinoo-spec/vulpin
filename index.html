@@ -3027,22 +3027,103 @@ function renderDashboard(){
     _renderDashStrip();
     renderHoje();
   } else {
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
-    if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
-      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
-      {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
-      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'var(--t)'},
-      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
-    ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
-      <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
-      <div>
-        <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${k.lbl}</div>
-        <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1;letter-spacing:-.3px">${k.val}</div>
-        <div style="font-size:10px;color:var(--t3);margin-top:2px">${k.sub}</div>
-      </div>
-    </div>`).join('');
+    // Compute breakdown values for period
+    var _pTotProd=histPeriod.reduce(function(s,p){return s+(p.items||p.itens||[]).reduce(function(si,i){return si+(i.total_price||i.totalPrice||i.price||0);},0);},0);
+    var _pTaxaEnt=histPeriod.reduce(function(s,p){return s+(p.delivery_fee||p.deliveryFee||0);},0);
+    var _pTaxaAdic=histPeriod.reduce(function(s,p){return s+(p.additional_fee||0);},0);
+    var _pDescIF=histPeriod.reduce(function(s,p){return s+(p.discounts||[]).reduce(function(si,d){return si+(d.total||d.value||0);},0)+(p.benefits||[]).reduce(function(si,b){return si+(b.value||0);},0);},0);
+    var _pDescLj=histPeriod.reduce(function(s,p){return s+(p.discount||p.desconto||p.store_discount||0);},0);
+    var _pCancelVal=canceladosPeriod.reduce(function(s,p){return s+(p.total||0);},0);
+    var _pTicket=histPeriod.length?(_pTotProd+_pTaxaEnt+_pTaxaAdic-_pDescIF)/histPeriod.length:0;
+
+    window._dashCards2=[
+      {id:'p_taxa_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_pTaxaEnt,active:true},
+      {id:'p_taxa_adic',ico:'➕',lbl:'Taxas Adicionais',val:_pTaxaAdic,active:true},
+      {id:'p_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_pDescIF,active:true,negative:true},
+      {id:'p_desc_lj',ico:'🏷️',lbl:'Descontos Loja',val:_pDescLj,active:true,negative:true},
+    ];
+    window._dashProd2=_pTotProd;
+    window._dashHist2=histPeriod.length;
+    window._dashTicket2=_pTicket;
+    window._dashCancel2=canceladosPeriod.length;
+    window._dashCancelVal2=_pCancelVal;
+    window._dashCmv2=cmv;
+    window._dashDesp2=despPeriod;
+    window._dashRec2=receitasPeriod;
+
+    function _calcPeriodTotal(){
+      var tot=window._dashProd2||0;
+      window._dashCards2.forEach(function(c){if(c.active)tot+=c.negative?-c.val:c.val;});
+      return tot;
+    }
+
+    function _renderPeriodStrip(){
+      var tot=_calcPeriodTotal();
+      var varRec2=recPrev>0?((tot-recPrev)/recPrev*100).toFixed(0):0;
+
+      var topHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+(varRec2>0?'↑':'↓')+Math.abs(varRec2)+'% vs período ant.</div>'
+        +'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._dashProd2)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+totalCookies+' itens vendidos</div>'
+        +'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._dashTicket2)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._dashHist2+' pedidos</div>'
+        +'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._dashCancel2+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._dashCancelVal2)+' perdidos</div>'
+        +'</div>'
+      +'</div>';
+
+      var detailCards2='';
+      window._dashCards2.forEach(function(c){
+        var isOn=c.active;
+        var cor=c.negative?'#E74C3C':'#2980B9';
+        var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
+        var bg=isOn?'var(--bg)':'var(--bg2)';
+        var bor=isOn?cor:'var(--bor)';
+        var op=isOn?'1':'0.45';
+        var checkIcon=isOn?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>':'';
+        var checkBg=isOn?('background:'+cor):'border:2px solid var(--bor)';
+        detailCards2+='<div data-dashid2="'+c.id+'" onclick="window._dashToggle2(this.dataset.dashid2)" style="background:'+bg+';border:1.5px solid '+bor+';border-radius:12px;padding:12px 16px;cursor:pointer;opacity:'+op+';transition:all .2s;display:flex;align-items:center;gap:10px;user-select:none">'
+          +'<div style="font-size:20px">'+c.ico+'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">'+c.lbl+'</div>'
+            +'<div style="font-size:15px;font-weight:800;color:'+cor+'">'+valSign+'R$ '+fmtN(c.val)+'</div>'
+          +'</div>'
+          +'<div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+checkBg+'">'+checkIcon+'</div>'
+        +'</div>';
+      });
+
+      if(strip){
+        strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
+        strip.innerHTML=topHTML
+          +'<div style="padding:0 20px 16px">'
+            +'<div style="padding:0 0 8px;display:flex;align-items:center;justify-content:space-between">'
+              +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Detalhes do faturamento</div>'
+              +'<div style="font-size:10px;color:var(--t3)">Clique para incluir/excluir</div>'
+            +'</div>'
+            +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+detailCards2+'</div>'
+          +'</div>';
+      }
+    }
+
+    window._dashToggle2=function(id){
+      var c=window._dashCards2.find(function(x){return x.id===id;});
+      if(c)c.active=!c.active;
+      _renderPeriodStrip();
+    };
+
+    _renderPeriodStrip();
 
     // Render mes widgets
     renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel, lancPeriodComp);
