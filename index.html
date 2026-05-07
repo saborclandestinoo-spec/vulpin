@@ -2990,7 +2990,7 @@ function renderDashboard(){
       var detailCards='';
       window._dashCards.forEach(function(c){
         var isOn=c.active;
-        var cor=c.negative?'#E74C3C':'#2980B9';
+        var cor=c.id==='fat_desc_if'||c.id==='p_desc_if'?'#27AE60':(c.negative?'#E74C3C':'#2980B9');
         var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
         var bg=isOn?'var(--bg)':'var(--bg2)';
         var bor=isOn?cor:'var(--bor)';
@@ -3087,7 +3087,7 @@ function renderDashboard(){
       var detailCards2='';
       window._dashCards2.forEach(function(c){
         var isOn=c.active;
-        var cor=c.negative?'#E74C3C':'#2980B9';
+        var cor=c.id==='fat_desc_if'||c.id==='p_desc_if'?'#27AE60':(c.negative?'#E74C3C':'#2980B9');
         var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
         var bg=isOn?'var(--bg)':'var(--bg2)';
         var bor=isOn?cor:'var(--bor)';
@@ -3170,7 +3170,7 @@ function renderDashFatChart(){
     const ms=new Date(dt).getTime()-3*60*60*1000;
     const d=new Date(ms);
     const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-    const tot=p.total||0;
+    const tot=p.totalMerchant||p.total||0;
     if(dStr.startsWith(mes)){mapaAtual[dStr]=(mapaAtual[dStr]||0)+tot;pedAtual++;}
     else if(dStr.startsWith(prevMes)){mapaAnterior[dStr]=(mapaAnterior[dStr]||0)+tot;pedAnterior++;}
   });
@@ -4828,7 +4828,7 @@ function renderFluxo(){
     const d=new Date(ms);
     const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
     if(dStr>=range.start&&dStr<=range.end){
-      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
+      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.totalMerchant||p.total||0);
     }
   });
   // Receitas manuais (lançamentos tipo receita)
