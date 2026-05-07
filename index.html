@@ -2937,76 +2937,88 @@ function renderDashboard(){
 
     if(strip) strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
 
-    // Cards interativos — cada um pode ser toggled para incluir/excluir do total
-    const _cards=[
-      {id:'fat_prod',ico:'🍪',lbl:'Produtos',val:_totProd,sub:'valor dos itens',cor:'#FF6B35',active:true,fixed:true},
-      {id:'fat_taxa',ico:'🛵',lbl:'Taxas iFood',val:_taxasTot,sub:`entrega R$ ${fmtN(_taxaEnt)} + adicional R$ ${fmtN(_taxaAdic)}`,cor:'#E67E22',active:true},
-      {id:'fat_desc_if',ico:'🎁',lbl:'Desc. iFood',val:_descIF,sub:'pago pelo iFood',cor:'#27AE60',active:true},
-      {id:'fat_desc_lj',ico:'🏷️',lbl:'Desc. Loja',val:_descLoja,sub:'dado por você',cor:'#E74C3C',active:true,negative:true},
-      {id:'fat_ticket',ico:'🎯',lbl:'Ticket Médio',val:ticket,sub:'por pedido',cor:'#8E44AD',active:null},
-      {id:'fat_peds',ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)',active:null},
-      {id:'fat_cancel',ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C',active:null},
-    ];
+    var _ticketFmt=histPeriod.length?(_fatTotal/histPeriod.length):0;
+    var _cancelVal=canceladosPeriod.reduce(function(s,p){return s+(p.total||0);},0);
 
-    window._dashCards=_cards;
-    window._dashFatBase=_fatTotal;
+    window._dashCards=[
+      {id:'fat_taxa_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_taxaEnt,active:true},
+      {id:'fat_taxa_adic',ico:'➕',lbl:'Taxas Adicionais',val:_taxaAdic,active:true},
+      {id:'fat_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_descIF,active:true},
+      {id:'fat_desc_lj',ico:'🏷️',lbl:'Descontos Loja',val:_descLoja,active:true,negative:true},
+    ];
+    window._dashProd=_totProd;
+    window._dashFat=_fatTotal;
+    window._dashHist=histPeriod.length;
+    window._dashTicket=_ticketFmt;
+    window._dashCancel=canceladosPeriod.length;
+    window._dashCancelVal=_cancelVal;
+
+    function _calcDashTotal(){
+      return window._dashProd+window._dashCards.reduce(function(s,c){return s+(c.active?(c.negative?-c.val:c.val):0);},0);
+    }
 
     function _renderDashStrip(){
-      const cards=window._dashCards;
-      const toggleable=cards.filter(c=>c.active!==null&&!c.fixed);
-      const tot=cards.filter(c=>c.active===true&&!c.fixed).reduce((s,c)=>s+(c.negative?-c.val:c.val),0);
-      const totComProd=(_totProd+tot);
-
-      const cardsHTML=cards.map(c=>{
-        const isToggle=c.active!==null&&!c.fixed;
-        const isOn=c.active===true||c.fixed;
-        const border=isOn?`2px solid ${c.cor}`:'2px solid var(--bor)';
-        const bg=isOn?'var(--bg)':'var(--bg2)';
-        const opacity=isToggle&&!isOn?'opacity:.45;':'';
-        const cursor=isToggle?'cursor:pointer;':'';
-        const checkmark=isToggle?(isOn?'<div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:'+c.cor+';display:flex;align-items:center;justify-content:center"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>':'<div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bor)"></div>'):'';
-        const valDisplay=c.active===null?c.val:(c.negative?'-':'')+`R$ ${fmtN(c.val)}`;
-        const onclick=isToggle?`onclick="_dashToggle('${c.id}')"`:'';
-        return '<div '+onclick+' style="position:relative;background:'+bg+';border:'+border+';border-radius:14px;padding:14px 16px;'+cursor+opacity+'display:flex;align-items:center;gap:10px;transition:all .2s;user-select:none">'
-          +checkmark
-          +'<div style="font-size:22px;flex-shrink:0">'+c.ico+'</div>'
-          +'<div style="min-width:0">'
-            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">'+c.lbl+'</div>'
-            +'<div style="font-size:16px;font-weight:800;color:'+c.cor+';line-height:1.1">'+valDisplay+'</div>'
-            +'<div style="font-size:9px;color:var(--t3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c.sub+'</div>'
-          +'</div>'
-        +'</div>';
-      }).join('');
-
-      // Total bar
-      const totalBar='<div style="background:var(--t);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
-          +'<div style="font-size:22px">💰</div>'
-          +'<div>'
-            +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">Faturamento calculado</div>'
-            +'<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px">Clique nos cards para incluir/excluir</div>'
-          +'</div>'
+      var tot=_calcDashTotal();
+      var topHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">iFood: R$ '+fmtN(window._dashFat)+'</div>'
         +'</div>'
-        +'<div style="text-align:right">'
-          +'<div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px">R$ '+fmtN(totComProd)+'</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px">Faturamento total: R$ '+fmtN(_fatTotal)+'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._dashProd)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">valor dos itens</div>'
+        +'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._dashTicket)+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._dashHist+' pedidos</div>'
+        +'</div>'
+        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
+          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div>'
+          +'<div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._dashCancel+'</div>'
+          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._dashCancelVal)+' perdidos</div>'
         +'</div>'
       +'</div>';
-
+      var detailCards='';
+      window._dashCards.forEach(function(c){
+        var isOn=c.active;
+        var cor=c.negative?'#E74C3C':'#2980B9';
+        var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
+        var bg=isOn?'var(--bg)':'var(--bg2)';
+        var bor=isOn?cor:'var(--bor)';
+        var op=isOn?'1':'0.45';
+        var checkIcon=isOn?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>':'';
+        var checkBg=isOn?('background:'+cor):'border:2px solid var(--bor)';
+        detailCards+='<div data-dashid="'+c.id+'" onclick="window._dashToggle(this.dataset.dashid)" style="background:'+bg+';border:1.5px solid '+bor+';border-radius:12px;padding:12px 16px;cursor:pointer;opacity:'+op+';transition:all .2s;display:flex;align-items:center;gap:10px;user-select:none">'
+          +'<div style="font-size:20px">'+c.ico+'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">'+c.lbl+'</div>'
+            +'<div style="font-size:15px;font-weight:800;color:'+cor+'">'+valSign+'R$ '+fmtN(c.val)+'</div>'
+          +'</div>'
+          +'<div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+checkBg+'">'+checkIcon+'</div>'
+        +'</div>';
+      });
       if(strip){
-        strip.innerHTML='<div style="padding:16px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'+cardsHTML+'</div>'
-          +'<div style="padding:0 20px 16px">'+totalBar+'</div>';
+        strip.innerHTML=topHTML
+          +'<div style="padding:0 20px 16px">'
+            +'<div style="padding:0 0 8px;display:flex;align-items:center;justify-content:space-between">'
+              +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Detalhes do faturamento</div>'
+              +'<div style="font-size:10px;color:var(--t3)">Clique para incluir/excluir</div>'
+            +'</div>'
+            +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+detailCards+'</div>'
+          +'</div>';
       }
     }
 
     window._dashToggle=function(id){
-      const c=window._dashCards.find(x=>x.id===id);
-      if(c&&c.active!==null&&!c.fixed)c.active=!c.active;
+      var c=window._dashCards.find(function(x){return x.id===id;});
+      if(c)c.active=!c.active;
       _renderDashStrip();
     };
 
     _renderDashStrip();
-    // Render hoje content
     renderHoje();
   } else {
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
