@@ -2447,12 +2447,18 @@ function getSaldoBanco(bancoId){
   const bk=getBancos().find(b=>b.id===bancoId);
   const si=bk?bk.saldoInicial:0;
   const lancs=getLanc().filter(l=>l.bancoId===bancoId||l.bancoOrigemId===bancoId);
-  // Receitas: somam quando pago=true (ou pedidos que são D+0 automáticos)
-  const ent=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId&&(l.pago||l.pedidoId))
-    ||(l.tipo==='transferencia'&&l.bancoId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
+  // Receitas: somam quando pago=true (ou pedidos automáticos)
+  const entLancs=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId&&(l.pago||l.pedidoId))
+    ||(l.tipo==='transferencia'&&l.bancoId===bancoId));
+  const ent=entLancs.reduce((s,l)=>s+(l.valor||0),0);
   // Despesas: só descontam quando pago=true
-  const sai=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId&&l.pago===true)
-    ||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
+  const saiLancs=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId&&l.pago===true)
+    ||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId));
+  const sai=saiLancs.reduce((s,l)=>s+(l.valor||0),0);
+  if(window._debugBanco){
+    console.log('getSaldoBanco',bancoId,'si='+si,'ent='+ent,'sai='+sai,'total='+(si+ent-sai));
+    console.log('entradas:',entLancs.length,'saidas:',saiLancs.length);
+  }
   return si+ent-sai;
 }
 
@@ -6868,7 +6874,9 @@ let editBancoId=null,selectedBancoId=null;
 function renderBancos(){
   const bancos=getBancos();
   // Totais por tipo
+  window._debugBanco=true;
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
+  window._debugBanco=false;
   const totBanco=bancos.filter(b=>b.tipo!=='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
   const totGeral=totCaixa+totBanco;
   const totalsEl=document.getElementById('bank-totals');
