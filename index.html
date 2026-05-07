@@ -1007,20 +1007,13 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 
     <!-- LANÇAMENTOS -->
     <div class="pg" id="pg-lancamentos">
-      <!-- Tabs principais -->
-      <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
-        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
-        <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
-        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
-      </div>
-      <!-- Filtro inline -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
-        <!-- Conta -->
-        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:36px"><option value="">Todas as contas</option></select>
-        <!-- Nav ‹ label › -->
-        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
+      <!-- FILTRO BAR: conta + data + busca -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:34px"><option value="">Todas as contas</option></select>
+        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:30px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">‹</button>
         <div style="position:relative;flex:0 0 auto" id="lanc-range-wrap">
-          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:36px;white-space:nowrap;min-width:160px;justify-content:center">
+          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 16px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:34px;white-space:nowrap;min-width:140px;justify-content:center">
+            <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
             <span id="lanc-range-label">Este mês</span>
           </button>
           <div id="lanc-range-drop" class="grp-drop">
@@ -1063,32 +1056,21 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             </div>
           </div>
         </div>
-        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
-        <!-- Search -->
-        <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
+        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:30px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">›</button>
+        <div class="search-wrap" style="min-width:180px;flex:1;max-width:260px">
           <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
           <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
         </div>
-      </div>
-      <!-- Pills de situação -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
-          <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(230,126,34,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
-          <span style="color:var(--amber)">Vencem hoje</span><span id="ph-val" style="color:var(--amber)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(41,128,185,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
-          <span style="color:var(--blue)">A vencer</span><span id="pa-val" style="color:var(--blue)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(39,174,96,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
-          <span style="color:var(--green)">Pagos</span><span id="pp-val" style="color:var(--green)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--bg3);font-size:12px;font-weight:600;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
-          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t)">R$ 0,00</span>
+        <!-- Tabs à direita -->
+        <div style="margin-left:auto;display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
+          <button id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">A Pagar</button>
+          <button id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">A Receber</button>
+          <button id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Todos</button>
         </div>
       </div>
-      <!-- Sub-tabs (ocultas quando main tab = pagar/receber) -->
+      <!-- DASHBOARD SUMMARY — ocupa tela inteira, gerado por renderLancSummary -->
+      <div id="lanc-summary-bar"></div>
+      <!-- Sub-tabs para modo Todos -->
       <div id="lanc-subtabs" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;display:none;gap:0;flex-shrink:0">
         <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
         <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
@@ -1096,6 +1078,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div class="lanc-tab" id="lt-producao" onclick="lancTab('producao',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Produções</div>
         <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
       </div>
+      <select id="lanc-month" style="display:none"></select>
       <select id="lanc-month" style="display:none"></select>
       <div class="scroll">
         <div class="card">
@@ -2447,18 +2430,10 @@ function getSaldoBanco(bancoId){
   const bk=getBancos().find(b=>b.id===bancoId);
   const si=bk?bk.saldoInicial:0;
   const lancs=getLanc().filter(l=>l.bancoId===bancoId||l.bancoOrigemId===bancoId);
-  // Receitas: somam quando pago=true (ou pedidos automáticos)
-  const entLancs=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId&&(l.pago||l.pedidoId))
-    ||(l.tipo==='transferencia'&&l.bancoId===bancoId));
-  const ent=entLancs.reduce((s,l)=>s+(l.valor||0),0);
-  // Despesas: só descontam quando pago=true
-  const saiLancs=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId&&l.pago===true)
-    ||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId));
-  const sai=saiLancs.reduce((s,l)=>s+(l.valor||0),0);
-  if(window._debugBanco){
-    console.log('getSaldoBanco',bancoId,'si='+si,'ent='+ent,'sai='+sai,'total='+(si+ent-sai));
-    console.log('entradas:',entLancs.length,'saidas:',saiLancs.length);
-  }
+  const ent=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId&&(l.pago||l.pedidoId))
+    ||(l.tipo==='transferencia'&&l.bancoId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
+  const sai=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId&&l.pago===true)
+    ||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
   return si+ent-sai;
 }
 
@@ -5309,17 +5284,17 @@ let _lancMainTab='pagar'; // pagar | receber | todos
 
 function lancMainTab(tab, el){
   _lancMainTab=tab;
-  // Update tab styles
-  ['pagar','receber','todos'].forEach(k=>{
-    const t=document.getElementById('lt-'+k+(k==='todos'?'-main':''));
+  // Update button styles
+  ['pagar','receber','todos-main'].forEach(k=>{
+    const t=document.getElementById('lt-'+k);
     if(!t)return;
-    t.style.color=k===tab?'var(--fox)':'var(--t3)';
-    t.style.borderBottomColor=k===tab?'var(--fox)':'transparent';
+    const active=k===tab||(k==='todos-main'&&tab==='todos');
+    t.style.background=active?'var(--fox)':'var(--bg)';
+    t.style.color=active?'#fff':'var(--t2)';
   });
   // Show subtabs only for "todos"
   const sub=document.getElementById('lanc-subtabs');
   if(sub)sub.style.display=tab==='todos'?'flex':'none';
-  // Set lancTab_current based on main tab
   if(tab==='pagar'){lancTab_current='despesa';}
   else if(tab==='receber'){lancTab_current='receita';}
   else{lancTab_current='todos';}
@@ -6874,9 +6849,7 @@ let editBancoId=null,selectedBancoId=null;
 function renderBancos(){
   const bancos=getBancos();
   // Totais por tipo
-  window._debugBanco=true;
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
-  window._debugBanco=false;
   const totBanco=bancos.filter(b=>b.tipo!=='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
   const totGeral=totCaixa+totBanco;
   const totalsEl=document.getElementById('bank-totals');
