@@ -5436,146 +5436,101 @@ function lancUpdateLabel(){}// handled by grpApply
 function renderLancSummary(){
   const today=todayISO();
   const r=lancGetRange();
-  const isMainPagar=_lancMainTab==='pagar';
-  const isMainReceber=_lancMainTab==='receber';
 
-  // Todos os lançamentos do período (excl. transferências e pedidos)
-  let lancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
-  if(r.start)lancs=lancs.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
+  const allLancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
+  const periodLancs=r.start?allLancs.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;}):allLancs;
 
-  const desp=lancs.filter(l=>l.tipo==='despesa');
-  const rec=lancs.filter(l=>l.tipo==='receita');
+  const desp=periodLancs.filter(l=>l.tipo==='despesa');
+  const rec=periodLancs.filter(l=>l.tipo==='receita');
 
-  // DESPESAS
-  const despVencido=desp.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
+  const despVenc=desp.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
   const despHoje=desp.filter(l=>!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
-  const despAvencer=desp.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
+  const despAVenc=desp.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
   const despPago=desp.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
   const despTotal=desp.reduce((s,l)=>s+(l.valor||0),0);
 
-  // RECEITAS
-  const recVencido=rec.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
+  const recVenc=rec.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
   const recHoje=rec.filter(l=>!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
-  const recAvencer=rec.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
-  const recRecebido=rec.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
+  const recAVenc=rec.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
+  const recReceb=rec.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
   const recTotal=rec.reduce((s,l)=>s+(l.valor||0),0);
 
-  // BANCOS — saldo atual + previsto
   const bancos=getBancos();
   const saldoAtual=bancos.reduce((s,b)=>s+getSaldoBanco(b.id),0);
-  // Previsto = saldo atual + receitas pendentes - despesas pendentes (do período)
-  const allLancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
   const despPendAll=allLancs.filter(l=>l.tipo==='despesa'&&!l.pago).reduce((s,l)=>s+(l.valor||0),0);
   const recPendAll=allLancs.filter(l=>l.tipo==='receita'&&!l.pago).reduce((s,l)=>s+(l.valor||0),0);
-  const saldoPrevisto=saldoAtual+recPendAll-despPendAll;
+  const saldoPrev=saldoAtual+recPendAll-despPendAll;
 
-  // Render summary bar
-  const bar=document.getElementById('lanc-summary-bar');
-  if(!bar)return;
-
-  // Decide which tab's pills to highlight
-  const activePill=lancPillFilter||'';
-
-  function pill(id,lbl,val,cor,filter){
-    const isActive=activePill===filter;
-    const bg=isActive?cor+'22':'transparent';
-    const border=isActive?('2px solid '+cor):('1px solid var(--bor)');
-    return '<div onclick="lancFilterPill(\''+filter+'\')" style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;border:'+border+';background:'+bg+';cursor:pointer;transition:all .15s;user-select:none">'
-      +'<span style="font-size:11px;font-weight:600;color:'+cor+'">'+lbl+'</span>'
-      +'<span style="font-size:12px;font-weight:700;color:'+cor+'">R$ '+fmtN(val)+'</span>'
+  function row(lbl,val,filter,cor,icon){
+    const isActive=lancPillFilter===filter;
+    const bg=isActive?'background:'+cor+'11;':'';
+    const fw=isActive?'font-weight:800':'font-weight:600';
+    return '<div onclick="lancFilterPill(\''+filter+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;border-radius:8px;transition:background .1s;'+bg+'" onmouseenter="this.style.background=\'var(--bg2)\'" onmouseleave="this.style.background=\''+(isActive?cor+'11':'transparent')+'\'">'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:14px">'+icon+'</span>'
+        +'<span style="font-size:12px;color:var(--t2)">'+lbl+'</span>'
+      +'</div>'
+      +'<span style="font-size:13px;'+fw+';color:'+cor+'">R$ '+fmtN(val)+'</span>'
     +'</div>';
   }
 
+  function totalRow(lbl,val,cor){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-top:1px solid var(--bor);margin-top:4px">'
+      +'<span style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">'+lbl+'</span>'
+      +'<span style="font-size:14px;font-weight:800;color:'+cor+'">R$ '+fmtN(val)+'</span>'
+    +'</div>';
+  }
+
+  const bar=document.getElementById('lanc-summary-bar');
+  if(!bar)return;
+
   bar.innerHTML=
-    // Linha 1: Dashboard cards
-    '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;padding:14px 20px 10px">'
-      // Contas a Pagar
-      +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-        +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📤 Contas a Pagar</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
-          +'<div style="text-align:center">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Vencidas</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#E74C3C">R$ '+fmtN(despVencido)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Vencem Hoje</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#E67E22">R$ '+fmtN(despHoje)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">A Vencer</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#2980B9">R$ '+fmtN(despAvencer)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Pagos</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#27AE60">R$ '+fmtN(despPago)+'</div>'
-          +'</div>'
-        +'</div>'
-        +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bor);display:flex;justify-content:space-between">'
-          +'<span style="font-size:10px;color:var(--t3)">Total período</span>'
-          +'<span style="font-size:12px;font-weight:700;color:var(--red)">R$ '+fmtN(despTotal)+'</span>'
-        +'</div>'
+    '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;padding:14px 20px">'
+
+    // ── DESPESAS ──
+    +'<div style="background:var(--bg);border:1.5px solid var(--bor);border-radius:14px;overflow:hidden">'
+      +'<div style="padding:10px 16px;background:rgba(231,76,60,.08);border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:16px">📤</span>'
+        +'<span style="font-size:11px;font-weight:700;color:#E74C3C;text-transform:uppercase;letter-spacing:.5px">Contas a Pagar</span>'
       +'</div>'
-      // Contas a Receber
-      +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-        +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📥 Contas a Receber</div>'
-        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'
-          +'<div style="text-align:center">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Vencidas</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#E74C3C">R$ '+fmtN(recVencido)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Vencem Hoje</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#E67E22">R$ '+fmtN(recHoje)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">A Receber</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#2980B9">R$ '+fmtN(recAvencer)+'</div>'
-          +'</div>'
-          +'<div style="text-align:center;border-left:1px solid var(--bor);padding-left:8px">'
-            +'<div style="font-size:10px;color:var(--t3);margin-bottom:3px">Recebidos</div>'
-            +'<div style="font-size:16px;font-weight:800;color:#27AE60">R$ '+fmtN(recRecebido)+'</div>'
-          +'</div>'
-        +'</div>'
-        +'<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bor);display:flex;justify-content:space-between">'
-          +'<span style="font-size:10px;color:var(--t3)">Total período</span>'
-          +'<span style="font-size:12px;font-weight:700;color:var(--green)">R$ '+fmtN(recTotal)+'</span>'
-        +'</div>'
+      +row('Vencidas',despVenc,'vencidos','#E74C3C','⏰')
+      +row('Vencem hoje',despHoje,'hoje','#E67E22','📅')
+      +row('A vencer',despAVenc,'avencer','#2980B9','📆')
+      +row('Pagas',despPago,'pagos','#27AE60','✅')
+      +totalRow('Total período',despTotal,'#E74C3C')
+    +'</div>'
+
+    // ── RECEITAS ──
+    +'<div style="background:var(--bg);border:1.5px solid var(--bor);border-radius:14px;overflow:hidden">'
+      +'<div style="padding:10px 16px;background:rgba(39,174,96,.08);border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:8px">'
+        +'<span style="font-size:16px">📥</span>'
+        +'<span style="font-size:11px;font-weight:700;color:#27AE60;text-transform:uppercase;letter-spacing:.5px">Contas a Receber</span>'
       +'</div>'
-      // Saldo previsto
-      +'<div style="background:var(--t);border-radius:14px;padding:14px 20px;min-width:180px;display:flex;flex-direction:column;justify-content:space-between">'
-        +'<div>'
-          +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🏦 Saldo Previsto</div>'
-          +'<div style="font-size:22px;font-weight:900;color:'+(saldoPrevisto>=0?'#4ade80':'#f87171')+';letter-spacing:-.5px">R$ '+fmtN(saldoPrevisto)+'</div>'
-          +'<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">após pendentes</div>'
-        +'</div>'
-        +'<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)">'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
-            +'<span style="font-size:10px;color:rgba(255,255,255,.5)">Saldo atual</span>'
-            +'<span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span>'
-          +'</div>'
-          +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
-            +'<span style="font-size:10px;color:rgba(255,255,255,.5)">+ Entradas prev.</span>'
-            +'<span style="font-size:11px;font-weight:600;color:#4ade80">R$ '+fmtN(recPendAll)+'</span>'
-          +'</div>'
-          +'<div style="display:flex;justify-content:space-between">'
-            +'<span style="font-size:10px;color:rgba(255,255,255,.5)">- Saídas prev.</span>'
-            +'<span style="font-size:11px;font-weight:600;color:#f87171">R$ '+fmtN(despPendAll)+'</span>'
-          +'</div>'
-        +'</div>'
+      +row('Vencidas',recVenc,'rec_vencidos','#E74C3C','⏰')
+      +row('Vencem hoje',recHoje,'rec_hoje','#E67E22','📅')
+      +row('A receber',recAVenc,'rec_avencer','#2980B9','📆')
+      +row('Recebidas',recReceb,'rec_pagos','#27AE60','✅')
+      +totalRow('Total período',recTotal,'#27AE60')
+    +'</div>'
+
+    // ── SALDO PREVISTO ──
+    +'<div style="background:var(--t);border-radius:14px;padding:16px 20px;min-width:200px;display:flex;flex-direction:column;gap:8px">'
+      +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px">🏦 Saldo Previsto</div>'
+      +'<div style="font-size:26px;font-weight:900;color:'+(saldoPrev>=0?'#4ade80':'#f87171')+';letter-spacing:-.5px;line-height:1">R$ '+fmtN(saldoPrev)+'</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.35)">após todos os pendentes</div>'
+      +'<div style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;display:flex;flex-direction:column;gap:5px">'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">Saldo atual</span><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">+ Entradas prev.</span><span style="font-size:11px;font-weight:700;color:#4ade80">R$ '+fmtN(recPendAll)+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:10px;color:rgba(255,255,255,.45)">− Saídas prev.</span><span style="font-size:11px;font-weight:700;color:#f87171">R$ '+fmtN(despPendAll)+'</span></div>'
       +'</div>'
     +'</div>'
-    // Linha 2: pills de filtro rápido
-    +'<div style="padding:0 20px 10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-      +pill('pv','Vencidos',despVencido,'#E74C3C','vencidos')
-      +pill('ph','Vencem hoje',despHoje,'#E67E22','hoje')
-      +pill('pa','A vencer',despAvencer,'#2980B9','avencer')
-      +pill('pp','Pagos/Recebidos',despPago+recRecebido,'#27AE60','pagos')
-      +'<div style="height:20px;width:1px;background:var(--bor);margin:0 4px"></div>'
-      +'<div style="font-size:11px;font-weight:600;color:var(--t3)">Total período:</div>'
-      +'<div style="font-size:13px;font-weight:800;color:var(--t)" id="pt-val">R$ '+fmtN(despTotal+recTotal)+'</div>'
-    +'</div>';
+
+  +'</div>';
 
   lancUpdateLabel();
+
+  // Update filter logic to handle receita filters
+  window._lancRecFilter=lancPillFilter;
 }
 
 function renderLanc(){
@@ -5633,10 +5588,14 @@ function renderLanc(){
   if(r.start)data=data.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
   if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter);
   if(search)data=data.filter(l=>l.desc.toLowerCase().includes(search));
-  if(lancPillFilter==='vencidos')data=data.filter(l=>!l.pago&&l.venc<today);
-  if(lancPillFilter==='hoje')data=data.filter(l=>!l.pago&&l.venc===today);
-  if(lancPillFilter==='avencer')data=data.filter(l=>!l.pago&&l.venc>today);
+  if(lancPillFilter==='vencidos')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc<today);
+  if(lancPillFilter==='hoje')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc===today);
+  if(lancPillFilter==='avencer')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&(!l.venc||l.venc>today));
   if(lancPillFilter==='pagos')data=data.filter(l=>l.pago);
+  if(lancPillFilter==='rec_vencidos')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&l.venc&&l.venc<today);
+  if(lancPillFilter==='rec_hoje')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&l.venc===today);
+  if(lancPillFilter==='rec_avencer')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&(!l.venc||l.venc>today));
+  if(lancPillFilter==='rec_pagos')data=data.filter(l=>l.tipo==='receita'&&l.pago);
   data=[...data].sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
 
   // Add produções to "Todos"
