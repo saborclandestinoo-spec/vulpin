@@ -2926,20 +2926,22 @@ function renderDashboard(){
     // Big cards para o dia
     // Calc faturamento details
     // Total produtos = faturamento - taxas de entrega
-    const _fatTotal=histPeriod.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
+    const _fatTotal=receitasPeriod;
+    const _totProd=histPeriod.reduce((s,p)=>s+(p.items||p.itens||[]).reduce((si,i)=>si+(i.total_price||i.totalPrice||i.price||0),0),0);
     const _taxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
-    const _totProd=_fatTotal-_taxaEnt;
+    const _taxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||0),0);
+    const _taxaServ=histPeriod.reduce((s,p)=>s+(p.service_fee||0),0);
+    const _taxasTot=_taxaEnt+_taxaAdic+_taxaServ;
+    const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.total||d.value||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
-    // _descIF: custo do iFood (pago pelo iFood, não pela loja)
-    const _descIF=0; // iFood paga o desconto — não deduzir do faturamento
 
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
     if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'total do dia',cor:'#27AE60'},
-      {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas/descontos',cor:'#FF6B35'},
-      {ico:'🛵',lbl:'Taxas Entrega',val:`R$ ${fmtN(_taxaEnt)}`,sub:'delivery',cor:'#E67E22'},
-      {ico:'🏷️',lbl:'Descontos Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'promoções',cor:'#E74C3C'},
-      {ico:'🍔',lbl:'Descontos iFood',val:`R$ ${fmtN(_descIF)}`,sub:'plataforma',cor:'#EA1D2C'},
+      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(_fatTotal)}`,sub:'total recebido',cor:'#27AE60'},
+      {ico:'🍪',lbl:'Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'valor dos itens',cor:'#FF6B35'},
+      {ico:'🛵',lbl:'Taxas iFood',val:`R$ ${fmtN(_taxasTot)}`,sub:`entrega R$ ${fmtN(_taxaEnt)} + adicional R$ ${fmtN(_taxaAdic)}`,cor:'#E67E22'},
+      {ico:'🎁',lbl:'Desc. iFood',val:`R$ ${fmtN(_descIF)}`,sub:'pago pelo iFood ✓',cor:'#27AE60'},
+      {ico:'🏷️',lbl:'Desc. Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'dado por você',cor:'#E74C3C'},
       {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
       {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
@@ -8263,10 +8265,12 @@ function slim(p){
     status:p.status||p.situacao||'',
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
-    totalMerchant:p.merchant_amount||p.merchantAmount||(()=>{const it=p.items||p.itens||[];return it.reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);})()||p.total||p.totalAmount||p.valor||0,
+    totalMerchant:(()=>{const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);const entrega=p.delivery_fee||p.deliveryFee||0;const adicional=p.additional_fee||p.additional_fees||0;const servico=p.service_fee||0;const descIF=(p.discounts||[]).reduce((s,d)=>s+(d.total||d.value||0),0)+(p.benefits||[]).reduce((s,b)=>s+(b.value||0),0);const calc=itVal+entrega+adicional+servico+descIF;return p.merchant_amount||p.merchantAmount||calc||p.total||p.totalAmount||p.valor||0;})()||0,
     sales_channel:p.sales_channel||'',
     order_type:p.order_type||p.orderType||'',
     delivery_fee:p.delivery_fee||p.deliveryFee||0,
+    additional_fee:p.additional_fee||p.additional_fees||0,
+    service_fee:p.service_fee||0,
     discount:p.discount||p.desconto||p.store_discount||0,
     benefits:p.benefits||[],
     discounts:p.discounts||[],
