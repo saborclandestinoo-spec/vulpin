@@ -2512,6 +2512,7 @@ async function doLogout(){
 }
 function bootApp(){
   initTheme();
+  try{migrateTotalMerchant();}catch(e){}
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   const u=currentUser;
@@ -2644,6 +2645,26 @@ function fmtPedStatus(s){
 }
 const getPedidosCache=()=>S.get('pedidos_cache')||[];
 const getFichas=()=>S.get('fichas')||{};
+function migrateTotalMerchant(){
+  // Recalcula totalMerchant para pedidos antigos que não têm o campo
+  var hist=S.get('historico')||[];
+  var changed=false;
+  hist=hist.map(function(p){
+    if(p.totalMerchant)return p; // já tem
+    var itVal=(p.items||p.itens||[]).reduce(function(s,i){return s+(i.total_price||i.totalPrice||i.price||0);},0);
+    var entrega=p.delivery_fee||p.deliveryFee||0;
+    var adicional=p.additional_fee||p.additional_fees||0;
+    var servico=p.service_fee||0;
+    var descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.total||d.value||0);},0)
+              +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
+    var calc=itVal+entrega+adicional+servico+descIF;
+    p.totalMerchant=calc||p.total||0;
+    changed=true;
+    return p;
+  });
+  if(changed)S.set('historico',hist);
+}
+
 function getHistorico(){
   try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
 }
