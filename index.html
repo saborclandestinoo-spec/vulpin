@@ -2935,24 +2935,77 @@ function renderDashboard(){
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.total||d.value||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
 
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
-    if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(_fatTotal)}`,sub:'total recebido',cor:'#27AE60'},
-      {ico:'🍪',lbl:'Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'valor dos itens',cor:'#FF6B35'},
-      {ico:'🛵',lbl:'Taxas iFood',val:`R$ ${fmtN(_taxasTot)}`,sub:`entrega R$ ${fmtN(_taxaEnt)} + adicional R$ ${fmtN(_taxaAdic)}`,cor:'#E67E22'},
-      {ico:'🎁',lbl:'Desc. iFood',val:`R$ ${fmtN(_descIF)}`,sub:'pago pelo iFood ✓',cor:'#27AE60'},
-      {ico:'🏷️',lbl:'Desc. Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'dado por você',cor:'#E74C3C'},
-      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)'},
-      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
-    ].map(k=>`<div style="background:var(--bg);border-radius:16px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px">
-      <div style="font-size:24px">${k.ico}</div>
-      <div>
-        <div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">${k.lbl}</div>
-        <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
-        <div style="font-size:9px;color:var(--t3);margin-top:1px">${k.sub}</div>
-      </div>
-    </div>`).join('');
+    if(strip) strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
+
+    // Cards interativos — cada um pode ser toggled para incluir/excluir do total
+    const _cards=[
+      {id:'fat_prod',ico:'🍪',lbl:'Produtos',val:_totProd,sub:'valor dos itens',cor:'#FF6B35',active:true,fixed:true},
+      {id:'fat_taxa',ico:'🛵',lbl:'Taxas iFood',val:_taxasTot,sub:`entrega R$ ${fmtN(_taxaEnt)} + adicional R$ ${fmtN(_taxaAdic)}`,cor:'#E67E22',active:true},
+      {id:'fat_desc_if',ico:'🎁',lbl:'Desc. iFood',val:_descIF,sub:'pago pelo iFood',cor:'#27AE60',active:true},
+      {id:'fat_desc_lj',ico:'🏷️',lbl:'Desc. Loja',val:_descLoja,sub:'dado por você',cor:'#E74C3C',active:true,negative:true},
+      {id:'fat_ticket',ico:'🎯',lbl:'Ticket Médio',val:ticket,sub:'por pedido',cor:'#8E44AD',active:null},
+      {id:'fat_peds',ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)',active:null},
+      {id:'fat_cancel',ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C',active:null},
+    ];
+
+    window._dashCards=_cards;
+    window._dashFatBase=_fatTotal;
+
+    function _renderDashStrip(){
+      const cards=window._dashCards;
+      const toggleable=cards.filter(c=>c.active!==null&&!c.fixed);
+      const tot=cards.filter(c=>c.active===true&&!c.fixed).reduce((s,c)=>s+(c.negative?-c.val:c.val),0);
+      const totComProd=(_totProd+tot);
+
+      const cardsHTML=cards.map(c=>{
+        const isToggle=c.active!==null&&!c.fixed;
+        const isOn=c.active===true||c.fixed;
+        const border=isOn?`2px solid ${c.cor}`:'2px solid var(--bor)';
+        const bg=isOn?'var(--bg)':'var(--bg2)';
+        const opacity=isToggle&&!isOn?'opacity:.45;':'';
+        const cursor=isToggle?'cursor:pointer;':'';
+        const checkmark=isToggle?(isOn?'<div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:'+c.cor+';display:flex;align-items:center;justify-content:center"><svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>':'<div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--bor)"></div>'):'';
+        const valDisplay=c.active===null?c.val:(c.negative?'-':'')+`R$ ${fmtN(c.val)}`;
+        const onclick=isToggle?`onclick="_dashToggle('${c.id}')"`:'';
+        return '<div '+onclick+' style="position:relative;background:'+bg+';border:'+border+';border-radius:14px;padding:14px 16px;'+cursor+opacity+'display:flex;align-items:center;gap:10px;transition:all .2s;user-select:none">'
+          +checkmark
+          +'<div style="font-size:22px;flex-shrink:0">'+c.ico+'</div>'
+          +'<div style="min-width:0">'
+            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">'+c.lbl+'</div>'
+            +'<div style="font-size:16px;font-weight:800;color:'+c.cor+';line-height:1.1">'+valDisplay+'</div>'
+            +'<div style="font-size:9px;color:var(--t3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+c.sub+'</div>'
+          +'</div>'
+        +'</div>';
+      }).join('');
+
+      // Total bar
+      const totalBar='<div style="background:var(--t);border-radius:14px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+          +'<div style="font-size:22px">💰</div>'
+          +'<div>'
+            +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px">Faturamento calculado</div>'
+            +'<div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px">Clique nos cards para incluir/excluir</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="text-align:right">'
+          +'<div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px">R$ '+fmtN(totComProd)+'</div>'
+          +'<div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:1px">Faturamento total: R$ '+fmtN(_fatTotal)+'</div>'
+        +'</div>'
+      +'</div>';
+
+      if(strip){
+        strip.innerHTML='<div style="padding:16px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'+cardsHTML+'</div>'
+          +'<div style="padding:0 20px 16px">'+totalBar+'</div>';
+      }
+    }
+
+    window._dashToggle=function(id){
+      const c=window._dashCards.find(x=>x.id===id);
+      if(c&&c.active!==null&&!c.fixed)c.active=!c.active;
+      _renderDashStrip();
+    };
+
+    _renderDashStrip();
     // Render hoje content
     renderHoje();
   } else {
