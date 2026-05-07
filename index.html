@@ -3043,6 +3043,7 @@ function renderDashboard(){
       var c=window._dashCards.find(function(x){return x.id===id;});
       if(c)c.active=!c.active;
       _renderDashStrip();
+      try{renderDashFatChart();}catch(e){}
     };
 
     _renderDashStrip();
@@ -3142,6 +3143,7 @@ function renderDashboard(){
       var c=window._dashCards2.find(function(x){return x.id===id;});
       if(c)c.active=!c.active;
       _renderPeriodStrip();
+      try{renderDashFatChart();}catch(e){}
     };
 
     _renderPeriodStrip();
@@ -3180,18 +3182,42 @@ function renderDashFatChart(){
   const hist=Object.values((()=>{const m={};getHistorico().forEach(p=>{m[p.id]=p;});getPedidosCache().forEach(p=>{if(p.id)m[p.id]={...m[p.id],...p};});return m;})());
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
 
-  // PRÉ-AGRUPAMENTO — 1 passagem, evita O(N×dias)
+  // PRÉ-AGRUPAMENTO — usa mesma lógica dos cards ativos
   const mapaAtual={};const mapaAnterior={};
   let pedAtual=0,pedAnterior=0;
+
+  // Helper: calcula valor do pedido igual aos cards
+  function _chartValPedido(p){
+    var itVal=(p.items||p.itens||[]).reduce(function(s,i){return s+(i.total_price||i.totalPrice||i.price||0);},0)||p.total||0;
+    var ent=p.delivery_fee||p.deliveryFee||0;
+    var adic=p.additional_fee||p.additional_fees||0;
+    var descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.total||d.value||0);},0)
+              +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
+    // Usa cards ativos se existirem, senão fórmula padrão
+    var cards=window._dashCards||window._dashCards2||null;
+    if(cards){
+      var tot=itVal;
+      var getCard=function(id){return (cards.find(function(c){return c.id===id||c.id==='p_'+id.replace('fat_','');}))||null;};
+      var cEnt=cards.find(function(c){return c.id==='fat_taxa_ent'||c.id==='p_taxa_ent';});
+      var cAdic=cards.find(function(c){return c.id==='fat_taxa_adic'||c.id==='p_taxa_adic';});
+      var cDescIF=cards.find(function(c){return c.id==='fat_desc_if'||c.id==='p_desc_if';});
+      var cDescLj=cards.find(function(c){return c.id==='fat_desc_lj'||c.id==='p_desc_lj';});
+      if(cEnt&&cEnt.active)tot+=ent;
+      if(cAdic&&cAdic.active)tot+=adic;
+      if(cDescIF&&cDescIF.active)tot-=descIF;
+      if(cDescLj&&cDescLj.active)tot-=(p.discount||p.desconto||p.store_discount||0);
+      return tot;
+    }
+    return itVal+ent+adic-descIF;
+  }
+
   hist.forEach(p=>{
     if(_stCancel.has(p.status||''))return;
     const dt=p.created_at||p.createdAt||'';if(!dt)return;
-    // Usa slice para evitar new Date() + toLocaleDateString (caro)
-    // ISO string começa com YYYY-MM-DD em UTC; ajusta -3h para BRT
     const ms=new Date(dt).getTime()-3*60*60*1000;
     const d=new Date(ms);
     const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-    const tot=p.totalMerchant||p.total||0;
+    const tot=_chartValPedido(p);
     if(dStr.startsWith(mes)){mapaAtual[dStr]=(mapaAtual[dStr]||0)+tot;pedAtual++;}
     else if(dStr.startsWith(prevMes)){mapaAnterior[dStr]=(mapaAnterior[dStr]||0)+tot;pedAnterior++;}
   });
