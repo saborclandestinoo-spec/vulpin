@@ -2928,29 +2928,63 @@ function renderDashboard(){
     const _taxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||p.additional_fees||0),0);
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
-    // p.total = produtos + entrega + adic - descIF (valor pago pelo cliente)
-    // Faturamento (CW) = p.total + descIF = produtos + entrega + adic
     const _faturamento=_fatTotal+_descIF;
     const _totProd=_faturamento-_taxaEnt-_taxaAdic;
 
-    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
-    if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(_faturamento)}`,sub:'produtos + taxas',cor:'#27AE60'},
-      {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas',cor:'#FF6B35'},
-      {ico:'🛵',lbl:'Taxas Entrega',val:`R$ ${fmtN(_taxaEnt)}`,sub:'delivery',cor:'#E67E22'},
-      {ico:'➕',lbl:'Taxas Adicionais',val:`R$ ${fmtN(_taxaAdic)}`,sub:'plataforma',cor:'#E67E22'},
-      {ico:'🎁',lbl:'Descontos iFood',val:`R$ ${fmtN(_descIF)}`,sub:'pago pelo iFood',cor:'#27AE60'},
-      {ico:'🏷️',lbl:'Descontos Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'promoções',cor:'#E74C3C'},
-      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(histPeriod.length?_faturamento/histPeriod.length:0)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)'},
-    ].map(k=>`<div style="background:var(--bg);border-radius:16px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px">
-      <div style="font-size:24px">${k.ico}</div>
-      <div>
-        <div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">${k.lbl}</div>
-        <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
-        <div style="font-size:9px;color:var(--t3);margin-top:1px">${k.sub}</div>
-      </div>
-    </div>`).join('');
+    window._hCards=[
+      {id:'hc_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_taxaEnt,on:true,neg:false},
+      {id:'hc_adic',ico:'➕',lbl:'Taxas Adicionais',val:_taxaAdic,on:true,neg:false},
+      {id:'hc_dif',ico:'🎁',lbl:'Descontos iFood',val:_descIF,on:false,neg:false},
+      {id:'hc_dlj',ico:'🏷️',lbl:'Descontos Loja',val:_descLoja,on:false,neg:true},
+    ];
+    window._hProd=_totProd;
+    window._hFat=_faturamento;
+    window._hPeds=histPeriod.length;
+    window._hCancel=canceladosPeriod.length;
+    window._hCancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
+
+    function _calcHoje(){
+      var t=window._hProd;
+      window._hCards.forEach(function(c){t+=c.on?(c.neg?-c.val:c.val):0;});
+      return t;
+    }
+
+    function _renderHoje(){
+      var tot=_calcHoje();
+      var top='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
+        +['<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div><div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">base iFood: R$ '+fmtN(window._hFat)+'</div></div>',
+          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div><div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._hProd)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">valor dos itens</div></div>',
+          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div><div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._hPeds?tot/window._hPeds:0)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._hPeds+' pedidos</div></div>',
+          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div><div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._hCancel+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._hCancelVal)+' perdidos</div></div>'
+        ].join('')+'</div>';
+
+      var det='';
+      window._hCards.forEach(function(c){
+        var cor=c.neg?'#E74C3C':(c.id==='hc_dif'?'#27AE60':'#2980B9');
+        var sign=c.on?(c.neg?'- ':'+ '):'';
+        var bg=c.on?'var(--bg)':'var(--bg2)';
+        var bor=c.on?cor:'var(--bor)';
+        det+='<div data-hid="'+c.id+'" onclick="window._hToggle(this.dataset.hid)" style="background:'+bg+';border:1.5px solid '+bor+';border-radius:12px;padding:12px 16px;cursor:pointer;opacity:'+(c.on?1:.4)+';transition:all .2s;display:flex;align-items:center;gap:10px;user-select:none">'
+          +'<div style="font-size:20px">'+c.ico+'</div>'
+          +'<div style="flex:1"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">'+c.lbl+'</div>'
+          +'<div style="font-size:15px;font-weight:800;color:'+cor+'">'+sign+'R$ '+fmtN(c.val)+'</div></div>'
+          +'<div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+(c.on?'background:'+cor:'border:2px solid var(--bor)')+'">'+( c.on?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>':'')+'</div>'
+        +'</div>';
+      });
+
+      if(strip){
+        strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
+        strip.innerHTML=top+'<div style="padding:0 20px 16px"><div style="padding:0 0 8px;display:flex;justify-content:space-between"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Detalhes do faturamento</span><span style="font-size:10px;color:var(--t3)">Clique para incluir/excluir</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+det+'</div></div>';
+      }
+    }
+
+    window._hToggle=function(id){
+      var c=window._hCards.find(function(x){return x.id===id;});
+      if(c)c.on=!c.on;
+      _renderHoje();
+    };
+
+    _renderHoje();
     renderHoje();
   } else {
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
