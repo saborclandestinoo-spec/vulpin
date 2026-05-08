@@ -2928,7 +2928,8 @@ function renderDashboard(){
     const _taxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||p.additional_fees||0),0);
     const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
-    const _faturamento=_fatTotal+_descIF;
+    // Faturamento = p.total (valor pago pelo cliente, já descontado pelo iFood)
+    const _faturamento=_fatTotal;
     const _totProd=_faturamento-_taxaEnt-_taxaAdic;
 
     window._hCards=[
