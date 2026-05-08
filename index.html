@@ -2636,15 +2636,21 @@ function migrateTotalMerchant(){
   var hist=S.get('historico')||[];
   var changed=false;
   hist=hist.map(function(p){
-    if(p.totalMerchant&&p._tmv===2)return p; // já migrado v2
+    if(p.totalMerchant&&p._tmv===3)return p; // já migrado v3
     var itVal=(p.items||p.itens||[]).reduce(function(s,i){return s+(i.total_price||i.totalPrice||i.price||0);},0);
     var entrega=p.delivery_fee||p.deliveryFee||0;
     var adicional=p.additional_fee||p.additional_fees||0;
     var servico=p.service_fee||0;
     var descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.total||d.value||0);},0)
               +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
-    p.totalMerchant=p.merchant_amount||p.merchantAmount||(itVal+entrega+adicional+servico-descIF)||p.total||0;
-    p._tmv=2;
+    if(p.merchant_amount||p.merchantAmount){
+      p.totalMerchant=p.merchant_amount||p.merchantAmount;
+    } else if(itVal>0){
+      p.totalMerchant=itVal+entrega+adicional+servico-descIF;
+    } else {
+      p.totalMerchant=(p.total||0)+descIF;
+    }
+    p._tmv=3;
     changed=true;
     return p;
   });
@@ -2900,6 +2906,20 @@ function renderDashboard(){
   const lancPeriodComp=lancs.filter(l=>filterFn(getCompData(l)));
 
   const receitasPeriod=histPeriod.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
+  if(window._debugFat){
+    console.log('=== FATURAMENTO DEBUG ===');
+    let totItens=0;
+    histPeriod.forEach(p=>{
+      const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
+      totItens+=itVal;
+    });
+    console.log('Total itens Vulpin:',totItens,'(CW: 915.70, diff='+(totItens-915.70).toFixed(2)+')');
+    histPeriod.forEach(p=>{
+      const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
+      console.log('#'+(p.display_id||p.id)+' itens='+itVal.toFixed(2)+' total='+p.total+' items:'+(p.items||p.itens||[]).map(i=>i.name+'='+i.total_price).join(','));
+    });
+  }
+  window._debugFat=(currentPeriod==='hoje');
   const despPeriod=lancPeriod.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
   const lucroPeriod=receitasPeriod-despPeriod;
   const ticket=histPeriod.length?receitasPeriod/histPeriod.length:0;
@@ -2934,7 +2954,15 @@ function renderDashboard(){
     // Calc faturamento details
     // Total produtos = faturamento - taxas de entrega
     const _fatTotal=receitasPeriod;
-    const _totProd=histPeriod.reduce((s,p)=>s+(p.items||p.itens||[]).reduce((si,i)=>si+(i.total_price||i.totalPrice||i.price||0),0),0);
+    const _totProd=histPeriod.reduce((s,p)=>{
+      const itVal=(p.items||p.itens||[]).reduce((si,i)=>si+(i.total_price||i.totalPrice||i.price||0),0);
+      if(itVal>0)return s+itVal;
+      // Sem itens: total - entrega - adic - servico (valor dos produtos)
+      const ent=p.delivery_fee||p.deliveryFee||0;
+      const adic=p.additional_fee||p.additional_fees||0;
+      const serv=p.service_fee||0;
+      return s+(p.total||0)-ent-adic-serv;
+    },0);
     const _taxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
     const _taxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||0),0);
     const _taxaServ=histPeriod.reduce((s,p)=>s+(p.service_fee||0),0);
@@ -3036,7 +3064,14 @@ function renderDashboard(){
     renderHoje();
   } else {
     // Compute breakdown values for period
-    var _pTotProd=histPeriod.reduce(function(s,p){return s+(p.items||p.itens||[]).reduce(function(si,i){return si+(i.total_price||i.totalPrice||i.price||0);},0);},0);
+    var _pTotProd=histPeriod.reduce(function(s,p){
+      var itVal=(p.items||p.itens||[]).reduce(function(si,i){return si+(i.total_price||i.totalPrice||i.price||0);},0);
+      if(itVal>0)return s+itVal;
+      var ent=p.delivery_fee||p.deliveryFee||0;
+      var adic=p.additional_fee||p.additional_fees||0;
+      var serv=p.service_fee||0;
+      return s+(p.total||0)-ent-adic-serv;
+    },0);
     var _pTaxaEnt=histPeriod.reduce(function(s,p){return s+(p.delivery_fee||p.deliveryFee||0);},0);
     var _pTaxaAdic=histPeriod.reduce(function(s,p){return s+(p.additional_fee||0);},0);
     var _pDescIF=histPeriod.reduce(function(s,p){return s+(p.discounts||[]).reduce(function(si,d){return si+(d.total||d.value||0);},0)+(p.benefits||[]).reduce(function(si,b){return si+(b.value||0);},0);},0);
@@ -8569,18 +8604,23 @@ function slim(p){
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
     totalMerchant:(()=>{
-      // Fórmula exata do CW: produtos + taxaEntrega + taxaAdicional + taxaServico - descontosIFood
-      // NÃO usa p.total pois já inclui descontos aplicados ao cliente
+      // Se tem merchant_amount da API, usa diretamente
+      if(p.merchant_amount||p.merchantAmount)return p.merchant_amount||p.merchantAmount;
       const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
       const entrega=p.delivery_fee||p.deliveryFee||0;
       const adicional=p.additional_fee||p.additional_fees||0;
       const servico=p.service_fee||0;
       const descIF=(p.discounts||[]).reduce((s,d)=>s+(d.total||d.value||0),0)
                   +(p.benefits||[]).reduce((s,b)=>s+(b.value||0),0);
-      // Se tem merchant_amount da API, usa diretamente (mais confiável)
-      if(p.merchant_amount||p.merchantAmount)return p.merchant_amount||p.merchantAmount;
-      // Senão calcula: itens + taxas - descontos iFood
-      return itVal+entrega+adicional+servico-descIF;
+      if(itVal>0){
+        // Tem itens: calcula correto
+        return itVal+entrega+adicional+servico-descIF;
+      } else {
+        // Sem itens: usa total do pedido (já inclui tudo) - descIF
+        // total = produtos + entrega + adic - descIF (valor pago pelo cliente)
+        // Para obter faturamento = total + descIF (iFood reembolsa desconto)
+        return (p.total||p.totalAmount||p.valor||0)+descIF;
+      }
     })()||0,
     sales_channel:p.sales_channel||'',
     order_type:p.order_type||p.orderType||'',
