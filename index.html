@@ -3493,7 +3493,14 @@ function renderDREPage(){
   const lancPeriod=lancs.filter(l=>filterFn(getCompData(l)));
 
   // ── RECEITAS ──────────────────────────────
-  const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  // Receita bruta = soma dos pedidos válidos + taxas de entrega + taxas adicionais
+  const _dreTotal=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const _dreTaxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
+  const _dreTaxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||p.additional_fees||0),0);
+  const _dreDescIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((a,d)=>a+(d.value||d.total||0),0)+(p.benefits||[]).reduce((a,b)=>a+(b.value||0),0),0);
+  // recBruta = p.total já inclui entrega, adic e descIF aplicado
+  // Para DRE mostramos: produtos + entrega + adic separados
+  const recBruta=_dreTotal+_dreDescIF; // cancela o desconto para mostrar receita bruta real
 
   // Pagamentos — value sempre 0 na API, usa total do pedido × método
   let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
@@ -3501,14 +3508,13 @@ function renderDREPage(){
     const total=p.total||0;
     const pgs=p.payments||[];
     if(!pgs.length) return;
-    // Pega o método do primeiro pagamento (pedidos têm 1 método)
     const m=(pgs[0].payment_method||'').toLowerCase();
     if(m==='pix'||m==='pix_auto') vPix+=total;
     else if(m==='money'||m==='cash') vDin+=total;
     else if(m.includes('credit')) vCred+=total;
     else if(m.includes('debit')) vDeb+=total;
     else if(m.includes('ifood')||m.includes('online')) vIF+=total;
-    else vDin+=total; // fallback
+    else vDin+=total;
   });
 
   const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
@@ -3641,6 +3647,10 @@ function renderDREPage(){
     ${R('3.1.1.3','Vendas Cartão de Crédito',vCred,3)}
     ${R('3.1.1.4','Vendas Cartão de Débito',vDeb,3)}
     ${R('3.1.1.5','Vendas iFood',vIF,3)}
+    ${_dreTaxaEnt>0?R('3.1.1.6','Taxas de Entrega',_dreTaxaEnt,3):''}
+    ${_dreTaxaAdic>0?R('3.1.1.7','Taxas Adicionais iFood',_dreTaxaAdic,3):''}
+    ${_dreDescIF>0?R('3.1.1.8','Descontos iFood (subsidiados)',_dreDescIF,3):''}
+    ${cancelVal>0?R('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,3):''}
     ${R('3.2','(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF+simples),1,false,'var(--red)')}
     ${simples>0?R('3.2.1.1','(-) Simples Nacional sobre Vendas (DAS)',-simples,3):''}
     ${cancelVal>0?R('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,3):''}
