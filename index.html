@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vulpin ERP v2.1</title>
+<title>Vulpin ERP</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
 </script>
@@ -1007,13 +1007,20 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 
     <!-- LANÇAMENTOS -->
     <div class="pg" id="pg-lancamentos">
-      <!-- FILTRO BAR: conta + data + busca -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
-        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:34px"><option value="">Todas as contas</option></select>
-        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:30px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">‹</button>
+      <!-- Tabs principais -->
+      <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
+        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
+        <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
+        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
+      </div>
+      <!-- Filtro inline -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
+        <!-- Conta -->
+        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:36px"><option value="">Todas as contas</option></select>
+        <!-- Nav ‹ label › -->
+        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
         <div style="position:relative;flex:0 0 auto" id="lanc-range-wrap">
-          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 16px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:34px;white-space:nowrap;min-width:140px;justify-content:center">
-            <svg width="12" height="12" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:36px;white-space:nowrap;min-width:160px;justify-content:center">
             <span id="lanc-range-label">Este mês</span>
           </button>
           <div id="lanc-range-drop" class="grp-drop">
@@ -1056,21 +1063,32 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             </div>
           </div>
         </div>
-        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:30px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">›</button>
-        <div class="search-wrap" style="min-width:180px;flex:1;max-width:260px">
+        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
+        <!-- Search -->
+        <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
           <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
           <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
         </div>
-        <!-- Tabs à direita -->
-        <div style="margin-left:auto;display:flex;gap:0;border:1px solid var(--bor);border-radius:8px;overflow:hidden">
-          <button id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">A Pagar</button>
-          <button id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">A Receber</button>
-          <button id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:6px 14px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Todos</button>
+      </div>
+      <!-- Pills de situação -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
+          <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(230,126,34,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
+          <span style="color:var(--amber)">Vencem hoje</span><span id="ph-val" style="color:var(--amber)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(41,128,185,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
+          <span style="color:var(--blue)">A vencer</span><span id="pa-val" style="color:var(--blue)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(39,174,96,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
+          <span style="color:var(--green)">Pagos</span><span id="pp-val" style="color:var(--green)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--bg3);font-size:12px;font-weight:600;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
+          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t)">R$ 0,00</span>
         </div>
       </div>
-      <!-- DASHBOARD SUMMARY — ocupa tela inteira, gerado por renderLancSummary -->
-      <div id="lanc-summary-bar"></div>
-      <!-- Sub-tabs para modo Todos -->
+      <!-- Sub-tabs (ocultas quando main tab = pagar/receber) -->
       <div id="lanc-subtabs" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;display:none;gap:0;flex-shrink:0">
         <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
         <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
@@ -1078,7 +1096,6 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div class="lanc-tab" id="lt-producao" onclick="lancTab('producao',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Produções</div>
         <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
       </div>
-      <select id="lanc-month" style="display:none"></select>
       <select id="lanc-month" style="display:none"></select>
       <div class="scroll">
         <div class="card">
@@ -1878,7 +1895,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         </div>
       </div>
       <div id="mdesp-fixo-fields" style="display:none">
-        <div style="font-size:11.5px;font-weight:600;color:var(--fox);margin-bottom:10px">🔄 Recorrência — gera lançamentos futuros automaticamente</div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Recorrência</div>
         <div class="mfg-row mfg-row-3">
           <div class="flt-wrap">
             <select class="flt-in" id="mdesp-freq" style="appearance:auto">
@@ -2011,7 +2028,6 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       </div>
     </div>
     <div style="margin-bottom:20px"><button onclick="openCC('receita')" style="background:none;border:none;color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;letter-spacing:.3px">+ ADICIONAR CATEGORIA</button></div>
-
     <div style="border-top:1px solid var(--bor2);padding-top:16px;margin-bottom:16px">
       <div class="mfg-toggle-row" style="padding:0">
         <div id="mrec-rec-tog" onclick="recToggleRec()" style="width:44px;height:24px;border-radius:12px;background:var(--green);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;box-shadow:0 2px 6px rgba(39,174,96,.3)">
@@ -2054,7 +2070,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         </div>
       </div>
       <div id="mrec-fixo-fields" style="display:none">
-        <div style="font-size:11.5px;font-weight:600;color:var(--fox);margin-bottom:10px">🔄 Recorrência — gera lançamentos futuros automaticamente</div>
+        <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Recorrência</div>
         <div class="mfg-row mfg-row-3">
           <div class="flt-wrap">
             <select class="flt-in" id="mrec-freq" style="appearance:auto">
@@ -2431,10 +2447,8 @@ function getSaldoBanco(bancoId){
   const bk=getBancos().find(b=>b.id===bancoId);
   const si=bk?bk.saldoInicial:0;
   const lancs=getLanc().filter(l=>l.bancoId===bancoId||l.bancoOrigemId===bancoId);
-  const ent=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId&&(l.pago||l.pedidoId))
-    ||(l.tipo==='transferencia'&&l.bancoId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
-  const sai=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId&&l.pago===true)
-    ||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
+  const ent=lancs.filter(l=>(l.tipo==='receita'&&l.bancoId===bancoId)||(l.tipo==='transferencia'&&l.bancoId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
+  const sai=lancs.filter(l=>(l.tipo==='despesa'&&l.bancoId===bancoId)||(l.tipo==='transferencia'&&l.bancoOrigemId===bancoId)).reduce((s,l)=>s+(l.valor||0),0);
   return si+ent-sai;
 }
 
@@ -2498,7 +2512,6 @@ async function doLogout(){
 }
 function bootApp(){
   initTheme();
-  try{migrateTotalMerchant();}catch(e){}
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   const u=currentUser;
@@ -2631,32 +2644,6 @@ function fmtPedStatus(s){
 }
 const getPedidosCache=()=>S.get('pedidos_cache')||[];
 const getFichas=()=>S.get('fichas')||{};
-function migrateTotalMerchant(){
-  // Recalcula totalMerchant para pedidos antigos que não têm o campo
-  var hist=S.get('historico')||[];
-  var changed=false;
-  hist=hist.map(function(p){
-    if(p.totalMerchant&&p._tmv===3)return p; // já migrado v3
-    var itVal=(p.items||p.itens||[]).reduce(function(s,i){return s+(i.total_price||i.totalPrice||i.price||0);},0);
-    var entrega=p.delivery_fee||p.deliveryFee||0;
-    var adicional=p.additional_fee||p.additional_fees||0;
-    var servico=p.service_fee||0;
-    var descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.total||d.value||0);},0)
-              +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
-    if(p.merchant_amount||p.merchantAmount){
-      p.totalMerchant=p.merchant_amount||p.merchantAmount;
-    } else if(itVal>0){
-      p.totalMerchant=itVal+entrega+adicional+servico-descIF;
-    } else {
-      p.totalMerchant=(p.total||0)+descIF;
-    }
-    p._tmv=3;
-    changed=true;
-    return p;
-  });
-  if(changed)S.set('historico',hist);
-}
-
 function getHistorico(){
   try{return JSON.parse(localStorage.getItem('pedidos_historico')||'[]');}catch{return[];}
 }
@@ -2905,21 +2892,7 @@ function renderDashboard(){
   // DRE dentro do dashboard: usa competência
   const lancPeriodComp=lancs.filter(l=>filterFn(getCompData(l)));
 
-  const receitasPeriod=histPeriod.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
-  if(window._debugFat){
-    console.log('=== FATURAMENTO DEBUG ===');
-    let totItens=0;
-    histPeriod.forEach(p=>{
-      const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
-      totItens+=itVal;
-    });
-    console.log('Total itens Vulpin:',totItens,'(CW: 915.70, diff='+(totItens-915.70).toFixed(2)+')');
-    histPeriod.forEach(p=>{
-      const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
-      console.log('#'+(p.display_id||p.id)+' itens='+itVal.toFixed(2)+' total='+p.total+' items:'+(p.items||p.itens||[]).map(i=>i.name+'='+i.total_price).join(','));
-    });
-  }
-  window._debugFat=(currentPeriod==='hoje');
+  const receitasPeriod=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
   const despPeriod=lancPeriod.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
   const lucroPeriod=receitasPeriod-despPeriod;
   const ticket=histPeriod.length?receitasPeriod/histPeriod.length:0;
@@ -2953,221 +2926,49 @@ function renderDashboard(){
     // Big cards para o dia
     // Calc faturamento details
     // Total produtos = faturamento - taxas de entrega
-    const _fatTotal=receitasPeriod;
-    const _totProd=histPeriod.reduce((s,p)=>{
-      const itVal=(p.items||p.itens||[]).reduce((si,i)=>si+(i.total_price||i.totalPrice||i.price||0),0);
-      if(itVal>0)return s+itVal;
-      // Sem itens: total - entrega - adic - servico (valor dos produtos)
-      const ent=p.delivery_fee||p.deliveryFee||0;
-      const adic=p.additional_fee||p.additional_fees||0;
-      const serv=p.service_fee||0;
-      return s+(p.total||0)-ent-adic-serv;
-    },0);
+    const _fatTotal=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
     const _taxaEnt=histPeriod.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
-    const _taxaAdic=histPeriod.reduce((s,p)=>s+(p.additional_fee||0),0);
-    const _taxaServ=histPeriod.reduce((s,p)=>s+(p.service_fee||0),0);
-    const _taxasTot=_taxaEnt+_taxaAdic+_taxaServ;
-    const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.total||d.value||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
+    const _totProd=_fatTotal-_taxaEnt;
     const _descLoja=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
+    const _descIF=histPeriod.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
 
-    if(strip) strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
-
-    var _ticketFmt=histPeriod.length?(_fatTotal/histPeriod.length):0;
-    var _cancelVal=canceladosPeriod.reduce(function(s,p){return s+(p.total||0);},0);
-
-    window._dashCards=[
-      {id:'fat_taxa_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_taxaEnt,active:true},
-      {id:'fat_taxa_adic',ico:'➕',lbl:'Taxas Adicionais',val:_taxaAdic,active:true},
-      {id:'fat_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_descIF,active:true,negative:true},
-      {id:'fat_desc_lj',ico:'🏷️',lbl:'Descontos Loja',val:_descLoja,active:true,negative:true},
-    ];
-    window._dashProd=_totProd;
-    window._dashFat=_fatTotal;
-    window._dashHist=histPeriod.length;
-    window._dashTicket=_ticketFmt;
-    window._dashCancel=canceladosPeriod.length;
-    window._dashCancelVal=_cancelVal;
-
-    function _calcDashTotal(){
-      // Faturamento = produtos (fixo) + cards ativos
-      // Cada card tem sinal: positivo soma, negative subtrai
-      var tot=window._dashProd||0;
-      window._dashCards.forEach(function(c){
-        if(c.active) tot+=c.negative?-c.val:c.val;
-      });
-      return tot;
-    }
-
-    function _renderDashStrip(){
-      var tot=_calcDashTotal();
-      var topHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">iFood: R$ '+fmtN(window._dashFat)+'</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._dashProd)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">valor dos itens</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._dashTicket)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._dashHist+' pedidos</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._dashCancel+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._dashCancelVal)+' perdidos</div>'
-        +'</div>'
-      +'</div>';
-      var detailCards='';
-      window._dashCards.forEach(function(c){
-        var isOn=c.active;
-        var cor=c.id==='fat_desc_if'||c.id==='p_desc_if'?'#27AE60':(c.negative?'#E74C3C':'#2980B9');
-        var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
-        var bg=isOn?'var(--bg)':'var(--bg2)';
-        var bor=isOn?cor:'var(--bor)';
-        var op=isOn?'1':'0.45';
-        var checkIcon=isOn?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>':'';
-        var checkBg=isOn?('background:'+cor):'border:2px solid var(--bor)';
-        detailCards+='<div data-dashid="'+c.id+'" onclick="window._dashToggle(this.dataset.dashid)" style="background:'+bg+';border:1.5px solid '+bor+';border-radius:12px;padding:12px 16px;cursor:pointer;opacity:'+op+';transition:all .2s;display:flex;align-items:center;gap:10px;user-select:none">'
-          +'<div style="font-size:20px">'+c.ico+'</div>'
-          +'<div style="flex:1">'
-            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">'+c.lbl+'</div>'
-            +'<div style="font-size:15px;font-weight:800;color:'+cor+'">'+valSign+'R$ '+fmtN(c.val)+'</div>'
-          +'</div>'
-          +'<div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+checkBg+'">'+checkIcon+'</div>'
-        +'</div>';
-      });
-      if(strip){
-        strip.innerHTML=topHTML
-          +'<div style="padding:0 20px 16px">'
-            +'<div style="padding:0 0 8px;display:flex;align-items:center;justify-content:space-between">'
-              +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Detalhes do faturamento</div>'
-              +'<div style="font-size:10px;color:var(--t3)">Clique para incluir/excluir</div>'
-            +'</div>'
-            +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+detailCards+'</div>'
-          +'</div>';
-      }
-    }
-
-    window._dashToggle=function(id){
-      var c=window._dashCards.find(function(x){return x.id===id;});
-      if(c)c.active=!c.active;
-      _renderDashStrip();
-      try{renderDashFatChart();}catch(e){}
-    };
-
-    _renderDashStrip();
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
+    if(strip) strip.innerHTML=[
+      {ico:'💰',lbl:'Faturamento',val:`R$ ${fmtN(receitasPeriod)}`,sub:'total do dia',cor:'#27AE60'},
+      {ico:'🍪',lbl:'Total Produtos',val:`R$ ${fmtN(_totProd)}`,sub:'sem taxas/descontos',cor:'#FF6B35'},
+      {ico:'🛵',lbl:'Taxas Entrega',val:`R$ ${fmtN(_taxaEnt)}`,sub:'delivery',cor:'#E67E22'},
+      {ico:'🏷️',lbl:'Descontos Loja',val:`R$ ${fmtN(_descLoja)}`,sub:'promoções',cor:'#E74C3C'},
+      {ico:'🍔',lbl:'Descontos iFood',val:`R$ ${fmtN(_descIF)}`,sub:'plataforma',cor:'#EA1D2C'},
+      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:'ativos/concluídos',cor:'var(--t)'},
+      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
+    ].map(k=>`<div style="background:var(--bg);border-radius:16px;padding:16px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px">
+      <div style="font-size:24px">${k.ico}</div>
+      <div>
+        <div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">${k.lbl}</div>
+        <div style="font-size:17px;font-weight:800;color:${k.cor};line-height:1.2">${k.val}</div>
+        <div style="font-size:9px;color:var(--t3);margin-top:1px">${k.sub}</div>
+      </div>
+    </div>`).join('');
+    // Render hoje content
     renderHoje();
   } else {
-    // Compute breakdown values for period
-    var _pTotProd=histPeriod.reduce(function(s,p){
-      var itVal=(p.items||p.itens||[]).reduce(function(si,i){return si+(i.total_price||i.totalPrice||i.price||0);},0);
-      if(itVal>0)return s+itVal;
-      var ent=p.delivery_fee||p.deliveryFee||0;
-      var adic=p.additional_fee||p.additional_fees||0;
-      var serv=p.service_fee||0;
-      return s+(p.total||0)-ent-adic-serv;
-    },0);
-    var _pTaxaEnt=histPeriod.reduce(function(s,p){return s+(p.delivery_fee||p.deliveryFee||0);},0);
-    var _pTaxaAdic=histPeriod.reduce(function(s,p){return s+(p.additional_fee||0);},0);
-    var _pDescIF=histPeriod.reduce(function(s,p){return s+(p.discounts||[]).reduce(function(si,d){return si+(d.total||d.value||0);},0)+(p.benefits||[]).reduce(function(si,b){return si+(b.value||0);},0);},0);
-    var _pDescLj=histPeriod.reduce(function(s,p){return s+(p.discount||p.desconto||p.store_discount||0);},0);
-    var _pCancelVal=canceladosPeriod.reduce(function(s,p){return s+(p.total||0);},0);
-    var _pTicket=histPeriod.length?(_pTotProd+_pTaxaEnt+_pTaxaAdic-_pDescIF)/histPeriod.length:0;
-
-    window._dashCards2=[
-      {id:'p_taxa_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_pTaxaEnt,active:true},
-      {id:'p_taxa_adic',ico:'➕',lbl:'Taxas Adicionais',val:_pTaxaAdic,active:true},
-      {id:'p_desc_if',ico:'🎁',lbl:'Descontos iFood',val:_pDescIF,active:true,negative:true},
-      {id:'p_desc_lj',ico:'🏷️',lbl:'Descontos Loja',val:_pDescLj,active:true,negative:true},
-    ];
-    window._dashProd2=_pTotProd;
-    window._dashHist2=histPeriod.length;
-    window._dashTicket2=_pTicket;
-    window._dashCancel2=canceladosPeriod.length;
-    window._dashCancelVal2=_pCancelVal;
-    window._dashCmv2=cmv;
-    window._dashDesp2=despPeriod;
-    window._dashRec2=receitasPeriod;
-
-    function _calcPeriodTotal(){
-      var tot=window._dashProd2||0;
-      window._dashCards2.forEach(function(c){if(c.active)tot+=c.negative?-c.val:c.val;});
-      return tot;
-    }
-
-    function _renderPeriodStrip(){
-      var tot=_calcPeriodTotal();
-      var varRec2=recPrev>0?((tot-recPrev)/recPrev*100).toFixed(0):0;
-
-      var topHTML='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+(varRec2>0?'↑':'↓')+Math.abs(varRec2)+'% vs período ant.</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._dashProd2)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+totalCookies+' itens vendidos</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._dashTicket2)+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._dashHist2+' pedidos</div>'
-        +'</div>'
-        +'<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px">'
-          +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div>'
-          +'<div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._dashCancel2+'</div>'
-          +'<div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._dashCancelVal2)+' perdidos</div>'
-        +'</div>'
-      +'</div>';
-
-      var detailCards2='';
-      window._dashCards2.forEach(function(c){
-        var isOn=c.active;
-        var cor=c.id==='fat_desc_if'||c.id==='p_desc_if'?'#27AE60':(c.negative?'#E74C3C':'#2980B9');
-        var valSign=c.negative?(isOn?'- ':'+ '):(isOn?'+ ':'');
-        var bg=isOn?'var(--bg)':'var(--bg2)';
-        var bor=isOn?cor:'var(--bor)';
-        var op=isOn?'1':'0.45';
-        var checkIcon=isOn?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>':'';
-        var checkBg=isOn?('background:'+cor):'border:2px solid var(--bor)';
-        detailCards2+='<div data-dashid2="'+c.id+'" onclick="window._dashToggle2(this.dataset.dashid2)" style="background:'+bg+';border:1.5px solid '+bor+';border-radius:12px;padding:12px 16px;cursor:pointer;opacity:'+op+';transition:all .2s;display:flex;align-items:center;gap:10px;user-select:none">'
-          +'<div style="font-size:20px">'+c.ico+'</div>'
-          +'<div style="flex:1">'
-            +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px">'+c.lbl+'</div>'
-            +'<div style="font-size:15px;font-weight:800;color:'+cor+'">'+valSign+'R$ '+fmtN(c.val)+'</div>'
-          +'</div>'
-          +'<div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+checkBg+'">'+checkIcon+'</div>'
-        +'</div>';
-      });
-
-      if(strip){
-        strip.style.cssText='padding:0;background:var(--bg2);border-bottom:none;display:block';
-        strip.innerHTML=topHTML
-          +'<div style="padding:0 20px 16px">'
-            +'<div style="padding:0 0 8px;display:flex;align-items:center;justify-content:space-between">'
-              +'<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Detalhes do faturamento</div>'
-              +'<div style="font-size:10px;color:var(--t3)">Clique para incluir/excluir</div>'
-            +'</div>'
-            +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">'+detailCards2+'</div>'
-          +'</div>';
-      }
-    }
-
-    window._dashToggle2=function(id){
-      var c=window._dashCards2.find(function(x){return x.id===id;});
-      if(c)c.active=!c.active;
-      _renderPeriodStrip();
-      try{renderDashFatChart();}catch(e){}
-    };
-
-    _renderPeriodStrip();
+    if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
+    if(strip) strip.innerHTML=[
+      {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
+      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
+      {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
+      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
+      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'var(--t)'},
+      {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
+    ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
+      <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
+      <div>
+        <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${k.lbl}</div>
+        <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1;letter-spacing:-.3px">${k.val}</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">${k.sub}</div>
+      </div>
+    </div>`).join('');
 
     // Render mes widgets
     renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod, periodoLabel, lancPeriodComp);
@@ -3203,42 +3004,18 @@ function renderDashFatChart(){
   const hist=Object.values((()=>{const m={};getHistorico().forEach(p=>{m[p.id]=p;});getPedidosCache().forEach(p=>{if(p.id)m[p.id]={...m[p.id],...p};});return m;})());
   const _stCancel=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']);
 
-  // PRÉ-AGRUPAMENTO — usa mesma lógica dos cards ativos
+  // PRÉ-AGRUPAMENTO — 1 passagem, evita O(N×dias)
   const mapaAtual={};const mapaAnterior={};
   let pedAtual=0,pedAnterior=0;
-
-  // Helper: calcula valor do pedido igual aos cards
-  function _chartValPedido(p){
-    var itVal=(p.items||p.itens||[]).reduce(function(s,i){return s+(i.total_price||i.totalPrice||i.price||0);},0)||p.total||0;
-    var ent=p.delivery_fee||p.deliveryFee||0;
-    var adic=p.additional_fee||p.additional_fees||0;
-    var descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.total||d.value||0);},0)
-              +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
-    // Usa cards ativos se existirem, senão fórmula padrão
-    var cards=window._dashCards||window._dashCards2||null;
-    if(cards){
-      var tot=itVal;
-      var getCard=function(id){return (cards.find(function(c){return c.id===id||c.id==='p_'+id.replace('fat_','');}))||null;};
-      var cEnt=cards.find(function(c){return c.id==='fat_taxa_ent'||c.id==='p_taxa_ent';});
-      var cAdic=cards.find(function(c){return c.id==='fat_taxa_adic'||c.id==='p_taxa_adic';});
-      var cDescIF=cards.find(function(c){return c.id==='fat_desc_if'||c.id==='p_desc_if';});
-      var cDescLj=cards.find(function(c){return c.id==='fat_desc_lj'||c.id==='p_desc_lj';});
-      if(cEnt&&cEnt.active)tot+=ent;
-      if(cAdic&&cAdic.active)tot+=adic;
-      if(cDescIF&&cDescIF.active)tot-=descIF;
-      if(cDescLj&&cDescLj.active)tot-=(p.discount||p.desconto||p.store_discount||0);
-      return tot;
-    }
-    return itVal+ent+adic-descIF;
-  }
-
   hist.forEach(p=>{
     if(_stCancel.has(p.status||''))return;
     const dt=p.created_at||p.createdAt||'';if(!dt)return;
+    // Usa slice para evitar new Date() + toLocaleDateString (caro)
+    // ISO string começa com YYYY-MM-DD em UTC; ajusta -3h para BRT
     const ms=new Date(dt).getTime()-3*60*60*1000;
     const d=new Date(ms);
     const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-    const tot=_chartValPedido(p);
+    const tot=p.total||0;
     if(dStr.startsWith(mes)){mapaAtual[dStr]=(mapaAtual[dStr]||0)+tot;pedAtual++;}
     else if(dStr.startsWith(prevMes)){mapaAnterior[dStr]=(mapaAnterior[dStr]||0)+tot;pedAnterior++;}
   });
@@ -3680,7 +3457,7 @@ function renderDREPage(){
   const lancPeriod=lancs.filter(l=>filterFn(getCompData(l)));
 
   // ── RECEITAS ──────────────────────────────
-  const recBruta=histPeriod.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
+  const recBruta=histPeriod.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
 
   // Pagamentos — value sempre 0 na API, usa total do pedido × método
   let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
@@ -3699,9 +3476,7 @@ function renderDREPage(){
   });
 
   const cancelVal=canceladosPeriod.reduce((s,p)=>s+(p.total||0),0);
-  // Descontos: apenas os dados pela LOJA (discount/store_discount)
-  // Descontos do iFood (discounts[]) são pagos pelo iFood — não deduzir da receita
-  const descontos=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0),0);
+  const descontos=histPeriod.reduce((s,p)=>s+(p.discount||p.desconto||p.store_discount||0)+(p.discounts||[]).reduce((a,d)=>a+(d.value||d.total||0),0),0);
   const taxaIF=histPeriod.reduce((s,p)=>s+(typeof p.total_fees==='number'?p.total_fees:0),0);
   const simples=lancPeriod.filter(l=>(l.catCod||'').startsWith('3.9.1')).reduce((s,l)=>s+(l.valor||0),0);
   const recLiq=recBruta-cancelVal-descontos-taxaIF-simples;
@@ -4896,12 +4671,12 @@ function renderFluxo(){
     const d=new Date(ms);
     const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
     if(dStr>=range.start&&dStr<=range.end){
-      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.totalMerchant||p.total||0);
+      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
     }
   });
   // Receitas manuais (lançamentos tipo receita)
   const recLancs=lancs.filter(l=>l.tipo==='receita');
-  const despLancs=lancs.filter(l=>l.tipo==='despesa'&&l.pago===true); // só despesas pagas afetam o caixa
+  const despLancs=lancs.filter(l=>l.tipo==='despesa'); // needed for _saldoAcumDia
   const recLancTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
   const recPedTotal=Object.values(pedMapaRec).reduce((s,v)=>s+v,0);
   const recTotal=recPedTotal+recLancTotal;
@@ -5320,17 +5095,17 @@ let _lancMainTab='pagar'; // pagar | receber | todos
 
 function lancMainTab(tab, el){
   _lancMainTab=tab;
-  // Update button styles
-  ['pagar','receber','todos-main'].forEach(k=>{
-    const t=document.getElementById('lt-'+k);
+  // Update tab styles
+  ['pagar','receber','todos'].forEach(k=>{
+    const t=document.getElementById('lt-'+k+(k==='todos'?'-main':''));
     if(!t)return;
-    const active=k===tab||(k==='todos-main'&&tab==='todos');
-    t.style.background=active?'var(--fox)':'var(--bg)';
-    t.style.color=active?'#fff':'var(--t2)';
+    t.style.color=k===tab?'var(--fox)':'var(--t3)';
+    t.style.borderBottomColor=k===tab?'var(--fox)':'transparent';
   });
   // Show subtabs only for "todos"
   const sub=document.getElementById('lanc-subtabs');
   if(sub)sub.style.display=tab==='todos'?'flex':'none';
+  // Set lancTab_current based on main tab
   if(tab==='pagar'){lancTab_current='despesa';}
   else if(tab==='receber'){lancTab_current='receita';}
   else{lancTab_current='todos';}
@@ -5453,106 +5228,16 @@ function lancUpdateLabel(){}// handled by grpApply
 function renderLancSummary(){
   const today=todayISO();
   const r=lancGetRange();
-
-  const allLancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
-  const periodLancs=r.start?allLancs.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;}):allLancs;
-
-  const desp=periodLancs.filter(l=>l.tipo==='despesa');
-  const rec=periodLancs.filter(l=>l.tipo==='receita');
-
-  const despVenc=desp.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
-  const despHoje=desp.filter(l=>!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
-  const despAVenc=desp.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
-  const despPago=desp.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
-  const despTotal=desp.reduce((s,l)=>s+(l.valor||0),0);
-
-  const recVenc=rec.filter(l=>!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
-  const recHoje=rec.filter(l=>!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
-  const recAVenc=rec.filter(l=>!l.pago&&(!l.venc||l.venc>today)).reduce((s,l)=>s+(l.valor||0),0);
-  const recReceb=rec.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
-  const recTotal=rec.reduce((s,l)=>s+(l.valor||0),0);
-
-  const bancos=getBancos();
-  const saldoAtual=bancos.reduce((s,b)=>s+getSaldoBanco(b.id),0);
-  const today2=todayISO();
-  // Pendentes: só vencimentos futuros ou sem data (a vencer) — não contar atrasados antigos que provavelmente já foram pagos fora do sistema
-  // Só conta como pendente se tem banco vinculado E não está pago (pago===false explícito ou sem campo mas tem venc futura)
-  const despPendAll=periodLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId).reduce((s,l)=>s+(l.valor||0),0);
-  const despVencAll=periodLancs.filter(l=>l.tipo==='despesa'&&l.pago!==true&&l.bancoId&&l.venc&&l.venc<today2).reduce((s,l)=>s+(l.valor||0),0);
-  const recPendAll=periodLancs.filter(l=>l.tipo==='receita'&&l.pago!==true&&!l.pedidoId&&l.bancoId).reduce((s,l)=>s+(l.valor||0),0);
-  const saldoPrev=saldoAtual+recPendAll-despPendAll;
-
-  function row(lbl,val,filter,cor,icon){
-    const isActive=lancPillFilter===filter;
-    const bg=isActive?'background:'+cor+'11;':'';
-    const fw=isActive?'font-weight:800':'font-weight:600';
-    return '<div onclick="lancFilterPill(\''+filter+'\')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;border-radius:8px;transition:background .1s;'+bg+'" onmouseenter="this.style.background=\'var(--bg2)\'" onmouseleave="this.style.background=\''+(isActive?cor+'11':'transparent')+'\'">'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-        +'<span style="font-size:14px">'+icon+'</span>'
-        +'<span style="font-size:12px;color:var(--t2)">'+lbl+'</span>'
-      +'</div>'
-      +'<span style="font-size:13px;'+fw+';color:'+cor+'">R$ '+fmtN(val)+'</span>'
-    +'</div>';
-  }
-
-  function totalRow(lbl,val,cor){
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-top:1px solid var(--bor);margin-top:4px">'
-      +'<span style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px">'+lbl+'</span>'
-      +'<span style="font-size:14px;font-weight:800;color:'+cor+'">R$ '+fmtN(val)+'</span>'
-    +'</div>';
-  }
-
-  const bar=document.getElementById('lanc-summary-bar');
-  if(!bar)return;
-
-  bar.innerHTML=
-    '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;padding:14px 20px">'
-
-    // ── DESPESAS ──
-    +'<div style="background:var(--bg);border:1.5px solid var(--bor);border-radius:14px;overflow:hidden">'
-      +'<div style="padding:10px 16px;background:rgba(231,76,60,.08);border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:8px">'
-        +'<span style="font-size:16px">📤</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#E74C3C;text-transform:uppercase;letter-spacing:.5px">Contas a Pagar</span>'
-      +'</div>'
-      +row('Vencidas',despVenc,'vencidos','#E74C3C','⏰')
-      +row('Vencem hoje',despHoje,'hoje','#E67E22','📅')
-      +row('A vencer',despAVenc,'avencer','#2980B9','📆')
-      +row('Pagas',despPago,'pagos','#27AE60','✅')
-      +totalRow('Total período',despTotal,'#E74C3C')
-    +'</div>'
-
-    // ── RECEITAS ──
-    +'<div style="background:var(--bg);border:1.5px solid var(--bor);border-radius:14px;overflow:hidden">'
-      +'<div style="padding:10px 16px;background:rgba(39,174,96,.08);border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:8px">'
-        +'<span style="font-size:16px">📥</span>'
-        +'<span style="font-size:11px;font-weight:700;color:#27AE60;text-transform:uppercase;letter-spacing:.5px">Contas a Receber</span>'
-      +'</div>'
-      +row('Vencidas',recVenc,'rec_vencidos','#E74C3C','⏰')
-      +row('Vencem hoje',recHoje,'rec_hoje','#E67E22','📅')
-      +row('A receber',recAVenc,'rec_avencer','#2980B9','📆')
-      +row('Recebidas',recReceb,'rec_pagos','#27AE60','✅')
-      +totalRow('Total período',recTotal,'#27AE60')
-    +'</div>'
-
-    // ── SALDO PREVISTO ──
-    +'<div style="background:var(--t);border-radius:14px;padding:16px 20px;min-width:200px;display:flex;flex-direction:column;gap:8px">'
-      +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px">🏦 Saldo Previsto</div>'
-      +'<div style="font-size:26px;font-weight:900;color:'+(saldoPrev>=0?'#4ade80':'#f87171')+';letter-spacing:-.5px;line-height:1">R$ '+fmtN(saldoPrev)+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.35)">após todos os pendentes</div>'
-      +'<div style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;display:flex;flex-direction:column;gap:5px">'
-        +'<div style="display:flex;justify-content:space-between;padding:3px 0"><span style="font-size:10px;color:rgba(255,255,255,.45)">Saldo atual</span><span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.8)">R$ '+fmtN(saldoAtual)+'</span></div>'
-        +'<div onclick="lancFilterPill(\'rec_avencer\')" style="display:flex;justify-content:space-between;padding:4px 6px;border-radius:6px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:rgba(255,255,255,.55)">+ Entradas prev. 🔍</span><span style="font-size:11px;font-weight:700;color:#4ade80">R$ '+fmtN(recPendAll)+'</span></div>'
-        +'<div onclick="lancFilterPill(\'avencer\')" style="display:flex;justify-content:space-between;padding:4px 6px;border-radius:6px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:rgba(255,255,255,.55)">− Saídas prev. 🔍</span><span style="font-size:11px;font-weight:700;color:#f87171">R$ '+fmtN(despPendAll)+'</span></div>'
-        +(despVencAll>0?'<div onclick="lancFilterPill(\'vencidos\')" style="display:flex;justify-content:space-between;margin-top:4px;padding:4px 6px;border-radius:6px;border-top:1px solid rgba(255,255,255,.1);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.08)\'" onmouseleave="this.style.background=\'transparent\'"><span style="font-size:10px;color:#fca5a5">⚠ Vencidos 🔍</span><span style="font-size:11px;font-weight:700;color:#fca5a5">R$ '+fmtN(despVencAll)+'</span></div>':'')
-      +'</div>'
-    +'</div>'
-
-  +'</div>';
-
+  let lancs=getLanc().filter(l=>l.tipo!=='transferencia'&&!l.pedidoId);
+  if(r.start)lancs=lancs.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
+  const vencidos=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc&&l.venc<today).reduce((s,l)=>s+(l.valor||0),0);
+  const hoje=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc===today).reduce((s,l)=>s+(l.valor||0),0);
+  const avencer=lancs.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc>today).reduce((s,l)=>s+(l.valor||0),0);
+  const pagos=lancs.filter(l=>l.pago).reduce((s,l)=>s+(l.valor||0),0);
+  const total=lancs.reduce((s,l)=>s+(l.valor||0),0);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent='R$ '+fmtN(v);};
+  set('pv-val',vencidos);set('ph-val',hoje);set('pa-val',avencer);set('pp-val',pagos);set('pt-val',total);
   lancUpdateLabel();
-
-  // Update filter logic to handle receita filters
-  window._lancRecFilter=lancPillFilter;
 }
 
 function renderLanc(){
@@ -5610,14 +5295,10 @@ function renderLanc(){
   if(r.start)data=data.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
   if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter);
   if(search)data=data.filter(l=>l.desc.toLowerCase().includes(search));
-  if(lancPillFilter==='vencidos')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc<today);
-  if(lancPillFilter==='hoje')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&l.venc===today);
-  if(lancPillFilter==='avencer')data=data.filter(l=>l.tipo==='despesa'&&!l.pago&&(!l.venc||l.venc>today));
+  if(lancPillFilter==='vencidos')data=data.filter(l=>!l.pago&&l.venc<today);
+  if(lancPillFilter==='hoje')data=data.filter(l=>!l.pago&&l.venc===today);
+  if(lancPillFilter==='avencer')data=data.filter(l=>!l.pago&&l.venc>today);
   if(lancPillFilter==='pagos')data=data.filter(l=>l.pago);
-  if(lancPillFilter==='rec_vencidos')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&l.venc&&l.venc<today);
-  if(lancPillFilter==='rec_hoje')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&l.venc===today);
-  if(lancPillFilter==='rec_avencer')data=data.filter(l=>l.tipo==='receita'&&!l.pago&&(!l.venc||l.venc>today));
-  if(lancPillFilter==='rec_pagos')data=data.filter(l=>l.tipo==='receita'&&l.pago);
   data=[...data].sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
 
   // Add produções to "Todos"
@@ -6926,44 +6607,20 @@ function selectBanco(id){
   document.querySelectorAll('.bank-card').forEach(c=>{if(c.onclick.toString().includes(id))c.classList.add('on');});
   const bk=getBancos().find(b=>b.id===id);
   document.getElementById('bank-sel-name').textContent=bk?bk.nome:'—';
-  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  // Só lançamentos que afetam o saldo (pago=true ou pedidos automáticos)
-  const lancsEfetivos=lancs.filter(l=>
-    (l.tipo==='receita'&&(l.pago||l.pedidoId))||
-    (l.tipo==='despesa'&&l.pago===true)||
-    l.tipo==='transferencia'
-  );
-  const lancsPendentes=lancs.filter(l=>
-    (l.tipo==='receita'&&!l.pago&&!l.pedidoId)||
-    (l.tipo==='despesa'&&!l.pago)
-  );
+  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>a.data.localeCompare(b.data));
   let sal=(bk?bk.saldoInicial:0);
   const tbody=document.querySelector('#tbl-bank tbody');
-  let rows=lancsEfetivos.length?lancsEfetivos.map(l=>{
+  tbody.innerHTML=lancs.length?lancs.map(l=>{
     sal+=l.tipo==='receita'?(l.valor||0):-(l.valor||0);
     return`<tr>
       <td>${fmtDate(l.data)}</td>
       <td style="font-weight:500;color:var(--t)">${l.desc}</td>
       <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
-      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor||0)}</td>
+      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
       <td style="font-weight:600;color:${sal>=0?'var(--t)':'var(--red)'}">R$ ${fmtN(sal)}</td>
     </tr>`;
-  }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:24px">Nenhuma movimentação neste banco</td></tr>';
-
-  // Pendentes separados
-  if(lancsPendentes.length){
-    rows+='<tr><td colspan="5" style="background:var(--bg2);padding:6px 12px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">⏳ Pendentes (não afetam saldo)</td></tr>';
-    lancsPendentes.forEach(l=>{
-      rows+=`<tr style="opacity:.55">
-        <td>${fmtDate(l.venc||l.data||'')}</td>
-        <td style="font-weight:500;color:var(--t)">${l.desc} <span style="font-size:10px;color:var(--amber)">(pendente)</span></td>
-        <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
-        <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor||0)}</td>
-        <td style="color:var(--t3);font-size:11px">—</td>
-      </tr>`;
-    });
-  }
-  tbody.innerHTML=rows;
+  }).join(''):
+  '<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:24px">Nenhuma movimentação neste banco</td></tr>';
 }
 function openBanco(id){
   editBancoId=id||null;
@@ -8603,30 +8260,9 @@ function slim(p){
     status:p.status||p.situacao||'',
     created_at:p.created_at||p.createdAt||'',
     total:p.total||p.totalAmount||p.valor||0,
-    totalMerchant:(()=>{
-      // Se tem merchant_amount da API, usa diretamente
-      if(p.merchant_amount||p.merchantAmount)return p.merchant_amount||p.merchantAmount;
-      const itVal=(p.items||p.itens||[]).reduce((s,i)=>s+(i.total_price||i.totalPrice||i.price||0),0);
-      const entrega=p.delivery_fee||p.deliveryFee||0;
-      const adicional=p.additional_fee||p.additional_fees||0;
-      const servico=p.service_fee||0;
-      const descIF=(p.discounts||[]).reduce((s,d)=>s+(d.total||d.value||0),0)
-                  +(p.benefits||[]).reduce((s,b)=>s+(b.value||0),0);
-      if(itVal>0){
-        // Tem itens: calcula correto
-        return itVal+entrega+adicional+servico-descIF;
-      } else {
-        // Sem itens: usa total do pedido (já inclui tudo) - descIF
-        // total = produtos + entrega + adic - descIF (valor pago pelo cliente)
-        // Para obter faturamento = total + descIF (iFood reembolsa desconto)
-        return (p.total||p.totalAmount||p.valor||0)+descIF;
-      }
-    })()||0,
     sales_channel:p.sales_channel||'',
     order_type:p.order_type||p.orderType||'',
     delivery_fee:p.delivery_fee||p.deliveryFee||0,
-    additional_fee:p.additional_fee||p.additional_fees||0,
-    service_fee:p.service_fee||0,
     discount:p.discount||p.desconto||p.store_discount||0,
     benefits:p.benefits||[],
     discounts:p.discounts||[],
@@ -8846,10 +8482,10 @@ function renderHistorico(){
   const taxasEntrega=validos.reduce((s,p)=>s+(p.delivery_fee||p.deliveryFee||0),0);
   const taxasServico=validos.reduce((s,p)=>s+(p.service_tax||p.serviceTax||0),0);
   const taxasAdicionais=validos.reduce((s,p)=>s+(p.additional_fees||0),0);
-  const descontosIfood=0; // iFood arca com seus próprios descontos
+  const descontosIfood=validos.reduce((s,p)=>s+(p.discounts||[]).reduce((si,d)=>si+(d.value||d.total||0),0)+(p.benefits||[]).reduce((si,b)=>si+(b.value||0),0),0);
   const descontosLoja=validos.reduce((s,p)=>s+(p.discount||p.desconto||0),0);
-  const faturamento=validos.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
-  const total=hist.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
+  const faturamento=validos.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
+  const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
 
   const badge=document.getElementById('hist-total-badge');
   if(badge)badge.textContent=`Total: R$ ${fmtN(faturamento)} · ${validos.length} pedido${validos.length!==1?'s':''}${cancelados.length?` · ${cancelados.length} cancelado${cancelados.length!==1?'s':''}` : ''}`;
@@ -9326,7 +8962,7 @@ function renderHistorico(){
     return cl.includes(search)||nu.includes(search);
   });
   hist.sort((a,b)=>new Date(b.created_at||b.createdAt||0)-new Date(a.created_at||a.createdAt||0));
-  const total=hist.reduce((s,p)=>s+(p.totalMerchant||p.total||p.totalAmount||p.valor||0),0);
+  const total=hist.reduce((s,p)=>s+(p.total||p.totalAmount||p.valor||0),0);
   const badge=document.getElementById('hist-total-badge');
   if(badge)badge.textContent=`Total: R$ ${fmtN(total)} · ${hist.length} pedido${hist.length!==1?'s':''}`;
   const tbody=document.getElementById('tbody-historico');if(!tbody)return;
