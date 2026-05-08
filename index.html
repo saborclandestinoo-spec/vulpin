@@ -1234,6 +1234,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- CATEGORIAS (PLANO DE CONTAS) -->
     <div class="pg" id="pg-categorias">
       <div class="scroll">
+        <div id="cat-dre-info" style="display:none;margin:12px 0;padding:10px 16px;background:rgba(249,115,22,.08);border-left:3px solid var(--fox);border-radius:6px;font-size:12px;color:var(--t2)">🔧 <b>Clique no badge</b> de cada categoria para definir se ela entra no DRE mensal. MPs (4.1.1.x) estão excluídas por padrão — o CMV é calculado pela ficha técnica.</div>
         <div class="two-col">
           <div class="card">
             <div class="card-t">Categorias de Despesas</div>
@@ -7519,8 +7520,32 @@ function deleteProd(){
 // ═══════════════════════════════════════════
 let editCCId=null;
 
+// ─── DRE CONFIG (quais catCod entram no DRE mensal) ─────────────────
+function getDREConfig(){
+  const saved=S.get('dre_config')||{};
+  // Default: catCod iniciando com 4.1.1 (MPs) NÃO entram — todo resto entra
+  return saved;
+}
+function isDREIncluded(cod){
+  const cfg=getDREConfig();
+  if(cfg[cod]!==undefined)return cfg[cod]; // usuário definiu explicitamente
+  // Default: MPs (4.1.1.x) não entram pois CMV é calculado pela ficha técnica
+  if(cod.startsWith('4.1.1'))return false;
+  return true; // todo o resto entra por padrão
+}
+function toggleDREIncluded(cod){
+  const cfg=getDREConfig();
+  cfg[cod]=!isDREIncluded(cod);
+  S.set('dre_config',cfg);
+  renderCat();
+}
+
 function renderCat(){
   // Build hierarchy: group by first 2 segments, subgroup by 3, leaf by 4
+  // Header info
+  const infoEl=document.getElementById('cat-dre-info');
+  if(infoEl)infoEl.style.display='block';
+
   function buildTree(tipo){
     const all=PLANO_CONTAS.filter(c=>c.tipo===tipo);
     // also include sinteticas from PLANO_CONTAS_SINT if exists
@@ -7545,10 +7570,15 @@ function renderCat(){
         </div>`;
         lastSG=sg;
       }
-      html+=`<div style="display:flex;align-items:center;gap:6px;padding:5px 0 5px 44px;border-bottom:1px solid var(--bor)">
+      const _inDRE=isDREIncluded(c.cod);
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0 6px 44px;border-bottom:1px solid var(--bor2)">
         <span style="color:var(--t3);font-size:10px">⋯</span>
-        <span style="font-size:11.5px;color:var(--t)">${c.cod}</span>
-        <span style="font-size:11.5px;color:var(--t);margin-left:4px">${c.nome}</span>
+        <span style="font-size:11px;color:var(--t3);min-width:56px">${c.cod}</span>
+        <span style="font-size:12px;color:var(--t);flex:1">${c.nome}</span>
+        <div onclick="toggleDREIncluded('${c.cod}')" title="${_inDRE?'Clique para excluir do DRE':'Clique para incluir no DRE'}"
+          style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 10px;border-radius:20px;border:1px solid ${_inDRE?'var(--green)':'var(--bor)'};background:${_inDRE?'rgba(39,174,96,.08)':'var(--bg2)'};transition:all .15s;margin-right:12px">
+          <span style="font-size:11px;font-weight:600;color:${_inDRE?'var(--green)':'var(--t3)'}">${_inDRE?'✓ Entra no DRE':'✗ Fora do DRE'}</span>
+        </div>
       </div>`;
     });
     return html||`<div style="color:var(--t3);padding:14px;text-align:center">Nenhuma conta</div>`;
