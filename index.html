@@ -418,6 +418,8 @@ html.dark #sb-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) c
 html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 
 /* Fluxo sticky fix */
+#fc-table-wrap td[style*="sticky"],#fc-table-wrap th[style*="sticky"]{position:sticky!important;z-index:2}
+#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 #pg-financeiro .scroll{overflow:visible!important}
 #fc-view-tabela{overflow-y:auto;max-height:calc(100vh - 200px)}
 #fc-view-tabela .card{overflow:visible!important;padding:0}
@@ -8490,7 +8492,18 @@ function mergeNaHistoria(novos){
           // Considera dias para recebimento
           const diasRec=forma?.dias||0;
           const dtRec=new Date(data+'T12:00:00');
-          dtRec.setDate(dtRec.getDate()+diasRec);
+          if(diasRec>0){
+            // Avança em dias úteis (pula sábado, domingo e feriados nacionais)
+            let added=0;
+            while(added<diasRec){
+              dtRec.setDate(dtRec.getDate()+1);
+              const wd=dtRec.getDay(); // 0=dom, 6=sab
+              const ds=dtRec.toLocaleDateString('sv-SE');
+              const mm=ds.slice(5,10); // MM-DD
+              const feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
+              if(wd!==0&&wd!==6&&!feriados.includes(mm))added++;
+            }
+          }
           const dataRec=dtRec.toLocaleDateString('sv-SE');
           // Cria lançamento de receita
           const lancs=getLanc();
