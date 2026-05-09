@@ -2016,7 +2016,6 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       <button class="btn-danger modal-del" id="mdesp-del" onclick="deleteDesp()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-desp')">Cancelar</button>
       <button class="btn-o" onclick="saveLancTipo('desp',true)" style="border-color:var(--fox);color:var(--fox);font-weight:600">Salvar e lançar outra</button>
-      <button class="btn-o" onclick="window._cvPendingDistInsumos=true;saveLancTipo('desp')" style="border-color:var(--amber);color:var(--amber);font-weight:600">Salvar + Distribuir insumos</button>
       <button class="btn-p" onclick="saveLancTipo('desp')" style="padding:8px 20px">Salvar</button>
     </div>
   </div>
@@ -6272,10 +6271,22 @@ async function printEtiquetas(){
       </div>
       <div style="padding:20px">
         <div id="dist-info" style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--t2)"></div>
+
+        <!-- Leitura de NF -->
+        <div id="dist-nf-area" style="margin-bottom:16px">
+          <div id="dist-nf-drop" onclick="document.getElementById('dist-nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="distNFDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--bg3);transition:border-color .2s">
+            <div style="font-size:24px;margin-bottom:6px">🧾</div>
+            <div style="font-size:12px;font-weight:700;color:var(--t2)">Ler Nota Fiscal</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">Foto ou PDF — IA extrai os itens automaticamente</div>
+          </div>
+          <input type="file" id="dist-nf-file" accept="image/*,application/pdf" style="display:none" onchange="distNFHandleFile(this.files[0])">
+          <div id="dist-nf-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px;text-align:center"></div>
+        </div>
+
         <!-- Lista de itens -->
         <div id="dist-itens"></div>
         <!-- Botão adicionar -->
-        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo</button>
+        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo manualmente</button>
         <!-- Totais -->
         <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:var(--t3)">Total distribuído</span>
@@ -9066,10 +9077,22 @@ async function syncMes(){
       </div>
       <div style="padding:20px">
         <div id="dist-info" style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--t2)"></div>
+
+        <!-- Leitura de NF -->
+        <div id="dist-nf-area" style="margin-bottom:16px">
+          <div id="dist-nf-drop" onclick="document.getElementById('dist-nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="distNFDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--bg3);transition:border-color .2s">
+            <div style="font-size:24px;margin-bottom:6px">🧾</div>
+            <div style="font-size:12px;font-weight:700;color:var(--t2)">Ler Nota Fiscal</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">Foto ou PDF — IA extrai os itens automaticamente</div>
+          </div>
+          <input type="file" id="dist-nf-file" accept="image/*,application/pdf" style="display:none" onchange="distNFHandleFile(this.files[0])">
+          <div id="dist-nf-status" style="display:none;margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px;text-align:center"></div>
+        </div>
+
         <!-- Lista de itens -->
         <div id="dist-itens"></div>
         <!-- Botão adicionar -->
-        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo</button>
+        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo manualmente</button>
         <!-- Totais -->
         <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:var(--t3)">Total distribuído</span>
@@ -10133,14 +10156,15 @@ function distRenderItens(){
   const mpOpts=distGetMPOptions();
   let html='';
   _distItens.forEach((it,idx)=>{
-    html+=`<div style="display:grid;grid-template-columns:1fr 90px 90px 32px;gap:6px;margin-bottom:8px;align-items:center">
+    const nfLabel=it._nfNome?`<div style="font-size:10px;color:var(--amber);margin-bottom:3px">🧾 NF: ${it._nfNome}</div>`:'';
+    html+=`<div style="margin-bottom:10px">${nfLabel}<div style="display:grid;grid-template-columns:1fr 90px 90px 32px;gap:6px;align-items:center">
       <select onchange="_distItens[${idx}].mpId=this.value" style="padding:8px 10px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;background:var(--bg);color:var(--t)">
         <option value="">Selecione o insumo...</option>${mpOpts}
       </select>
       <input type="number" placeholder="Qtd" value="${it.qtd}" oninput="_distItens[${idx}].qtd=this.value;distAtualizaTotal()" style="padding:8px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;text-align:right;background:var(--bg);color:var(--t)">
       <input type="number" placeholder="R$ valor" value="${it.valor}" oninput="_distItens[${idx}].valor=this.value;distAtualizaTotal()" style="padding:8px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;text-align:right;background:var(--bg);color:var(--t)">
       <button onclick="distRemoveItem('${it.id}')" style="padding:6px;border:1px solid var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-size:14px;line-height:1">✕</button>
-    </div>`;
+    </div></div>`;
   });
   document.getElementById('dist-itens').innerHTML=html;
   // Restaura valores selecionados nos selects
@@ -10186,5 +10210,81 @@ function distSalvar(){
   if(currentPage==='estoque')renderEstoque();
   updateAlertBadge();
   alert('✅ Estoque atualizado!');
+}
+
+// ═══════════════════════════════════════════
+// LEITURA DE NOTA FISCAL
+// ═══════════════════════════════════════════
+function distNFDrop(e){
+  e.preventDefault();
+  document.getElementById('dist-nf-drop').style.borderColor='var(--bor)';
+  const file=e.dataTransfer.files[0];
+  if(file) distNFHandleFile(file);
+}
+
+async function distNFHandleFile(file){
+  if(!file) return;
+  const status=document.getElementById('dist-nf-status');
+  status.style.display='block';
+  status.style.background='var(--bg3)';
+  status.style.color='var(--t2)';
+  status.innerHTML='🤖 Lendo nota fiscal...';
+
+  try{
+    const ext=file.name.split('.').pop().toLowerCase();
+    const isPDF=ext==='pdf'||file.type==='application/pdf';
+    const b64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=e=>res(e.target.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+
+    const msgContent=isPDF
+      ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:'Leia esta nota fiscal e extraia todos os itens/produtos comprados. Responda SOMENTE em JSON array, sem markdown. Formato: [{"nome":"nome do produto","qtd":1.5,"unidade":"kg","valorTotal":25.00,"valorUnit":16.67}]. Se não conseguir ler algum campo coloque null.'}]
+      :[{type:'image',source:{type:'base64',media_type:file.type,data:b64}},{type:'text',text:'Leia esta nota fiscal e extraia todos os itens/produtos comprados. Responda SOMENTE em JSON array, sem markdown. Formato: [{"nome":"nome do produto","qtd":1.5,"unidade":"kg","valorTotal":25.00,"valorUnit":16.67}]. Se não conseguir ler algum campo coloque null.'}];
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:msgContent}]})
+    });
+    const data=await resp.json();
+    const txt=data.content.find(c=>c.type==='text')?.text||'[]';
+    const itens=JSON.parse(txt.replace(/```json|```/g,'').trim());
+
+    if(!itens.length){
+      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+      status.innerHTML='❌ Nenhum item encontrado. Tente imagem mais nítida.';
+      return;
+    }
+
+    // Tenta fazer match automático com MPs cadastrados
+    const mps=getMP();
+    _distItens=[];
+    itens.forEach(item=>{
+      // Busca MP por nome similar
+      const nomeLower=(item.nome||'').toLowerCase();
+      const mpMatch=mps.find(m=>{
+        const mNome=m.nome.toLowerCase();
+        return mNome.includes(nomeLower.slice(0,4))||nomeLower.includes(mNome.slice(0,4));
+      });
+      _distItens.push({
+        id:'di_'+uid(),
+        mpId:mpMatch?mpMatch.id:'',
+        qtd:item.qtd||'',
+        valor:item.valorTotal||'',
+        _nfNome:item.nome||''
+      });
+    });
+
+    distRenderItens();
+    status.style.background='rgba(39,174,96,.1)';status.style.color='var(--green)';
+    status.innerHTML=`✅ ${itens.length} itens encontrados! Confira os insumos abaixo.`;
+
+  }catch(err){
+    status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+    status.innerHTML='❌ Erro: '+err.message;
+  }
 }
 </script>
