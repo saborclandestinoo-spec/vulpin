@@ -10373,8 +10373,20 @@ async function nfHandleFile(file){
         messages:[{role:'user',content:msgContent}]})
     });
     const data=await resp.json();
+    // Mostra erro da API se houver
+    if(data.error){
+      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+      status.innerHTML='❌ API: '+data.error.message;
+      return;
+    }
     const txt=data.content.find(c=>c.type==='text')?.text||'{}';
-    const nf=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    let nf;
+    try{ nf=JSON.parse(txt.replace(/```json|```/g,'').trim()); }
+    catch(e){
+      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+      status.innerHTML='❌ IA retornou formato inesperado: '+txt.slice(0,120);
+      return;
+    }
 
     if(!nf.itens||!nf.itens.length){
       status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
