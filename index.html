@@ -1124,10 +1124,11 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             <div id="cv-painel-nf">
               <div id="nf-drop" onclick="document.getElementById('nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="nfHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:16px;transition:border-color .2s">
                 <div style="font-size:40px;margin-bottom:10px">🧾</div>
-                <div style="font-size:14px;font-weight:700;color:var(--t)">Envie a Nota Fiscal</div>
-                <div style="font-size:11px;color:var(--t3);margin-top:5px">Foto ou PDF — IA extrai os itens e lança no sistema</div>
+                <div style="font-size:14px;font-weight:700;color:var(--t)">Envie o XML da NF-e</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:5px">Arquivo .xml da nota fiscal eletrônica</div>
+                <div style="font-size:10px;color:var(--t3);margin-top:3px">Peça ao fornecedor ou baixe do portal da SEFAZ</div>
               </div>
-              <input type="file" id="nf-file" accept="image/*,application/pdf" style="display:none" onchange="nfHandleFile(this.files[0])">
+              <input type="file" id="nf-file" accept=".xml,text/xml,application/xml" style="display:none" onchange="nfHandleFile(this.files[0])">
               <div id="nf-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
                 <img id="nf-img" style="width:100%;display:block;max-height:220px;object-fit:contain;background:var(--bg3)">
               </div>
@@ -10332,73 +10333,56 @@ function nfHandleDrop(e){
 
 async function nfHandleFile(file){
   if(!file) return;
-  const isPDF=file.type==='application/pdf'||file.name.endsWith('.pdf');
   const status=document.getElementById('nf-status');
   const res=document.getElementById('nf-resultado');
   res.style.display='none';
-
-  // Preview se imagem
-  if(!isPDF){
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      document.getElementById('nf-img').src=ev.target.result;
-      document.getElementById('nf-preview').style.display='block';
-    };
-    reader.readAsDataURL(file);
-  }
-
   status.style.display='block';
   status.style.background='var(--bg3)';status.style.color='var(--t2)';
-  status.innerHTML='🤖 Lendo nota fiscal...';
-
-  const b64=await new Promise((resolve,reject)=>{
-    const r=new FileReader();
-    r.onload=e=>resolve(e.target.result.split(',')[1]);
-    r.onerror=reject;
-    r.readAsDataURL(file);
-  });
-  _nfB64=b64; _nfType=file.type;
+  status.innerHTML='📄 Lendo XML da NF-e...';
 
   try{
-    const msgContent=isPDF
-      ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
-        {type:'text',text:'Leia esta nota fiscal. Extraia: fornecedor, data, valor total, e todos os itens. Responda SOMENTE em JSON, sem markdown. Formato: {"fornecedor":"Nome","data":"YYYY-MM-DD","valorTotal":123.45,"itens":[{"nome":"produto","qtd":1.5,"unidade":"kg","valorTotal":25.00}]}. Se não encontrar campo, coloque null.'}]
-      :[{type:'image',source:{type:'base64',media_type:file.type,data:b64}},
-        {type:'text',text:'Leia esta nota fiscal. Extraia: fornecedor, data, valor total, e todos os itens. Responda SOMENTE em JSON, sem markdown. Formato: {"fornecedor":"Nome","data":"YYYY-MM-DD","valorTotal":123.45,"itens":[{"nome":"produto","qtd":1.5,"unidade":"kg","valorTotal":25.00}]}. Se não encontrar campo, coloque null.'}];
+    const text=await file.text();
+    const parser=new DOMParser();
+    const xml=parser.parseFromString(text,'text/xml');
 
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
-        messages:[{role:'user',content:msgContent}]})
+    const g=tag=>xml.querySelector(tag)?.textContent?.trim()||'';
+
+    // Fornecedor
+    const fornecedor=g('xNome')||g('xFant')||'Fornecedor';
+
+    // Data — dEmi ou dhEmi (formato AAAA-MM-DD ou AAAA-MM-DDTHH:MM:SS)
+    const dtRaw=g('dEmi')||g('dhEmi')||'';
+    const data=dtRaw.slice(0,10);
+
+    // Valor total
+    const valorTotal=parseFloat(g('vNF')||g('vProd')||'0');
+
+    // CNPJ emitente
+    const cnpj=g('emit CNPJ')||g('CNPJ')||'';
+
+    // Itens — det
+    const dets=xml.querySelectorAll('det');
+    const itens=[];
+    dets.forEach(det=>{
+      const nome=det.querySelector('xProd')?.textContent?.trim()||'';
+      const qtd=parseFloat(det.querySelector('qCom')?.textContent||det.querySelector('qTrib')?.textContent||'0');
+      const unidade=det.querySelector('uCom')?.textContent?.trim()||det.querySelector('uTrib')?.textContent?.trim()||'';
+      const valorUnit=parseFloat(det.querySelector('vUnCom')?.textContent||'0');
+      const valorItem=parseFloat(det.querySelector('vProd')?.textContent||'0');
+      if(nome) itens.push({nome,qtd,unidade,valorTotal:valorItem,valorUnit});
     });
-    const data=await resp.json();
-    // Mostra erro da API se houver
-    if(data.error){
-      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
-      status.innerHTML='❌ API: '+data.error.message;
-      return;
-    }
-    const txt=data.content.find(c=>c.type==='text')?.text||'{}';
-    let nf;
-    try{ nf=JSON.parse(txt.replace(/```json|```/g,'').trim()); }
-    catch(e){
-      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
-      status.innerHTML='❌ IA retornou formato inesperado: '+txt.slice(0,120);
-      return;
-    }
 
-    if(!nf.itens||!nf.itens.length){
+    if(!itens.length){
       status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
-      status.innerHTML='❌ Não encontrei itens na nota. Tente imagem mais nítida.';
+      status.innerHTML='❌ Nenhum item encontrado no XML. Verifique se é um XML de NF-e válido.';
       return;
     }
 
     status.style.display='none';
-    nfRenderResultado(nf);
+    nfRenderResultado({fornecedor,data,valorTotal,cnpj,itens});
   }catch(err){
     status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
-    status.innerHTML='❌ Erro: '+err.message;
+    status.innerHTML='❌ Erro ao ler XML: '+err.message;
   }
 }
 
@@ -10406,11 +10390,9 @@ function nfRenderResultado(nf){
   const res=document.getElementById('nf-resultado');
   res.style.display='block';
   const fmtV=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
   const mps=getMP();
   const bancos=getBancos();
 
-  // Monta itens com match de MP
   _nfItens=nf.itens.map(it=>{
     const nomeLower=(it.nome||'').toLowerCase();
     const mpMatch=mps.find(m=>m.nome.toLowerCase().includes(nomeLower.slice(0,5))||nomeLower.includes(m.nome.toLowerCase().slice(0,5)));
@@ -10421,7 +10403,6 @@ function nfRenderResultado(nf){
   const bancoOpts=bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');
 
   let html=`
-  <!-- Cabeçalho NF -->
   <div style="background:var(--bg3);border-radius:10px;padding:14px 16px;margin-bottom:16px">
     <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:8px">📋 Dados da Nota</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -10444,18 +10425,18 @@ function nfRenderResultado(nf){
         </select>
       </div>
     </div>
+    ${nf.cnpj?`<div style="font-size:10px;color:var(--t3);margin-top:8px">CNPJ: ${nf.cnpj}</div>`:''}
   </div>
 
-  <!-- Itens -->
   <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px">📦 Itens (${_nfItens.length})</div>
   <div id="nf-itens-lista">`;
 
   _nfItens.forEach((it,idx)=>{
     html+=`<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px">
-      <div style="font-size:11px;color:var(--amber);font-weight:600;margin-bottom:6px">🧾 ${it.nome||'Item '+(idx+1)}</div>
+      <div style="font-size:11px;color:var(--amber);font-weight:600;margin-bottom:6px">🧾 ${it.nome} ${it.qtd?'· '+it.qtd+(it.unidade?' '+it.unidade:''):''} ${it.valorTotal?'· '+fmtV(it.valorTotal):''}</div>
       <div style="display:grid;grid-template-columns:1fr 70px 80px;gap:6px;align-items:center">
         <select onchange="_nfItens[${idx}].mpId=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
-          <option value="">Selecione o insumo...</option>${mpOpts}
+          <option value="">Vincular ao insumo...</option>${mpOpts}
         </select>
         <input type="number" placeholder="Qtd" value="${it.qtd||''}" oninput="_nfItens[${idx}].qtd=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;text-align:right;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
         <input type="number" placeholder="R$ total" value="${it.valorTotal||''}" oninput="_nfItens[${idx}].valorTotal=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;text-align:right;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
@@ -10464,14 +10445,10 @@ function nfRenderResultado(nf){
   });
 
   html+=`</div>
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button onclick="nfLancar()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Lançar despesa + Dar entrada no estoque</button>
-  </div>
-  <button onclick="nfReset()" style="width:100%;margin-top:8px;padding:9px;font-size:12px;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">🧾 Enviar outra nota</button>`;
+  <button onclick="nfLancar()" style="width:100%;margin-top:4px;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Lançar despesa + Dar entrada no estoque</button>
+  <button onclick="nfReset()" style="width:100%;margin-top:8px;padding:9px;font-size:12px;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">🧾 Enviar outro XML</button>`;
 
   res.innerHTML=html;
-
-  // Restaura selects de MP
   setTimeout(()=>{
     _nfItens.forEach((it,idx)=>{
       const sel=document.querySelectorAll('#nf-itens-lista select')[idx];
@@ -10488,18 +10465,11 @@ function nfLancar(){
   if(!data){alert('Informe a data da nota');return;}
   if(!valor){alert('Informe o valor total');return;}
 
-  // 1. Cria lançamento de despesa
   const lancs=getLanc();
   const novoId=uid();
-  lancs.push({
-    id:novoId, tipo:'despesa',
-    desc:fornecedor, valor, data, venc:data,
-    pago:true, bancoId, cat:'',
-    obs:'Lançado via Nota Fiscal'
-  });
+  lancs.push({id:novoId,tipo:'despesa',desc:fornecedor,valor,data,venc:data,pago:true,bancoId,cat:'',obs:'Lançado via NF-e XML'});
   S.set('lancamentos',lancs);
 
-  // 2. Dá entrada no estoque dos itens
   const est=getEstMP();
   const mp=getMP();
   const validos=_nfItens.filter(it=>it.mpId&&parseFloat(it.qtd)>0);
@@ -10507,26 +10477,20 @@ function nfLancar(){
     const qtd=parseFloat(it.qtd)||0;
     const valIt=parseFloat(it.valorTotal)||0;
     if(!est[it.mpId])est[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
-    est[it.mpId].entradas.push({id:uid(),data,qtd,valor:valIt,obs:'NF: '+fornecedor});
-    if(valIt>0&&qtd>0){
-      const idx=mp.findIndex(x=>x.id===it.mpId);
-      if(idx>-1) mp[idx].valor=valIt/qtd;
-    }
+    est[it.mpId].entradas.push({id:uid(),data,qtd,valor:valIt,obs:'NF-e: '+fornecedor});
+    if(valIt>0&&qtd>0){const idx=mp.findIndex(x=>x.id===it.mpId);if(idx>-1)mp[idx].valor=valIt/qtd;}
   });
-  S.set('est_mp',est);
-  S.set('mp',mp);
-
+  S.set('est_mp',est);S.set('mp',mp);
   renderLanc();
   if(currentPage==='estoque')renderEstoque();
   updateAlertBadge();
 
-  // Feedback
   document.getElementById('nf-resultado').innerHTML=`
     <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:12px;padding:20px;text-align:center">
       <div style="font-size:32px;margin-bottom:8px">✅</div>
       <div style="font-weight:700;color:var(--green);font-size:14px">Lançado com sucesso!</div>
       <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">${fornecedor} · R$ ${valor.toLocaleString('pt-BR',{minimumFractionDigits:2})} · ${validos.length} insumo(s) no estoque</div>
-      <button onclick="nfReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">🧾 Lançar outra nota</button>
+      <button onclick="nfReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">🧾 Lançar outro XML</button>
     </div>`;
 }
 
