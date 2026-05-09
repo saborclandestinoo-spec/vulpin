@@ -418,8 +418,12 @@ html.dark #sb-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) c
 html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3) contrast(0.9)}
 
 /* Fluxo sticky fix */
-#fc-table-wrap td[style*="sticky"],#fc-table-wrap th[style*="sticky"]{position:sticky!important;z-index:2}
-#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#pg-financeiro .scroll{overflow:visible!important;overflow-y:visible!important}
+#fc-view-tabela{overflow-y:auto;max-height:calc(100vh - 180px);overflow-x:hidden}
+#fc-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+#fc-table-wrap table{border-collapse:collapse}
+#fc-table-wrap td[style*="sticky"]{position:sticky!important;z-index:3!important}
+#fc-table-wrap th[style*="sticky"]{position:sticky!important;z-index:4!important}
 #pg-financeiro .scroll{overflow:visible!important}
 #fc-view-tabela{overflow-y:auto;max-height:calc(100vh - 200px)}
 #fc-view-tabela .card{overflow:visible!important;padding:0}
@@ -4837,7 +4841,17 @@ function renderFluxo(){
 
   html+='</tbody></table>';
   const wrap=document.getElementById('fc-table-wrap');
-  if(wrap)wrap.innerHTML=html;
+  if(wrap){
+    wrap.innerHTML=html;
+    // Force sticky cells to have solid background (fixes overlap issue)
+    wrap.querySelectorAll('td,th').forEach(function(el){
+      if(el.style.position==='sticky'){
+        if(!el.style.backgroundColor||el.style.backgroundColor==='transparent'||el.style.backgroundColor===''){
+          el.style.backgroundColor='var(--bg)';
+        }
+      }
+    });
+  }
   }catch(e){
     const wrap=document.getElementById('fc-table-wrap');
     if(wrap)wrap.innerHTML=`<div style="padding:20px;color:var(--red);font-size:13px;font-family:monospace">Erro: ${e.message}<br><small>${e.stack?.split('\n')[1]||''}</small></div>`;
@@ -8501,7 +8515,10 @@ function mergeNaHistoria(novos){
               const ds=dtRec.toLocaleDateString('sv-SE');
               const mm=ds.slice(5,10); // MM-DD
               const feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
-              if(wd!==0&&wd!==6&&!feriados.includes(mm))added++;
+              const isSab=wd===6;
+              const isDom=wd===0;
+              const isFer=feriados.includes(mm);
+              if(!isSab&&!isDom&&!isFer)added++;
             }
           }
           const dataRec=dtRec.toLocaleDateString('sv-SE');
