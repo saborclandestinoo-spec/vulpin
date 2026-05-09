@@ -6696,6 +6696,21 @@ function saveLancTipo(tipo,andAnother){
     window._cvPendingDistInsumos=false;
     setTimeout(()=>openDistInsumos(obj.id,obj.data||obj.venc,obj.valor,obj.desc),200);
   }
+  // Dá entrada no estoque dos itens da NF após salvar
+  if(isDesp&&window._nfPendingItens&&window._nfPendingItens.length){
+    const _data=window._nfPendingData||obj.data||obj.venc;
+    const _forn=window._nfPendingForn||obj.desc;
+    const est=getEstMP();const mp=getMP();
+    window._nfPendingItens.forEach(it=>{
+      if(!est[it.mpId])est[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+      est[it.mpId].entradas.push({id:uid(),data:_data,qtd:it.qtd,valor:it.valorTotal,obs:'NF-e: '+_forn});
+      if(it.valorTotal>0&&it.qtd>0){const idx=mp.findIndex(x=>x.id===it.mpId);if(idx>-1)mp[idx].valor=it.valorTotal/it.qtd;}
+    });
+    S.set('est_mp',est);S.set('mp',mp);
+    if(currentPage==='estoque')renderEstoque();
+    updateAlertBadge();
+    window._nfPendingItens=null;window._nfPendingData=null;window._nfPendingForn=null;
+  }
   // Anexa comprovante pendente (vindo da aba Comprovantes)
   if((window._cvPendingImg||window._cvPendingFitid)&&obj.id){
     const _lancs=getLanc();
@@ -10465,33 +10480,32 @@ function nfLancar(){
   if(!data){alert('Informe a data da nota');return;}
   if(!valor){alert('Informe o valor total');return;}
 
-  const lancs=getLanc();
-  const novoId=uid();
-  lancs.push({id:novoId,tipo:'despesa',desc:fornecedor,valor,data,venc:data,pago:true,bancoId,cat:'',obs:'Lançado via NF-e XML'});
-  S.set('lancamentos',lancs);
+  // Guarda itens para dar entrada no estoque após salvar o lançamento
+  window._nfPendingItens=_nfItens.filter(it=>it.mpId&&parseFloat(it.qtd)>0).map(it=>({
+    mpId:it.mpId, qtd:parseFloat(it.qtd)||0, valorTotal:parseFloat(it.valorTotal)||0
+  }));
+  window._nfPendingData=data;
+  window._nfPendingForn=fornecedor;
 
-  const est=getEstMP();
-  const mp=getMP();
-  const validos=_nfItens.filter(it=>it.mpId&&parseFloat(it.qtd)>0);
-  validos.forEach(it=>{
-    const qtd=parseFloat(it.qtd)||0;
-    const valIt=parseFloat(it.valorTotal)||0;
-    if(!est[it.mpId])est[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
-    est[it.mpId].entradas.push({id:uid(),data,qtd,valor:valIt,obs:'NF-e: '+fornecedor});
-    if(valIt>0&&qtd>0){const idx=mp.findIndex(x=>x.id===it.mpId);if(idx>-1)mp[idx].valor=valIt/qtd;}
-  });
-  S.set('est_mp',est);S.set('mp',mp);
-  renderLanc();
-  if(currentPage==='estoque')renderEstoque();
-  updateAlertBadge();
-
-  document.getElementById('nf-resultado').innerHTML=`
-    <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:12px;padding:20px;text-align:center">
-      <div style="font-size:32px;margin-bottom:8px">✅</div>
-      <div style="font-weight:700;color:var(--green);font-size:14px">Lançado com sucesso!</div>
-      <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">${fornecedor} · R$ ${valor.toLocaleString('pt-BR',{minimumFractionDigits:2})} · ${validos.length} insumo(s) no estoque</div>
-      <button onclick="nfReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">🧾 Lançar outro XML</button>
-    </div>`;
+  // Abre modal de despesa pré-preenchido
+  lancMainTab('pagar', document.getElementById('lt-pagar'));
+  editLancId=null;
+  setTimeout(()=>{
+    openDesp();
+    setTimeout(()=>{
+      document.getElementById('mdesp-desc').value=fornecedor;
+      document.getElementById('mdesp-valor').value=valor;
+      document.getElementById('mdesp-venc').value=data;
+      document.getElementById('mdesp-data-pag').value=data;
+      document.getElementById('mdesp-forn').value=fornecedor;
+      document.getElementById('mdesp-obs').value='Lançado via NF-e XML';
+      // Conta bancária
+      if(bancoId){
+        const bk=getBancos().find(b=>b.id===bancoId);
+        if(bk) selectCustomDrop('mdesp-banco-drop',bancoId,bk.nome,null);
+      }
+    },80);
+  },120);
 }
 
 function nfReset(){
