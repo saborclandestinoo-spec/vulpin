@@ -9944,9 +9944,13 @@ function cvRenderImportacao(transacoes,bancoId){
 
   html+=`</div>
   <div style="display:flex;gap:8px">
-    <button onclick="cvImportarSelecionados(${JSON.stringify(transacoes).replace(/"/g,'&quot;')},'${bancoId}')" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Importar selecionados</button>
+    <button onclick="cvImportarSelecionados()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Importar selecionados</button>
     <button onclick="cvResetBanco()" style="padding:12px 16px;font-size:13px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">✕</button>
   </div>`;
+
+  // Salva globalmente para o botão importar acessar
+  window._cvTransacoes=transacoes;
+  window._cvBancoId=bancoId;
 
   res.innerHTML=html;
   // Bind checkboxes
@@ -9956,7 +9960,9 @@ function cvRenderImportacao(transacoes,bancoId){
   });
 }
 
-function cvImportarSelecionados(transacoes,bancoId){
+function cvImportarSelecionados(){
+  const transacoes=window._cvTransacoes||[];
+  const bancoId=window._cvBancoId||'';
   const selecionadas=transacoes.filter(t=>document.getElementById('imp-chk-'+t._id)?.checked);
   if(!selecionadas.length){alert('Nenhuma transação selecionada');return;}
   const lancs=getLanc();
