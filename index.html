@@ -9927,37 +9927,29 @@ function cvRenderImportacao(transacoes,bancoId){
   </div>
   <div style="margin-bottom:14px">`;
 
-  transacoes.forEach(t=>{
+  // Salva globalmente
+  window._cvTransacoes=transacoes;
+  window._cvBancoId=bancoId;
+
+  transacoes.forEach((t,i)=>{
     const cor=t.tipo==='despesa'?'var(--red)':'var(--green)';
     const statusTag=t._dup
       ?`<span style="font-size:10px;font-weight:700;background:rgba(230,126,34,.15);color:var(--amber);padding:2px 7px;border-radius:20px">⚠️ Já lançado: ${t._dup.desc||'—'} (${fmtD(t._dup.data)})</span>`
       :`<span style="font-size:10px;font-weight:700;background:rgba(39,174,96,.12);color:var(--green);padding:2px 7px;border-radius:20px">✅ Não lançado</span>`;
-    html+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--bor);margin-bottom:6px;background:var(--bg)">
-      <input type="checkbox" id="imp-chk-${t._id}" ${t._sel?'checked':''} style="margin-top:3px;flex-shrink:0">
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--bor);margin-bottom:6px;background:var(--bg)">
       <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.desc||'—'}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.desc||'—'}</div>
         <div style="font-size:11px;color:var(--t3);margin-top:2px">${fmtD(t.data)} &nbsp;|&nbsp; <span style="color:${cor};font-weight:700">${t.tipo==='despesa'?'- ':'+ '}${fmtV(t.valor)}</span></div>
         <div style="margin-top:4px">${statusTag}</div>
       </div>
+      <button onclick="cvAbrirLanc(${i})" style="flex-shrink:0;padding:6px 12px;font-size:11px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;white-space:nowrap">+ Lançar</button>
     </div>`;
   });
 
   html+=`</div>
-  <div style="display:flex;gap:8px">
-    <button onclick="cvImportarSelecionados()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Importar selecionados</button>
-    <button onclick="cvResetBanco()" style="padding:12px 16px;font-size:13px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">✕</button>
-  </div>`;
-
-  // Salva globalmente para o botão importar acessar
-  window._cvTransacoes=transacoes;
-  window._cvBancoId=bancoId;
+  <button onclick="cvResetBanco()" style="width:100%;padding:10px;font-size:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">✕ Fechar</button>`;
 
   res.innerHTML=html;
-  // Bind checkboxes
-  transacoes.forEach(t=>{
-    const chk=document.getElementById('imp-chk-'+t._id);
-    if(chk)chk.addEventListener('change',()=>{t._sel=chk.checked;});
-  });
 }
 
 function cvImportarSelecionados(){
@@ -9991,6 +9983,35 @@ function cvImportarSelecionados(){
     <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">Conta: ${banco?.nome||bancoId}</div>
     <button onclick="cvResetBanco()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">Importar outro</button>
   </div>`;
+}
+
+function cvAbrirLanc(idx){
+  const t=(window._cvTransacoes||[])[idx];
+  if(!t)return;
+  const bancoId=window._cvBancoId||'';
+  // Vai para aba pagar/receber e abre modal preenchido
+  const isDesp=t.tipo==='despesa';
+  lancMainTab(isDesp?'pagar':'receber', document.getElementById(isDesp?'lt-pagar':'lt-receber'));
+  editLancId=null;
+  setTimeout(()=>{
+    if(isDesp) openDesp(); else openRec();
+    setTimeout(()=>{
+      // Preenche campos
+      const prefix=isDesp?'mdesp':'mrec';
+      const vEl=document.getElementById(prefix+'-valor');
+      const dEl=document.getElementById(prefix+'-data');
+      const descEl=document.getElementById(prefix+'-desc');
+      const bankEl=document.getElementById(prefix+'-banco');
+      const pagoEl=document.getElementById(prefix+'-pago');
+      if(vEl) vEl.value=t.valor;
+      if(dEl) dEl.value=t.data;
+      if(descEl) descEl.value=t.desc||'';
+      if(bankEl&&bancoId) bankEl.value=bancoId;
+      if(pagoEl) pagoEl.checked=true;
+      // Dispara evento pago para atualizar campos
+      if(pagoEl) pagoEl.dispatchEvent(new Event('change'));
+    },80);
+  },100);
 }
 
 function cvResetBanco(){
