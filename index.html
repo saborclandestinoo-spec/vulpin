@@ -4696,17 +4696,22 @@ function renderFluxo(){
   const hist=getHistorico();
   // Mapa pedidos por data BRT
   const pedMapaRec={};
-  hist.forEach(p=>{
-    if(_stCancel.has(p.status||''))return;
-    const dt=p.created_at||p.createdAt||'';if(!dt)return;
-    const ms=new Date(dt).getTime()-3*60*60*1000;
-    const d=new Date(ms);
-    const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-    if(dStr>=range.start&&dStr<=range.end){
-      pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
-    }
-  });
-  // Receitas manuais (lançamentos tipo receita)
+  // pedMapaRec só para saldo acumulado (fallback quando não há lançamentos gerados)
+  const temLancPedidos=lancs.some(l=>l.pedidoId);
+  if(!temLancPedidos){
+    // Sem lançamentos de pedidos gerados — usa p.total direto
+    hist.forEach(p=>{
+      if(_stCancel.has(p.status||''))return;
+      const dt=p.created_at||p.createdAt||'';if(!dt)return;
+      const ms=new Date(dt).getTime()-3*60*60*1000;
+      const d=new Date(ms);
+      const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+      if(dStr>=range.start&&dStr<=range.end){
+        pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
+      }
+    });
+  }
+  // Receitas manuais (lançamentos tipo receita — inclui os gerados pelos pedidos)
   const recLancs=lancs.filter(l=>l.tipo==='receita');
   const despLancs=lancs.filter(l=>l.tipo==='despesa'); // needed for _saldoAcumDia
   const recLancTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
