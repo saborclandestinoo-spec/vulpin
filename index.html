@@ -6641,11 +6641,16 @@ function saveLancTipo(tipo,andAnother){
 
   closeM('modal-'+(isDesp?'desp':'rec'));
   // Anexa comprovante pendente (vindo da aba Comprovantes)
-  if(window._cvPendingImg&&obj.id){
+  if((window._cvPendingImg||window._cvPendingFitid)&&obj.id){
     const _lancs=getLanc();
     const _idx=_lancs.findIndex(x=>x.id===obj.id);
-    if(_idx>-1){_lancs[_idx].comprovante=window._cvPendingImg;S.set('lancamentos',_lancs);}
+    if(_idx>-1){
+      if(window._cvPendingImg) _lancs[_idx].comprovante=window._cvPendingImg;
+      if(window._cvPendingFitid) _lancs[_idx].fitid=window._cvPendingFitid;
+      S.set('lancamentos',_lancs);
+    }
     window._cvPendingImg=null;
+    window._cvPendingFitid=null;
   }
   if(andAnother){editLancId=null;isDesp?openDesp():openRec();}
   renderLanc();
@@ -9822,8 +9827,17 @@ async function cvParseOFX(file){
     const dtRaw=get('DTPOSTED')||get('DTUSER')||'';
     const dt=dtRaw.length>=8?`${dtRaw.slice(0,4)}-${dtRaw.slice(4,6)}-${dtRaw.slice(6,8)}`:'';
     const valRaw=parseFloat((get('TRNAMT')||'0').replace(',','.'));
-    const desc=(get('MEMO')||get('NAME')||'').replace(/&amp;/g,'&');
-    if(dt&&valRaw!==0) txns.push({data:dt,valor:Math.abs(valRaw),tipo:valRaw<0?'despesa':'receita',desc});
+    const name=(get('NAME')||'').replace(/&amp;/g,'&');
+    const memo=(get('MEMO')||'').replace(/&amp;/g,'&');
+    const fitid=get('FITID')||'';
+    const trntype=get('TRNTYPE')||'';
+    // NAME é o estabelecimento real; MEMO costuma ser nome da conta — usa NAME
+    const desc=name||memo;
+    if(dt&&valRaw!==0) txns.push({
+      data:dt, valor:Math.abs(valRaw),
+      tipo:valRaw<0?'despesa':'receita',
+      desc, name, memo, fitid, trntype
+    });
   };
   // XML com tags fechadas
   const tagged=[...text.matchAll(/<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi)];
@@ -9913,11 +9927,14 @@ function cvRenderImportacao(transacoes,bancoId){
   const lancs=getLanc();
   const MARGEM=0.02;
 
-  // Verifica se já está lançado — só por valor exato (independente de data)
+  // Verifica se já está lançado — FITID exato ou valor+data
   transacoes.forEach(t=>{
-    const dup=lancs.find(l=>Math.abs((l.valor||0)-t.valor)<=0.02);
+    const dup=lancs.find(l=>{
+      if(t.fitid&&l.fitid&&t.fitid===l.fitid) return true; // ID exato
+      return Math.abs((l.valor||0)-t.valor)<=0.02&&(l.data===t.data||(l.venc===t.data));
+    });
     t._dup=dup||null;
-    t._sel=true; // sempre selecionado, usuário decide
+    t._sel=true;
     t._id='imp_'+Math.random().toString(36).slice(2);
   });
 
@@ -10008,8 +10025,9 @@ function cvAbrirLanc(idx){
       if(descEl) descEl.value=t.desc||'';
       if(bankEl&&bancoId) bankEl.value=bancoId;
       if(pagoEl) pagoEl.checked=true;
-      // Dispara evento pago para atualizar campos
       if(pagoEl) pagoEl.dispatchEvent(new Event('change'));
+      // Guarda FITID para detecção futura de duplicata
+      if(t.fitid) window._cvPendingFitid=t.fitid;
     },80);
   },100);
 }
