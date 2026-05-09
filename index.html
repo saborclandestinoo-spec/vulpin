@@ -1110,21 +1110,54 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       <select id="lanc-month" style="display:none"></select>
       <!-- PAINEL COMPROVANTES -->
       <div id="painel-comprovantes" style="display:none;flex:1;overflow-y:auto;padding:20px">
-        <div style="max-width:520px;margin:0 auto">
-          <!-- Drop zone -->
-          <div id="cv-drop" onclick="document.getElementById('cv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:20px">
-            <div style="font-size:40px;margin-bottom:10px">📸</div>
-            <div style="font-size:14px;font-weight:700;color:var(--t)">Envie o comprovante</div>
-            <div style="font-size:12px;color:var(--t3);margin-top:6px">Clique ou arraste a foto/print aqui</div>
+        <div style="max-width:580px;margin:0 auto">
+          <!-- Seletor de modo -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+            <div id="cv-mode-foto" onclick="cvSetMode('foto')" style="border:2px solid var(--fox);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:rgba(255,107,53,.06)">
+              <div style="font-size:28px;margin-bottom:6px">📸</div>
+              <div style="font-size:13px;font-weight:700;color:var(--fox)">Comprovante / Foto</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:3px">PNG, JPG — leitura por IA</div>
+            </div>
+            <div id="cv-mode-banco" onclick="cvSetMode('banco')" style="border:2px solid var(--bor);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--bg3)">
+              <div style="font-size:28px;margin-bottom:6px">🏦</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t2)">Extrato do Banco</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:3px">OFX, CSV, XLS, PDF</div>
+            </div>
           </div>
-          <input type="file" id="cv-file" accept="image/*" style="display:none" onchange="cvHandleFile(this.files[0])">
-          <!-- Preview -->
-          <div id="cv-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
-            <img id="cv-img" style="width:100%;display:block;max-height:260px;object-fit:contain;background:var(--bg3)">
+
+          <!-- MODO FOTO -->
+          <div id="cv-painel-foto">
+            <div id="cv-drop" onclick="document.getElementById('cv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
+              <div style="font-size:36px;margin-bottom:8px">📄</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste a foto aqui</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:4px">PNG ou JPG</div>
+            </div>
+            <input type="file" id="cv-file" accept="image/*" style="display:none" onchange="cvHandleFile(this.files[0])">
+            <div id="cv-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
+              <img id="cv-img" style="width:100%;display:block;max-height:240px;object-fit:contain;background:var(--bg3)">
+            </div>
+            <div id="cv-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
+            <div id="cv-resultado" style="display:none"></div>
           </div>
-          <!-- Status / resultado -->
-          <div id="cv-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
-          <div id="cv-resultado" style="display:none"></div>
+
+          <!-- MODO BANCO -->
+          <div id="cv-painel-banco" style="display:none">
+            <!-- Selecionar conta -->
+            <div style="margin-bottom:14px">
+              <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">Conta de destino</label>
+              <select id="cv-banco-sel" style="width:100%;padding:10px 12px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;background:var(--bg);color:var(--t)">
+                <option value="">Selecione a conta...</option>
+              </select>
+            </div>
+            <div id="cv-banco-drop" onclick="document.getElementById('cv-banco-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvBancoHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
+              <div style="font-size:36px;margin-bottom:8px">🏦</div>
+              <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste o extrato aqui</div>
+              <div style="font-size:11px;color:var(--t3);margin-top:4px">OFX · CSV · XLS · PDF</div>
+            </div>
+            <input type="file" id="cv-banco-file" accept=".ofx,.csv,.xls,.xlsx,.pdf" style="display:none" onchange="cvBancoHandleFile(this.files[0])">
+            <div id="cv-banco-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
+            <div id="cv-banco-resultado" style="display:none"></div>
+          </div>
         </div>
       </div>
       <div class="scroll" id="painel-lanc-scroll">
@@ -9717,5 +9750,244 @@ function cvReset(){
   document.getElementById('cv-preview').style.display='none';
   document.getElementById('cv-status').style.display='none';
   document.getElementById('cv-resultado').style.display='none';
+}
+
+// ═══════════════════════════════════════════
+// COMPROVANTES — MODO BANCO
+// ═══════════════════════════════════════════
+function cvSetMode(mode){
+  const isFoto=mode==='foto';
+  // Cards seletor
+  document.getElementById('cv-mode-foto').style.border=isFoto?'2px solid var(--fox)':'2px solid var(--bor)';
+  document.getElementById('cv-mode-foto').style.background=isFoto?'rgba(255,107,53,.06)':'var(--bg3)';
+  document.getElementById('cv-mode-foto').querySelector('div:nth-child(2)').style.color=isFoto?'var(--fox)':'var(--t2)';
+  document.getElementById('cv-mode-banco').style.border=!isFoto?'2px solid var(--fox)':'2px solid var(--bor)';
+  document.getElementById('cv-mode-banco').style.background=!isFoto?'rgba(255,107,53,.06)':'var(--bg3)';
+  document.getElementById('cv-mode-banco').querySelector('div:nth-child(2)').style.color=!isFoto?'var(--fox)':'var(--t2)';
+  // Paineis
+  document.getElementById('cv-painel-foto').style.display=isFoto?'block':'none';
+  document.getElementById('cv-painel-banco').style.display=isFoto?'none':'block';
+  // Popula bancos
+  if(!isFoto){
+    const sel=document.getElementById('cv-banco-sel');
+    const bancos=getBancos();
+    sel.innerHTML='<option value="">Selecione a conta...</option>'+bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');
+  }
+}
+
+function cvBancoHandleDrop(e){
+  e.preventDefault();
+  const drop=document.getElementById('cv-banco-drop');
+  drop.style.borderColor='var(--bor)';drop.style.background='var(--bg3)';
+  const file=e.dataTransfer.files[0];
+  if(file)cvBancoHandleFile(file);
+}
+
+async function cvBancoHandleFile(file){
+  if(!file)return;
+  const bancoId=document.getElementById('cv-banco-sel').value;
+  if(!bancoId){alert('Selecione a conta primeiro');return;}
+  const status=document.getElementById('cv-banco-status');
+  const res=document.getElementById('cv-banco-resultado');
+  status.style.display='block';res.style.display='none';
+  status.style.background='var(--bg3)';status.style.color='var(--t2)';
+  status.innerHTML='⏳ Lendo arquivo...';
+  const ext=file.name.split('.').pop().toLowerCase();
+  let transacoes=[];
+  try{
+    if(ext==='ofx') transacoes=await cvParseOFX(file);
+    else if(ext==='csv') transacoes=await cvParseCSV(file);
+    else if(ext==='xls'||ext==='xlsx') transacoes=await cvParseXLS(file);
+    else if(ext==='pdf') transacoes=await cvParsePDFIA(file);
+    else throw new Error('Formato não suportado: '+ext);
+    if(!transacoes.length){
+      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+      status.innerHTML='❌ Nenhuma transação encontrada no arquivo.';
+      return;
+    }
+    status.style.display='none';
+    cvRenderImportacao(transacoes,bancoId);
+  }catch(err){
+    status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+    status.innerHTML='❌ Erro: '+err.message;
+  }
+}
+
+// OFX — parser nativo
+async function cvParseOFX(file){
+  const text=await file.text();
+  const txns=[];
+  const parseBlock=block=>{
+    const get=tag=>{const r=block.match(new RegExp('<'+tag+'>([^<\\n\\r]+)','i'));return r?r[1].trim():null;};
+    const dtRaw=get('DTPOSTED')||get('DTUSER')||'';
+    const dt=dtRaw.length>=8?`${dtRaw.slice(0,4)}-${dtRaw.slice(4,6)}-${dtRaw.slice(6,8)}`:'';
+    const valRaw=parseFloat((get('TRNAMT')||'0').replace(',','.'));
+    const desc=(get('MEMO')||get('NAME')||'').replace(/&amp;/g,'&');
+    if(dt&&valRaw!==0) txns.push({data:dt,valor:Math.abs(valRaw),tipo:valRaw<0?'despesa':'receita',desc});
+  };
+  // XML com tags fechadas
+  const tagged=[...text.matchAll(/<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi)];
+  if(tagged.length) tagged.forEach(m=>parseBlock(m[1]));
+  // SGML sem tags fechadas
+  else text.split('<STMTTRN>').slice(1).forEach(parseBlock);
+  return txns;
+}
+
+// CSV — parser nativo
+async function cvParseCSV(file){
+  const text=await file.text();
+  const lines=text.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2) return [];
+  // Detecta separador
+  const sep=lines[0].includes(';')?';':',';
+  const header=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  // Tenta achar colunas por nome comum
+  const idxData=header.findIndex(h=>/data|date|dt/.test(h));
+  const idxVal=header.findIndex(h=>/valor|value|amount|quantia|vlr/.test(h));
+  const idxDesc=header.findIndex(h=>/desc|hist|memo|name|lancamento|lançamento/.test(h));
+  const idxTipo=header.findIndex(h=>/tipo|type|natureza|dc|d\/c/.test(h));
+  const txns=[];
+  lines.slice(1).forEach(line=>{
+    const cols=line.split(sep).map(c=>c.replace(/"/g,'').trim());
+    if(idxData<0||idxVal<0) return;
+    const dtRaw=cols[idxData]||'';
+    // Suporta DD/MM/YYYY e YYYY-MM-DD
+    let dt='';
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(dtRaw)) dt=dtRaw.split('/').reverse().join('-');
+    else if(/^\d{4}-\d{2}-\d{2}$/.test(dtRaw)) dt=dtRaw;
+    else if(/^\d{2}\/\d{2}\/\d{2}$/.test(dtRaw)){const p=dtRaw.split('/');dt=`20${p[2]}-${p[1]}-${p[0]}`;}
+    if(!dt) return;
+    const valRaw=parseFloat((cols[idxVal]||'0').replace(/\./g,'').replace(',','.'));
+    if(!valRaw) return;
+    const desc=idxDesc>=0?cols[idxDesc]:'Importado';
+    let tipo=valRaw<0?'despesa':'receita';
+    if(idxTipo>=0){const t=(cols[idxTipo]||'').toLowerCase();if(/d|deb|saida|saída/.test(t))tipo='despesa';else if(/c|cred|entrada/.test(t))tipo='receita';}
+    txns.push({data:dt,valor:Math.abs(valRaw),tipo,desc});
+  });
+  return txns;
+}
+
+// XLS/XLSX — usa SheetJS via CDN
+async function cvParseXLS(file){
+  // Carrega SheetJS se ainda não carregado
+  if(!window.XLSX){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    });
+  }
+  const ab=await file.arrayBuffer();
+  const wb=window.XLSX.read(ab,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=window.XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  if(rows.length<2) return [];
+  // Usa mesma lógica do CSV — converte pra CSV e reutiliza
+  const csvText=rows.map(r=>r.join(';')).join('\n');
+  return cvParseCSV(new File([csvText],'extrato.csv',{type:'text/plain'}));
+}
+
+// PDF — única que usa IA
+async function cvParsePDFIA(file){
+  const status=document.getElementById('cv-banco-status');
+  status.innerHTML='🤖 IA lendo PDF...';
+  const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+  const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    model:'claude-sonnet-4-20250514',max_tokens:2000,
+    messages:[{role:'user',content:[
+      {type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+      {type:'text',text:'Extraia TODAS as transações deste extrato bancário. Responda SOMENTE em JSON array, sem markdown. Formato: [{"data":"YYYY-MM-DD","valor":123.45,"tipo":"despesa|receita","desc":"descrição"}]. Débitos/saídas=despesa, créditos/entradas=receita. Valor sempre positivo.'}
+    ]}]
+  })});
+  const data=await resp.json();
+  const txt=data.content.find(c=>c.type==='text')?.text||'[]';
+  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+}
+
+// Render tabela de importação
+function cvRenderImportacao(transacoes,bancoId){
+  const res=document.getElementById('cv-banco-resultado');
+  res.style.display='block';
+  const fmtV=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
+  const lancs=getLanc();
+  const MARGEM=0.02;
+
+  // Verifica duplicatas
+  transacoes.forEach(t=>{
+    const dup=lancs.find(l=>l.data===t.data&&Math.abs((l.valor||0)-t.valor)/Math.max(t.valor,0.01)<=MARGEM);
+    t._dup=dup||null;
+    t._sel=!dup; // seleciona por padrão apenas os não duplicados
+    t._id='imp_'+Math.random().toString(36).slice(2);
+  });
+
+  let html=`<div style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:13px;font-weight:700;color:var(--t)">${transacoes.length} transações encontradas</div>
+    <div style="font-size:11px;color:var(--t3)">${transacoes.filter(t=>t._dup).length} possíveis duplicatas</div>
+  </div>
+  <div style="margin-bottom:14px">`;
+
+  transacoes.forEach(t=>{
+    const cor=t.tipo==='despesa'?'var(--red)':'var(--green)';
+    const dupInfo=t._dup?`<div style="font-size:10px;color:var(--amber);margin-top:2px">⚠️ Possível duplicata: ${t._dup.desc||''} ${fmtD(t._dup.data)}</div>`:'';
+    html+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--bor);margin-bottom:6px;background:${t._dup?'rgba(230,126,34,.04)':'var(--bg)'}">
+      <input type="checkbox" id="imp-chk-${t._id}" ${t._sel?'checked':''} style="margin-top:3px;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.desc||'—'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${fmtD(t.data)} &nbsp;|&nbsp; <span style="color:${cor};font-weight:700">${t.tipo==='despesa'?'- ':'+ '}${fmtV(t.valor)}</span></div>
+        ${dupInfo}
+      </div>
+    </div>`;
+  });
+
+  html+=`</div>
+  <div style="display:flex;gap:8px">
+    <button onclick="cvImportarSelecionados(${JSON.stringify(transacoes).replace(/"/g,'&quot;')},'${bancoId}')" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Importar selecionados</button>
+    <button onclick="cvResetBanco()" style="padding:12px 16px;font-size:13px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">✕</button>
+  </div>`;
+
+  res.innerHTML=html;
+  // Bind checkboxes
+  transacoes.forEach(t=>{
+    const chk=document.getElementById('imp-chk-'+t._id);
+    if(chk)chk.addEventListener('change',()=>{t._sel=chk.checked;});
+  });
+}
+
+function cvImportarSelecionados(transacoes,bancoId){
+  const selecionadas=transacoes.filter(t=>document.getElementById('imp-chk-'+t._id)?.checked);
+  if(!selecionadas.length){alert('Nenhuma transação selecionada');return;}
+  const lancs=getLanc();
+  const bancos=getBancos();
+  const banco=bancos.find(b=>b.id===bancoId);
+  selecionadas.forEach(t=>{
+    lancs.push({
+      id:uid(),
+      tipo:t.tipo,
+      desc:t.desc||'Importado extrato',
+      valor:t.valor,
+      data:t.data,
+      venc:t.data,
+      pago:true,
+      bancoId,
+      cat:'',
+      obs:'Importado via extrato bancário'
+    });
+  });
+  S.set('lancamentos',lancs);
+  renderLanc();
+  const res=document.getElementById('cv-banco-resultado');
+  res.innerHTML=`<div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:12px;padding:20px;text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">✅</div>
+    <div style="font-weight:700;color:var(--green);font-size:14px">${selecionadas.length} lançamentos importados!</div>
+    <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">Conta: ${banco?.nome||bancoId}</div>
+    <button onclick="cvResetBanco()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">Importar outro</button>
+  </div>`;
+}
+
+function cvResetBanco(){
+  document.getElementById('cv-banco-file').value='';
+  document.getElementById('cv-banco-status').style.display='none';
+  document.getElementById('cv-banco-resultado').style.display='none';
 }
 </script>
