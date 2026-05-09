@@ -10016,12 +10016,14 @@ function cvAbrirLanc(idx){
       // Preenche campos
       const prefix=isDesp?'mdesp':'mrec';
       const vEl=document.getElementById(prefix+'-valor');
-      const dEl=document.getElementById(prefix+'-data');
+      const dPagEl=document.getElementById(prefix+(isDesp?'-data-pag':'-data-rec'));
+      const dVencEl=document.getElementById(prefix+'-venc');
       const descEl=document.getElementById(prefix+'-desc');
       const bankEl=document.getElementById(prefix+'-banco');
       const pagoEl=document.getElementById(prefix+'-pago');
       if(vEl) vEl.value=t.valor;
-      if(dEl) dEl.value=t.data;
+      if(dPagEl) dPagEl.value=t.data;
+      if(dVencEl) dVencEl.value=t.data;
       if(descEl) descEl.value=t.desc||'';
       if(bankEl&&bancoId) bankEl.value=bancoId;
       if(pagoEl) pagoEl.checked=true;
