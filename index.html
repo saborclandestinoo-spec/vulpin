@@ -1109,54 +1109,65 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       </div>
       <select id="lanc-month" style="display:none"></select>
       <!-- PAINEL COMPROVANTES -->
-      <div id="painel-comprovantes" style="display:none;flex:1;overflow-y:auto;padding:20px">
-        <div style="max-width:580px;margin:0 auto">
-          <!-- Seletor de modo -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-            <div id="cv-mode-foto" onclick="cvSetMode('foto')" style="border:2px solid var(--fox);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:rgba(255,107,53,.06)">
-              <div style="font-size:28px;margin-bottom:6px">📸</div>
-              <div style="font-size:13px;font-weight:700;color:var(--fox)">Comprovante / Foto</div>
-              <div style="font-size:11px;color:var(--t3);margin-top:3px">PNG, JPG — leitura por IA</div>
-            </div>
-            <div id="cv-mode-banco" onclick="cvSetMode('banco')" style="border:2px solid var(--bor);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--bg3)">
-              <div style="font-size:28px;margin-bottom:6px">🏦</div>
-              <div style="font-size:13px;font-weight:700;color:var(--t2)">Extrato do Banco</div>
-              <div style="font-size:11px;color:var(--t3);margin-top:3px">OFX, CSV, XLS, PDF</div>
-            </div>
-          </div>
+      <div id="painel-comprovantes" style="display:none;flex:1;overflow-y:auto;padding:0">
+        <!-- Sub-tabs -->
+        <div style="display:flex;border-bottom:2px solid var(--bor);padding:0 20px;background:var(--bg)">
+          <div id="cvtab-nf" onclick="cvSubTab('nf')" style="padding:13px 18px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-2px;color:var(--fox);white-space:nowrap">🧾 Nota Fiscal</div>
+          <div id="cvtab-comp" onclick="cvSubTab('comp')" style="padding:13px 18px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--t3);white-space:nowrap">📸 Comprovante</div>
+          <div id="cvtab-banco" onclick="cvSubTab('banco')" style="padding:13px 18px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--t3);white-space:nowrap">🏦 Extrato</div>
+        </div>
 
-          <!-- MODO FOTO -->
-          <div id="cv-painel-foto">
-            <div id="cv-drop" onclick="document.getElementById('cv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
-              <div style="font-size:36px;margin-bottom:8px">📄</div>
-              <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste a foto aqui</div>
-              <div style="font-size:11px;color:var(--t3);margin-top:4px">PNG ou JPG</div>
-            </div>
-            <input type="file" id="cv-file" accept="image/*" style="display:none" onchange="cvHandleFile(this.files[0])">
-            <div id="cv-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
-              <img id="cv-img" style="width:100%;display:block;max-height:240px;object-fit:contain;background:var(--bg3)">
-            </div>
-            <div id="cv-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
-            <div id="cv-resultado" style="display:none"></div>
-          </div>
+        <div style="padding:20px">
+          <div style="max-width:560px;margin:0 auto">
 
-          <!-- MODO BANCO -->
-          <div id="cv-painel-banco" style="display:none">
-            <!-- Selecionar conta -->
-            <div style="margin-bottom:14px">
-              <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">Conta de destino</label>
-              <select id="cv-banco-sel" style="width:100%;padding:10px 12px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;background:var(--bg);color:var(--t)">
-                <option value="">Selecione a conta...</option>
-              </select>
+            <!-- ABA NOTA FISCAL -->
+            <div id="cv-painel-nf">
+              <div id="nf-drop" onclick="document.getElementById('nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="nfHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:16px;transition:border-color .2s">
+                <div style="font-size:40px;margin-bottom:10px">🧾</div>
+                <div style="font-size:14px;font-weight:700;color:var(--t)">Envie a Nota Fiscal</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:5px">Foto ou PDF — IA extrai os itens e lança no sistema</div>
+              </div>
+              <input type="file" id="nf-file" accept="image/*,application/pdf" style="display:none" onchange="nfHandleFile(this.files[0])">
+              <div id="nf-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
+                <img id="nf-img" style="width:100%;display:block;max-height:220px;object-fit:contain;background:var(--bg3)">
+              </div>
+              <div id="nf-status" style="display:none;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
+              <div id="nf-resultado" style="display:none"></div>
             </div>
-            <div id="cv-banco-drop" onclick="document.getElementById('cv-banco-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvBancoHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
-              <div style="font-size:36px;margin-bottom:8px">🏦</div>
-              <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste o extrato aqui</div>
-              <div style="font-size:11px;color:var(--t3);margin-top:4px">OFX · CSV · XLS · PDF</div>
+
+            <!-- ABA COMPROVANTE -->
+            <div id="cv-painel-foto" style="display:none">
+              <div id="cv-drop" onclick="document.getElementById('cv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
+                <div style="font-size:36px;margin-bottom:8px">📸</div>
+                <div style="font-size:13px;font-weight:700;color:var(--t)">Envie o comprovante</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:4px">Foto ou print — verifica se já foi lançado</div>
+              </div>
+              <input type="file" id="cv-file" accept="image/*" style="display:none" onchange="cvHandleFile(this.files[0])">
+              <div id="cv-preview" style="display:none;margin-bottom:16px;border-radius:12px;overflow:hidden;border:1px solid var(--bor)">
+                <img id="cv-img" style="width:100%;display:block;max-height:240px;object-fit:contain;background:var(--bg3)">
+              </div>
+              <div id="cv-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
+              <div id="cv-resultado" style="display:none"></div>
             </div>
-            <input type="file" id="cv-banco-file" accept=".ofx,.csv,.xls,.xlsx,.pdf" style="display:none" onchange="cvBancoHandleFile(this.files[0])">
-            <div id="cv-banco-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
-            <div id="cv-banco-resultado" style="display:none"></div>
+
+            <!-- ABA EXTRATO -->
+            <div id="cv-painel-banco" style="display:none">
+              <div style="margin-bottom:14px">
+                <label style="font-size:12px;font-weight:600;color:var(--t2);display:block;margin-bottom:6px">Conta de destino</label>
+                <select id="cv-banco-sel" style="width:100%;padding:10px 12px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;background:var(--bg);color:var(--t)">
+                  <option value="">Selecione a conta...</option>
+                </select>
+              </div>
+              <div id="cv-banco-drop" onclick="document.getElementById('cv-banco-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvBancoHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
+                <div style="font-size:36px;margin-bottom:8px">🏦</div>
+                <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste o extrato aqui</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:4px">OFX · CSV · XLS · PDF</div>
+              </div>
+              <input type="file" id="cv-banco-file" accept=".ofx,.csv,.xls,.xlsx,.pdf" style="display:none" onchange="cvBancoHandleFile(this.files[0])">
+              <div id="cv-banco-status" style="display:none;padding:14px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;text-align:center"></div>
+              <div id="cv-banco-resultado" style="display:none"></div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -5245,6 +5256,7 @@ function lancMainTab(tab, el){
     if(painelCV)painelCV.style.display='block';
     if(painelLanc)painelLanc.style.display='none';
     if(sub)sub.style.display='none';
+    setTimeout(()=>cvSubTab('nf'),50);
     return;
   }
   if(painelCV)painelCV.style.display='none';
@@ -10286,5 +10298,231 @@ async function distNFHandleFile(file){
     status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
     status.innerHTML='❌ Erro: '+err.message;
   }
+}
+
+// ═══════════════════════════════════════════
+// SUB-TABS COMPROVANTES
+// ═══════════════════════════════════════════
+function cvSubTab(tab){
+  ['nf','comp','banco'].forEach(k=>{
+    const t=document.getElementById('cvtab-'+k);
+    const p=document.getElementById('cv-painel-'+(k==='nf'?'nf':k==='comp'?'foto':'banco'));
+    if(t){t.style.color=k===tab?'var(--fox)':'var(--t3)';t.style.borderBottomColor=k===tab?'var(--fox)':'transparent';}
+    if(p) p.style.display=k===tab?'block':'none';
+  });
+  // Popula bancos se for extrato
+  if(tab==='banco'){
+    const sel=document.getElementById('cv-banco-sel');
+    const bancos=getBancos();
+    sel.innerHTML='<option value="">Selecione a conta...</option>'+bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+// NOTA FISCAL — leitura + lançamento
+// ═══════════════════════════════════════════
+let _nfB64=null, _nfType=null, _nfItens=[];
+
+function nfHandleDrop(e){
+  e.preventDefault();
+  document.getElementById('nf-drop').style.borderColor='var(--bor)';
+  const file=e.dataTransfer.files[0];
+  if(file) nfHandleFile(file);
+}
+
+async function nfHandleFile(file){
+  if(!file) return;
+  const isPDF=file.type==='application/pdf'||file.name.endsWith('.pdf');
+  const status=document.getElementById('nf-status');
+  const res=document.getElementById('nf-resultado');
+  res.style.display='none';
+
+  // Preview se imagem
+  if(!isPDF){
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      document.getElementById('nf-img').src=ev.target.result;
+      document.getElementById('nf-preview').style.display='block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  status.style.display='block';
+  status.style.background='var(--bg3)';status.style.color='var(--t2)';
+  status.innerHTML='🤖 Lendo nota fiscal...';
+
+  const b64=await new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=e=>resolve(e.target.result.split(',')[1]);
+    r.onerror=reject;
+    r.readAsDataURL(file);
+  });
+  _nfB64=b64; _nfType=file.type;
+
+  try{
+    const msgContent=isPDF
+      ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+        {type:'text',text:'Leia esta nota fiscal. Extraia: fornecedor, data, valor total, e todos os itens. Responda SOMENTE em JSON, sem markdown. Formato: {"fornecedor":"Nome","data":"YYYY-MM-DD","valorTotal":123.45,"itens":[{"nome":"produto","qtd":1.5,"unidade":"kg","valorTotal":25.00}]}. Se não encontrar campo, coloque null.'}]
+      :[{type:'image',source:{type:'base64',media_type:file.type,data:b64}},
+        {type:'text',text:'Leia esta nota fiscal. Extraia: fornecedor, data, valor total, e todos os itens. Responda SOMENTE em JSON, sem markdown. Formato: {"fornecedor":"Nome","data":"YYYY-MM-DD","valorTotal":123.45,"itens":[{"nome":"produto","qtd":1.5,"unidade":"kg","valorTotal":25.00}]}. Se não encontrar campo, coloque null.'}];
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
+        messages:[{role:'user',content:msgContent}]})
+    });
+    const data=await resp.json();
+    const txt=data.content.find(c=>c.type==='text')?.text||'{}';
+    const nf=JSON.parse(txt.replace(/```json|```/g,'').trim());
+
+    if(!nf.itens||!nf.itens.length){
+      status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+      status.innerHTML='❌ Não encontrei itens na nota. Tente imagem mais nítida.';
+      return;
+    }
+
+    status.style.display='none';
+    nfRenderResultado(nf);
+  }catch(err){
+    status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
+    status.innerHTML='❌ Erro: '+err.message;
+  }
+}
+
+function nfRenderResultado(nf){
+  const res=document.getElementById('nf-resultado');
+  res.style.display='block';
+  const fmtV=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtD=d=>d?d.split('-').reverse().join('/'):'—';
+  const mps=getMP();
+  const bancos=getBancos();
+
+  // Monta itens com match de MP
+  _nfItens=nf.itens.map(it=>{
+    const nomeLower=(it.nome||'').toLowerCase();
+    const mpMatch=mps.find(m=>m.nome.toLowerCase().includes(nomeLower.slice(0,5))||nomeLower.includes(m.nome.toLowerCase().slice(0,5)));
+    return{...it,mpId:mpMatch?mpMatch.id:'',_id:'nf_'+uid()};
+  });
+
+  const mpOpts=mps.map(m=>`<option value="${m.id}">${m.nome}${m.unidade?' ('+m.unidade+')':''}</option>`).join('');
+  const bancoOpts=bancos.map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');
+
+  let html=`
+  <!-- Cabeçalho NF -->
+  <div style="background:var(--bg3);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:8px">📋 Dados da Nota</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <label style="font-size:11px;color:var(--t3);display:block;margin-bottom:3px">Fornecedor</label>
+        <input id="nf-fornecedor" value="${nf.fornecedor||''}" style="width:100%;padding:7px 10px;border:1px solid var(--bor);border-radius:7px;font-size:12px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t);box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--t3);display:block;margin-bottom:3px">Data</label>
+        <input id="nf-data" type="date" value="${nf.data||''}" style="width:100%;padding:7px 10px;border:1px solid var(--bor);border-radius:7px;font-size:12px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t);box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--t3);display:block;margin-bottom:3px">Valor Total</label>
+        <input id="nf-valor" type="number" value="${nf.valorTotal||''}" style="width:100%;padding:7px 10px;border:1px solid var(--bor);border-radius:7px;font-size:12px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t);box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--t3);display:block;margin-bottom:3px">Conta bancária</label>
+        <select id="nf-banco" style="width:100%;padding:7px 10px;border:1px solid var(--bor);border-radius:7px;font-size:12px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t);box-sizing:border-box">
+          <option value="">Selecione...</option>${bancoOpts}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Itens -->
+  <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px">📦 Itens (${_nfItens.length})</div>
+  <div id="nf-itens-lista">`;
+
+  _nfItens.forEach((it,idx)=>{
+    html+=`<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-size:11px;color:var(--amber);font-weight:600;margin-bottom:6px">🧾 ${it.nome||'Item '+(idx+1)}</div>
+      <div style="display:grid;grid-template-columns:1fr 70px 80px;gap:6px;align-items:center">
+        <select onchange="_nfItens[${idx}].mpId=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
+          <option value="">Selecione o insumo...</option>${mpOpts}
+        </select>
+        <input type="number" placeholder="Qtd" value="${it.qtd||''}" oninput="_nfItens[${idx}].qtd=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;text-align:right;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
+        <input type="number" placeholder="R$ total" value="${it.valorTotal||''}" oninput="_nfItens[${idx}].valorTotal=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;text-align:right;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
+      </div>
+    </div>`;
+  });
+
+  html+=`</div>
+  <div style="display:flex;gap:8px;margin-top:4px">
+    <button onclick="nfLancar()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Lançar despesa + Dar entrada no estoque</button>
+  </div>
+  <button onclick="nfReset()" style="width:100%;margin-top:8px;padding:9px;font-size:12px;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">🧾 Enviar outra nota</button>`;
+
+  res.innerHTML=html;
+
+  // Restaura selects de MP
+  setTimeout(()=>{
+    _nfItens.forEach((it,idx)=>{
+      const sel=document.querySelectorAll('#nf-itens-lista select')[idx];
+      if(sel&&it.mpId) sel.value=it.mpId;
+    });
+  },50);
+}
+
+function nfLancar(){
+  const fornecedor=document.getElementById('nf-fornecedor').value||'Compra de insumos';
+  const data=document.getElementById('nf-data').value;
+  const valor=parseFloat(document.getElementById('nf-valor').value)||0;
+  const bancoId=document.getElementById('nf-banco').value;
+  if(!data){alert('Informe a data da nota');return;}
+  if(!valor){alert('Informe o valor total');return;}
+
+  // 1. Cria lançamento de despesa
+  const lancs=getLanc();
+  const novoId=uid();
+  lancs.push({
+    id:novoId, tipo:'despesa',
+    desc:fornecedor, valor, data, venc:data,
+    pago:true, bancoId, cat:'',
+    obs:'Lançado via Nota Fiscal'
+  });
+  S.set('lancamentos',lancs);
+
+  // 2. Dá entrada no estoque dos itens
+  const est=getEstMP();
+  const mp=getMP();
+  const validos=_nfItens.filter(it=>it.mpId&&parseFloat(it.qtd)>0);
+  validos.forEach(it=>{
+    const qtd=parseFloat(it.qtd)||0;
+    const valIt=parseFloat(it.valorTotal)||0;
+    if(!est[it.mpId])est[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+    est[it.mpId].entradas.push({id:uid(),data,qtd,valor:valIt,obs:'NF: '+fornecedor});
+    if(valIt>0&&qtd>0){
+      const idx=mp.findIndex(x=>x.id===it.mpId);
+      if(idx>-1) mp[idx].valor=valIt/qtd;
+    }
+  });
+  S.set('est_mp',est);
+  S.set('mp',mp);
+
+  renderLanc();
+  if(currentPage==='estoque')renderEstoque();
+  updateAlertBadge();
+
+  // Feedback
+  document.getElementById('nf-resultado').innerHTML=`
+    <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:12px;padding:20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-weight:700;color:var(--green);font-size:14px">Lançado com sucesso!</div>
+      <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">${fornecedor} · R$ ${valor.toLocaleString('pt-BR',{minimumFractionDigits:2})} · ${validos.length} insumo(s) no estoque</div>
+      <button onclick="nfReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">🧾 Lançar outra nota</button>
+    </div>`;
+}
+
+function nfReset(){
+  _nfB64=null;_nfType=null;_nfItens=[];
+  document.getElementById('nf-file').value='';
+  document.getElementById('nf-preview').style.display='none';
+  document.getElementById('nf-status').style.display='none';
+  document.getElementById('nf-resultado').style.display='none';
 }
 </script>
