@@ -921,10 +921,13 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- ESTOQUE -->
     <div class="pg" id="pg-estoque">
       <div class="scroll">
-        <div class="est-tabs">
-          <div class="est-tab on" onclick="estTab('mp',this)">🧂 Insumos</div>
-          <div class="est-tab" onclick="estTab('recheios',this)">🍫 Recheios</div>
-          <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="est-tabs">
+            <div class="est-tab on" onclick="estTab('mp',this)">🧂 Insumos</div>
+            <div class="est-tab" onclick="estTab('recheios',this)">🍫 Recheios</div>
+            <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
+          </div>
+          <button onclick="showConfirm('Recalcular Estoque','Isso vai refazer todas as saídas de produção do zero com base nas produções salvas. Continuar?','🔄',()=>{recalcularEstoqueProducao();renderEstoque();})" style="padding:7px 14px;font-size:11px;font-weight:600;border:1px solid var(--bor);border-radius:8px;background:var(--bg);color:var(--t2);cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:6px">🔄 Recalcular Estoque</button>
         </div>
         <div id="est-content"></div>
       </div>
@@ -4051,24 +4054,23 @@ function saveProd2(){
   // Se recheio, delega para saveProdRecheio adaptado inline
   if(tipo==='recheio'&&!editProd2Id){
     const r=getRecheios().find(x=>x.id===produtoId);
+    const newId=uid(); // declara newId aqui para usar no id das saídas
     // Baixa insumos conforme ficha do recheio
     const estMp=getEstMP();
     (r?r.fichaMP||[]:[]). forEach(it=>{
       const consumo=(it.qtd||0)*qtd;
       if(!consumo)return;
       if(!estMp[it.mpId])estMp[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
-      const prodId2=uid();
-      estMp[it.mpId].saidas.push({id:'prod_'+prodId2+'_'+it.mpId,data:document.getElementById('mprod2-data').value,qtd:consumo,obs:`Produção Recheio #${prodId2}`});
+      estMp[it.mpId].saidas.push({id:'prod_'+newId+'_'+it.mpId,data:document.getElementById('mprod2-data').value,qtd:consumo,obs:`Produção Recheio #${newId}`});
     });
     S.set('est_mp',estMp);
     // Adiciona ao est_recheios
     const est=getEstRecheios();
     if(!est[produtoId])est[produtoId]={entradas:[],saidas:[]};
-    est[produtoId].entradas.push({id:uid(),data:document.getElementById('mprod2-data').value,qtd,obs:document.getElementById('mprod2-obs').value.trim()||'Produção'});
+    est[produtoId].entradas.push({id:'prod_'+newId+'_recheio',data:document.getElementById('mprod2-data').value,qtd,obs:document.getElementById('mprod2-obs').value.trim()||'Produção'});
     S.set('est_recheios',est);
     // Salva registro de produção (tipo recheio)
     const recProds=getProducao();
-    const newId=uid();
     recProds.push({id:newId,data:document.getElementById('mprod2-data').value,recheioId:produtoId,produtoId:null,tipoProducao:'recheio',qtd,perdas:0,obs:document.getElementById('mprod2-obs').value.trim()});
     S.set('producao',recProds);
     closeM('modal-producao');
@@ -4170,7 +4172,11 @@ function deleteProd2(){
       const estMp=getEstMP();const estRec=getEstRecheios();
       let mudMp=false,mudRec=false;
       Object.keys(estMp).forEach(k=>{const b=(estMp[k].saidas||[]).length;estMp[k].saidas=(estMp[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(prefixId));if(estMp[k].saidas.length!==b)mudMp=true;});
-      Object.keys(estRec).forEach(k=>{const b=(estRec[k].saidas||[]).length;estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(prefixId));if(estRec[k].saidas.length!==b)mudRec=true;});
+      Object.keys(estRec).forEach(k=>{
+        const bs=(estRec[k].saidas||[]).length;estRec[k].saidas=(estRec[k].saidas||[]).filter(s=>!s.id||!s.id.startsWith(prefixId));if(estRec[k].saidas.length!==bs)mudRec=true;
+        // Se produção de recheio: remove também a entrada gerada (id = 'prod_'+id+'_recheio')
+        const be=(estRec[k].entradas||[]).length;estRec[k].entradas=(estRec[k].entradas||[]).filter(e=>e.id!==prefixId+'recheio');if(estRec[k].entradas.length!==be)mudRec=true;
+      });
       if(mudMp)S.set('est_mp',estMp);if(mudRec)S.set('est_recheios',estRec);
       updateAlertBadge();
     }
