@@ -2016,6 +2016,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       <button class="btn-danger modal-del" id="mdesp-del" onclick="deleteDesp()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-desp')">Cancelar</button>
       <button class="btn-o" onclick="saveLancTipo('desp',true)" style="border-color:var(--fox);color:var(--fox);font-weight:600">Salvar e lançar outra</button>
+      <button class="btn-o" onclick="window._cvPendingDistInsumos=true;saveLancTipo('desp')" style="border-color:var(--amber);color:var(--amber);font-weight:600">Salvar + Distribuir insumos</button>
       <button class="btn-p" onclick="saveLancTipo('desp')" style="padding:8px 20px">Salvar</button>
     </div>
   </div>
@@ -6261,6 +6262,32 @@ async function printEtiquetas(){
       </div>
     </div>
   </div>
+
+  <!-- MODAL DISTRIBUIR INSUMOS -->
+  <div class="modal-overlay" id="modal-dist-insumos" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-dist-insumos')">
+    <div class="modal-box" style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
+      <div class="modal-header">
+        <span class="modal-title">📦 Distribuir entre Insumos</span>
+        <button class="modal-close" onclick="closeM('modal-dist-insumos')">✕</button>
+      </div>
+      <div style="padding:20px">
+        <div id="dist-info" style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--t2)"></div>
+        <!-- Lista de itens -->
+        <div id="dist-itens"></div>
+        <!-- Botão adicionar -->
+        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo</button>
+        <!-- Totais -->
+        <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--t3)">Total distribuído</span>
+          <span id="dist-total" style="font-size:13px;font-weight:700;color:var(--t)">R$ 0,00</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="distSalvar()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Dar entrada no estoque</button>
+          <button onclick="closeM('modal-dist-insumos')" style="padding:12px 16px;font-size:13px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">Pular</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body></html>`);
   win.document.close();
 }
@@ -6640,6 +6667,11 @@ function saveLancTipo(tipo,andAnother){
   }
 
   closeM('modal-'+(isDesp?'desp':'rec'));
+  // Abre distribuição de insumos se for despesa e flag ativo
+  if(isDesp&&window._cvPendingDistInsumos){
+    window._cvPendingDistInsumos=false;
+    setTimeout(()=>openDistInsumos(obj.id,obj.data||obj.venc,obj.valor,obj.desc),200);
+  }
   // Anexa comprovante pendente (vindo da aba Comprovantes)
   if((window._cvPendingImg||window._cvPendingFitid)&&obj.id){
     const _lancs=getLanc();
@@ -9024,6 +9056,32 @@ async function syncMes(){
       </div>
     </div>
   </div>
+
+  <!-- MODAL DISTRIBUIR INSUMOS -->
+  <div class="modal-overlay" id="modal-dist-insumos" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-dist-insumos')">
+    <div class="modal-box" style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
+      <div class="modal-header">
+        <span class="modal-title">📦 Distribuir entre Insumos</span>
+        <button class="modal-close" onclick="closeM('modal-dist-insumos')">✕</button>
+      </div>
+      <div style="padding:20px">
+        <div id="dist-info" style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--t2)"></div>
+        <!-- Lista de itens -->
+        <div id="dist-itens"></div>
+        <!-- Botão adicionar -->
+        <button onclick="distAddItem()" style="width:100%;padding:10px;font-size:12px;font-weight:600;border:1px dashed var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif;margin-bottom:16px">+ Adicionar insumo</button>
+        <!-- Totais -->
+        <div style="background:var(--bg3);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--t3)">Total distribuído</span>
+          <span id="dist-total" style="font-size:13px;font-weight:700;color:var(--t)">R$ 0,00</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="distSalvar()" style="flex:1;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">✅ Dar entrada no estoque</button>
+          <button onclick="closeM('modal-dist-insumos')" style="padding:12px 16px;font-size:13px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);color:var(--t3);cursor:pointer;font-family:'Poppins',sans-serif">Pular</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 <script>
@@ -10038,5 +10096,95 @@ function cvResetBanco(){
   document.getElementById('cv-banco-file').value='';
   document.getElementById('cv-banco-status').style.display='none';
   document.getElementById('cv-banco-resultado').style.display='none';
+}
+
+// ═══════════════════════════════════════════
+// DISTRIBUIR INSUMOS
+// ═══════════════════════════════════════════
+let _distLancId=null, _distData=null, _distValorTotal=0, _distItens=[];
+
+function openDistInsumos(lancId, data, valorTotal, desc){
+  _distLancId=lancId;
+  _distData=data;
+  _distValorTotal=valorTotal;
+  _distItens=[];
+  document.getElementById('dist-info').innerHTML=
+    `<b>${desc||'Despesa'}</b><br>Valor total: <b>R$ ${(valorTotal||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</b> &nbsp;|&nbsp; Data: <b>${(data||'').split('-').reverse().join('/')}</b>`;
+  distRenderItens();
+  distAddItem(); // já começa com 1 linha
+  openM('modal-dist-insumos');
+}
+
+function distGetMPOptions(){
+  return getMP().map(m=>`<option value="${m.id}">${m.nome}${m.unidade?' ('+m.unidade+')':''}</option>`).join('');
+}
+
+function distAddItem(){
+  _distItens.push({mpId:'',qtd:'',valor:'',id:'di_'+uid()});
+  distRenderItens();
+}
+
+function distRemoveItem(id){
+  _distItens=_distItens.filter(i=>i.id!==id);
+  distRenderItens();
+}
+
+function distRenderItens(){
+  const mpOpts=distGetMPOptions();
+  let html='';
+  _distItens.forEach((it,idx)=>{
+    html+=`<div style="display:grid;grid-template-columns:1fr 90px 90px 32px;gap:6px;margin-bottom:8px;align-items:center">
+      <select onchange="_distItens[${idx}].mpId=this.value" style="padding:8px 10px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;background:var(--bg);color:var(--t)">
+        <option value="">Selecione o insumo...</option>${mpOpts}
+      </select>
+      <input type="number" placeholder="Qtd" value="${it.qtd}" oninput="_distItens[${idx}].qtd=this.value;distAtualizaTotal()" style="padding:8px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;text-align:right;background:var(--bg);color:var(--t)">
+      <input type="number" placeholder="R$ valor" value="${it.valor}" oninput="_distItens[${idx}].valor=this.value;distAtualizaTotal()" style="padding:8px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;text-align:right;background:var(--bg);color:var(--t)">
+      <button onclick="distRemoveItem('${it.id}')" style="padding:6px;border:1px solid var(--bor);border-radius:8px;background:none;color:var(--t3);cursor:pointer;font-size:14px;line-height:1">✕</button>
+    </div>`;
+  });
+  document.getElementById('dist-itens').innerHTML=html;
+  // Restaura valores selecionados nos selects
+  _distItens.forEach((it,idx)=>{
+    const sel=document.getElementById('dist-itens').querySelectorAll('select')[idx];
+    if(sel&&it.mpId) sel.value=it.mpId;
+  });
+  distAtualizaTotal();
+}
+
+function distAtualizaTotal(){
+  const total=_distItens.reduce((s,i)=>s+(parseFloat(i.valor)||0),0);
+  const fmtV=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const el=document.getElementById('dist-total');
+  if(!el)return;
+  const diff=_distValorTotal-total;
+  el.textContent=fmtV(total);
+  el.style.color=Math.abs(diff)<0.02?'var(--green)':(total>_distValorTotal?'var(--red)':'var(--t)');
+}
+
+function distSalvar(){
+  const validos=_distItens.filter(i=>i.mpId&&parseFloat(i.qtd)>0);
+  if(!validos.length){alert('Adicione pelo menos 1 insumo com quantidade');return;}
+  const est=getEstMP();
+  const mp=getMP();
+  validos.forEach(it=>{
+    const qtd=parseFloat(it.qtd)||0;
+    const valor=parseFloat(it.valor)||0;
+    if(!est[it.mpId])est[it.mpId]={mpId:it.mpId,inicial:0,entradas:[],saidas:[],consumo:0};
+    est[it.mpId].entradas.push({
+      id:uid(), data:_distData, qtd, valor,
+      obs:'Compra via lançamento'+((_distLancId)?` #${_distLancId}`:'')
+    });
+    // Atualiza custo unitário do MP
+    if(valor>0){
+      const idx=mp.findIndex(x=>x.id===it.mpId);
+      if(idx>-1){mp[idx].valor=valor/qtd;}
+    }
+  });
+  S.set('est_mp',est);
+  S.set('mp',mp);
+  closeM('modal-dist-insumos');
+  if(currentPage==='estoque')renderEstoque();
+  updateAlertBadge();
+  alert('✅ Estoque atualizado!');
 }
 </script>
