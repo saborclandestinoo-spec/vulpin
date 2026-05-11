@@ -7334,10 +7334,18 @@ function recFtRender(){
       <button onclick="recFtItems.splice(${i},1);recFtRender()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:16px;padding:0 2px">×</button>
     </div>`;
   }).join('');
-  // custo total
+  // custo total do batch
   const total=recFtItems.reduce((s,it)=>{const m=mp.find(x=>x.id===it.mpId);return s+(m?getValorPorG(m)*(it.qtd||0):0);},0);
+  const rendimento=parseFloat(document.getElementById('mrec2-rendimento')?.value)||0;
+  const un=document.getElementById('mrec2-un')?.value||'g';
+  const custoPorUn=rendimento>0?total/rendimento:total;
   const el=document.getElementById('mrec2-custo-calc');
-  if(el){el.textContent=`Custo por unidade: R$ ${fmtN(total)}`;el.style.display=total>0?'block':'none';}
+  if(el&&total>0){
+    el.style.display='block';
+    el.innerHTML=rendimento>0
+      ?`Batch: R$ ${fmtN(total)} · Custo por ${un}: R$ ${fmtN(custoPorUn)}`
+      :`Custo total do batch: R$ ${fmtN(total)} <span style="color:var(--t3);font-weight:400">(informe o rendimento para custo por ${un})</span>`;
+  } else if(el){el.style.display='none';}
 }
 function recFtAdd(){
   const mpId=document.getElementById('mrec2-mp-sel').value;
