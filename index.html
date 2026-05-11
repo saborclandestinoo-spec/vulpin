@@ -7483,7 +7483,8 @@ function ftRender(){
       const i=globalIdx(it);
       const src=ftGetList(tipo);
       const m=src.find(x=>x.id===it.mpId);
-      const vg=m?getValorPorG(m):0;
+      // Recheios usam calcCustoRecheio (custo por unidade), MPs usam getValorPorG (custo por g/un)
+      const vg=m?(tipo==='recheio'?calcCustoRecheio(m):getValorPorG(m)):0;
       const custo=vg*(it.qtd||0);
       html+=`<div style="display:grid;grid-template-columns:1fr 80px 70px 28px;gap:4px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--bor2)">
         <div style="font-size:11px;font-weight:500;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?m.nome:'?'}</div>
@@ -7494,7 +7495,7 @@ function ftRender(){
         <button onclick="ftItems.splice(${i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;line-height:1">×</button>
       </div>`;
     });
-    const totalSec=itens.reduce((s,it)=>{const src=ftGetList(tipo);const m=src.find(x=>x.id===it.mpId);return s+(m?getValorPorG(m)*(it.qtd||0):0);},0);
+    const totalSec=itens.reduce((s,it)=>{const src=ftGetList(tipo);const m=src.find(x=>x.id===it.mpId);const vg=m?(tipo==='recheio'?calcCustoRecheio(m):getValorPorG(m)):0;return s+vg*(it.qtd||0);},0);
     html+=`<div style="text-align:right;font-size:10px;font-weight:700;color:var(--t2);padding:4px 32px 0 0">Total: R$ ${fmtN(totalSec)}</div></div>`;
     sec.innerHTML=html;
   });
@@ -7576,9 +7577,10 @@ function ftToggle(){
 function ftCalcCusto(){
   let total=0;
   ftItems.forEach(it=>{
-    const src=ftGetList(it.tipo||'insumo');
+    const tipo=it.tipo||'insumo';
+    const src=ftGetList(tipo);
     const m=src.find(x=>x.id===it.mpId);
-    if(m)total+=getValorPorG(m)*(it.qtd||0);
+    if(m){const vg=tipo==='recheio'?calcCustoRecheio(m):getValorPorG(m);total+=vg*(it.qtd||0);}
   });
   const el=document.getElementById('ft-custo-calc');
   const valEl=document.getElementById('ft-custo-valor');
