@@ -7233,10 +7233,15 @@ function renderEstRecheios(){
 
 function calcCustoRecheio(r){
   const mp=getMP();
-  return (r.fichaMP||[]).reduce((s,it)=>{
+  // Custo total do batch
+  const custoTotal=(r.fichaMP||[]).reduce((s,it)=>{
     const m=mp.find(x=>x.id===it.mpId);
     return s+(m?getValorPorG(m)*(it.qtd||0):0);
   },0);
+  // Se tem rendimento, retorna custo por unidade da unidade (g/ml/un)
+  // Para uso na ficha técnica: qtd=30g → custo=custoPorG*30
+  if(r.rendimento>0) return custoTotal/r.rendimento;
+  return custoTotal; // sem rendimento: custo total do batch (fallback)
 }
 
 function renderEstRecheiosTable(){
@@ -7271,6 +7276,8 @@ function openRecheio(id){
   document.getElementById('mrec2-nome').value=r?r.nome:'';
   document.getElementById('mrec2-un').value=r?(r.un||'un'):'un';
   document.getElementById('mrec2-min').value=r?r.min:'';
+  document.getElementById('mrec2-rendimento').value=r?r.rendimento||'':'';
+  document.getElementById('mrec2-un-label').textContent=r?(r.un||'g'):'g';
   document.getElementById('mrec2-del').style.display=id?'block':'none';
   if(r)recFtItems=[...(r.fichaMP||[])];
   recFtRender();
@@ -7284,6 +7291,7 @@ function saveRecheio(){
     nome,
     un:document.getElementById('mrec2-un').value||'un',
     min:parseFloat(document.getElementById('mrec2-min').value)||0,
+    rendimento:parseFloat(document.getElementById('mrec2-rendimento').value)||0,
     fichaMP:[...recFtItems],
   };
   let data=getRecheios();
@@ -9078,10 +9086,15 @@ async function syncMes(){
     <div class="fi-row" style="margin-bottom:12px">
       <div><label class="fl">Nome do Recheio</label><input class="fi" id="mrec2-nome" placeholder="Ex: Recheio Kinder"></div>
       <div><label class="fl">Unidade</label>
-        <select class="fi" id="mrec2-un"><option value="un">un (porções)</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option></select>
+        <select class="fi" id="mrec2-un" onchange="document.getElementById('mrec2-un-label').textContent=this.value"><option value="un">un (porções)</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option></select>
       </div>
     </div>
     <div style="margin-bottom:14px"><label class="fl">Estoque Mínimo</label><input class="fi" id="mrec2-min" type="number" min="0" placeholder="0"></div>
+    <div style="margin-bottom:14px;background:var(--bg2);border-radius:8px;padding:10px 12px">
+      <label class="fl" style="margin-top:0">Rendimento do batch (total produzido em <span id="mrec2-un-label">g</span>)</label>
+      <input class="fi" id="mrec2-rendimento" type="number" min="0" step="0.1" placeholder="Ex: 725 (g totais produzidos)">
+      <div style="font-size:10px;color:var(--t3);margin-top:4px">Soma dos insumos. Usado para calcular custo por grama.</div>
+    </div>
     <!-- Ficha técnica de insumos -->
     <div style="font-size:11px;font-weight:600;color:var(--t);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">📋 Insumos por unidade produzida</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
