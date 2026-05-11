@@ -7814,9 +7814,16 @@ function saveProd(){
   };
   // apply ficha custo if toggle is on
   if(ftUsarFicha&&ftItems.length>0){
-    const mp=getMP();
     let total=0;
-    ftItems.forEach(it=>{const m=mp.find(x=>x.id===it.mpId);if(m)total+=getValorPorG(m)*(it.qtd||0);});
+    ftItems.forEach(it=>{
+      const tipo=it.tipo||'insumo';
+      const src=ftGetList(tipo);
+      const m=src.find(x=>x.id===it.mpId);
+      if(m){
+        const vg=tipo==='recheio'?calcCustoRecheio(m):getValorPorG(m);
+        total+=vg*(it.qtd||0);
+      }
+    });
     if(total>0)obj.custo=parseFloat(total.toFixed(2));
   }
   let data=getProdutos();
