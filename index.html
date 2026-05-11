@@ -11,15 +11,15 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
 :root{
-  --fox:#2563EB;--fox-d:#1D4ED8;--fox-l:#EFF6FF;--fox-m:#DBEAFE;
-  --bg:#fff;--bg2:#F8FAFC;--bg3:#F1F5F9;
-  --bor:#E2E8F0;--bor2:#EEF2F7;
-  --t:#0F172A;--t2:#475569;--t3:#94A3B8;
-  --green:#16A34A;--green-bg:#F0FDF4;
-  --amber:#D97706;--amber-bg:#FFFBEB;
-  --blue:#2563EB;--blue-bg:#EFF6FF;
-  --purple:#7C3AED;--purple-bg:#F5F3FF;
-  --red:#DC2626;--red-bg:#FEF2F2;
+  --fox:#3B82F6;--fox-d:#2563EB;--fox-l:rgba(59,130,246,.15);--fox-m:rgba(59,130,246,.25);
+  --bg:#1E293B;--bg2:#0F172A;--bg3:#334155;
+  --bor:#334155;--bor2:#293548;
+  --t:#F1F5F9;--t2:#94A3B8;--t3:#64748B;
+  --green:#22C55E;--green-bg:rgba(34,197,94,.12);
+  --amber:#F59E0B;--amber-bg:rgba(245,158,11,.12);
+  --blue:#3B82F6;--blue-bg:rgba(59,130,246,.12);
+  --purple:#A78BFA;--purple-bg:rgba(167,139,250,.12);
+  --red:#F87171;--red-bg:rgba(248,113,113,.12);
   --sidebar:216px;
   --sb-bg:#0F172A;
   --sb-border:rgba(255,255,255,0.06);
@@ -37,32 +37,7 @@
   --sb-uname:rgba(148,163,184,0.9);
   --sb-out:rgba(148,163,184,0.5);
 }
-html.dark{
-  --sb-bg:#1c1c1e;
-  --sb-border:rgba(255,255,255,0.07);
-  --sb-logo-t:#ffffff;
-  --sb-logo-s:rgba(255,255,255,0.35);
-  --sb-store-bg:rgba(255,255,255,0.05);
-  --sb-sname:#ffffff;
-  --sb-sloc:rgba(255,255,255,0.4);
-  --sb-nav-g:rgba(255,255,255,0.28);
-  --sb-ni:rgba(255,255,255,0.55);
-  --sb-ni-hover-bg:rgba(255,255,255,0.07);
-  --sb-ni-hover-c:rgba(255,255,255,0.85);
-  --sb-foot-bor:rgba(255,255,255,0.07);
-  --sb-user-hover:rgba(255,255,255,0.07);
-  --sb-uname:rgba(255,255,255,0.55);
-  --sb-out:rgba(255,255,255,0.3);
-  --fox:#3B82F6;--fox-d:#2563EB;--fox-l:rgba(59,130,246,.12);--fox-m:rgba(59,130,246,.2);
-  --bg:#0F172A;--bg2:#1E293B;--bg3:#334155;
-  --bor:#3a3a3c;--bor2:#2c2c2e;
-  --t:#f5f5f7;--t2:#aeaeb2;--t3:#6e6e73;
-  --green:#34c759;--green-bg:rgba(52,199,89,.12);
-  --amber:#ff9f0a;--amber-bg:rgba(255,159,10,.12);
-  --blue:#0a84ff;--blue-bg:rgba(10,132,255,.12);
-  --purple:#bf5af2;--purple-bg:rgba(191,90,242,.12);
-  --red:#ff453a;--red-bg:rgba(255,69,58,.12);
-}
+
 html.dark body{background:var(--bg2)}
 html.dark .topbar,html.dark .card,html.dark .modal,html.dark .btn-o,html.dark .search-in,html.dark .filter-sel,html.dark .fi,html.dark .lcard{background:var(--bg);border-color:var(--bor);color:var(--t)}
 html.dark .tbl th,html.dark .tbl td{background:var(--bg);border-color:var(--bor)}
@@ -85,15 +60,15 @@ html.dark .flt-in,html.dark .flt-sel{background:var(--bg2);color:var(--t);border
 html.dark .flt-in:focus,html.dark .flt-in:not(:placeholder-shown){background:var(--bg2)}
 html.dark textarea{background:var(--bg2);color:var(--t);border-color:var(--bor)}
 html.dark .login-screen,html.dark #login-screen{background:linear-gradient(135deg,#1c1c1e,#2c2c2e 60%,#1a1a2e)}
-/* Sobrescreve inline background:#fff com seletores de atributo - alto specificity */
-html.dark [style*="background:#fff"]{background:var(--bg)!important}
-html.dark [style*="background: #fff"]{background:var(--bg)!important}
-html.dark [style*="background:#ffffff"]{background:var(--bg)!important}
-html.dark [style*="background: #ffffff"]{background:var(--bg)!important}
+/* Sobrescreve inline background:var(--bg) com seletores de atributo - alto specificity */
+html.dark [style*="background:var(--bg)"]{background:var(--bg)!important}
+html.dark [style*="background:var(--bg)"]{background:var(--bg)!important}
+html.dark [style*="background:var(--bg)fff"]{background:var(--bg)!important}
+html.dark [style*="background:var(--bg)fff"]{background:var(--bg)!important}
 html.dark [style*="border-bottom:1px solid #eee"]{border-color:var(--bor)!important}
 html.dark [style*="border-color:#eee"]{border-color:var(--bor)!important}
-html.dark [style*="color:#333"]{color:var(--t)!important}
-html.dark [style*="color:#1A1A2E"]{color:var(--t)!important}
+html.dark [style*="color:var(--t)"]{color:var(--t)!important}
+html.dark [style*="color:var(--t)"]{color:var(--t)!important}
 html.dark [style*="box-shadow:0 2px 12px rgba(0,0,0,.06)"]{box-shadow:0 2px 12px rgba(0,0,0,.35)!important}
 html.dark [style*="box-shadow:0 8px 32px rgba(0,0,0,.12)"]{box-shadow:0 8px 32px rgba(0,0,0,.5)!important}
 /* KPI strip e dash containers */
@@ -104,16 +79,16 @@ html.dark #dash-dia-drop,html.dark #hist-range-drop,html.dark #cfg-printer-drop{
 /* Botões com bg:#fff explícito */
 html.dark #hist-range-btn,html.dark #dash-dia-btn{background:var(--bg)!important;color:var(--t2)!important;border-color:var(--bor)!important}
 /* Toggle switches — bolinha branca fica branca mesmo no dark */
-html.dark [style*="background:#fff;border-radius:50%"]{background:#fff!important}
+html.dark [style*="background:var(--bg);border-radius:50%"]{background:var(--bg)!important}
 /* Transição suave em tudo */
 html.dark *{transition:background .2s,border-color .2s,color .2s}
-html,body{height:100%;overflow:hidden;background:var(--bg2)}
+html,body{height:100%;overflow:hidden;background:var(--bg2);color:var(--t)}
 
 /* ===== LOGIN ===== */
 #login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#fff8f5,#fff 60%,#f0f4ff);display:flex;align-items:center;justify-content:center;z-index:9999}
-.lcard{background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:36px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.lcard{background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:36px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .llogo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px}
-.llogo-t{font-size:26px;font-weight:800;color:#1A1A2E;letter-spacing:-1px}
+.llogo-t{font-size:26px;font-weight:800;color:var(--t);letter-spacing:-1px}
 .ltabs{display:flex;border-bottom:1px solid var(--bor);margin-bottom:20px}
 .ltab{flex:1;padding:9px;text-align:center;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
 .ltab.on{color:var(--fox);border-bottom-color:var(--fox);font-weight:600}
@@ -180,7 +155,7 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .sb-out:hover{color:#FF3B30}
 
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;height:52px;min-height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--bor);padding:0 20px;height:52px;min-height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .tb-title{font-size:16px;font-weight:600;color:var(--t)}
 .tb-r{margin-left:auto;display:flex;align-items:center;gap:7px}
 .btn-o{background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
@@ -431,6 +406,15 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 #fc-table-wrap td[style*="sticky"],#fc-table-wrap th[style*="sticky"]{position:sticky!important;z-index:2}
 .grp-drop{display:none;position:absolute;top:38px;left:0;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden}
 .grp-drop.right{left:auto;right:0}
+
+/* DARK THEME GLOBAL */
+select,input,textarea{background:var(--bg3)!important;color:var(--t)!important;border-color:var(--bor)!important}
+.modal,.modal-box,.overlay>.modal{background:var(--bg)!important;border-color:var(--bor)!important}
+.card,.metric,.tbl th,.tbl td{background:var(--bg)!important;border-color:var(--bor)!important}
+.tbl tr:hover td{background:var(--bg3)!important}
+.topbar,.sb-store{background:var(--bg2)!important}
+.btn-o{background:var(--bg3)!important;border-color:var(--bor)!important;color:var(--t2)!important}
+.search-in,.filter-sel,.fi,.lcard,.li{background:var(--bg3)!important;border-color:var(--bor)!important;color:var(--t)!important}
 </style>
 </head>
 <body>
@@ -550,7 +534,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <div class="tb-title" id="tb-title">Dashboard</div>
     <div class="tb-r" id="tb-r"></div>
     <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:1px solid var(--bor);border-radius:8px;padding:5px 8px;cursor:pointer;color:var(--t2);display:flex;align-items:center;gap:5px;font-size:11px;font-family:'Poppins',sans-serif;transition:all .15s;margin-left:8px">
-      <span id="theme-ico">🌙</span>
+      <span id="theme-ico"></span>
     </button>
   </div>
   <div class="content">
@@ -734,19 +718,19 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px"> Top Produtos</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">📦 Estoque em Valor</div><div style="font-size:11px;color:var(--t3);margin-bottom:12px">Valor atual no estoque</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px"> Estoque em Valor</div><div style="font-size:11px;color:var(--t3);margin-bottom:12px">Valor atual no estoque</div>
               <div id="dash-estoque-valor"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">💸 Lançamentos</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px"> Lançamentos</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🍪 Produções</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px"> Produções</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
               <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
             </div>
           </div>
@@ -762,7 +746,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:var(--t)">💸 Despesas</div>
+                <div style="font-size:14px;font-weight:700;color:var(--t)"> Despesas</div>
                 <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
               </div>
               <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
@@ -771,7 +755,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
           <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">🏆 Produtos Vendidos</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px"> Produtos Vendidos</div>
               <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
@@ -779,7 +763,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
               <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
             </div>
             <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">💳 Por Pagamento</div>
+              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px"> Por Pagamento</div>
               <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
           </div>
@@ -923,9 +907,9 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
           <div class="est-tabs">
             <div class="est-tab on" onclick="estTab('mp',this)">Insumos</div>
             <div class="est-tab" onclick="estTab('recheios',this)">Recheios</div>
-            <div class="est-tab" onclick="estTab('prod',this)">🍪 Produtos</div>
+            <div class="est-tab" onclick="estTab('prod',this)"> Produtos</div>
           </div>
-          <button onclick="showConfirm('Recalcular Estoque','Isso vai refazer todas as saídas de produção do zero com base nas produções salvas. Continuar?','🔄',()=>{recalcularEstoqueProducao();renderEstoque();})" style="padding:7px 14px;font-size:11px;font-weight:600;border:1px solid var(--bor);border-radius:8px;background:var(--bg);color:var(--t2);cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:6px">Recalcular Estoque</button>
+          <button onclick="showConfirm('Recalcular Estoque','Isso vai refazer todas as saídas de produção do zero com base nas produções salvas. Continuar?','',()=>{recalcularEstoqueProducao();renderEstoque();})" style="padding:7px 14px;font-size:11px;font-weight:600;border:1px solid var(--bor);border-radius:8px;background:var(--bg);color:var(--t2);cursor:pointer;font-family:'Poppins',sans-serif;display:flex;align-items:center;gap:6px">Recalcular Estoque</button>
         </div>
         <div id="est-content"></div>
       </div>
@@ -1121,7 +1105,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             <!-- ABA NOTA FISCAL -->
             <div id="cv-painel-nf">
               <div id="nf-drop" onclick="document.getElementById('nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="nfHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:16px;transition:border-color .2s">
-                <div style="font-size:40px;margin-bottom:10px">🧾</div>
+                <div style="font-size:40px;margin-bottom:10px"></div>
                 <div style="font-size:14px;font-weight:700;color:var(--t)">Envie o XML da NF-e</div>
                 <div style="font-size:11px;color:var(--t3);margin-top:5px">Um ou vários arquivos .xml de NF-e</div>
                 <div style="font-size:10px;color:var(--t3);margin-top:3px">Peça ao fornecedor ou baixe do portal da SEFAZ</div>
@@ -1137,7 +1121,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             <!-- ABA COMPROVANTE -->
             <div id="cv-painel-foto" style="display:none">
               <div id="cv-drop" onclick="document.getElementById('cv-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
-                <div style="font-size:36px;margin-bottom:8px">📸</div>
+                <div style="font-size:36px;margin-bottom:8px"></div>
                 <div style="font-size:13px;font-weight:700;color:var(--t)">Envie o comprovante</div>
                 <div style="font-size:11px;color:var(--t3);margin-top:4px">Foto ou print — verifica se já foi lançado</div>
               </div>
@@ -1158,7 +1142,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
                 </select>
               </div>
               <div id="cv-banco-drop" onclick="document.getElementById('cv-banco-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,53,.05)'" ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg3)'" ondrop="cvBancoHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:16px">
-                <div style="font-size:36px;margin-bottom:8px">🏦</div>
+                <div style="font-size:36px;margin-bottom:8px"></div>
                 <div style="font-size:13px;font-weight:700;color:var(--t)">Clique ou arraste o extrato aqui</div>
                 <div style="font-size:11px;color:var(--t3);margin-top:4px">OFX · CSV · XLS · PDF</div>
               </div>
@@ -1244,7 +1228,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
               <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px">Calculadora de Receita</div>
               <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Escale ingredientes por quantidade de cookies</div>
             </div>
-            <button onclick="window.print()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;padding:9px 20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:all .15s" onmouseenter="this.style.background='rgba(255,255,255,.25)'" onmouseleave="this.style.background='rgba(255,255,255,.15)'">🖨️ Imprimir</button>
+            <button onclick="window.print()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;padding:9px 20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:all .15s" onmouseenter="this.style.background='rgba(255,255,255,.25)'" onmouseleave="this.style.background='rgba(255,255,255,.15)'">️ Imprimir</button>
           </div>
         </div>
 
@@ -1307,7 +1291,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <!-- CATEGORIAS (PLANO DE CONTAS) -->
     <div class="pg" id="pg-categorias">
       <div class="scroll">
-        <div id="cat-dre-info" style="display:none;margin:12px 0;padding:10px 16px;background:rgba(249,115,22,.08);border-left:3px solid var(--fox);border-radius:6px;font-size:12px;color:var(--t2)">🔧 <b>Clique no badge</b> de cada categoria para definir se ela entra no DRE mensal. MPs (4.1.1.x) estão excluídas por padrão — o CMV é calculado pela ficha técnica.</div>
+        <div id="cat-dre-info" style="display:none;margin:12px 0;padding:10px 16px;background:rgba(249,115,22,.08);border-left:3px solid var(--fox);border-radius:6px;font-size:12px;color:var(--t2)"> <b>Clique no badge</b> de cada categoria para definir se ela entra no DRE mensal. MPs (4.1.1.x) estão excluídas por padrão — o CMV é calculado pela ficha técnica.</div>
         <div class="two-col">
           <div class="card">
             <div class="card-t">Categorias de Despesas</div>
@@ -1325,7 +1309,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
       <div class="scroll">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
           <div>
-            <div style="font-size:16px;font-weight:700;color:var(--t)">💰 Precificação</div>
+            <div style="font-size:16px;font-weight:700;color:var(--t)"> Precificação</div>
             <div style="font-size:11px;color:var(--t3);margin-top:2px">Custo real por unidade com MO, custos fixos e margem</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -1404,7 +1388,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             Cardápio Web
           </div>
           <div class="cfg-tab" id="cfg-t-pagamentos" onclick="cfgTab('pagamentos',this)" style="padding:10px 18px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:7px">
-            💳 Pagamentos
+             Pagamentos
           </div>
         </div>
 
@@ -1537,7 +1521,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div id="cfg-panel-cardapioweb" style="display:none">
           <div class="card" style="margin-bottom:16px">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-              <div style="width:36px;height:36px;background:var(--fox-l);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🍽️</div>
+              <div style="width:36px;height:36px;background:var(--fox-l);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">️</div>
               <div>
                 <div style="font-size:15px;font-weight:700;color:var(--t)">Cardápio Web</div>
                 <div style="font-size:11px;color:var(--t3)">Sincronize pedidos automaticamente via API</div>
@@ -1552,7 +1536,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
               <div class="flt-wrap" style="position:relative">
                 <input class="flt-in" id="cfg-cw-token" placeholder=" " type="password" oninput="cwConfigChanged()">
                 <label class="flt-lbl">Token da API</label>
-                <button onclick="toggleCwToken()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3);font-size:11px" id="cfg-cw-tok-eye">👁</button>
+                <button onclick="toggleCwToken()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3);font-size:11px" id="cfg-cw-tok-eye"></button>
               </div>
             </div>
             <div style="margin-bottom:14px">
@@ -1781,8 +1765,8 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
             <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()" style="font-size:11px;padding:6px 8px">
               <option value="insumo">Insumo</option>
               <option value="recheio">Recheio</option>
-              <option value="embalagem">📦 Embalagem</option>
-              <option value="material">🔧 Mat. Produção</option>
+              <option value="embalagem"> Embalagem</option>
+              <option value="material"> Mat. Produção</option>
             </select>
           </div>
           <div>
@@ -1849,7 +1833,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     </div>
     <!-- Tipo: Cookie ou Recheio -->
     <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button id="mprod2-btn-cookie" onclick="mprod2SetTipo('cookie')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--fox);background:var(--fox);color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">🍪 Cookie</button>
+      <button id="mprod2-btn-cookie" onclick="mprod2SetTipo('cookie')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--fox);background:var(--fox);color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer"> Cookie</button>
       <button id="mprod2-btn-recheio" onclick="mprod2SetTipo('recheio')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--bor);background:var(--bg);color:var(--t2);font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">Recheio</button>
       <input type="hidden" id="mprod2-tipo" value="cookie">
     </div>
@@ -2028,7 +2012,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     <div id="mdesp-prod-section" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <input type="checkbox" id="mdesp-prod-chk" onchange="toggleDespProdSection()" style="width:16px;height:16px;accent-color:var(--fox);cursor:pointer">
-        <span style="font-size:13px;font-weight:600;color:var(--t)">🍪 Vincular Cookies</span>
+        <span style="font-size:13px;font-weight:600;color:var(--t)"> Vincular Cookies</span>
       </div>
       <div id="mdesp-prod-fields" style="display:none;background:var(--fox-l);border:1px solid var(--fox-m);border-radius:10px;padding:14px">
         <div style="font-size:11px;color:var(--t2);margin-bottom:12px">Selecione o produto e quantidade. O estoque será baixado e o valor de custo será preenchido automaticamente.</div>
@@ -2190,12 +2174,12 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
         <div style="display:flex;gap:8px;margin-bottom:14px">
           <div id="mrec-modo-venda" onclick="setModoEstoque('venda')"
             style="flex:1;padding:10px 14px;border-radius:10px;border:2px solid var(--green);background:var(--green-bg);cursor:pointer;text-align:center">
-            <div style="font-size:13px;font-weight:700;color:var(--green)">🛒 Venda</div>
+            <div style="font-size:13px;font-weight:700;color:var(--green)"> Venda</div>
             <div style="font-size:10px;color:var(--t3);margin-top:2px">Reduz o estoque</div>
           </div>
           <div id="mrec-modo-prod" onclick="setModoEstoque('producao')"
             style="flex:1;padding:10px 14px;border-radius:10px;border:2px solid var(--bor);background:var(--bg);cursor:pointer;text-align:center">
-            <div style="font-size:13px;font-weight:700;color:var(--t2)">🍪 Produção</div>
+            <div style="font-size:13px;font-weight:700;color:var(--t2)"> Produção</div>
             <div style="font-size:10px;color:var(--t3);margin-top:2px">Aumenta o estoque</div>
           </div>
         </div>
@@ -2284,7 +2268,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 <!-- Modal Confirmação interna -->
 <div class="overlay" id="modal-confirm" style="z-index:5000">
   <div class="modal" style="max-width:360px;text-align:center;padding:32px 28px">
-    <div style="font-size:36px;margin-bottom:12px" id="confirm-icon">🗑️</div>
+    <div style="font-size:36px;margin-bottom:12px" id="confirm-icon">️</div>
     <div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:8px" id="confirm-title">Confirmar exclusão</div>
     <div style="font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5" id="confirm-msg">Tem certeza que deseja excluir?</div>
     <div style="display:flex;gap:10px;justify-content:center">
@@ -2298,7 +2282,7 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
 <div class="overlay" id="modal-etiqueta" style="z-index:5000">
   <div class="modal" style="max-width:520px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <span style="font-size:16px;font-weight:700;color:var(--t)">🏷️ Etiquetas de Produção</span>
+      <span style="font-size:16px;font-weight:700;color:var(--t)">️ Etiquetas de Produção</span>
       <button class="modal-close" onclick="closeM('modal-etiqueta')" style="font-size:22px">×</button>
     </div>
     <div id="etiqueta-preview" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:16px;background:var(--bg2);border-radius:12px;margin-bottom:16px;min-height:120px"></div>
@@ -2647,7 +2631,7 @@ const PAGE_ACTIONS={
   producao:()=>`<button class="btn-p" onclick="openProd2()">+ Novo Registro</button>`,
   estoque:()=>``,
   financeiro:()=>``,
-  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
+  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()"> Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
   bancos:()=>`<button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
   produtos:()=>`<button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="importarCatalogoCW()">⬇ Importar CW</button><button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
@@ -2705,7 +2689,7 @@ function ctxDo(action){
     else if(type==='cc')openCC(null,id);
   } else if(action==='del'){
     const labels={mp:'insumo',prod:'produto',producao:'produção',lanc:'lançamento',banco:'banco',cc:'centro de custo'};
-    showConfirm('Excluir '+( labels[type]||'item'),'Tem certeza que deseja excluir?','🗑️',()=>{
+    showConfirm('Excluir '+( labels[type]||'item'),'Tem certeza que deseja excluir?','️',()=>{
       if(type==='mp'){const d=getMP().filter(x=>x.id!==id);S.set('mp',d);renderMP();updateAlertBadge();if(currentPage==='estoque')renderEstoque();}
       else if(type==='prod'){const d=getProdutos().filter(x=>x.id!==id);S.set('produtos',d);renderProdutos();if(currentPage==='estoque')renderEstoque();}
       else if(type==='producao'){
@@ -2865,7 +2849,7 @@ function renderHoje(){
   // Cancelados lista
   const cancelLista=document.getElementById('hoje-cancelados-lista');
   if(cancelLista){
-    if(!cancelados.length){cancelLista.innerHTML='<div style="color:var(--t3);font-size:12px;padding:12px 0;text-align:center">Nenhum cancelamento hoje 🎉</div>';}
+    if(!cancelados.length){cancelLista.innerHTML='<div style="color:var(--t3);font-size:12px;padding:12px 0;text-align:center">Nenhum cancelamento hoje </div>';}
     else cancelLista.innerHTML=[...cancelados].reverse().map(p=>{
       const cliente=p.customer?.name||p.clienteNome||'—';
       const tot=p.total||p.totalAmount||p.valor||0;
@@ -3027,10 +3011,10 @@ function renderDashboard(){
     const _totProd=_faturamento-_taxaEnt-_taxaAdic;
 
     window._hCards=[
-      {id:'hc_ent',ico:'🛵',lbl:'Taxas de Entrega',val:_taxaEnt,on:true,neg:false},
-      {id:'hc_adic',ico:'➕',lbl:'Taxas Adicionais',val:_taxaAdic,on:true,neg:false},
-      {id:'hc_dif',ico:'🎁',lbl:'Descontos iFood',val:_descIF,on:false,neg:false},
-      {id:'hc_dlj',ico:'🏷️',lbl:'Descontos Loja',val:_descLoja,on:false,neg:true},
+      {id:'hc_ent',ico:'',lbl:'Taxas de Entrega',val:_taxaEnt,on:true,neg:false},
+      {id:'hc_adic',ico:'',lbl:'Taxas Adicionais',val:_taxaAdic,on:true,neg:false},
+      {id:'hc_dif',ico:'',lbl:'Descontos iFood',val:_descIF,on:false,neg:false},
+      {id:'hc_dlj',ico:'️',lbl:'Descontos Loja',val:_descLoja,on:false,neg:true},
     ];
     window._hProd=_totProd;
     window._hFat=_faturamento;
@@ -3047,9 +3031,9 @@ function renderDashboard(){
     function _renderHoje(){
       var tot=_calcHoje();
       var top='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 20px 12px">'
-        +['<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💰 Faturamento</div><div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">base iFood: R$ '+fmtN(window._hFat)+'</div></div>',
-          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🍪 Total Produtos</div><div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._hProd)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">valor dos itens</div></div>',
-          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">🎯 Ticket Médio</div><div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._hPeds?tot/window._hPeds:0)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._hPeds+' pedidos</div></div>',
+        +['<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"> Faturamento</div><div style="font-size:22px;font-weight:900;color:#27AE60;letter-spacing:-.5px">R$ '+fmtN(tot)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">base iFood: R$ '+fmtN(window._hFat)+'</div></div>',
+          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"> Total Produtos</div><div style="font-size:22px;font-weight:900;color:#FF6B35;letter-spacing:-.5px">R$ '+fmtN(window._hProd)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">valor dos itens</div></div>',
+          '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px"> Ticket Médio</div><div style="font-size:22px;font-weight:900;color:#8E44AD;letter-spacing:-.5px">R$ '+fmtN(window._hPeds?tot/window._hPeds:0)+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">'+window._hPeds+' pedidos</div></div>',
           '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:14px 18px"><div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">❌ Cancelados</div><div style="font-size:22px;font-weight:900;color:#E74C3C;letter-spacing:-.5px">'+window._hCancel+'</div><div style="font-size:9px;color:var(--t3);margin-top:3px">R$ '+fmtN(window._hCancelVal)+' perdidos</div></div>'
         ].join('')+'</div>';
 
@@ -3084,11 +3068,11 @@ function renderDashboard(){
   } else {
     if(strip) strip.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;padding:16px 20px;background:var(--bg2);border-bottom:none';
     if(strip) strip.innerHTML=[
-      {ico:'💰',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
-      {ico:'🏭',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
-      {ico:'🏷️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
-      {ico:'🎯',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
-      {ico:'🛒',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'var(--t)'},
+      {ico:'',lbl:'Receita',val:`R$ ${fmtN(receitasPeriod)}`,sub:`${varRec>0?'↑':'↓'}${Math.abs(varRec)}% vs mês ant.`,cor:'#27AE60'},
+      {ico:'',lbl:'CMV',val:`R$ ${fmtN(cmv)}`,sub:`${receitasPeriod>0?(cmv/receitasPeriod*100).toFixed(1):0}% da receita`,cor:'#2980B9'},
+      {ico:'️',lbl:'Despesas',val:`R$ ${fmtN(despPeriod)}`,sub:'lançamentos',cor:'#E74C3C'},
+      {ico:'',lbl:'Ticket Médio',val:`R$ ${fmtN(ticket)}`,sub:'por pedido',cor:'#8E44AD'},
+      {ico:'',lbl:'Pedidos',val:histPeriod.length,sub:`${totalCookies} itens vendidos`,cor:'var(--t)'},
       {ico:'❌',lbl:'Cancelados',val:canceladosPeriod.length,sub:`R$ ${fmtN(canceladosPeriod.reduce((s,p)=>s+(p.total||0),0))} perdidos`,cor:'#E74C3C'},
     ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
       <div style="font-size:26px;line-height:1;flex-shrink:0">${k.ico}</div>
@@ -3245,7 +3229,7 @@ function renderDashMesWidgets(histPeriod, lancPeriod, filterFn, canceladosPeriod
     lancTbody.innerHTML=todosLancs.length?todosLancs.map(l=>`<tr style="cursor:pointer" onclick="openLancView('${l.id}')">
       <td style="white-space:nowrap">${fmtDate(l.data||l.dataPag||'')}</td>
       <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        <span style="margin-right:4px">${l.tipo==='receita'?'📈':'📉'}</span>${l.desc||'—'}
+        <span style="margin-right:4px">${l.tipo==='receita'?'':''}</span>${l.desc||'—'}
       </td>
       <td style="font-weight:600;color:${l.tipo==='receita'?'var(--green)':'var(--red)'}">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
     </tr>`).join('')
@@ -3696,10 +3680,10 @@ function renderDREPage(){
   // KPI Strip
   const kpiEl=document.getElementById('dre-pg-kpi');
   if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)',ico:'💰'},
-    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)',ico:'📊'},
-    {lbl:'EBIT',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)',ico:'📈'},
-    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)',ico:'🎯'},
+    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)',ico:''},
+    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)',ico:''},
+    {lbl:'EBIT',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)',ico:''},
+    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)',ico:''},
   ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
     <div style="font-size:24px">${k.ico}</div><div>
     <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">${k.lbl}</div>
@@ -3866,9 +3850,9 @@ function renderPrecificacao(){
   // Resumo cards
   const resumoEl=document.getElementById('prec-resumo');
   if(resumoEl) resumoEl.innerHTML=[
-    {ico:'👷',lbl:'Mão de Obra Total',val:`R$ ${fmtN(totalMO)}`,sub:`R$ ${fmtN(moPerUn)}/un · ${moLancs.length} lançamentos`,cor:'var(--blue)'},
-    {ico:'🏠',lbl:'Custos Fixos Total',val:`R$ ${fmtN(totalCF)}`,sub:`R$ ${fmtN(cfPerUn)}/un · ${cfLancs.length} lançamentos`,cor:'var(--amber)'},
-    {ico:'🏭',lbl:'Produção do Mês',val:`${prodTotalMes} unidades`,sub:prodTotalInput?'Informado manualmente':`${producoes.length} lotes registrados`,cor:'var(--fox)'},
+    {ico:'',lbl:'Mão de Obra Total',val:`R$ ${fmtN(totalMO)}`,sub:`R$ ${fmtN(moPerUn)}/un · ${moLancs.length} lançamentos`,cor:'var(--blue)'},
+    {ico:'',lbl:'Custos Fixos Total',val:`R$ ${fmtN(totalCF)}`,sub:`R$ ${fmtN(cfPerUn)}/un · ${cfLancs.length} lançamentos`,cor:'var(--amber)'},
+    {ico:'',lbl:'Produção do Mês',val:`${prodTotalMes} unidades`,sub:prodTotalInput?'Informado manualmente':`${producoes.length} lotes registrados`,cor:'var(--fox)'},
   ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
     <div style="font-size:24px">${k.ico}</div>
     <div>
@@ -3971,7 +3955,7 @@ function renderProducao(){
   const tbody=document.querySelector('#tbl-producao tbody');
   tbody.innerHTML=data.length?data.map(p=>{
     const pr=p.tipoProducao==='recheio'
-      ? (()=>{const r=getRecheios().find(x=>x.id===p.recheioId);return r?{nome:'🍫 '+r.nome,custo:0}:null;})()
+      ? (()=>{const r=getRecheios().find(x=>x.id===p.recheioId);return r?{nome:' '+r.nome,custo:0}:null;})()
       : prods.find(x=>x.id===p.produtoId);
     const apr=(p.qtd||0)-(p.perdas||0);
     const custoMP=pr&&pr.custo?(pr.custo*(p.qtd||0)).toFixed(2):0;
@@ -3990,7 +3974,7 @@ function renderProducao(){
 }
 
 function applyThemePatch(isDark){
-  // Força repaint em elementos com inline background:#fff que o CSS attr-selector não pega em todos os browsers
+  // Força repaint em elementos com inline background:var(--bg) que o CSS attr-selector não pega em todos os browsers
   const bg=isDark?'var(--bg)':'#fff';
   const bg2=isDark?'var(--bg2)':'#F7F7FA';
   const bor=isDark?'var(--bor)':'#E4E4EE';
@@ -4008,7 +3992,7 @@ function applyThemePatch(isDark){
       el.style.color=txt;
     });
   });
-  // Todos os divs/buttons com inline background:#fff ou #ffffff
+  // Todos os divs/buttons com inline background:var(--bg) ou #ffffff
   document.querySelectorAll('[style]').forEach(el=>{
     const s=el.style;
     const bg_val=(s.background||s.backgroundColor||'').toLowerCase();
@@ -4068,7 +4052,7 @@ function goPageMobile(pg){
 }
 function toggleTheme(){
   const isDark=document.documentElement.classList.toggle('dark');
-  document.getElementById('theme-ico').textContent=isDark?'☀️':'🌙';
+  document.getElementById('theme-ico').textContent=isDark?'️':'';
   S.set('theme',isDark?'dark':'light');
   applyThemePatch(isDark);
 }
@@ -4076,7 +4060,7 @@ function initTheme(){
   const t=S.get('theme');
   if(t==='dark'){
     document.documentElement.classList.add('dark');
-    const i=document.getElementById('theme-ico');if(i)i.textContent='☀️';
+    const i=document.getElementById('theme-ico');if(i)i.textContent='️';
     // Aplica patch após DOM pronto
     setTimeout(()=>applyThemePatch(true),100);
   }
@@ -4100,7 +4084,7 @@ function buildProdDrop(dropId){
   if(tipo==='recheio'){
     const recheios=getRecheios();
     if(!recheios.length){html+='<div style="padding:12px;color:var(--t3);font-size:12px">Nenhum recheio cadastrado.</div>';}
-    else{recheios.forEach(r=>{html+=`<div class="cd-item" data-cod="${r.id}" onclick="selectCustomDrop('${dropId}','${r.id}','${r.nome.replace(/'/g,"\'")}',event)">🍫 ${r.nome} (${r.un||'un'})</div>`;});}
+    else{recheios.forEach(r=>{html+=`<div class="cd-item" data-cod="${r.id}" onclick="selectCustomDrop('${dropId}','${r.id}','${r.nome.replace(/'/g,"\'")}',event)"> ${r.nome} (${r.un||'un'})</div>`;});}
   } else {
     const prods=getProdutos().filter(p=>(p.status||'ativo')!=='inativo'&&!p.inativo);
     const cats=[...new Set(prods.map(p=>p.cat))].filter(Boolean).sort();
@@ -4263,7 +4247,7 @@ function recalcularEstoqueProducao(){
 }
 
 function deleteProd2(){
-  showConfirm('Excluir produção','Tem certeza que deseja excluir este registro de produção?','🍪',()=>{
+  showConfirm('Excluir produção','Tem certeza que deseja excluir este registro de produção?','',()=>{
     const prod=getProducao().find(x=>x.id===editProd2Id);
     if(prod){
       const prefixId='prod_'+prod.id+'_';
@@ -4337,7 +4321,7 @@ function renderEstMP(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🚨</div>
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Zerado / Crítico</div>
           <div style="font-size:24px;font-weight:700;color:var(--t);line-height:1">${summary.zerado}</div>
@@ -4345,7 +4329,7 @@ function renderEstMP(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💰</div>
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Custo em estoque</div>
           <div style="font-size:18px;font-weight:700;color:var(--t);line-height:1">R$ ${fmtN(summary.totalCusto)}</div>
@@ -4382,8 +4366,8 @@ function renderEstMP(){
         <option value="">Ativos</option>
         <option value="OK">✅ OK</option>
         <option value="ATENÇÃO">⚠️ Atenção</option>
-        <option value="ZERADO">🚨 Zerado</option>
-        <option value="INATIVO">🔘 Inativos</option>
+        <option value="ZERADO"> Zerado</option>
+        <option value="INATIVO"> Inativos</option>
       </select>
       <select class="filter-sel" id="est-mp-cat" onchange="renderEstMPTable()">
         <option value="">Todas categorias</option>
@@ -4481,7 +4465,7 @@ function renderEstProd(){
     <!-- CARDS -->
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🍪</div>
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--blue-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Produtos</div>
           <div style="font-size:22px;font-weight:700;color:var(--t);line-height:1">${prods.length}</div>
@@ -4489,7 +4473,7 @@ function renderEstProd(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📦</div>
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Em Estoque</div>
           <div style="font-size:22px;font-weight:700;color:var(--t);line-height:1">${totalDispProd}</div>
@@ -4497,7 +4481,7 @@ function renderEstProd(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏷️</div>
+        <div style="width:40px;height:40px;border-radius:10px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">️</div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Custo do Estoque</div>
           <div style="font-size:16px;font-weight:700;color:#E65100;line-height:1">R$ ${fmtN(totalCustoProd)}</div>
@@ -4505,7 +4489,7 @@ function renderEstProd(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💰</div>
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Receita Potencial</div>
           <div style="font-size:16px;font-weight:700;color:var(--fox);line-height:1">R$ ${fmtN(totalRecPot)}</div>
@@ -4513,7 +4497,7 @@ function renderEstProd(){
         </div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📈</div>
+        <div style="width:40px;height:40px;border-radius:10px;background:var(--purple-bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0"></div>
         <div>
           <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Margem Média</div>
           <div style="font-size:22px;font-weight:700;color:var(--t);line-height:1">${margemMedia.toFixed(1)}%</div>
@@ -4766,10 +4750,10 @@ function renderFluxo(){
   // KPIs
   const kpiEl=document.getElementById('fc-kpis');
   if(kpiEl)kpiEl.innerHTML=[
-    {ico:'💰',l:'Saldo Inicial',v:`R$ ${fmtN(saldoInicial)}`,cor:'var(--blue)'},
-    {ico:'📈',l:'Total Receitas',v:`R$ ${fmtN(rec)}`,cor:'var(--green)'},
-    {ico:'📉',l:'Total Despesas',v:`R$ ${fmtN(desp)}`,cor:'var(--red)'},
-    {ico:'🏦',l:'Saldo Final',v:`R$ ${fmtN(saldoInicial+sal)}`,cor:sal>=0?'var(--green)':'var(--red)'},
+    {ico:'',l:'Saldo Inicial',v:`R$ ${fmtN(saldoInicial)}`,cor:'var(--blue)'},
+    {ico:'',l:'Total Receitas',v:`R$ ${fmtN(rec)}`,cor:'var(--green)'},
+    {ico:'',l:'Total Despesas',v:`R$ ${fmtN(desp)}`,cor:'var(--red)'},
+    {ico:'',l:'Saldo Final',v:`R$ ${fmtN(saldoInicial+sal)}`,cor:sal>=0?'var(--green)':'var(--red)'},
   ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 16px">
     <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${k.ico} ${k.l}</div>
     <div style="font-size:20px;font-weight:700;color:${k.cor}">${k.v}</div>
@@ -4854,7 +4838,7 @@ function renderFluxo(){
         <span style="display:inline-flex;align-items:center;gap:8px">
           <span id="${recPedKey}-ico" style="color:var(--green);font-size:11px">›</span>
           <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--green);flex-shrink:0"></span>
-          <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap">🛒 Pedidos</span>
+          <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap"> Pedidos</span>
         </span>
       </td>
       ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:${v?'var(--t)':'#C8C8CC'};font-weight:${v?'600':'400'};border-left:1px solid var(--bor2);padding:10px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
@@ -5073,7 +5057,7 @@ function saveFormaPag(){
   S.set('formas_pag',data);closeM('modal-forma-pag');renderFormasPag();
 }
 function deleteFormaPag(){
-  showConfirm('Excluir','Excluir esta forma de pagamento?','🗑️',()=>{
+  showConfirm('Excluir','Excluir esta forma de pagamento?','️',()=>{
     S.set('formas_pag',getFormasPag().filter(x=>x.id!==_editFpagId));
     closeM('modal-forma-pag');renderFormasPag();
   });
@@ -5110,7 +5094,7 @@ function saveFormaPedido(){
   S.set('formas_pedido',data);closeM('modal-forma-pedido');renderFormasPedido();
 }
 function deleteFormaPedido(){
-  showConfirm('Excluir','Excluir esta configuração?','🗑️',()=>{
+  showConfirm('Excluir','Excluir esta configuração?','️',()=>{
     S.set('formas_pedido',getFormasPedido().filter(x=>x.id!==_editFpedId));
     closeM('modal-forma-pedido');renderFormasPedido();
   });
@@ -5468,7 +5452,7 @@ function renderLanc(){
         <td style="color:var(--green)">${apr} un</td>
         <td style="color:var(--t2)">R$ ${fmtN(custo)}</td>
         <td><span class="pill" style="background:var(--fox-l);color:var(--fox)">Produzido</span></td>
-        <td><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="event.stopPropagation();openEtiqueta({produtoId:'${p.produtoId}',qtd:${p.qtd},perdas:${p.perdas||0},data:'${p.data}'})">🏷️</button></td>
+        <td><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="event.stopPropagation();openEtiqueta({produtoId:'${p.produtoId}',qtd:${p.qtd},perdas:${p.perdas||0},data:'${p.data}'})">️</button></td>
       </tr>`;
     }).join(''):`<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:24px">Nenhuma produção encontrada</td></tr>`;
     return;
@@ -5524,7 +5508,7 @@ function renderLanc(){
     return`<tr style="cursor:pointer" onclick="openLancEdit('${l.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="lanc-chk" value="${l.id}"></td>
       <td style="color:var(--t3);font-size:11px">${fmtDate(l.data||l.venc)}</td>
-      <td style="font-weight:500;color:var(--t)">${l.desc}${l.parcela?` <span class="pill pill-parc" style="font-size:9px;padding:1px 6px">${l.recorrente?'🔄':'📦'} ${l.parcela}</span>`:''}</td>
+      <td style="font-weight:500;color:var(--t)">${l.desc}${l.parcela?` <span class="pill pill-parc" style="font-size:9px;padding:1px 6px">${l.recorrente?'':''} ${l.parcela}</span>`:''}</td>
       <td style="color:var(--t3);font-size:11px">${cat?cat.cod+' — '+cat.nome:'—'}</td>
       <td style="color:var(--t3)">${bk?bk.nome:'—'}</td>
       <td style="color:var(--t3);font-size:11px">${fmtDate(l.venc)}</td>
@@ -5542,7 +5526,7 @@ function renderLanc(){
     <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
     <td><span class="pill" style="background:var(--fox-l);color:var(--fox)">Produção</span></td>
     <td style="font-weight:700;color:var(--fox)">${p.qtd} un</td>
-    <td onclick="event.stopPropagation()"><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="openEtiqueta({produtoId:'${p.prodId}',qtd:${p.qtd},perdas:${p.perdas},data:'${p.data}'})">🏷️</button></td>
+    <td onclick="event.stopPropagation()"><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="openEtiqueta({produtoId:'${p.prodId}',qtd:${p.qtd},perdas:${p.perdas},data:'${p.data}'})">️</button></td>
   </tr>`);
 
   // Merge and sort by date
@@ -5910,7 +5894,7 @@ function openDesp(id){
 function showConfirm(title, msg, icon, onOk) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-msg').textContent = msg;
-  document.getElementById('confirm-icon').textContent = icon || '🗑️';
+  document.getElementById('confirm-icon').textContent = icon || '️';
   const btn = document.getElementById('confirm-ok-btn');
   btn.onclick = () => { closeM('modal-confirm'); onOk(); };
   openM('modal-confirm');
@@ -6238,7 +6222,7 @@ async function printEtiquetas(){
     .wrap{display:flex;flex-wrap:wrap;gap:3mm}@media print{@page{margin:4mm}button{display:none!important}}</style>
     </head><body>
     <div style="margin-bottom:6mm;display:flex;gap:8px">
-      <button onclick="window.print()" style="background:#FF6B2B;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">🖨️ Imprimir${printerName?' — '+printerName:''}</button>
+      <button onclick="window.print()" style="background:#FF6B2B;color:#fff;border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">️ Imprimir${printerName?' — '+printerName:''}</button>
       <button onclick="window.close()" style="background:var(--bg3);color:var(--t);border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer">Fechar</button>
     </div>
     <div class="wrap">${Array(qtd).fill(etiq).join('')}</div>
@@ -6283,12 +6267,12 @@ async function printEtiquetas(){
 
   <!-- MODAL COMPROVANTE -->
   <div class="modal-overlay" id="modal-comprovante" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-comprovante')">
-    <div class="modal-box" style="max-width:480px;width:95%">
+    <div class="modal-box"  style="max-width:480px;width:95%">
       <div class="modal-header"><span class="modal-title">Verificar Comprovante</span><button class="modal-close" onclick="closeM('modal-comprovante')">✕</button></div>
       <div style="padding:20px">
         <!-- Drop zone -->
         <div id="comp-drop" onclick="document.getElementById('comp-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="compHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:16px">
-          <div style="font-size:32px;margin-bottom:8px">📄</div>
+          <div style="font-size:32px;margin-bottom:8px"></div>
           <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste o comprovante aqui</div>
           <div style="font-size:11px;color:var(--t3);margin-top:4px">PNG, JPG ou PDF</div>
         </div>
@@ -6302,16 +6286,16 @@ async function printEtiquetas(){
         <!-- Resultado -->
         <div id="comp-resultado" style="display:none"></div>
         <!-- Botão analisar -->
-        <button id="comp-btn" onclick="compAnalisar()" style="display:none;width:100%;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">🔍 Analisar Comprovante</button>
+        <button id="comp-btn" onclick="compAnalisar()" style="display:none;width:100%;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif"> Analisar Comprovante</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL DISTRIBUIR INSUMOS -->
   <div class="modal-overlay" id="modal-dist-insumos" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-dist-insumos')">
-    <div class="modal-box" style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
+    <div class="modal-box"  style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
       <div class="modal-header">
-        <span class="modal-title">📦 Distribuir entre Insumos</span>
+        <span class="modal-title"> Distribuir entre Insumos</span>
         <button class="modal-close" onclick="closeM('modal-dist-insumos')">✕</button>
       </div>
       <div style="padding:20px">
@@ -6320,7 +6304,7 @@ async function printEtiquetas(){
         <!-- Leitura de NF -->
         <div id="dist-nf-area" style="margin-bottom:16px">
           <div id="dist-nf-drop" onclick="document.getElementById('dist-nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="distNFDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--bg3);transition:border-color .2s">
-            <div style="font-size:24px;margin-bottom:6px">🧾</div>
+            <div style="font-size:24px;margin-bottom:6px"></div>
             <div style="font-size:12px;font-weight:700;color:var(--t2)">Ler Nota Fiscal</div>
             <div style="font-size:11px;color:var(--t3);margin-top:3px">Foto ou PDF — IA extrai os itens automaticamente</div>
           </div>
@@ -6355,7 +6339,7 @@ setTimeout(() => qzConnect(), 1500);
 
 function deleteDesp(){
   if(!editLancId)return;
-  showConfirm('Excluir despesa','Tem certeza que deseja excluir este lançamento?','🗑️',()=>{
+  showConfirm('Excluir despesa','Tem certeza que deseja excluir este lançamento?','️',()=>{
     const _lid=editLancId;
     // Remove entrada de insumo vinculada ao lançamento
     const _est=getEstMP();
@@ -6439,7 +6423,7 @@ function openRec(id){
 
 function deleteRec(){
   if(!editLancId)return;
-  showConfirm('Excluir receita','Tem certeza que deseja excluir este lançamento?','🗑️',()=>{
+  showConfirm('Excluir receita','Tem certeza que deseja excluir este lançamento?','️',()=>{
     S.set('lancamentos',getLanc().filter(x=>x.id!==editLancId));
     closeM('modal-rec');editLancId=null;
     renderLanc();if(typeof renderFluxo==='function')renderFluxo();
@@ -6798,7 +6782,7 @@ function saveTransf(){
 }
 function deleteTransf(){
   if(!editLancId)return;
-  showConfirm('Excluir transferência','Tem certeza que deseja excluir esta transferência?','🗑️',()=>{
+  showConfirm('Excluir transferência','Tem certeza que deseja excluir esta transferência?','️',()=>{
     S.set('lancamentos',getLanc().filter(x=>x.id!==editLancId));
     closeM('modal-transf');editLancId=null;
     renderLanc();if(typeof renderFluxo==='function')renderFluxo();
@@ -6862,9 +6846,9 @@ function renderBancos(){
   const totGeral=totCaixa+totBanco;
   const totalsEl=document.getElementById('bank-totals');
   if(totalsEl)totalsEl.innerHTML=[
-    {label:'💵 Total em Caixa',val:totCaixa,cor:'var(--fox)'},
-    {label:'🏦 Total em Bancos',val:totBanco,cor:'var(--blue)'},
-    {label:'💰 Total Geral',val:totGeral,cor:'var(--green)',bold:true},
+    {label:' Total em Caixa',val:totCaixa,cor:'var(--fox)'},
+    {label:' Total em Bancos',val:totBanco,cor:'var(--blue)'},
+    {label:' Total Geral',val:totGeral,cor:'var(--green)',bold:true},
   ].map(t=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px 20px">
     <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${t.label}</div>
     <div style="font-size:${t.bold?'22px':'18px'};font-weight:${t.bold?800:700};color:${t.cor}">R$ ${fmtN(t.val)}</div>
@@ -6940,7 +6924,7 @@ function saveBank(){
   S.set('bancos',data);closeM('modal-banco');renderBancos();
 }
 function deleteBank(){
-  showConfirm('Excluir banco','Tem certeza que deseja excluir este banco/caixa?','🏦',()=>{
+  showConfirm('Excluir banco','Tem certeza que deseja excluir este banco/caixa?','',()=>{
     S.set('bancos',getBancos().filter(x=>x.id!==editBancoId));
     closeM('modal-banco');renderBancos();
   });
@@ -7162,7 +7146,7 @@ function saveMP(){
   if(currentPage==='estoque')renderEstoque();
 }
 function deleteMP(){
-  showConfirm('Excluir insumo','Tem certeza que deseja excluir este insumo?','🗑️',()=>{
+  showConfirm('Excluir insumo','Tem certeza que deseja excluir este insumo?','️',()=>{
     S.set('mp',getMP().filter(x=>x.id!==editMPId));
     closeM('modal-mp');renderMP();updateAlertBadge();
     if(currentPage==='estoque')renderEstoque();
@@ -7202,12 +7186,12 @@ function renderEstRecheios(){
         <div style="font-size:24px;font-weight:700;color:var(--t)">${atencao}</div></div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🚨</div>
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0"></div>
         <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Zerado</div>
         <div style="font-size:24px;font-weight:700;color:var(--t)">${zerado}</div></div>
       </div>
       <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💰</div>
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0"></div>
         <div><div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px">Custo estoque</div>
         <div style="font-size:18px;font-weight:700;color:var(--t)">R$ ${fmtN(totalCusto)}</div></div>
       </div>
@@ -7218,7 +7202,7 @@ function renderEstRecheios(){
         <input class="search-in" id="est-rec-search" placeholder="Buscar recheio..." oninput="renderEstRecheiosTable()">
       </div>
       <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn-o" onclick="openProdRecheio()" style="font-size:12px">🍳 Produzir Recheio</button>
+        <button class="btn-o" onclick="openProdRecheio()" style="font-size:12px"> Produzir Recheio</button>
         <button class="btn-p" onclick="openRecheio()" style="font-size:12px">+ Novo Recheio</button>
       </div>
     </div>
@@ -7307,7 +7291,7 @@ function saveRecheio(){
   if(currentPage==='estoque')renderEstoque();
 }
 function deleteRecheio(){
-  showConfirm('Excluir recheio','Excluir este recheio?','🗑️',()=>{
+  showConfirm('Excluir recheio','Excluir este recheio?','️',()=>{
     S.set('recheios',getRecheios().filter(x=>x.id!==editRecheioId));
     closeM('modal-recheio');
     if(currentPage==='estoque')renderEstoque();
@@ -7855,7 +7839,7 @@ function saveProd(){
   if(currentPage==='estoque')renderEstoque();
 }
 function deleteProd(){
-  showConfirm('Excluir produto','Tem certeza que deseja excluir este produto?','🗑️',()=>{
+  showConfirm('Excluir produto','Tem certeza que deseja excluir este produto?','️',()=>{
     S.set('produtos',getProdutos().filter(x=>x.id!==editProdId));
     closeM('modal-prod');renderProdutos();
     if(currentPage==='estoque')renderEstoque();
@@ -8064,7 +8048,7 @@ function saveEquip() {
 }
 
 function deleteEquip() {
-  showConfirm('Excluir Equipamento','Tem certeza que deseja excluir este equipamento?','🗑️',()=>{
+  showConfirm('Excluir Equipamento','Tem certeza que deseja excluir este equipamento?','️',()=>{
     S.set('equipamentos', getEquip().filter(x=>x.id!==editEquipId));
     closeM('modal-equip');
     renderEquip();
@@ -8112,7 +8096,7 @@ function saveCC(){
   S.set('centrocustos',data);closeM('modal-cc');renderCC();
 }
 function deleteCC(){
-  showConfirm('Excluir categoria','Tem certeza que deseja excluir este centro de custo?','🗑️',()=>{
+  showConfirm('Excluir categoria','Tem certeza que deseja excluir este centro de custo?','️',()=>{
     S.set('centrocustos',getCC().filter(x=>x.id!==editCCId));
     closeM('modal-cc');renderCC();
   });
@@ -8150,7 +8134,7 @@ function renderListaCompras(){
   if(!precisam.length){el.style.display='none';return;}
   el.style.display='block';
   el.innerHTML=`<div style="background:var(--amber-bg);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin-bottom:16px">
-    <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px">🛒 Lista de Compras — ${precisam.length} insumo${precisam.length!==1?'s':''} precisam de reposição</div>
+    <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px"> Lista de Compras — ${precisam.length} insumo${precisam.length!==1?'s':''} precisam de reposição</div>
     ${precisam.map(m=>{
       const at=getEstoqueAtualMP(m.id);
       const zerado=at<=0;
@@ -8477,7 +8461,7 @@ function verPedido(id){
   const entregadorSalvo=(S.get('entregadores')||{})[p.id]||'';
   const entregadorBox=isDelivery?`<div style="background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px">
     <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Entregador</div>
-    <div style="font-size:11px;color:var(--t2);margin-bottom:6px">🛵 ${entregadorTxt||'Entrega própria'} · Taxa: R$ ${(p.delivery_fee||0).toFixed(2)}</div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:6px"> ${entregadorTxt||'Entrega própria'} · Taxa: R$ ${(p.delivery_fee||0).toFixed(2)}</div>
     <div style="display:flex;gap:8px;align-items:center">
       <input id="ped-entregador-input" value="${entregadorSalvo}" placeholder="Nome do entregador..." style="flex:1;border:1px solid var(--bor);border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Poppins',sans-serif;outline:none">
       <button onclick="salvarEntregador('${p.id}')" style="background:var(--fox);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:11px;font-family:'Poppins',sans-serif;cursor:pointer;font-weight:600">Salvar</button>
@@ -8524,7 +8508,7 @@ function verPedido(id){
           </div>
           ${comps}
           ${matchBadge}
-          ${obs2?`<div style="font-size:10px;color:var(--amber);margin-top:3px">📝 ${obs2}</div>`:''}
+          ${obs2?`<div style="font-size:10px;color:var(--amber);margin-top:3px"> ${obs2}</div>`:''}
         </div>`;
       }).join(''):'<div style="padding:14px;text-align:center;color:var(--t3);font-size:12px">Sem itens</div>'}
       <div style="padding:10px 14px;border-top:1px solid var(--bor2)">
@@ -8543,7 +8527,7 @@ function verPedido(id){
           rows.push(`<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--bor2)"><span style="font-size:13px;font-weight:700;color:var(--t)">Total</span><span style="font-size:15px;font-weight:700;color:var(--fox)">R$ ${fmtN(total)}</span></div>`);
           // Pagamento online obs
           const temOnline=(_pags2||[]).some(pg=>pg.payment_type==='online');
-          if(temOnline)rows.push(`<div style="font-size:10px;color:var(--blue);margin-top:6px;font-style:italic">💳 Pago online — não cobrar do cliente</div>`);
+          if(temOnline)rows.push(`<div style="font-size:10px;color:var(--blue);margin-top:6px;font-style:italic"> Pago online — não cobrar do cliente</div>`);
           return rows.join('');
         })()}
       </div>
@@ -8922,14 +8906,14 @@ function renderHistorico(){
   if(fatBar&&fatCards){
     fatBar.style.display='block';
     const cards=[
-      {ico:'🛒',lbl:'Total dos produtos',val:totalProdutos,op:'+',cor:'#3498DB'},
-      {ico:'🛵',lbl:'Taxas de entrega',val:taxasEntrega,op:'+',cor:'#E67E22'},
-      {ico:'⚙️',lbl:'Taxas de serviço',val:taxasServico,op:'+',cor:'#E67E22'},
-      {ico:'➕',lbl:'Taxas adicionais',val:taxasAdicionais,op:'+',cor:'#E67E22'},
-      {ico:'🏷️',lbl:'Descontos loja',val:descontosLoja,op:'−',cor:'#E74C3C'},
-      {ico:'🍔',lbl:'Descontos iFood',val:descontosIfood,op:'−',cor:'#E74C3C'},
+      {ico:'',lbl:'Total dos produtos',val:totalProdutos,op:'+',cor:'#3498DB'},
+      {ico:'',lbl:'Taxas de entrega',val:taxasEntrega,op:'+',cor:'#E67E22'},
+      {ico:'️',lbl:'Taxas de serviço',val:taxasServico,op:'+',cor:'#E67E22'},
+      {ico:'',lbl:'Taxas adicionais',val:taxasAdicionais,op:'+',cor:'#E67E22'},
+      {ico:'️',lbl:'Descontos loja',val:descontosLoja,op:'−',cor:'#E74C3C'},
+      {ico:'',lbl:'Descontos iFood',val:descontosIfood,op:'−',cor:'#E74C3C'},
       {ico:'❌',lbl:'Cancelados',val:cancelados.reduce((s,p)=>s+(p.total||0),0),op:'−',cor:'#E74C3C',count:cancelados.length},
-      {ico:'💰',lbl:'Faturamento',val:faturamento,op:'=',cor:'#27AE60',bold:true},
+      {ico:'',lbl:'Faturamento',val:faturamento,op:'=',cor:'#27AE60',bold:true},
     ];
     fatCards.innerHTML=cards.map(c=>`
       <div style="background:var(--bg2);border-radius:12px;padding:12px 14px;border-left:3px solid ${c.cor}">
@@ -9003,7 +8987,7 @@ async function verPedidoHist(id){
 }
 
 function limparHistorico(){
-  showConfirm('Limpar Histórico','Apagar todos os pedidos salvos no histórico? Esta ação não pode ser desfeita.','🗑️',()=>{
+  showConfirm('Limpar Histórico','Apagar todos os pedidos salvos no histórico? Esta ação não pode ser desfeita.','️',()=>{
     setHistorico([]);
     renderHistorico();
     renderHistoricoMesesFilter();
@@ -9130,7 +9114,7 @@ async function syncMes(){
 <!-- Modal: Produção de Recheio -->
 <div class="overlay" id="modal-prod-rec" onclick="if(event.target===this)closeM('modal-prod-rec')">
   <div class="modal" style="max-width:400px">
-    <div class="modal-t"><span>🍳 Produzir Recheio</span><button class="modal-close" onclick="closeM('modal-prod-rec')">×</button></div>
+    <div class="modal-t"><span> Produzir Recheio</span><button class="modal-close" onclick="closeM('modal-prod-rec')">×</button></div>
     <label class="fl">Recheio</label>
     <select class="fi" id="mprod-rec-sel" style="margin-bottom:12px"><option value="">Selecione...</option></select>
     <div class="fi-row" style="margin-bottom:12px">
@@ -9206,12 +9190,12 @@ async function syncMes(){
 
   <!-- MODAL COMPROVANTE -->
   <div class="modal-overlay" id="modal-comprovante" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-comprovante')">
-    <div class="modal-box" style="max-width:480px;width:95%">
+    <div class="modal-box"  style="max-width:480px;width:95%">
       <div class="modal-header"><span class="modal-title">Verificar Comprovante</span><button class="modal-close" onclick="closeM('modal-comprovante')">✕</button></div>
       <div style="padding:20px">
         <!-- Drop zone -->
         <div id="comp-drop" onclick="document.getElementById('comp-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="compHandleDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:16px">
-          <div style="font-size:32px;margin-bottom:8px">📄</div>
+          <div style="font-size:32px;margin-bottom:8px"></div>
           <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste o comprovante aqui</div>
           <div style="font-size:11px;color:var(--t3);margin-top:4px">PNG, JPG ou PDF</div>
         </div>
@@ -9225,16 +9209,16 @@ async function syncMes(){
         <!-- Resultado -->
         <div id="comp-resultado" style="display:none"></div>
         <!-- Botão analisar -->
-        <button id="comp-btn" onclick="compAnalisar()" style="display:none;width:100%;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif">🔍 Analisar Comprovante</button>
+        <button id="comp-btn" onclick="compAnalisar()" style="display:none;width:100%;padding:12px;font-size:13px;font-weight:700;background:var(--fox);color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:'Poppins',sans-serif"> Analisar Comprovante</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL DISTRIBUIR INSUMOS -->
   <div class="modal-overlay" id="modal-dist-insumos" style="display:none;z-index:9999" onclick="if(event.target===this)closeM('modal-dist-insumos')">
-    <div class="modal-box" style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
+    <div class="modal-box"  style="max-width:520px;width:95%;max-height:90vh;overflow-y:auto">
       <div class="modal-header">
-        <span class="modal-title">📦 Distribuir entre Insumos</span>
+        <span class="modal-title"> Distribuir entre Insumos</span>
         <button class="modal-close" onclick="closeM('modal-dist-insumos')">✕</button>
       </div>
       <div style="padding:20px">
@@ -9243,7 +9227,7 @@ async function syncMes(){
         <!-- Leitura de NF -->
         <div id="dist-nf-area" style="margin-bottom:16px">
           <div id="dist-nf-drop" onclick="document.getElementById('dist-nf-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--fox)'" ondragleave="this.style.borderColor='var(--bor)'" ondrop="distNFDrop(event)" style="border:2px dashed var(--bor);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--bg3);transition:border-color .2s">
-            <div style="font-size:24px;margin-bottom:6px">🧾</div>
+            <div style="font-size:24px;margin-bottom:6px"></div>
             <div style="font-size:12px;font-weight:700;color:var(--t2)">Ler Nota Fiscal</div>
             <div style="font-size:11px;color:var(--t3);margin-top:3px">Foto ou PDF — IA extrai os itens automaticamente</div>
           </div>
@@ -9557,7 +9541,7 @@ async function verPedidoHist(id){
 }
 
 function limparHistorico(){
-  showConfirm('Limpar Histórico','Apagar todos os pedidos salvos?','🗑️',()=>{
+  showConfirm('Limpar Histórico','Apagar todos os pedidos salvos?','️',()=>{
     try{localStorage.removeItem('pedidos_historico');}catch(e){}
     renderHistorico();
   });
@@ -9579,7 +9563,7 @@ function receitaRender(){
   var wrap=document.getElementById('rec-table-wrap');
   if(!wrap)return;
   if(!prodId){
-    wrap.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--t3)"><div style="font-size:40px;margin-bottom:12px">🍪</div><div style="font-size:15px;font-weight:600">Selecione um produto para ver a receita</div></div>';
+    wrap.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--t3)"><div style="font-size:40px;margin-bottom:12px"></div><div style="font-size:15px;font-weight:600">Selecione um produto para ver a receita</div></div>';
     return;
   }
   var prod=getProdutos().find(function(p){return p.id===prodId;});
@@ -9624,7 +9608,7 @@ function receitaRender(){
   });
 
   var subHdrCols='';
-  qtds.forEach(function(q){subHdrCols+='<div style="font-size:10px;font-weight:700;color:#fff;text-align:right;text-transform:uppercase">'+q+' 🍪</div>';});
+  qtds.forEach(function(q){subHdrCols+='<div style="font-size:10px;font-weight:700;color:#fff;text-align:right;text-transform:uppercase">'+q+' </div>';});
 
   var totalCols='';
   qtds.forEach(function(q){
@@ -9635,7 +9619,7 @@ function receitaRender(){
   qtds.forEach(function(q){
     var custTotal=totalCustoUn*q;
     cards+='<div style="background:var(--bg);border:1.5px solid var(--bor);border-radius:12px;padding:14px 20px;text-align:center;min-width:130px;flex:1">'
-      +'<div style="font-size:20px;margin-bottom:6px">🍪</div>'
+      +'<div style="font-size:20px;margin-bottom:6px"></div>'
       +'<div style="font-size:13px;font-weight:700;color:var(--fox);margin-bottom:6px">'+q+' cookies</div>'
       +'<div style="font-size:11px;color:var(--t3);margin-bottom:8px">'+(totalQtdG*q/1000).toFixed(2)+' kg</div>'
       +'<div style="font-size:22px;font-weight:800;color:var(--t);border-top:1px solid var(--bor);padding-top:8px">R$ '+fmtN(custTotal)+'</div>'
@@ -9723,7 +9707,7 @@ async function compAnalisar(){
   status.style.display='block';
   status.style.background='var(--bg3)';
   status.style.color='var(--t2)';
-  status.textContent='🤖 Lendo o comprovante...';
+  status.textContent=' Lendo o comprovante...';
   document.getElementById('comp-resultado').style.display='none';
 
   try {
@@ -9744,7 +9728,7 @@ async function compAnalisar(){
     let parsed;
     try{parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());}catch{parsed={};}
 
-    btn.disabled=false;btn.textContent='🔍 Analisar Comprovante';
+    btn.disabled=false;btn.textContent=' Analisar Comprovante';
 
     if(!parsed.valor && !parsed.data){
       status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
@@ -9777,7 +9761,7 @@ async function compAnalisar(){
     const fmtDt=d=>d?d.split('-').reverse().join('/'):'—';
 
     let html=`<div style="background:var(--bg3);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px">
-      <div style="font-weight:700;color:var(--t);margin-bottom:4px">📋 Lido do comprovante</div>
+      <div style="font-weight:700;color:var(--t);margin-bottom:4px"> Lido do comprovante</div>
       <div style="color:var(--t2)">Valor: <b>${fmtVal(val)}</b> &nbsp;|&nbsp; Data: <b>${fmtDt(dt)}</b></div>
       ${parsed.descricao?`<div style="color:var(--t3);margin-top:2px">${parsed.descricao}</div>`:''}
     </div>`;
@@ -9802,7 +9786,7 @@ async function compAnalisar(){
         </div>`;
       } else {
         html+=`<div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:10px;padding:14px 16px">
-          <div style="font-weight:700;color:var(--amber);font-size:13px;margin-bottom:8px">🔎 Possíveis correspondências</div>`;
+          <div style="font-weight:700;color:var(--amber);font-size:13px;margin-bottom:8px"> Possíveis correspondências</div>`;
         matches.forEach(l=>{
           html+=`<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:6px;cursor:pointer" onclick="closeM('modal-comprovante');openLancEdit('${l.id}')">
             <div style="font-weight:600;color:var(--t)">${l.desc||'Sem descrição'}</div>
@@ -9815,7 +9799,7 @@ async function compAnalisar(){
     }
     res.innerHTML=html;
   } catch(err){
-    btn.disabled=false;btn.textContent='🔍 Analisar Comprovante';
+    btn.disabled=false;btn.textContent=' Analisar Comprovante';
     status.style.background='rgba(231,76,60,.1)';status.style.color='var(--red)';
     status.textContent='❌ Erro: '+err.message;
   }
@@ -9864,7 +9848,7 @@ async function cvAnalisar(){
   const res=document.getElementById('cv-resultado');
   status.style.display='block';
   status.style.background='var(--bg3)';status.style.color='var(--t2)';
-  status.innerHTML='🤖 Lendo o comprovante...';
+  status.innerHTML=' Lendo o comprovante...';
   res.style.display='none';
 
   try{
@@ -9913,7 +9897,7 @@ async function cvAnalisar(){
 
     // Info lida
     let html=`<div style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px">
-      <div style="font-weight:700;color:var(--t);margin-bottom:4px">📋 Lido do comprovante</div>
+      <div style="font-weight:700;color:var(--t);margin-bottom:4px"> Lido do comprovante</div>
       <div style="color:var(--t2)">Valor: <b>${fmtV(val)}</b> &nbsp;|&nbsp; Data: <b>${fmtD(dt)}</b></div>
       ${parsed.descricao?`<div style="color:var(--t3);margin-top:3px;font-size:11px">${parsed.descricao}</div>`:''}
     </div>`;
@@ -9927,12 +9911,12 @@ async function cvAnalisar(){
           <div style="font-weight:600;color:var(--t)">${exact.desc||'Sem descrição'}</div>
           <div style="color:var(--t3);margin-top:3px">${fmtD(exact.data)} &nbsp;|&nbsp; ${fmtV(exact.valor)} &nbsp;|&nbsp; ${exact.pago?'✅ Pago':'⏳ Pendente'}</div>
         </div>
-        <button onclick="cvAnexar('${exact.id}')" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:var(--green);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">📎 Anexar comprovante a este lançamento</button>
+        <button onclick="cvAnexar('${exact.id}')" style="width:100%;padding:10px;font-size:13px;font-weight:700;background:var(--green);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif"> Anexar comprovante a este lançamento</button>
         <button onclick="openLancEdit('${exact.id}')" style="width:100%;margin-top:8px;padding:8px;font-size:12px;font-weight:600;background:none;color:var(--t3);border:1px solid var(--bor);border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">✏️ Abrir lançamento</button>
       </div>`;
     } else if(matches.length>0){
       html+=`<div style="background:rgba(230,126,34,.08);border:1px solid rgba(230,126,34,.2);border-radius:12px;padding:16px">
-        <div style="font-weight:700;color:var(--amber);font-size:13px;margin-bottom:10px">🔎 Possíveis correspondências</div>`;
+        <div style="font-weight:700;color:var(--amber);font-size:13px;margin-bottom:10px"> Possíveis correspondências</div>`;
       matches.forEach(l=>{
         html+=`<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:6px;cursor:pointer;border:1px solid var(--bor)" onclick="cvAnexar('${l.id}')">
           <div style="font-weight:600;color:var(--t)">${l.desc||'Sem descrição'}</div>
@@ -9974,7 +9958,7 @@ function cvAnexar(lancId){
     <div style="font-size:32px;margin-bottom:8px">✅</div>
     <div style="font-weight:700;color:var(--green);font-size:14px">Comprovante anexado!</div>
     <div style="font-size:12px;color:var(--t3);margin:6px 0 14px">Salvo em: ${lancs[idx].desc||'Lançamento'}</div>
-    <button onclick="cvReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif">📸 Enviar outro</button>
+    <button onclick="cvReset()" style="padding:8px 20px;font-size:12px;font-weight:600;background:var(--fox);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif"> Enviar outro</button>
   </div>`;
 }
 
@@ -10147,7 +10131,7 @@ async function cvParseXLS(file){
 // PDF — única que usa IA
 async function cvParsePDFIA(file){
   const status=document.getElementById('cv-banco-status');
-  status.innerHTML='🤖 IA lendo PDF...';
+  status.innerHTML=' IA lendo PDF...';
   const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
   const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     model:'claude-sonnet-4-20250514',max_tokens:2000,
@@ -10318,7 +10302,7 @@ function distRenderItens(){
   const mpOpts=distGetMPOptions();
   let html='';
   _distItens.forEach((it,idx)=>{
-    const nfLabel=it._nfNome?`<div style="font-size:10px;color:var(--amber);margin-bottom:3px">🧾 NF: ${it._nfNome}</div>`:'';
+    const nfLabel=it._nfNome?`<div style="font-size:10px;color:var(--amber);margin-bottom:3px"> NF: ${it._nfNome}</div>`:'';
     html+=`<div style="margin-bottom:10px">${nfLabel}<div style="display:grid;grid-template-columns:1fr 90px 90px 32px;gap:6px;align-items:center">
       <select onchange="_distItens[${idx}].mpId=this.value" style="padding:8px 10px;border:1px solid var(--bor);border-radius:8px;font-family:'Poppins',sans-serif;font-size:12px;background:var(--bg);color:var(--t)">
         <option value="">Selecione o insumo...</option>${mpOpts}
@@ -10390,7 +10374,7 @@ async function distNFHandleFile(file){
   status.style.display='block';
   status.style.background='var(--bg3)';
   status.style.color='var(--t2)';
-  status.innerHTML='🤖 Lendo nota fiscal...';
+  status.innerHTML=' Lendo nota fiscal...';
 
   try{
     const ext=file.name.split('.').pop().toLowerCase();
@@ -10497,7 +10481,7 @@ async function nfHandleFile(file){
   status.style.display='block';
   status.style.background='var(--bg3)';status.style.color='var(--t2)';
   const filaInfo=_nfFila.length>1?` (${_nfFilaIdx+1}/${_nfFila.length})`:'';
-  status.innerHTML='📄 Lendo XML da NF-e'+filaInfo+'...';
+  status.innerHTML=' Lendo XML da NF-e'+filaInfo+'...';
 
   try{
     const text=await file.text();
@@ -10592,7 +10576,7 @@ function nfRenderResultado(nf){
 
   _nfItens.forEach((it,idx)=>{
     html+=`<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px">
-      <div style="font-size:11px;color:var(--amber);font-weight:600;margin-bottom:6px">🧾 ${it.nome} ${it.qtd?'· '+it.qtd+(it.unidade?' '+it.unidade:''):''} ${it.valorTotal?'· '+fmtV(it.valorTotal):''}</div>
+      <div style="font-size:11px;color:var(--amber);font-weight:600;margin-bottom:6px"> ${it.nome} ${it.qtd?'· '+it.qtd+(it.unidade?' '+it.unidade:''):''} ${it.valorTotal?'· '+fmtV(it.valorTotal):''}</div>
       <div style="display:grid;grid-template-columns:1fr 70px 80px;gap:6px;align-items:center">
         <select onchange="_nfItens[${idx}].mpId=this.value" style="padding:7px 8px;border:1px solid var(--bor);border-radius:7px;font-size:11px;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
           <option value="">Vincular ao insumo...</option>${mpOpts}
