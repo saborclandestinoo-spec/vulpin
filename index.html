@@ -1772,19 +1772,51 @@ html.dark #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(3
     </div>
     <!-- FICHA TÉCNICA -->
     <div id="mpp-ficha" style="display:none">
-      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Insumos e recheios utilizados para produzir <b id="ft-prod-nome">este produto</b> por unidade.</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
-        <div style="flex:1"><label class="fl" style="margin-top:0">Tipo</label>
-          <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()">
-            <option value="insumo">🧂 Insumo</option>
-            <option value="recheio">🍫 Recheio</option>
-          </select>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Composição de <b id="ft-prod-nome">este produto</b> por unidade produzida.</div>
+
+      <!-- Formulário de adição -->
+      <div style="background:var(--bg2);border:1px solid var(--bor);border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:8px">+ Adicionar item</div>
+        <div style="display:grid;grid-template-columns:1fr 1.6fr 0.8fr auto;gap:6px;align-items:end">
+          <div>
+            <label class="fl" style="margin-top:0;font-size:10px">Categoria</label>
+            <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()" style="font-size:11px;padding:6px 8px">
+              <option value="insumo">🧂 Insumo</option>
+              <option value="recheio">🍫 Recheio</option>
+              <option value="embalagem">📦 Embalagem</option>
+              <option value="material">🔧 Mat. Produção</option>
+            </select>
+          </div>
+          <div>
+            <label class="fl" style="margin-top:0;font-size:10px">Item</label>
+            <select class="fi" id="ft-mp-sel" style="font-size:11px;padding:6px 8px"><option value="">Selecione...</option></select>
+          </div>
+          <div>
+            <label class="fl" style="margin-top:0;font-size:10px">Qtd/un</label>
+            <input class="fi" id="ft-qtd" type="number" step="0.01" min="0" placeholder="Ex: 150" style="font-size:11px;padding:6px 8px">
+          </div>
+          <button class="btn-p" style="padding:6px 12px;font-size:11px;margin-bottom:0" onclick="ftAddItem()">+ Add</button>
         </div>
-        <div style="flex:2"><label class="fl" style="margin-top:0">Item</label><select class="fi" id="ft-mp-sel"><option value="">Selecione...</option></select></div>
-        <div style="flex:1"><label class="fl" style="margin-top:0">Qtd / unidade</label><input class="fi" id="ft-qtd" type="number" step="0.01" min="0" placeholder="Ex: 150"></div>
-        <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftAddItem()">+ Adicionar</button>
+        <!-- Adição em lote -->
+        <div style="margin-top:8px;border-top:1px solid var(--bor2);padding-top:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:10px;color:var(--t3)">Adicionar vários de uma vez</span>
+            <button onclick="ftToggleLote()" style="font-size:10px;color:var(--fox);background:none;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600" id="ft-lote-btn">+ Modo lote</button>
+          </div>
+          <div id="ft-lote-area" style="display:none">
+            <div id="ft-lote-rows"></div>
+            <button onclick="ftAddLoteRow()" style="font-size:10px;color:var(--t3);background:none;border:1px dashed var(--bor);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:4px;width:100%">+ Linha</button>
+            <button onclick="ftSaveLote()" class="btn-p" style="width:100%;margin-top:6px;padding:7px;font-size:11px">✅ Adicionar todos</button>
+          </div>
+        </div>
       </div>
-      <div id="ft-lista" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
+
+      <!-- Seções por categoria -->
+      <div id="ft-lista-insumo" class="ft-sec"></div>
+      <div id="ft-lista-recheio" class="ft-sec"></div>
+      <div id="ft-lista-embalagem" class="ft-sec"></div>
+      <div id="ft-lista-material" class="ft-sec"></div>
+
       <!-- custo calculado + toggle -->
       <div id="ft-custo-calc" style="margin-top:12px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor);display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
@@ -7409,48 +7441,120 @@ function mprodTab(tab){
 }
 
 // ─── FICHA TÉCNICA ───
-// Storage: fichas = {prodId: [{mpId, qtd}]}
+// Storage: fichas = {prodId: [{mpId, qtd, tipo}]}
 let ftItems=[]; // current editing items
 
-// Retorna lista do storage correto conforme tipo ('insumo'|'recheio')
+const FT_TIPOS={
+  insumo:  {label:'🧂 Insumos',        cor:'#E67E22'},
+  recheio: {label:'🍫 Recheios',        cor:'#8E44AD'},
+  embalagem:{label:'📦 Embalagens',     cor:'#2980B9'},
+  material: {label:'🔧 Mat. de Produção',cor:'#27AE60'},
+};
+
 function ftGetList(tipo){
-  if(tipo==='recheio') return getRecheios(); // recheios são entidades próprias
-  return getMP(); // insumos
+  if(tipo==='recheio') return getRecheios();
+  return getMP(); // insumo, embalagem, material — todos vêm de MP
 }
-// Popula o select de itens conforme tipo selecionado
+
 function ftPopulateSel(){
   const tipo=(document.getElementById('ft-tipo-sel')||{}).value||'insumo';
   const lista=ftGetList(tipo);
   const sel=document.getElementById('ft-mp-sel');
   if(sel)sel.innerHTML='<option value="">Selecione...</option>'+
-    lista.map(m=>`<option value="${m.id}">${m.nome} (${m.un})</option>`).join('');
+    lista.map(m=>`<option value="${m.id}">${m.nome}${m.un?' ('+m.un+')':''}</option>`).join('');
 }
+
 function ftRender(){
   ftPopulateSel();
-  // render list
-  const lista=document.getElementById('ft-lista');
-  if(!lista)return;
-  if(!ftItems.length){lista.innerHTML='<div style="font-size:11px;color:var(--t3);padding:10px 0">Nenhum item adicionado ainda.</div>';
-    document.getElementById('ft-custo-calc').style.display='none';return;}
-  lista.innerHTML=ftItems.map((it,i)=>{
-    const src=ftGetList(it.tipo||'insumo');
-    const m=src.find(x=>x.id===it.mpId);
-    const vg=m?getValorPorG(m):0;
-    const custo=vg*it.qtd;
-    const tipoLabel=it.tipo==='recheio'?'🍫':'🧂';
-    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--bor2);border-radius:8px;background:var(--bg)">
-      <div style="flex:2">
-        <div style="font-size:12px;font-weight:500;color:var(--t)">${tipoLabel} ${m?m.nome:'?'}</div>
-        <div style="font-size:10px;color:var(--t3)">${it.qtd} ${m?m.un:''} &nbsp;·&nbsp; Custo: R$ ${fmtN(custo)}</div>
-      </div>
-      <input type="number" value="${it.qtd}" min="0" step="0.01"
-        style="width:80px;border:1px solid var(--bor);border-radius:7px;padding:5px 8px;font-size:11px;font-family:'Poppins',sans-serif;outline:none"
-        oninput="ftItems[${i}].qtd=parseFloat(this.value)||0;ftCalcCusto()">
-      <span style="font-size:10px;color:var(--t3)">${m?m.un:''}</span>
-      <button onclick="ftItems.splice(${i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:16px;line-height:1;padding:0 3px">×</button>
-    </div>`;
-  }).join('');
+  // Render por seção
+  Object.keys(FT_TIPOS).forEach(tipo=>{
+    const sec=document.getElementById('ft-lista-'+tipo);
+    if(!sec)return;
+    const itens=ftItems.filter(it=>(it.tipo||'insumo')===tipo);
+    if(!itens.length){sec.innerHTML='';return;}
+    const cfg=FT_TIPOS[tipo];
+    const globalIdx=(it)=>ftItems.indexOf(it);
+    let html=`<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:${cfg.cor};margin-bottom:6px;padding:4px 0;border-bottom:1px solid var(--bor2)">${cfg.label}</div>
+      <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:4px;align-items:center;font-size:10px;color:var(--t3);padding:0 4px;margin-bottom:4px">
+        <span>Item</span><span style="text-align:right">Qtd</span><span style="text-align:right">Custo</span><span></span>
+      </div>`;
+    itens.forEach(it=>{
+      const i=globalIdx(it);
+      const src=ftGetList(tipo);
+      const m=src.find(x=>x.id===it.mpId);
+      const vg=m?getValorPorG(m):0;
+      const custo=vg*(it.qtd||0);
+      html+=`<div style="display:grid;grid-template-columns:1fr 80px 70px 28px;gap:4px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--bor2)">
+        <div style="font-size:11px;font-weight:500;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m?m.nome:'?'}</div>
+        <input type="number" value="${it.qtd||''}" min="0" step="0.01"
+          style="border:1px solid var(--bor);border-radius:6px;padding:4px 6px;font-size:11px;font-family:'Poppins',sans-serif;text-align:right;background:var(--bg);color:var(--t)"
+          oninput="ftItems[${i}].qtd=parseFloat(this.value)||0;ftCalcCusto()">
+        <div style="font-size:10px;color:var(--t3);text-align:right">R$ ${fmtN(custo)}</div>
+        <button onclick="ftItems.splice(${i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:15px;line-height:1">×</button>
+      </div>`;
+    });
+    const totalSec=itens.reduce((s,it)=>{const src=ftGetList(tipo);const m=src.find(x=>x.id===it.mpId);return s+(m?getValorPorG(m)*(it.qtd||0):0);},0);
+    html+=`<div style="text-align:right;font-size:10px;font-weight:700;color:var(--t2);padding:4px 32px 0 0">Total: R$ ${fmtN(totalSec)}</div></div>`;
+    sec.innerHTML=html;
+  });
   ftCalcCusto();
+}
+
+// MODO LOTE
+let ftLoteRows=[];
+function ftToggleLote(){
+  const area=document.getElementById('ft-lote-area');
+  const btn=document.getElementById('ft-lote-btn');
+  const open=area.style.display==='none';
+  area.style.display=open?'block':'none';
+  btn.textContent=open?'− Fechar lote':'+ Modo lote';
+  if(open&&!ftLoteRows.length) ftAddLoteRow();
+}
+function ftAddLoteRow(){
+  const tipo=(document.getElementById('ft-tipo-sel')||{}).value||'insumo';
+  ftLoteRows.push({tipo,mpId:'',qtd:'',_id:'lr_'+Math.random().toString(36).slice(2)});
+  ftRenderLote();
+}
+function ftRenderLote(){
+  const cont=document.getElementById('ft-lote-rows');
+  if(!cont)return;
+  const mpOpts=tipo=>{const lista=ftGetList(tipo);return lista.map(m=>`<option value="${m.id}">${m.nome}</option>`).join('');};
+  cont.innerHTML=ftLoteRows.map((r,i)=>`
+    <div style="display:grid;grid-template-columns:100px 1fr 70px 24px;gap:4px;margin-bottom:4px;align-items:center">
+      <select onchange="ftLoteRows[${i}].tipo=this.value;ftRenderLote()" style="font-size:10px;padding:4px 6px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);color:var(--t);font-family:'Poppins',sans-serif">
+        ${Object.entries(FT_TIPOS).map(([k,v])=>`<option value="${k}"${r.tipo===k?' selected':''}>${v.label.split(' ')[0]} ${k}</option>`).join('')}
+      </select>
+      <select onchange="ftLoteRows[${i}].mpId=this.value" style="font-size:10px;padding:4px 6px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);color:var(--t);font-family:'Poppins',sans-serif">
+        <option value="">Selecione...</option>${mpOpts(r.tipo||'insumo')}
+      </select>
+      <input type="number" placeholder="Qtd" value="${r.qtd}" oninput="ftLoteRows[${i}].qtd=this.value"
+        style="font-size:10px;padding:4px 6px;border:1px solid var(--bor);border-radius:6px;text-align:right;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--t)">
+      <button onclick="ftLoteRows.splice(${i},1);ftRenderLote()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:14px">×</button>
+    </div>`).join('');
+  // Restaura selects de mpId
+  setTimeout(()=>{
+    ftLoteRows.forEach((r,i)=>{
+      const sels=cont.querySelectorAll('select');
+      const mpSel=sels[i*2+1];
+      if(mpSel&&r.mpId) mpSel.value=r.mpId;
+    });
+  },30);
+}
+function ftSaveLote(){
+  let added=0;
+  ftLoteRows.forEach(r=>{
+    if(!r.mpId||!parseFloat(r.qtd)) return;
+    const existing=ftItems.findIndex(x=>x.mpId===r.mpId&&(x.tipo||'insumo')===(r.tipo||'insumo'));
+    if(existing>-1) ftItems[existing].qtd+=parseFloat(r.qtd)||0;
+    else ftItems.push({mpId:r.mpId,qtd:parseFloat(r.qtd)||0,tipo:r.tipo||'insumo'});
+    added++;
+  });
+  if(!added){alert('Preencha pelo menos 1 item com quantidade');return;}
+  ftLoteRows=[];
+  document.getElementById('ft-lote-rows').innerHTML='';
+  ftToggleLote();
+  ftRender();
 }
 
 let ftUsarFicha=true;
@@ -7503,7 +7607,7 @@ function ftAddItem(){
   const tipo=(document.getElementById('ft-tipo-sel')||{}).value||'insumo';
   if(!mpId){alert('Selecione um item');return;}
   if(!qtd){alert('Informe a quantidade');return;}
-  const existing=ftItems.findIndex(x=>x.mpId===mpId&&x.tipo===tipo);
+  const existing=ftItems.findIndex(x=>x.mpId===mpId&&(x.tipo||'insumo')===tipo);
   if(existing>-1)ftItems[existing].qtd+=qtd;
   else ftItems.push({mpId,qtd,tipo});
   document.getElementById('ft-mp-sel').value='';
