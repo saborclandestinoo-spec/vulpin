@@ -9589,107 +9589,95 @@ function dreCodCell(lineId){
   const label=cods.length?cods.join(', '):'+ cod';
   const isEmpty=!cods.length;
   return '<span class="dre-cod-pill" data-line="'+lineId+'" '
-    +'style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px;cursor:pointer;white-space:nowrap;'
-    +(isEmpty
-      ?'background:transparent;color:var(--t3);border:1px dashed var(--bor);'
-      :'background:var(--fox-l);color:var(--fox);border:1px solid var(--fox-m);')
-    +'">'+label+'</span>';
+    +'style="font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;'
+    +(isEmpty?'color:var(--t3);':'color:var(--fox);')
+    +'padding:0 2px;border-radius:3px;transition:opacity .15s"'
+
+    +label+'</span>';
 }
 
 function dreOpenCodPicker(pill, lineId){
-  // Remove any existing picker
   const old=document.getElementById('dre-cod-picker');
-  if(old){
-    if(old.dataset.line===lineId){old.remove();return;}
-    old.remove();
-  }
+  if(old){old.remove();if(old.dataset.line===lineId)return;}
 
   const map=dreGetCodMap();
-  const current=map[lineId]||[];
+  let selected=[...(map[lineId]||[])];
   const rect=pill.getBoundingClientRect();
 
-  // Build picker
   const picker=document.createElement('div');
   picker.id='dre-cod-picker';
   picker.dataset.line=lineId;
-  picker.style.cssText='position:fixed;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:10px;'
-    +'box-shadow:0 8px 24px rgba(15,32,64,.15);width:320px;max-height:420px;display:flex;flex-direction:column;'
-    +'top:'+(rect.bottom+4)+'px;left:'+Math.max(8,rect.left-220)+'px;';
+  picker.style.cssText='position:fixed;z-index:99999;background:var(--bg);border:1px solid var(--bor);border-radius:10px;'
+    +'box-shadow:0 8px 24px rgba(15,32,64,.2);width:300px;max-height:380px;display:flex;flex-direction:column;'
+    +'top:'+(Math.min(rect.bottom+4, window.innerHeight-400))+'px;'
+    +'left:'+Math.max(8,Math.min(rect.left, window.innerWidth-316))+'px;';
 
-  // Header with text input
-  picker.innerHTML='<div style="padding:10px 12px;border-bottom:1px solid var(--bor)">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:6px">Vincular categorias — '+lineId+'</div>'
-    +'<input id="dre-cod-search" placeholder="Buscar código ou nome..." '
+  picker.innerHTML=
+    '<div style="padding:10px 12px;border-bottom:1px solid var(--bor);flex-shrink:0">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:6px">Categorias — '+lineId+'</div>'
+    +'<input id="dre-cod-search" placeholder="Buscar..." autocomplete="off" '
     +'style="width:100%;border:1px solid var(--bor);border-radius:6px;padding:6px 10px;font-size:11px;'
-    +'color:var(--t);background:var(--bg);font-family:Poppins,sans-serif;box-sizing:border-box;outline:none">'
+    +'color:var(--t);background:var(--bg3);font-family:Poppins,sans-serif;box-sizing:border-box;outline:none">'
     +'</div>'
-    +'<div style="padding:6px 12px 4px;font-size:10px;color:var(--t3)">Selecionados: <span id="dre-cod-selected">'+current.join(', ')+'</span></div>'
-    +'<div id="dre-cod-list" style="overflow-y:auto;flex:1;padding:4px 0"></div>'
-    +'<div style="padding:8px 12px;border-top:1px solid var(--bor);display:flex;gap:6px">'
+    +'<div id="dre-cod-list" style="overflow-y:auto;flex:1"></div>'
+    +'<div style="padding:8px 12px;border-top:1px solid var(--bor);display:flex;gap:6px;flex-shrink:0">'
     +'<button id="dre-cod-clear" style="flex:1;padding:6px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);color:var(--t3);font-size:11px;cursor:pointer;font-family:Poppins,sans-serif">Limpar</button>'
     +'<button id="dre-cod-save" style="flex:2;padding:6px;border:none;border-radius:6px;background:var(--fox);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Poppins,sans-serif">Salvar</button>'
     +'</div>';
 
   document.body.appendChild(picker);
 
-  // State
-  let selected=[...current];
-
   function renderList(filter){
     const list=document.getElementById('dre-cod-list');
     if(!list)return;
     const cats=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
     const f=(filter||'').toLowerCase();
-    const filtered=cats.filter(ct=>!f||(ct.cod+ct.nome).toLowerCase().includes(f));
-    list.innerHTML=filtered.slice(0,60).map(ct=>{
+    const filtered=cats.filter(ct=>!f||(ct.cod+' '+ct.nome).toLowerCase().includes(f));
+    list.innerHTML='';
+    filtered.slice(0,80).forEach(ct=>{
       const checked=selected.includes(ct.cod);
-      return '<label style="display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;'
-        +(checked?'background:var(--fox-l);':'')
-
-
-        +'<input type="checkbox" value="'+ct.cod+'" '+(checked?'checked':'')
-        +' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0">'
-        +'<span style="font-size:10px;font-weight:600;color:var(--fox);width:60px;flex-shrink:0">'+ct.cod+'</span>'
-        +'<span style="font-size:11px;color:var(--t)">'+ct.nome+'</span>'
-        +'</label>';
-    }).join('');
-    // Bind checkboxes
-    list.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-      cb.addEventListener('change',function(){
-        if(this.checked){if(!selected.includes(this.value))selected.push(this.value);}
-        else{selected=selected.filter(s=>s!==this.value);}
-        const sel=document.getElementById('dre-cod-selected');
-        if(sel)sel.textContent=selected.join(', ')||'—';
-        renderList(document.getElementById('dre-cod-search')?.value);
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;user-select:none;'
+        +(checked?'background:var(--fox-l)':'');
+      row.innerHTML='<input type="checkbox" '+(checked?'checked':'')
+        +' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0;pointer-events:none">'
+        +'<span style="font-size:10px;font-weight:600;color:var(--fox);width:56px;flex-shrink:0">'+ct.cod+'</span>'
+        +'<span style="font-size:11px;color:var(--t)">'+ct.nome+'</span>';
+      row.addEventListener('click',function(e){
+        e.stopPropagation();
+        const cb=this.querySelector('input');
+        if(selected.includes(ct.cod)){
+          selected=selected.filter(s=>s!==ct.cod);
+          cb.checked=false;
+          this.style.background='';
+        } else {
+          selected.push(ct.cod);
+          cb.checked=true;
+          this.style.background='var(--fox-l)';
+        }
       });
+      list.appendChild(row);
     });
   }
 
   renderList('');
-
   document.getElementById('dre-cod-search').addEventListener('input',function(){renderList(this.value);});
-  document.getElementById('dre-cod-clear').addEventListener('click',function(){
-    selected=[];
-    document.getElementById('dre-cod-selected').textContent='—';
-    renderList(document.getElementById('dre-cod-search').value);
+  document.getElementById('dre-cod-search').focus();
+
+  document.getElementById('dre-cod-clear').addEventListener('click',function(e){
+    e.stopPropagation();selected=[];renderList(document.getElementById('dre-cod-search').value);
   });
-  document.getElementById('dre-cod-save').addEventListener('click',function(){
-    const map=dreGetCodMap();
-    map[lineId]=selected;
-    dreSaveCodMap(map);
-    picker.remove();
-    renderDREPage();
+  document.getElementById('dre-cod-save').addEventListener('click',function(e){
+    e.stopPropagation();
+    const m=dreGetCodMap();m[lineId]=selected;dreSaveCodMap(m);
+    picker.remove();renderDREPage();
   });
 
-  // Close on outside click
   setTimeout(()=>{
-    document.addEventListener('click',function handler(e){
-      if(!picker.contains(e.target)&&!pill.contains(e.target)){
-        picker.remove();
-        document.removeEventListener('click',handler);
-      }
+    document.addEventListener('click',function h(e){
+      if(!picker.contains(e.target)){picker.remove();document.removeEventListener('click',h);}
     });
-  },100);
+  },50);
 }
 
 function dreUpdateCod(){}  // legacy no-op
