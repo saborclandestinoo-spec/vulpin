@@ -642,7 +642,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
             </div>
             <button class="fc-month-btn" onclick="dreNavMonth(1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">›</button>
           </div>
-          <button onclick="dreOpenConfig()" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 14px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
+          <button onclick="dreOpenConfig()" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 14px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap;position:relative;z-index:10">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
             Configurar
           </button>
@@ -6253,7 +6253,7 @@ async function printEtiquetas(){
 </div>
 
 <!-- DRE CONFIG MODAL -->
-<div id="dre-cfg-modal" style="display:none;position:fixed;top:0;right:0;width:420px;height:100vh;background:var(--bg);border-left:1px solid var(--bor);z-index:1000;box-shadow:-4px 0 24px rgba(15,32,64,.12);flex-direction:column">
+<div id="dre-cfg-modal" style="display:none;position:fixed;top:0;right:0;width:420px;height:100vh;background:var(--bg);border-left:1px solid var(--bor);z-index:1000;box-shadow:-4px 0 24px rgba(15,32,64,.12);flex-direction:column;pointer-events:none">
   <div style="padding:16px 20px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
     <div style="font-size:14px;font-weight:700;color:var(--t)">Configurar DRE</div>
     <button onclick="dreCloseConfig()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--t3);line-height:1">×</button>
@@ -6270,7 +6270,7 @@ async function printEtiquetas(){
     <button onclick="dreCloseConfig()" class="btn-o" style="font-size:12px;padding:9px 16px">Fechar</button>
   </div>
 </div>
-<div id="dre-cfg-overlay" onclick="dreCloseConfig()" style="display:none;position:fixed;inset:0;background:rgba(15,32,64,.3);z-index:999;cursor:pointer"></div>
+<div id="dre-cfg-overlay" onclick="dreCloseConfig()" style="display:none;position:fixed;inset:0;background:rgba(15,32,64,.3);z-index:999;cursor:pointer;pointer-events:none"></div>
 </body></html>`);
   win.document.close();
 }
@@ -9512,8 +9512,10 @@ function dreGetCatMap(){
 
 let _dreCfgTab='linhas';
 function dreOpenConfig(){
-  document.getElementById('dre-cfg-modal').style.display='flex';
-  document.getElementById('dre-cfg-overlay').style.display='block';
+  const m=document.getElementById('dre-cfg-modal');
+  const o=document.getElementById('dre-cfg-overlay');
+  m.style.display='flex';m.style.pointerEvents='all';
+  o.style.display='block';o.style.pointerEvents='all';
   dreRenderCfgTab('linhas');
   // reset tab styles
   document.querySelectorAll('.dre-cfg-tab').forEach(t=>{
@@ -9523,8 +9525,10 @@ function dreOpenConfig(){
   document.querySelector('.dre-cfg-tab').style.borderBottom='2px solid var(--fox)';
 }
 function dreCloseConfig(){
-  document.getElementById('dre-cfg-modal').style.display='none';
-  document.getElementById('dre-cfg-overlay').style.display='none';
+  const m=document.getElementById('dre-cfg-modal');
+  const o=document.getElementById('dre-cfg-overlay');
+  m.style.display='none';m.style.pointerEvents='none';
+  o.style.display='none';o.style.pointerEvents='none';
 }
 function dreConfigTab(tab,btn){
   _dreCfgTab=tab;
