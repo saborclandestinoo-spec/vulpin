@@ -8838,13 +8838,26 @@ function mergeNaHistoria(novos){
     // Gera lançamento bancário para pedidos NOVOS não cancelados
     if(isNovo&&!isCancelado){
       const lancProcessados=S.get('pedidos_lanc_gerado')||{};
-      // Reprocessa se lançamento gerado não tem bancoId (fix retroativo)
+      // Reprocessa se lançamento gerado não tem bancoId
       const lancGeradosSemBanco=getLanc().filter(l=>l.pedidoId===p.id&&!l.bancoId);
       if(lancGeradosSemBanco.length>0){
-        // Remove lançamentos sem banco e reprocessa
         S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
         delete lancProcessados[p.id];
         S.set('pedidos_lanc_gerado',lancProcessados);
+      }
+      // Reprocessa se pedido tem pagamento money mas não tem lançamento no caixa
+      if(lancProcessados[p.id]){
+        const temMoney=(p.payments||[]).some(pg=>(pg.payment_method||'').toLowerCase()==='money');
+        if(temMoney){
+          const caixaB=getBancos().find(b=>b.tipo==='caixa');
+          const temLancCaixa=caixaB&&getLanc().some(l=>l.pedidoId===p.id&&l.bancoId===caixaB.id);
+          if(!temLancCaixa){
+            // Tem pagamento money mas sem lançamento no caixa — reprocessa
+            S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
+            delete lancProcessados[p.id];
+            S.set('pedidos_lanc_gerado',lancProcessados);
+          }
+        }
       }
       if(!lancProcessados[p.id]){
         const formasPedido=getFormasPedido();
