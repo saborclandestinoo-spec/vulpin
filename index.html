@@ -7100,16 +7100,26 @@ function renderBancos(){
   const globalAP=todosLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&!l.pedidoId&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
 
   const totalsEl=document.getElementById('bank-totals');
+  // Build lists for clickable cards
+  const lancARGlobal=todosLancs.filter(l=>l.tipo==='receita'&&(l.venc||l.data||'')>hoje2);
+  const lancAPGlobal=todosLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&!l.pedidoId&&(l.venc||l.data||'')>hoje2);
+  window._bancARList=lancARGlobal;
+  window._bancAPList=lancAPGlobal;
+
   if(totalsEl)totalsEl.innerHTML=[
-    {label:'Total em Caixa',val:totCaixa,cor:'var(--t)'},
-    {label:'Total em Bancos',val:totBanco,cor:'var(--t)'},
-    {label:'Total Geral',val:totGeral,cor:'var(--green)',bold:true},
-    {label:'A Receber',val:globalAR,cor:'var(--green)'},
-    {label:'A Pagar',val:globalAP,cor:'var(--red)'},
-  ].map(t=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 18px">
-    <div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${t.label}</div>
-    <div style="font-size:${t.bold?'20px':'16px'};font-weight:${t.bold?800:700};color:${t.cor};font-variant-numeric:tabular-nums">R$ ${fmtN(t.val)}</div>
-  </div>`).join('');
+    {label:'Total em Caixa',val:totCaixa,cor:'var(--t)',fn:''},
+    {label:'Total em Bancos',val:totBanco,cor:'var(--t)',fn:''},
+    {label:'Total Geral',val:totGeral,cor:'var(--green)',bold:true,fn:''},
+    {label:'A Receber',val:globalAR,cor:'var(--green)',fn:'bancShowARModal()'},
+    {label:'A Pagar',val:globalAP,cor:'var(--red)',fn:'bancShowAPModal()'},
+  ].map(t=>{
+    const clickable=t.fn?'cursor:pointer':'';
+    const onclick=t.fn?'onclick="'+t.fn+'"':'';
+    return '<div '+onclick+' style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 18px;'+clickable+'">'
+      +'<div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'+t.label+'</div>'
+      +'<div style="font-size:'+(t.bold?'20px':'16px')+';font-weight:'+(t.bold?800:700)+';color:'+t.cor+';font-variant-numeric:tabular-nums">R$ '+fmtN(t.val)+'</div>'
+      +'</div>';
+  }).join('');
 
   const grid=document.getElementById('bank-grid');
   grid.innerHTML=bancos.map(b=>{
@@ -9970,4 +9980,41 @@ function dreToggleCfg(){}  // no-op, kept for safety
 function dreInlineTab(){}
 function dreSaveConfig(){renderDREPage();}
 
+
+function bancShowModal(titulo, lancs, cor, sinal){
+  const existing=document.getElementById('banc-modal-ar');
+  if(existing)existing.remove();
+  const total=lancs.reduce((s,l)=>s+(l.valor||0),0);
+  const modal=document.createElement('div');
+  modal.id='banc-modal-ar';
+  modal.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)';
+  modal.innerHTML='<div style="background:var(--bg);border-radius:14px;width:600px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2)">'
+    +'<div style="padding:16px 20px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between">'
+    +'<div><div style="font-size:14px;font-weight:700;color:var(--t)">'+titulo+'</div>'
+    +'<div style="font-size:13px;font-weight:700;color:'+cor+';margin-top:2px">'+sinal+'R$ '+fmtN(total)+'</div></div>'
+    +'<button onclick="document.getElementById(&quot;banc-modal-ar&quot;).remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3)">×</button>'
+    +'</div>'
+    +'<div style="overflow-y:auto;flex:1">'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="background:var(--bg2)">'
+    +'<th style="padding:8px 16px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Vencimento</th>'
+    +'<th style="padding:8px 16px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Descrição</th>'
+    +'<th style="padding:8px 16px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Banco</th>'
+    +'<th style="padding:8px 16px;font-size:10px;font-weight:700;color:var(--t3);text-align:right;text-transform:uppercase;letter-spacing:.5px">Valor</th>'
+    +'</tr></thead><tbody>'
+    +lancs.sort((a,b)=>(a.venc||a.data||'').localeCompare(b.venc||b.data||'')).map(l=>{
+      const bk=getBancos().find(b=>b.id===l.bancoId);
+      return '<tr style="border-bottom:1px solid var(--bor2)">'
+        +'<td style="padding:7px 16px;font-size:12px;color:var(--t2)">'+fmtDate(l.venc||l.data)+'</td>'
+        +'<td style="padding:7px 16px;font-size:12px;color:var(--t)">'+l.desc+'</td>'
+        +'<td style="padding:7px 16px;font-size:12px;color:var(--t3)">'+(bk?bk.nome:'—')+'</td>'
+        +'<td style="padding:7px 16px;font-size:12px;font-weight:600;color:'+cor+';text-align:right">'+sinal+'R$ '+fmtN(l.valor)+'</td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table></div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
+}
+function bancShowARModal(){bancShowModal('A Receber',window._bancARList||[],'var(--green)','+');}
+function bancShowAPModal(){bancShowModal('A Pagar',window._bancAPList||[],'var(--red)','-');}
 </script>
