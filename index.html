@@ -7042,7 +7042,7 @@ function selectBanco(id){
   document.querySelectorAll('.bank-card').forEach(c=>{if(c.onclick.toString().includes(id))c.classList.add('on');});
   const bk=getBancos().find(b=>b.id===id);
   document.getElementById('bank-sel-name').textContent=bk?bk.nome:'—';
-  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>a.data.localeCompare(b.data));
+  const lancs=getLanc().filter(l=>l.bancoId===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
   let sal=(bk?bk.saldoInicial:0);
   const tbody=document.querySelector('#tbl-bank tbody');
   tbody.innerHTML=lancs.length?lancs.map(l=>{
@@ -8853,13 +8853,16 @@ function mergeNaHistoria(novos){
         let mudouLanc=false;
         pagamentos.forEach(pg=>{
           const pmKey=(pg.payment_method||'').toLowerCase();
+          const pmType=(pg.payment_type||'').toLowerCase();
+          // online_credit_card e payment_type=online = pago pelo app iFood, não em dinheiro
+          const isOnlineIfood=pmKey==='online_credit_card'||pmType==='online'||pmKey==='ifood';
           // Busca forma de pagamento pelo nome compatível
-          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito',ifood:'ifood',online_credit_card:'cartão de crédito'};
+          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito',ifood:'ifood',online_credit_card:'ifood'};
           const pmNome=_pmMap[pmKey]||pmKey;
           const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
-          // Se forma não tem banco vinculado, usa o banco tipo caixa como fallback
+          // Se pagamento online iFood e não tem forma iFood configurada, NÃO lança no caixa
           const caixaBank=getBancos().find(b=>b.tipo==='caixa');
-          const bancoIdFinal=(forma?.bancoId)||caixaBank?.id||'';
+          const bancoIdFinal=forma?.bancoId||(isOnlineIfood?'':caixaBank?.id)||'';
           if(!bancoIdFinal)return;
           const valor=pg.total||pg.value||0;
           if(!valor)return;
