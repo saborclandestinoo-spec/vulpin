@@ -7003,8 +7003,43 @@ function updateCCSelect(){}
 // BANCOS
 // ═══════════════════════════════════════════
 let editBancoId=null,selectedBancoId=null;
+function fixMoneyPedidosSemLanc(){
+  // Verifica TODOS os pedidos do histórico com pagamento money sem lançamento no caixa
+  const hist=getHistorico();
+  const caixaB=getBancos().find(b=>b.tipo==='caixa');
+  if(!caixaB)return;
+  const lancProc=S.get('pedidos_lanc_gerado')||{};
+  let changed=false;
+
+  hist.forEach(function(p){
+    if(!p.id)return;
+    const isCancelado=['CANCELLED','CANCELED','cancelled','canceled'].includes(p.status||'');
+    if(isCancelado)return;
+    const pags=p.payments||[];
+    const temMoney=pags.some(function(pg){
+      return ['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase());
+    });
+    if(!temMoney)return;
+    // Tem dinheiro mas não tem lançamento no caixa?
+    const temLanc=getLanc().some(function(l){return l.pedidoId===p.id&&l.bancoId===caixaB.id;});
+    if(!temLanc){
+      // Remove todos os lançamentos desse pedido e reprocessa
+      S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
+      delete lancProc[p.id];
+      changed=true;
+    }
+  });
+
+  if(changed){
+    S.set('pedidos_lanc_gerado',lancProc);
+    // Força reprocessamento chamando mergeNaHistoria com histórico completo
+    mergeNaHistoria(hist);
+  }
+}
+
 function renderBancos(){
   fixIfoodLancamentos();
+  fixMoneyPedidosSemLanc();
   const bancos=getBancos();
   // Totais por tipo
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
