@@ -3859,204 +3859,172 @@ function renderDREPage(){
   const ebit=lucBruto-despVendas-despAdmin;
   const margemLiq=recBruta>0?(ebit/recBruta*100):0;
 
-  const pct=v=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0.0%';
+  // ── DRE TABLE ──
+  const _HdrBg='#1E3A5F', _HdrFg='#ffffff', _GrpBg='#EFF6FF', _Bor='#BFDBFE';
+  const _pct=v=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0,0%';
+  const _fmt=v=>v===0?'-':(v<0?'(R$ '+fmtN(Math.abs(v))+')':'R$ '+fmtN(v));
+  const _cols='1fr 110px 58px';
 
-  // KPI Strip
-  // DRE helpers
-  // ── DRE TABLE HELPERS ──
-  const _e=dreGetEstilo();
-  const _vmap=Object.fromEntries(dreGetLinhas().map(l=>[l.id,l]));
-  const V=(id)=>!_vmap[id]||_vmap[id].visivel;
-  const LBL=(id,fb)=>(_vmap[id]&&_vmap[id].label)||fb;
-  const _bc=_e.borderColor;
-  const _showPct=_e.showPct!==false;
-  const cols=_showPct?'1fr 110px 56px':'1fr 110px';
-
-  const HDR=()=>'<div style="display:grid;grid-template-columns:'+cols+';background:'+_e.hdrBg+';color:'+_e.hdrColor+';padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-radius:8px 8px 0 0">'
-    +'<div>Código / Conta</div><div style="text-align:right">R$</div>'+(_showPct?'<div style="text-align:right">%</div>':'')+'</div>';
-
-  // Sub-item: código pill + nome indentado na mesma célula
-  const R=(nome,val,nivel,lineId)=>{
-    nivel=nivel||1;
-    const isNeg=val<0;
-    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
-    const pct=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
-    const pad=(nivel*20)+'px';
-    const vc=isNeg?'#DC2626':val>0?_e.grpColor:'#94A3B8';
-    const pill=lineId?dreCodCell(lineId):'';
-    return '<div style="display:grid;grid-template-columns:'+cols+';padding:5px 16px;border-bottom:1px solid '+_bc+'">'
-      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'
-      +pill
-      +'<span style="font-size:12px;font-style:italic;color:'+_e.grpColor+'">'+nome+'</span>'
-      +'</div>'
-      +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
-      +(_showPct?'<div style="font-size:11px;color:#94A3B8;text-align:right">'+pct+'</div>':'')
-      +'</div>';
-  };
-
-  // Grupo: código pill + nome em negrito, indentação menor
-  const GRP=(nome,val,lineId)=>{
-    const isNeg=val<0;
-    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
-    const pct=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
-    const vc=isNeg?'#DC2626':_e.grpColor;
-    const pill=lineId?dreCodCell(lineId):'';
-    return '<div style="display:grid;grid-template-columns:'+cols+';padding:7px 16px;background:'+_e.grpBg+';border-bottom:1px solid '+_bc+';border-top:2px solid '+_bc+'">'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +pill
-      +'<span style="font-size:13px;font-weight:700;color:'+_e.grpColor+'">'+nome+'</span>'
-      +'</div>'
-      +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
-      +(_showPct?'<div style="font-size:11px;font-weight:600;color:#94A3B8;text-align:right">'+pct+'</div>':'')
-      +'</div>';
-  };
-
-  const TOT=(lbl,val)=>{
-    const isNeg=val<0;
-    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
-    const pct=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
-    const vc=isNeg?'#FCA5A5':'#6EE7B7';
-    const pc=isNeg?'#FCA5A5':'#A7F3D0';
-    return '<div style="display:grid;grid-template-columns:'+cols+';padding:9px 16px;background:'+_e.hdrBg+';border-bottom:2px solid '+_e.hdrBg+'44">'
-      +'<div style="font-size:13px;font-weight:700;color:'+_e.hdrColor+'">(=) '+lbl+'</div>'
-      +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
-      +(_showPct?'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+pct+'</div>':'')
-      +'</div>';
-  };
-
-  // ── Cálculo via cod map ──
-  const _cm=dreGetCodMap();
-  function _S(id,tipo){
+  // cod map
+  const _cm=(function(){try{return Object.assign({},JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}'));}catch(e){return {};}})();
+  function _SS(id,tipo){
     const cods=_cm[id];
-    if(cods&&cods.length)return dreSumByCods(lancPeriod,cods,tipo);
-    return null;
+    if(!cods||!cods.length)return null;
+    return lancPeriod.filter(function(l){
+      if(tipo&&l.tipo!==tipo)return false;
+      var cc=l.catCod||'';
+      return cods.some(function(p){return cc===p||cc.startsWith(p+'.');});
+    }).reduce(function(s,l){return s+(l.valor||0);},0);
   }
   function _or(a,b){return a!==null?a:b;}
 
-  const _vPix      =_or(_S('v_pix','receita'),vPix);
-  const _vCred     =_or(_S('v_cred','receita'),vCred);
-  const _vDeb      =_or(_S('v_deb','receita'),vDeb);
-  const _vDin      =_or(_S('v_din','receita'),vDin);
-  const _vIF       =_or(_S('v_ifood','receita'),vIF);
-  const _vEnt      =_or(_S('v_entrega','receita'),_dreTaxaEnt);
-  const _recBruta  =_or(_S('rec_bruta','receita'),_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
-  const _simples   =_or(_S('imp_vendas','despesa'),simples);
-  const _icms      =_or(_S('icms','despesa'),0);
-  const _iss       =_or(_S('iss','despesa'),0);
-  const _pisCofins =_or(_S('pis_cofins','despesa'),0);
-  const _taxaIF    =_or(_S('taxa_if','despesa'),taxaIF);
-  const _descontos =_or(_S('descontos','despesa'),descontos);
-  const _cancelam  =_or(_S('cancelam','despesa'),cancelVal);
-  const _totalDed  =_simples+_icms+_iss+_pisCofins+_taxaIF+_descontos+_cancelam;
-  const _recLiq    =_recBruta-_totalDed;
-  const _mp        =_or(_S('mp','despesa'),cmvFicha);
-  const _emb       =_or(_S('emb','despesa'),custEmb);
-  const _mod       =_or(_S('mod','despesa'),moDir);
-  const _cif       =_or(_S('cif','despesa'),cif);
-  const _cpv       =_mp+_emb+_mod+_cif;
-  const _lucBruto  =_recLiq-_cpv;
-  const _log       =_or(_S('logistica','despesa'),log421);
-  const _can       =_or(_S('canais','despesa'),can423);
-  const _ocup      =_or(_S('ocupacao','despesa'),ocup431);
-  const _util      =_or(_S('utilidades','despesa'),util432);
-  const _serv      =_or(_S('servicos','despesa'),serv433);
-  const _pess      =_or(_S('pessoal','despesa'),pess434);
-  const _manu      =_or(_S('manutencao','despesa'),manu435);
-  const _tec       =_or(_S('tecnologia','despesa'),tec436);
-  const _trib      =_or(_S('tributario','despesa'),trib437);
-  const _despVend  =_log+_can;
-  const _despAdm   =_ocup+_util+_serv+_pess+_manu+_tec+_trib;
-  const _recFin    =_or(_S('rec_fin','receita'),recFin);
-  const _despFin   =_or(_S('desp_fin','despesa'),despFin);
-  const _ebit      =_lucBruto-_despVend-_despAdm+_recFin-_despFin;
-  const _recNaoOp  =_or(_S('nao_op','receita'),recNaoOp);
-  const _despNaoOp =_or(_S('nao_op','despesa'),despNaoOp);
-  const _provIR    =_or(_S('prov_ir','despesa'),provIR);
-  const _provCS    =_or(_S('prov_cs','despesa'),provCS);
-  const _partic    =_or(_S('participac','despesa'),participacoes);
-  const _lucAntesIR=_ebit+_recNaoOp-_despNaoOp;
-  const _lucDepIR  =_lucAntesIR-_provIR-_provCS;
-  const _lucLiq    =_lucDepIR-_partic;
-  const _margemBruta=_recBruta>0?(_lucBruto/_recBruta*100):0;
-  const _margemLiq  =_recBruta>0?(_lucLiq/_recBruta*100):0;
+  var _vPix=_or(_SS('v_pix','receita'),vPix);
+  var _vCred=_or(_SS('v_cred','receita'),vCred);
+  var _vDeb=_or(_SS('v_deb','receita'),vDeb);
+  var _vDin=_or(_SS('v_din','receita'),vDin);
+  var _vIF=_or(_SS('v_ifood','receita'),vIF);
+  var _vEnt=_or(_SS('v_entrega','receita'),_dreTaxaEnt);
+  var _recBruta=_or(_SS('rec_bruta','receita'),_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
+  var _simples=_or(_SS('imp_vendas','despesa'),simples);
+  var _taxaIF=_or(_SS('taxa_if','despesa'),taxaIF);
+  var _descontos=_or(_SS('descontos','despesa'),descontos);
+  var _cancelam=_or(_SS('cancelam','despesa'),cancelVal);
+  var _recLiq=_recBruta-_simples-_taxaIF-_descontos-_cancelam;
+  var _mp=_or(_SS('mp','despesa'),cmvFicha);
+  var _emb=_or(_SS('emb','despesa'),custEmb);
+  var _mod=_or(_SS('mod','despesa'),moDir);
+  var _cif=_or(_SS('cif','despesa'),cif);
+  var _cpv=_mp+_emb+_mod+_cif;
+  var _lucBruto=_recLiq-_cpv;
+  var _log=_or(_SS('logistica','despesa'),log421);
+  var _can=_or(_SS('canais','despesa'),can423);
+  var _ocup=_or(_SS('ocupacao','despesa'),ocup431);
+  var _util=_or(_SS('utilidades','despesa'),util432);
+  var _serv=_or(_SS('servicos','despesa'),serv433);
+  var _pess=_or(_SS('pessoal','despesa'),pess434);
+  var _manu=_or(_SS('manutencao','despesa'),manu435);
+  var _tec=_or(_SS('tecnologia','despesa'),tec436);
+  var _trib=_or(_SS('tributario','despesa'),trib437);
+  var _recFin=_or(_SS('rec_fin','receita'),0);
+  var _despFin=_or(_SS('desp_fin','despesa'),0);
+  var _ebit=_lucBruto-_log-_can-_ocup-_util-_serv-_pess-_manu-_tec-_trib+_recFin-_despFin;
+  var _recNaoOp=_or(_SS('nao_op','receita'),0);
+  var _despNaoOp=_or(_SS('nao_op','despesa'),0);
+  var _provIR=_or(_SS('prov_ir','despesa'),0);
+  var _provCS=_or(_SS('prov_cs','despesa'),0);
+  var _partic=_or(_SS('participac','despesa'),0);
+  var _lucAntesIR=_ebit+_recNaoOp-_despNaoOp;
+  var _lucDepIR=_lucAntesIR-_provIR-_provCS;
+  var _lucLiq=_lucDepIR-_partic;
 
-  const kpiEl=document.getElementById('dre-pg-kpi');
+  // KPI
+  var kpiEl=document.getElementById('dre-pg-kpi');
   if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:`R$ ${fmtN(_recBruta)}`,cor:'var(--green)'},
-    {lbl:'Margem Bruta',val:_margemBruta.toFixed(1)+'%',cor:_margemBruta>=30?'var(--green)':'var(--amber)'},
-    {lbl:'Lucro Operacional',val:`R$ ${fmtN(_ebit)}`,cor:_ebit>=0?'var(--blue)':'var(--red)'},
-    {lbl:'Margem Líquida',val:_margemLiq.toFixed(1)+'%',cor:_margemLiq>=20?'var(--green)':_margemLiq>=10?'var(--amber)':'var(--red)'},
-  ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(30,58,95,.06)">
-    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.lbl}</div>
-    <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div></div>`).join('');
+    {lbl:'Receita Bruta',val:'R$ '+fmtN(_recBruta),cor:'var(--green)'},
+    {lbl:'Margem Bruta',val:(_recBruta>0?(_lucBruto/_recBruta*100):0).toFixed(1)+'%',cor:'var(--blue)'},
+    {lbl:'Lucro Operacional',val:'R$ '+fmtN(_ebit),cor:_ebit>=0?'var(--green)':'var(--red)'},
+    {lbl:'Margem Líquida',val:(_recBruta>0?(_lucLiq/_recBruta*100):0).toFixed(1)+'%',cor:'var(--blue)'},
+  ].map(function(k){
+    return '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px">'
+      +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">'+k.lbl+'</div>'
+      +'<div style="font-size:20px;font-weight:800;color:'+k.cor+';font-variant-numeric:tabular-nums">'+k.val+'</div></div>';
+  }).join('');
 
+  // DRE pill helper
+  function _pill(lineId){
+    var map; try{map=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){map={};}
+    var cods=map[lineId]||[];
+    var label=cods.length?cods.join(', '):'+ cod';
+    return '<span class="dre-cod-pill" data-line="'+lineId+'" style="font-size:10px;font-weight:600;cursor:pointer;color:'+(cods.length?'var(--fox)':'var(--t3)')+';flex-shrink:0">'+label+'</span>';
+  }
 
-  const dreBody=document.getElementById('dre-pg-body');
-  if(!dreBody)return;
-    dreBody.innerHTML='<div style="width:100%">'+HDR()+`
-    ${V('rec_bruta')?GRP(LBL('rec_bruta','Receita Bruta'),_recBruta,'rec_bruta'):''}
-    ${V('v_pix')&&_vPix>0?R(LBL('v_pix','Vendas Pix'),_vPix,1,'v_pix'):''}
-    ${V('v_cred')&&_vCred>0?R(LBL('v_cred','Vendas Cartão de Crédito'),_vCred,1,'v_cred'):''}
-    ${V('v_deb')&&_vDeb>0?R(LBL('v_deb','Vendas Cartão de Débito'),_vDeb,1,'v_deb'):''}
-    ${V('v_din')&&_vDin>0?R(LBL('v_din','Vendas Dinheiro'),_vDin,1,'v_din'):''}
-    ${V('v_ifood')&&_vIF>0?R(LBL('v_ifood','Vendas iFood'),_vIF,1,'v_ifood'):''}
-    ${V('v_entrega')&&_vEnt>0?R(LBL('v_entrega','Taxas de Entrega'),_vEnt,1,'v_entrega'):''}
-    ${V('imp_vendas')?GRP(LBL('imp_vendas','(-) Imposto Sobre Vendas'),-(_simples+_icms+_iss+_pisCofins),'imp_vendas'):''}
-    ${V('icms')?R(LBL('icms','ICMS'),_icms>0?-_icms:0,1,'icms'):''}
-    ${V('iss')?R(LBL('iss','ISS'),_iss>0?-_iss:0,1,'iss'):''}
-    ${V('pis_cofins')?R(LBL('pis_cofins','PIS/COFINS'),_pisCofins>0?-_pisCofins:0,1,'pis_cofins'):''}
-    ${_simples>0?R('Simples Nacional (DAS)',-_simples,1,''):''}
-    ${V('deducoes')?GRP(LBL('deducoes','(-) Deduções da Receita Bruta'),-(_taxaIF+_descontos+_cancelam),'deducoes'):''}
-    ${V('taxa_if')&&_taxaIF>0?R(LBL('taxa_if','Taxas iFood'),-_taxaIF,1,'taxa_if'):''}
-    ${V('descontos')&&_descontos>0?R(LBL('descontos','Descontos Concedidos'),-_descontos,1,'descontos'):''}
-    ${V('cancelam')&&_cancelam>0?R(LBL('cancelam','Estornos/Cancelamentos'),-_cancelam,1,'cancelam'):''}
-    ${V('rec_liq')?TOT(LBL('rec_liq','Receita Líquida Operacional'),_recLiq):''}
+  // Row builders
+  function _R(nome,val,nivel,lineId){
+    nivel=nivel||1;
+    var pad=(nivel*20)+'px';
+    var vc=val<0?'#DC2626':val>0?'#0F2040':'#94A3B8';
+    return '<div style="display:grid;grid-template-columns:'+_cols+';padding:5px 16px;border-bottom:1px solid '+_Bor+'">'
+      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'
+      +(lineId?_pill(lineId):'')
+      +'<span style="font-size:12px;font-style:italic;color:#0F2040">'+nome+'</span></div>'
+      +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
+      +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div>'
+      +'</div>';
+  }
+  function _G(nome,val,lineId){
+    var vc=val<0?'#DC2626':'#0F2040';
+    return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +(lineId?_pill(lineId):'')
+      +'<span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
+      +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:#94A3B8;text-align:right">'+_pct(val)+'</div>'
+      +'</div>';
+  }
+  function _T(nome,val){
+    var vc=val<0?'#FCA5A5':'#6EE7B7';
+    var pc=val<0?'#FCA5A5':'#A7F3D0';
+    return '<div style="display:grid;grid-template-columns:'+_cols+';padding:9px 16px;background:'+_HdrBg+';border-bottom:2px solid rgba(255,255,255,.1)">'
+      +'<div style="font-size:13px;font-weight:700;color:'+_HdrFg+'">(=) '+nome+'</div>'
+      +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
+      +'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+_pct(val)+'</div>'
+      +'</div>';
+  }
 
-    ${V('cpv')?GRP(LBL('cpv','(-) Custo dos Produtos Vendidos'),-_cpv,'cpv'):''}
-    ${V('mp')?R(LBL('mp','Matérias-Primas'),-_mp,1,'mp'):''}
-    ${V('emb')&&_emb>0?R(LBL('emb','Embalagens'),-_emb,1,'emb'):''}
-    ${V('mod')&&_mod>0?R(LBL('mod','Mão de Obra Direta'),-_mod,1,'mod'):''}
-    ${V('cif')&&_cif>0?R(LBL('cif','Custos Indiretos'),-_cif,1,'cif'):''}
-    ${V('luc_bruto')?TOT(LBL('luc_bruto','Lucro Bruto'),_lucBruto):''}
+  var _hdr='<div style="display:grid;grid-template-columns:'+_cols+';background:'+_HdrBg+';color:'+_HdrFg+';padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-radius:8px 8px 0 0">'
+    +'<div>Código / Conta</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
 
-    ${V('desp_vend')?GRP(LBL('desp_vend','(-) Despesas com Vendas'),-_despVend,'desp_vend'):''}
-    ${V('logistica')&&_log>0?R(LBL('logistica','Logística e Entrega'),-_log,1,'logistica'):''}
-    ${V('canais')&&_can>0?R(LBL('canais','Canais de Venda'),-_can,1,'canais'):''}
-    ${V('desp_adm')?GRP(LBL('desp_adm','(-) Despesas Administrativas'),-_despAdm,'desp_adm'):''}
-    ${V('ocupacao')&&_ocup>0?R(LBL('ocupacao','Ocupação'),-_ocup,1,'ocupacao'):''}
-    ${V('utilidades')&&_util>0?R(LBL('utilidades','Utilidades'),-_util,1,'utilidades'):''}
-    ${V('servicos')&&_serv>0?R(LBL('servicos','Serviços Profissionais'),-_serv,1,'servicos'):''}
-    ${V('pessoal')&&_pess>0?R(LBL('pessoal','Pessoal Administrativo'),-_pess,1,'pessoal'):''}
-    ${V('manutencao')&&_manu>0?R(LBL('manutencao','Manutenção'),-_manu,1,'manutencao'):''}
-    ${V('tecnologia')&&_tec>0?R(LBL('tecnologia','Tecnologia'),-_tec,1,'tecnologia'):''}
-    ${V('tributario')&&_trib>0?R(LBL('tributario','Tributário e Legal'),-_trib,1,'tributario'):''}
-    ${V('rec_fin')?GRP(LBL('rec_fin','Receitas Financeiras'),_recFin,'rec_fin'):''}
-    ${_recFin>0?R('Receitas Financeiras',_recFin,1,''):''}
-    ${V('desp_fin')?GRP(LBL('desp_fin','(-) Despesas Financeiras'),-_despFin,'desp_fin'):''}
-    ${_despFin>0?R('Despesas Financeiras',-_despFin,1,''):''}
-    ${V('luc_op')?TOT(LBL('luc_op','Lucro Operacional'),_ebit):''}
+  var _rows=[
+    _G('Receita Bruta',_recBruta,'rec_bruta'),
+    _vPix>0?_R('Vendas Pix',_vPix,1,'v_pix'):'',
+    _vCred>0?_R('Vendas Cartão de Crédito',_vCred,1,'v_cred'):'',
+    _vDeb>0?_R('Vendas Cartão de Débito',_vDeb,1,'v_deb'):'',
+    _vDin>0?_R('Vendas Dinheiro',_vDin,1,'v_din'):'',
+    _vIF>0?_R('Vendas iFood',_vIF,1,'v_ifood'):'',
+    _vEnt>0?_R('Taxas de Entrega',_vEnt,1,'v_entrega'):'',
+    _G('(-) Imposto Sobre Vendas',-_simples,'imp_vendas'),
+    _R('Simples Nacional (DAS)',_simples>0?-_simples:0,1,''),
+    _G('(-) Deduções da Receita Bruta',-(_taxaIF+_descontos+_cancelam),'deducoes'),
+    _taxaIF>0?_R('Taxas iFood',-_taxaIF,1,'taxa_if'):'',
+    _descontos>0?_R('Descontos Concedidos',-_descontos,1,'descontos'):'',
+    _cancelam>0?_R('Estornos/Cancelamentos',-_cancelam,1,'cancelam'):'',
+    _T('Receita Líquida Operacional',_recLiq),
+    _G('(-) Custo dos Produtos Vendidos',-_cpv,'cpv'),
+    _R('Matérias-Primas',-_mp,1,'mp'),
+    _emb>0?_R('Embalagens',-_emb,1,'emb'):'',
+    _mod>0?_R('Mão de Obra Direta',-_mod,1,'mod'):'',
+    _cif>0?_R('Custos Indiretos',-_cif,1,'cif'):'',
+    _T('Lucro Bruto',_lucBruto),
+    _G('(-) Despesas com Vendas',-(_log+_can),'desp_vend'),
+    _log>0?_R('Logística e Entrega',-_log,1,'logistica'):'',
+    _can>0?_R('Canais de Venda',-_can,1,'canais'):'',
+    _G('(-) Despesas Administrativas',-(_ocup+_util+_serv+_pess+_manu+_tec+_trib),'desp_adm'),
+    _ocup>0?_R('Ocupação',-_ocup,1,'ocupacao'):'',
+    _util>0?_R('Utilidades',-_util,1,'utilidades'):'',
+    _serv>0?_R('Serviços Profissionais',-_serv,1,'servicos'):'',
+    _pess>0?_R('Pessoal Administrativo',-_pess,1,'pessoal'):'',
+    _manu>0?_R('Manutenção',-_manu,1,'manutencao'):'',
+    _tec>0?_R('Tecnologia',-_tec,1,'tecnologia'):'',
+    _trib>0?_R('Tributário e Legal',-_trib,1,'tributario'):'',
+    _recFin>0?_G('Receitas Financeiras',_recFin,'rec_fin'):'',
+    _despFin>0?_G('(-) Despesas Financeiras',-_despFin,'desp_fin'):'',
+    _T('Lucro Operacional',_ebit),
+    _G('Resultado Não Operacional',_recNaoOp-_despNaoOp,'nao_op'),
+    _T('Lucro Antes do IR e CS',_lucAntesIR),
+    _provIR>0?_G('(-) Provisão IR',-_provIR,'prov_ir'):'',
+    _provCS>0?_G('(-) Provisão CS',-_provCS,'prov_cs'):'',
+    _T('Lucro Depois do IR e CS',_lucDepIR),
+    _partic>0?_G('(-) Participações',-_partic,'participac'):'',
+    _T('Lucro Líquido do Exercício',_lucLiq),
+  ].join('');
 
-    ${V('nao_op')?GRP(LBL('nao_op','Resultado Não Operacional'),_recNaoOp-_despNaoOp,'nao_op'):''}
-    ${_despNaoOp>0?R('Despesas Não Operacionais',-_despNaoOp,1,''):''}
-    ${_recNaoOp>0?R('Receitas Não Operacionais',_recNaoOp,1,''):''}
-    ${V('luc_ir')?TOT(LBL('luc_ir','Lucro Antes do IR e CS'),_lucAntesIR):''}
-
-    ${V('prov_ir')?GRP(LBL('prov_ir','(-) Provisão p/ Imposto de Renda'),-_provIR,'prov_ir'):''}
-    ${_provIR>0?R('Imposto de Renda',-_provIR,1,''):''}
-    ${V('prov_cs')?GRP(LBL('prov_cs','(-) Provisão p/ Contribuição Social'),-_provCS,'prov_cs'):''}
-    ${_provCS>0?R('Contribuição Social',-_provCS,1,''):''}
-    ${V('luc_dep_ir')?TOT(LBL('luc_dep_ir','Lucro Depois do IR e CS'),_lucDepIR):''}
-
-    ${V('participac')?GRP(LBL('participac','(-) Participações'),-_partic,'participac'):''}
-    ${_partic>0?R('Participações',-_partic,1,''):''}
-    ${V('luc_liq')?TOT(LBL('luc_liq','Lucro Líquido do Exercício'),_lucLiq):''}
-  `+'</div>';
-
-  // Bind cod pill clicks via delegation
-  dreBody.querySelectorAll('.dre-cod-pill').forEach(function(pill){
-    pill.addEventListener('click',function(e){e.stopPropagation();dreOpenCodPicker(this,this.dataset.line);});
-  });
-
+  var dreBody=document.getElementById('dre-pg-body');
+  if(dreBody){
+    dreBody.innerHTML='<div style="width:100%">'+_hdr+_rows+'</div>';
+    dreBody.querySelectorAll('.dre-cod-pill').forEach(function(pill){
+      pill.addEventListener('click',function(e){e.stopPropagation();dreOpenCodPicker(this,this.dataset.line);});
+    });
+  }
 
 
   // CMV por produto
