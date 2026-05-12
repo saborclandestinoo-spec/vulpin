@@ -8845,14 +8845,30 @@ function mergeNaHistoria(novos){
         delete lancProcessados[p.id];
         S.set('pedidos_lanc_gerado',lancProcessados);
       }
-      // Reprocessa se pedido tem pagamento money mas não tem lançamento no caixa
+      // Reprocessa se pedido tem pagamento money/cash mas não tem lançamento no caixa
       if(lancProcessados[p.id]){
-        const temMoney=(p.payments||[]).some(pg=>(pg.payment_method||'').toLowerCase()==='money');
+        const temMoney=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
         if(temMoney){
           const caixaB=getBancos().find(b=>b.tipo==='caixa');
           const temLancCaixa=caixaB&&getLanc().some(l=>l.pedidoId===p.id&&l.bancoId===caixaB.id);
           if(!temLancCaixa){
-            // Tem pagamento money mas sem lançamento no caixa — reprocessa
+            S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
+            delete lancProcessados[p.id];
+            S.set('pedidos_lanc_gerado',lancProcessados);
+          }
+        }
+        // Reprocessa se pedido tem pagamento online mas tem lançamento no caixa (erro)
+        const temOnline=(p.payments||[]).some(pg=>{
+          const pmk=(pg.payment_method||'').toLowerCase();
+          const pmt=(pg.payment_type||'').toLowerCase();
+          return pmk==='ifood'||pmk==='online_credit_card'||pmt==='online';
+        });
+        if(temOnline){
+          const caixaB=getBancos().find(b=>b.tipo==='caixa');
+          const lancCaixaOnline=caixaB?getLanc().filter(l=>l.pedidoId===p.id&&l.bancoId===caixaB.id):[];
+          // Se tem lançamento no caixa mas o pagamento é online (sem money), remove
+          const temMoney2=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
+          if(lancCaixaOnline.length>0&&!temMoney2){
             S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
             delete lancProcessados[p.id];
             S.set('pedidos_lanc_gerado',lancProcessados);
@@ -8872,7 +8888,7 @@ function mergeNaHistoria(novos){
           // Pago online pelo app iFood → NÃO cai em nenhuma conta (iFood repassa depois)
           const isPagoOnline=pmKey==='ifood'||pmKey==='online_credit_card'||pmType==='online';
           // Pago na entrega em dinheiro → Caixa
-          const isPagoDinheiro=pmKey==='money';
+          const isPagoDinheiro=pmKey==='money'||pmKey==='cash'||pmKey==='dinheiro';
           // Pago na entrega com cartão crédito → conta cartão crédito
           const isPagoCredito=pmKey==='credit_card';
           // Pago na entrega com cartão débito → conta cartão débito
@@ -8886,7 +8902,7 @@ function mergeNaHistoria(novos){
           }
 
           // Para pagamentos na entrega, mapeia para forma/banco correto
-          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito'};
+          const _pmMap={money:'dinheiro',cash:'dinheiro',dinheiro:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito'};
           const pmNome=_pmMap[pmKey]||pmKey;
           const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
           const caixaBank=getBancos().find(b=>b.tipo==='caixa');
@@ -8964,7 +8980,7 @@ function fixIfoodLancamentos(){
 
   hist.forEach(p=>{
     const pags=p.payments||[];
-    const temDinheiro=pags.some(pg=>(pg.payment_method||'').toLowerCase()==='money');
+    const temDinheiro=pags.some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
     const temIfoodOnline=pags.some(pg=>{
       const pmk=(pg.payment_method||'').toLowerCase();
       const pmt=(pg.payment_type||'').toLowerCase();
