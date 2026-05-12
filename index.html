@@ -642,26 +642,34 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
             </div>
             <button class="fc-month-btn" onclick="dreNavMonth(1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">›</button>
           </div>
-          <div style="position:relative;z-index:10000;isolation:isolate">
-            <button onclick="dreOpenConfig()" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 14px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-              Configurar
-            </button>
-          </div>
+
         </div>
 
         <!-- KPI Strip -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px" id="dre-pg-kpi"></div>
 
-        <!-- DRE Table moderno -->
-        <div style="margin:0 20px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
-          <div style="padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--bor);display:flex">
-            <div style="width:70px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Cód.</div>
-            <div style="flex:1;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Conta</div>
-            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:110px;text-align:right">Valor</div>
-            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;min-width:60px;text-align:right;margin-left:8px">% Rec.</div>
+        <!-- DRE: tabela + config lado a lado -->
+        <div style="margin:0 20px 20px;display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+          <!-- Tabela -->
+          <div style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
+            <div id="dre-pg-body"></div>
           </div>
-          <div id="dre-pg-body"></div>
+          <!-- Config inline -->
+          <div style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden;position:sticky;top:16px">
+            <div style="padding:12px 14px;background:var(--fox);border-bottom:1px solid var(--bor)">
+              <div style="font-size:12px;font-weight:700;color:#fff;letter-spacing:.3px">Configurações do DRE</div>
+            </div>
+            <!-- Abas config -->
+            <div style="display:flex;border-bottom:1px solid var(--bor)">
+              <button onclick="dreInlineTab('linhas',this)" id="dre-itab-linhas" style="flex:1;padding:8px 4px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--fox-l);color:var(--fox);border-bottom:2px solid var(--fox);font-family:'Poppins',sans-serif">Linhas</button>
+              <button onclick="dreInlineTab('cats',this)" id="dre-itab-cats" style="flex:1;padding:8px 4px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t3);border-bottom:2px solid transparent;font-family:'Poppins',sans-serif">Categorias</button>
+              <button onclick="dreInlineTab('estilo',this)" id="dre-itab-estilo" style="flex:1;padding:8px 4px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t3);border-bottom:2px solid transparent;font-family:'Poppins',sans-serif">Estilo</button>
+            </div>
+            <div id="dre-inline-body" style="padding:12px 14px;max-height:600px;overflow-y:auto"></div>
+            <div style="padding:10px 14px;border-top:1px solid var(--bor)">
+              <button onclick="dreSaveConfig()" style="width:100%;padding:8px;background:var(--fox);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif">Salvar e Atualizar</button>
+            </div>
+          </div>
         </div>
 
         <!-- CMV por Produto -->
@@ -3494,6 +3502,18 @@ function dreNavMonth(dir){
   grpApply('dre',renderDREPage);
 }
 
+function dreInlineTab(tab, btn){
+  document.querySelectorAll('[id^="dre-itab-"]').forEach(b=>{
+    b.style.background='var(--bg)';b.style.color='var(--t3)';b.style.borderBottom='2px solid transparent';
+  });
+  btn.style.background='var(--fox-l)';btn.style.color='var(--fox)';btn.style.borderBottom='2px solid var(--fox)';
+  const body=document.getElementById('dre-inline-body');
+  if(!body)return;
+  if(tab==='linhas')dreRenderCfgLinhas(body);
+  else if(tab==='cats')dreRenderCfgCats(body);
+  else dreRenderCfgEstilo(body);
+}
+
 function renderDREPage(){
   if(!_grp['dre']){grpInit('dre');grpPreset('dre','mes');grpApply('dre',null);}
   const range=grpGetRange('dre');
@@ -3711,6 +3731,11 @@ function renderDREPage(){
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
+  // Render inline config panel
+  setTimeout(()=>{
+    const ib=document.getElementById('dre-inline-body');
+    if(ib&&ib.innerHTML===''){dreRenderCfgLinhas(ib);}
+  },50);
   dreBody.innerHTML='<div style="width:100%">'+HDR()+`
     ${V('rec_bruta')?GRP(LBL('rec_bruta','Receita Bruta'),recBruta):''}
     ${V('v_pix')&&vPix>0?R(LBL('v_pix','Vendas Pix'),vPix,1):''}
@@ -9667,7 +9692,6 @@ function dreSaveConfig(){
   cfg.estilo=estilo;
 
   localStorage.setItem('verp_dre_cfg',JSON.stringify(cfg));
-  dreCloseConfig();
   renderDREPage();
 }
 </script>
