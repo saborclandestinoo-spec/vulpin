@@ -3728,6 +3728,8 @@ function renderDREPage(){
   const _lucDepIR=_lucAntesIR-_provIR-_provCS;
   const _lucLiq=_lucDepIR-_partic;
 
+  const dreBody=document.getElementById('dre-pg-body');
+  if(!dreBody)return;
     dreBody.innerHTML='<div style="width:100%">'+HDR()+`
     ${V('rec_bruta')?GRP(LBL('rec_bruta','Receita Bruta'),recBruta,'rec_bruta'):''}
     ${V('v_pix')&&vPix>0?R(LBL('v_pix','Vendas Pix'),vPix,1,'v_pix'):''}
