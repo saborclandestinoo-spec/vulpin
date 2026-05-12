@@ -3788,6 +3788,10 @@ function renderDREPage(){
     ${_partic>0?R('Participações',-_partic,1,''):''}
     ${V('luc_liq')?TOT(LBL('luc_liq','Lucro Líquido do Exercício'),_lucLiq):''}
   `+'</div>';
+  // Bind cod pill clicks via delegation
+  dreBody.querySelectorAll('.dre-cod-pill').forEach(function(pill){
+    pill.addEventListener('click',function(e){e.stopPropagation();dreOpenCodPicker(this,this.dataset.line);});
+  });
 
 
 
@@ -9577,25 +9581,115 @@ function dreSumByCods(lancs, cods, tipo){
 // Build inline editable cod cell
 function dreCodCell(lineId){
   const map=dreGetCodMap();
-  const cods=(map[lineId]||[]).join(', ');
-  return '<input type="text" data-line="'+lineId+'" class="dre-cod-input" value="'+cods+'" '
-    +'placeholder="ex: 3.1.1" '
-    +'style="width:90px;border:none;border-bottom:1px solid transparent;background:transparent;font-size:10px;'
-    +'color:#7EAACF;font-family:Poppins,sans-serif;outline:none;padding:1px 4px;text-align:right;cursor:text;" '
-    +'onblur="dreUpdateCod(this)" '
-    +'title="Códigos do plano de contas (separados por vírgula)">';
+  const cods=map[lineId]||[];
+  const label=cods.length?cods.join(', '):'+ cod';
+  const isEmpty=!cods.length;
+  return '<span class="dre-cod-pill" data-line="'+lineId+'" '
+    +'style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:1px 7px;border-radius:4px;cursor:pointer;white-space:nowrap;'
+    +(isEmpty
+      ?'background:transparent;color:var(--t3);border:1px dashed var(--bor);'
+      :'background:var(--fox-l);color:var(--fox);border:1px solid var(--fox-m);')
+    +'">'+label+'</span>';
 }
 
-function dreUpdateCod(input){
-  input.style.borderBottomColor='transparent';
-  input.style.background='transparent';
-  const lineId=input.dataset.line;
-  const cods=input.value.split(',').map(s=>s.trim()).filter(Boolean);
+function dreOpenCodPicker(pill, lineId){
+  // Remove any existing picker
+  const old=document.getElementById('dre-cod-picker');
+  if(old){
+    if(old.dataset.line===lineId){old.remove();return;}
+    old.remove();
+  }
+
   const map=dreGetCodMap();
-  map[lineId]=cods;
-  dreSaveCodMap(map);
-  renderDREPage();
+  const current=map[lineId]||[];
+  const rect=pill.getBoundingClientRect();
+
+  // Build picker
+  const picker=document.createElement('div');
+  picker.id='dre-cod-picker';
+  picker.dataset.line=lineId;
+  picker.style.cssText='position:fixed;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:10px;'
+    +'box-shadow:0 8px 24px rgba(15,32,64,.15);width:320px;max-height:420px;display:flex;flex-direction:column;'
+    +'top:'+(rect.bottom+4)+'px;left:'+Math.max(8,rect.left-220)+'px;';
+
+  // Header with text input
+  picker.innerHTML='<div style="padding:10px 12px;border-bottom:1px solid var(--bor)">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:6px">Vincular categorias — '+lineId+'</div>'
+    +'<input id="dre-cod-search" placeholder="Buscar código ou nome..." '
+    +'style="width:100%;border:1px solid var(--bor);border-radius:6px;padding:6px 10px;font-size:11px;'
+    +'color:var(--t);background:var(--bg);font-family:Poppins,sans-serif;box-sizing:border-box;outline:none">'
+    +'</div>'
+    +'<div style="padding:6px 12px 4px;font-size:10px;color:var(--t3)">Selecionados: <span id="dre-cod-selected">'+current.join(', ')+'</span></div>'
+    +'<div id="dre-cod-list" style="overflow-y:auto;flex:1;padding:4px 0"></div>'
+    +'<div style="padding:8px 12px;border-top:1px solid var(--bor);display:flex;gap:6px">'
+    +'<button id="dre-cod-clear" style="flex:1;padding:6px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);color:var(--t3);font-size:11px;cursor:pointer;font-family:Poppins,sans-serif">Limpar</button>'
+    +'<button id="dre-cod-save" style="flex:2;padding:6px;border:none;border-radius:6px;background:var(--fox);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:Poppins,sans-serif">Salvar</button>'
+    +'</div>';
+
+  document.body.appendChild(picker);
+
+  // State
+  let selected=[...current];
+
+  function renderList(filter){
+    const list=document.getElementById('dre-cod-list');
+    if(!list)return;
+    const cats=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
+    const f=(filter||'').toLowerCase();
+    const filtered=cats.filter(ct=>!f||(ct.cod+ct.nome).toLowerCase().includes(f));
+    list.innerHTML=filtered.slice(0,60).map(ct=>{
+      const checked=selected.includes(ct.cod);
+      return '<label style="display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;'
+        +(checked?'background:var(--fox-l);':'')
+
+
+        +'<input type="checkbox" value="'+ct.cod+'" '+(checked?'checked':'')
+        +' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0">'
+        +'<span style="font-size:10px;font-weight:600;color:var(--fox);width:60px;flex-shrink:0">'+ct.cod+'</span>'
+        +'<span style="font-size:11px;color:var(--t)">'+ct.nome+'</span>'
+        +'</label>';
+    }).join('');
+    // Bind checkboxes
+    list.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.addEventListener('change',function(){
+        if(this.checked){if(!selected.includes(this.value))selected.push(this.value);}
+        else{selected=selected.filter(s=>s!==this.value);}
+        const sel=document.getElementById('dre-cod-selected');
+        if(sel)sel.textContent=selected.join(', ')||'—';
+        renderList(document.getElementById('dre-cod-search')?.value);
+      });
+    });
+  }
+
+  renderList('');
+
+  document.getElementById('dre-cod-search').addEventListener('input',function(){renderList(this.value);});
+  document.getElementById('dre-cod-clear').addEventListener('click',function(){
+    selected=[];
+    document.getElementById('dre-cod-selected').textContent='—';
+    renderList(document.getElementById('dre-cod-search').value);
+  });
+  document.getElementById('dre-cod-save').addEventListener('click',function(){
+    const map=dreGetCodMap();
+    map[lineId]=selected;
+    dreSaveCodMap(map);
+    picker.remove();
+    renderDREPage();
+  });
+
+  // Close on outside click
+  setTimeout(()=>{
+    document.addEventListener('click',function handler(e){
+      if(!picker.contains(e.target)&&!pill.contains(e.target)){
+        picker.remove();
+        document.removeEventListener('click',handler);
+      }
+    });
+  },100);
 }
+
+function dreUpdateCod(){}  // legacy no-op
+
 
 function dreToggleCfg(){}  // no-op, kept for safety
 function dreInlineTab(){}
