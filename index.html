@@ -8836,8 +8836,7 @@ function mergeNaHistoria(novos){
     }
 
     // Gera lançamento bancário para pedidos NOVOS não cancelados
-    const LANC_CORTE=new Date('2026-05-03T03:00:00.000Z'); // só pedidos a partir de hoje
-    if(isNovo&&!isCancelado&&pedidoData>=LANC_CORTE){
+    if(isNovo&&!isCancelado){
       const lancProcessados=S.get('pedidos_lanc_gerado')||{};
       // Reprocessa se lançamento gerado não tem bancoId (fix retroativo)
       const lancGeradosSemBanco=getLanc().filter(l=>l.pedidoId===p.id&&!l.bancoId);
