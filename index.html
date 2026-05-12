@@ -3860,15 +3860,18 @@ function renderDREPage(){
   const margemLiq=recBruta>0?(ebit/recBruta*100):0;
 
   // ── DRE TABLE ──
-  const _HdrBg='#1E3A5F', _HdrFg='#ffffff', _GrpBg='#EFF6FF', _Bor='#BFDBFE';
-  const _pct=v=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0,0%';
-  const _fmt=v=>v===0?'-':(v<0?'(R$ '+fmtN(Math.abs(v))+')':'R$ '+fmtN(v));
+  
+
+  // ── DRE TABLE ──
+  const _HdrBg='#1E3A5F', _Bor='#BFDBFE', _GrpBg='#EFF6FF';
+  const _pct=function(v){return recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0,0%';};
+  const _fmt=function(v){return v===0?'-':(v<0?'(R$ '+fmtN(Math.abs(v))+')':'R$ '+fmtN(v));};
   const _cols='1fr 110px 58px';
 
-  // cod map
-  const _cm=(function(){try{return Object.assign({},JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}'));}catch(e){return {};}})();
-  function _SS(id,tipo){
-    const cods=_cm[id];
+  // cod map para lancamentos
+  var _cm2; try{_cm2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){_cm2={};}
+  function _SS2(id,tipo){
+    var cods=_cm2[id];
     if(!cods||!cods.length)return null;
     return lancPeriod.filter(function(l){
       if(tipo&&l.tipo!==tipo)return false;
@@ -3876,158 +3879,144 @@ function renderDREPage(){
       return cods.some(function(p){return cc===p||cc.startsWith(p+'.');});
     }).reduce(function(s,l){return s+(l.valor||0);},0);
   }
-  function _or(a,b){return a!==null?a:b;}
+  function _or2(a,b){return a!==null?a:b;}
 
-  var _vPix=_or(_SS('v_pix','receita'),vPix);
-  var _vCred=_or(_SS('v_cred','receita'),vCred);
-  var _vDeb=_or(_SS('v_deb','receita'),vDeb);
-  var _vDin=_or(_SS('v_din','receita'),vDin);
-  var _vIF=_or(_SS('v_ifood','receita'),vIF);
-  var _vEnt=_or(_SS('v_entrega','receita'),_dreTaxaEnt);
-  var _recBruta=_or(_SS('rec_bruta','receita'),_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
-  var _simples=_or(_SS('imp_vendas','despesa'),simples);
-  var _taxaIF=_or(_SS('taxa_if','despesa'),taxaIF);
-  var _descontos=_or(_SS('descontos','despesa'),descontos);
-  var _cancelam=_or(_SS('cancelam','despesa'),cancelVal);
-  var _recLiq=_recBruta-_simples-_taxaIF-_descontos-_cancelam;
-  var _mp=_or(_SS('mp','despesa'),cmvFicha);
-  var _emb=_or(_SS('emb','despesa'),custEmb);
-  var _mod=_or(_SS('mod','despesa'),moDir);
-  var _cif=_or(_SS('cif','despesa'),cif);
-  var _cpv=_mp+_emb+_mod+_cif;
-  var _lucBruto=_recLiq-_cpv;
-  var _log=_or(_SS('logistica','despesa'),log421);
-  var _can=_or(_SS('canais','despesa'),can423);
-  var _ocup=_or(_SS('ocupacao','despesa'),ocup431);
-  var _util=_or(_SS('utilidades','despesa'),util432);
-  var _serv=_or(_SS('servicos','despesa'),serv433);
-  var _pess=_or(_SS('pessoal','despesa'),pess434);
-  var _manu=_or(_SS('manutencao','despesa'),manu435);
-  var _tec=_or(_SS('tecnologia','despesa'),tec436);
-  var _trib=_or(_SS('tributario','despesa'),trib437);
-  var _recFin=_or(_SS('rec_fin','receita'),0);
-  var _despFin=_or(_SS('desp_fin','despesa'),0);
-  var _ebit=_lucBruto-_log-_can-_ocup-_util-_serv-_pess-_manu-_tec-_trib+_recFin-_despFin;
-  var _recNaoOp=_or(_SS('nao_op','receita'),0);
-  var _despNaoOp=_or(_SS('nao_op','despesa'),0);
-  var _provIR=_or(_SS('prov_ir','despesa'),0);
-  var _provCS=_or(_SS('prov_cs','despesa'),0);
-  var _partic=_or(_SS('participac','despesa'),0);
-  var _lucAntesIR=_ebit+_recNaoOp-_despNaoOp;
-  var _lucDepIR=_lucAntesIR-_provIR-_provCS;
-  var _lucLiq=_lucDepIR-_partic;
+  // Receitas de venda vêm de histPeriod (pedidos), não lancPeriod
+  // Usar vars já calculadas, cod map só para despesas/lançamentos
+  var _vPix2=vPix, _vCred2=vCred, _vDeb2=vDeb, _vDin2=vDin, _vIF2=vIF, _vEnt2=_dreTaxaEnt;
+  var _recBruta2=recBruta;
+  var _simples2=_or2(_SS2('imp_vendas','despesa'),simples);
+  var _taxaIF2=_or2(_SS2('taxa_if','despesa'),taxaIF);
+  var _descontos2=_or2(_SS2('descontos','despesa'),descontos);
+  var _cancelam2=_or2(_SS2('cancelam','despesa'),cancelVal);
+  var _recLiq2=_recBruta2-_simples2-_taxaIF2-_descontos2-_cancelam2;
+  var _mp2=_or2(_SS2('mp','despesa'),cmvFicha);
+  var _emb2=_or2(_SS2('emb','despesa'),custEmb);
+  var _mod2=_or2(_SS2('mod','despesa'),moDir);
+  var _cif2=_or2(_SS2('cif','despesa'),cif);
+  var _cpv2=_mp2+_emb2+_mod2+_cif2;
+  var _lucBruto2=_recLiq2-_cpv2;
+  var _log2=_or2(_SS2('logistica','despesa'),log421);
+  var _can2=_or2(_SS2('canais','despesa'),can423);
+  var _ocup2=_or2(_SS2('ocupacao','despesa'),ocup431);
+  var _util2=_or2(_SS2('utilidades','despesa'),util432);
+  var _serv2=_or2(_SS2('servicos','despesa'),serv433);
+  var _pess2=_or2(_SS2('pessoal','despesa'),pess434);
+  var _manu2=_or2(_SS2('manutencao','despesa'),manu435);
+  var _tec2=_or2(_SS2('tecnologia','despesa'),tec436);
+  var _trib2=_or2(_SS2('tributario','despesa'),trib437);
+  var _recFin2=_or2(_SS2('rec_fin','receita'),0);
+  var _despFin2=_or2(_SS2('desp_fin','despesa'),0);
+  var _ebit2=_lucBruto2-_log2-_can2-_ocup2-_util2-_serv2-_pess2-_manu2-_tec2-_trib2+_recFin2-_despFin2;
+  var _recNaoOp2=_or2(_SS2('nao_op','receita'),0);
+  var _despNaoOp2=_or2(_SS2('nao_op','despesa'),0);
+  var _provIR2=_or2(_SS2('prov_ir','despesa'),0);
+  var _provCS2=_or2(_SS2('prov_cs','despesa'),0);
+  var _partic2=_or2(_SS2('participac','despesa'),0);
+  var _lucAntesIR2=_ebit2+_recNaoOp2-_despNaoOp2;
+  var _lucDepIR2=_lucAntesIR2-_provIR2-_provCS2;
+  var _lucLiq2=_lucDepIR2-_partic2;
 
   // KPI
-  var kpiEl=document.getElementById('dre-pg-kpi');
-  if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:'R$ '+fmtN(_recBruta),cor:'var(--green)'},
-    {lbl:'Margem Bruta',val:(_recBruta>0?(_lucBruto/_recBruta*100):0).toFixed(1)+'%',cor:'var(--blue)'},
-    {lbl:'Lucro Operacional',val:'R$ '+fmtN(_ebit),cor:_ebit>=0?'var(--green)':'var(--red)'},
-    {lbl:'Margem Líquida',val:(_recBruta>0?(_lucLiq/_recBruta*100):0).toFixed(1)+'%',cor:'var(--blue)'},
+  var kpiEl2=document.getElementById('dre-pg-kpi');
+  if(kpiEl2) kpiEl2.innerHTML=[
+    {lbl:'Receita Bruta',val:'R$ '+fmtN(_recBruta2),cor:'var(--green)'},
+    {lbl:'Margem Bruta',val:(_recBruta2>0?(_lucBruto2/_recBruta2*100):0).toFixed(1)+'%',cor:'var(--blue)'},
+    {lbl:'Lucro Operacional',val:'R$ '+fmtN(_ebit2),cor:_ebit2>=0?'var(--green)':'var(--red)'},
+    {lbl:'Margem Líquida',val:(_recBruta2>0?(_lucLiq2/_recBruta2*100):0).toFixed(1)+'%',cor:'var(--blue)'},
   ].map(function(k){
     return '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px">'
       +'<div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">'+k.lbl+'</div>'
       +'<div style="font-size:20px;font-weight:800;color:'+k.cor+';font-variant-numeric:tabular-nums">'+k.val+'</div></div>';
   }).join('');
 
-  // DRE pill helper
-  function _pill(lineId){
-    var map; try{map=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){map={};}
-    var cods=map[lineId]||[];
-    var label=cods.length?cods.join(', '):'+ cod';
-    return '<span class="dre-cod-pill" data-line="'+lineId+'" style="font-size:10px;font-weight:600;cursor:pointer;color:'+(cods.length?'var(--fox)':'var(--t3)')+';flex-shrink:0">'+label+'</span>';
+  // pill
+  function _pill2(lid){
+    var m2; try{m2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m2={};}
+    var cods=m2[lid]||[];
+    return '<span class="dre-cod-pill" data-line="'+lid+'" style="font-size:10px;font-weight:600;cursor:pointer;color:'+(cods.length?'var(--fox)':'var(--t3)')+';flex-shrink:0">'+(cods.length?cods.join(', '):'+ cod')+'</span>';
   }
 
   // Row builders
-  function _R(nome,val,nivel,lineId){
-    nivel=nivel||1;
-    var pad=(nivel*20)+'px';
-    var vc=val<0?'#DC2626':val>0?'#0F2040':'#94A3B8';
+  function _R2(nome,val,nivel,lid){
+    var pad=((nivel||1)*20)+'px';
+    var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:5px 16px;border-bottom:1px solid '+_Bor+'">'
-      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'
-      +(lineId?_pill(lineId):'')
-      +'<span style="font-size:12px;font-style:italic;color:#0F2040">'+nome+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'+(lid?_pill2(lid):'')
+      +'<span style="font-size:12px;font-style:italic;color:#1E3A5F">'+nome+'</span></div>'
       +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
-      +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div>'
-      +'</div>';
+      +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
   }
-  function _G(nome,val,lineId){
+  function _G2(nome,val,lid){
     var vc=val<0?'#DC2626':'#0F2040';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
-      +'<div style="display:flex;align-items:center;gap:8px">'
-      +(lineId?_pill(lineId):'')
+      +'<div style="display:flex;align-items:center;gap:8px">'+(lid?_pill2(lid):'')
       +'<span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
-      +'<div style="font-size:11px;font-weight:600;color:#94A3B8;text-align:right">'+_pct(val)+'</div>'
-      +'</div>';
+      +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
   }
-  function _T(nome,val){
-    var vc=val<0?'#FCA5A5':'#6EE7B7';
-    var pc=val<0?'#FCA5A5':'#A7F3D0';
+  function _T2(nome,val){
+    var vc=val<0?'#FCA5A5':'#6EE7B7', pc=val<0?'#FCA5A5':'#A7F3D0';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:9px 16px;background:'+_HdrBg+';border-bottom:2px solid rgba(255,255,255,.1)">'
-      +'<div style="font-size:13px;font-weight:700;color:'+_HdrFg+'">(=) '+nome+'</div>'
+      +'<div style="font-size:13px;font-weight:700;color:#fff">(=) '+nome+'</div>'
       +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
-      +'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+_pct(val)+'</div>'
-      +'</div>';
+      +'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+_pct(val)+'</div></div>';
   }
 
-  var _hdr='<div style="display:grid;grid-template-columns:'+_cols+';background:'+_HdrBg+';color:'+_HdrFg+';padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-radius:8px 8px 0 0">'
+  var _hdr2='<div style="display:grid;grid-template-columns:'+_cols+';background:'+_HdrBg+';color:#fff;padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-radius:8px 8px 0 0">'
     +'<div>Código / Conta</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
 
-  var _rows=[
-    _G('Receita Bruta',_recBruta,'rec_bruta'),
-    _vPix>0?_R('Vendas Pix',_vPix,1,'v_pix'):'',
-    _vCred>0?_R('Vendas Cartão de Crédito',_vCred,1,'v_cred'):'',
-    _vDeb>0?_R('Vendas Cartão de Débito',_vDeb,1,'v_deb'):'',
-    _vDin>0?_R('Vendas Dinheiro',_vDin,1,'v_din'):'',
-    _vIF>0?_R('Vendas iFood',_vIF,1,'v_ifood'):'',
-    _vEnt>0?_R('Taxas de Entrega',_vEnt,1,'v_entrega'):'',
-    _G('(-) Imposto Sobre Vendas',-_simples,'imp_vendas'),
-    _R('Simples Nacional (DAS)',_simples>0?-_simples:0,1,''),
-    _G('(-) Deduções da Receita Bruta',-(_taxaIF+_descontos+_cancelam),'deducoes'),
-    _taxaIF>0?_R('Taxas iFood',-_taxaIF,1,'taxa_if'):'',
-    _descontos>0?_R('Descontos Concedidos',-_descontos,1,'descontos'):'',
-    _cancelam>0?_R('Estornos/Cancelamentos',-_cancelam,1,'cancelam'):'',
-    _T('Receita Líquida Operacional',_recLiq),
-    _G('(-) Custo dos Produtos Vendidos',-_cpv,'cpv'),
-    _R('Matérias-Primas',-_mp,1,'mp'),
-    _emb>0?_R('Embalagens',-_emb,1,'emb'):'',
-    _mod>0?_R('Mão de Obra Direta',-_mod,1,'mod'):'',
-    _cif>0?_R('Custos Indiretos',-_cif,1,'cif'):'',
-    _T('Lucro Bruto',_lucBruto),
-    _G('(-) Despesas com Vendas',-(_log+_can),'desp_vend'),
-    _log>0?_R('Logística e Entrega',-_log,1,'logistica'):'',
-    _can>0?_R('Canais de Venda',-_can,1,'canais'):'',
-    _G('(-) Despesas Administrativas',-(_ocup+_util+_serv+_pess+_manu+_tec+_trib),'desp_adm'),
-    _ocup>0?_R('Ocupação',-_ocup,1,'ocupacao'):'',
-    _util>0?_R('Utilidades',-_util,1,'utilidades'):'',
-    _serv>0?_R('Serviços Profissionais',-_serv,1,'servicos'):'',
-    _pess>0?_R('Pessoal Administrativo',-_pess,1,'pessoal'):'',
-    _manu>0?_R('Manutenção',-_manu,1,'manutencao'):'',
-    _tec>0?_R('Tecnologia',-_tec,1,'tecnologia'):'',
-    _trib>0?_R('Tributário e Legal',-_trib,1,'tributario'):'',
-    _recFin>0?_G('Receitas Financeiras',_recFin,'rec_fin'):'',
-    _despFin>0?_G('(-) Despesas Financeiras',-_despFin,'desp_fin'):'',
-    _T('Lucro Operacional',_ebit),
-    _G('Resultado Não Operacional',_recNaoOp-_despNaoOp,'nao_op'),
-    _T('Lucro Antes do IR e CS',_lucAntesIR),
-    _provIR>0?_G('(-) Provisão IR',-_provIR,'prov_ir'):'',
-    _provCS>0?_G('(-) Provisão CS',-_provCS,'prov_cs'):'',
-    _T('Lucro Depois do IR e CS',_lucDepIR),
-    _partic>0?_G('(-) Participações',-_partic,'participac'):'',
-    _T('Lucro Líquido do Exercício',_lucLiq),
-  ].join('');
+  var _rows2='';
+  _rows2+=_T2('Receita Bruta',_recBruta2);
+  if(_vPix2>0)_rows2+=_R2('Vendas Pix',_vPix2,1,'v_pix');
+  if(_vCred2>0)_rows2+=_R2('Vendas Cartão de Crédito',_vCred2,1,'v_cred');
+  if(_vDeb2>0)_rows2+=_R2('Vendas Cartão de Débito',_vDeb2,1,'v_deb');
+  if(_vDin2>0)_rows2+=_R2('Vendas Dinheiro',_vDin2,1,'v_din');
+  if(_vIF2>0)_rows2+=_R2('Vendas iFood',_vIF2,1,'v_ifood');
+  if(_vEnt2>0)_rows2+=_R2('Taxas de Entrega',_vEnt2,1,'v_entrega');
+  _rows2+=_G2('(-) Imposto Sobre Vendas',-_simples2,'imp_vendas');
+  if(_simples2>0)_rows2+=_R2('Simples Nacional (DAS)',-_simples2,1,'');
+  _rows2+=_G2('(-) Deduções da Receita Bruta',-(_taxaIF2+_descontos2+_cancelam2),'deducoes');
+  if(_taxaIF2>0)_rows2+=_R2('Taxas iFood',-_taxaIF2,1,'taxa_if');
+  if(_descontos2>0)_rows2+=_R2('Descontos Concedidos',-_descontos2,1,'descontos');
+  if(_cancelam2>0)_rows2+=_R2('Estornos/Cancelamentos',-_cancelam2,1,'cancelam');
+  _rows2+=_T2('Receita Líquida Operacional',_recLiq2);
+  _rows2+=_G2('(-) Custo dos Produtos Vendidos',-_cpv2,'cpv');
+  _rows2+=_R2('Matérias-Primas',-_mp2,1,'mp');
+  if(_emb2>0)_rows2+=_R2('Embalagens',-_emb2,1,'emb');
+  if(_mod2>0)_rows2+=_R2('Mão de Obra Direta',-_mod2,1,'mod');
+  if(_cif2>0)_rows2+=_R2('Custos Indiretos',-_cif2,1,'cif');
+  _rows2+=_T2('Lucro Bruto',_lucBruto2);
+  _rows2+=_G2('(-) Despesas com Vendas',-(_log2+_can2),'desp_vend');
+  if(_log2>0)_rows2+=_R2('Logística e Entrega',-_log2,1,'logistica');
+  if(_can2>0)_rows2+=_R2('Canais de Venda',-_can2,1,'canais');
+  _rows2+=_G2('(-) Despesas Administrativas',-(_ocup2+_util2+_serv2+_pess2+_manu2+_tec2+_trib2),'desp_adm');
+  if(_ocup2>0)_rows2+=_R2('Ocupação',-_ocup2,1,'ocupacao');
+  if(_util2>0)_rows2+=_R2('Utilidades',-_util2,1,'utilidades');
+  if(_serv2>0)_rows2+=_R2('Serviços Profissionais',-_serv2,1,'servicos');
+  if(_pess2>0)_rows2+=_R2('Pessoal Administrativo',-_pess2,1,'pessoal');
+  if(_manu2>0)_rows2+=_R2('Manutenção',-_manu2,1,'manutencao');
+  if(_tec2>0)_rows2+=_R2('Tecnologia',-_tec2,1,'tecnologia');
+  if(_trib2>0)_rows2+=_R2('Tributário e Legal',-_trib2,1,'tributario');
+  if(_recFin2>0)_rows2+=_G2('Receitas Financeiras',_recFin2,'rec_fin');
+  if(_despFin2>0)_rows2+=_G2('(-) Despesas Financeiras',-_despFin2,'desp_fin');
+  _rows2+=_T2('Lucro Operacional',_ebit2);
+  if(_recNaoOp2>0||_despNaoOp2>0)_rows2+=_G2('Resultado Não Operacional',_recNaoOp2-_despNaoOp2,'nao_op');
+  _rows2+=_T2('Lucro Antes do IR e CS',_lucAntesIR2);
+  if(_provIR2>0)_rows2+=_G2('(-) Provisão IR',-_provIR2,'prov_ir');
+  if(_provCS2>0)_rows2+=_G2('(-) Provisão CS',-_provCS2,'prov_cs');
+  _rows2+=_T2('Lucro Depois do IR e CS',_lucDepIR2);
+  if(_partic2>0)_rows2+=_G2('(-) Participações',-_partic2,'participac');
+  _rows2+=_T2('Lucro Líquido do Exercício',_lucLiq2);
 
-  var dreBody=document.getElementById('dre-pg-body');
-  if(dreBody){
-    dreBody.innerHTML='<div style="width:100%">'+_hdr+_rows+'</div>';
-    dreBody.querySelectorAll('.dre-cod-pill').forEach(function(pill){
+  var dreBody2=document.getElementById('dre-pg-body');
+  if(dreBody2){
+    dreBody2.innerHTML='<div style="width:100%">'+_hdr2+_rows2+'</div>';
+    dreBody2.querySelectorAll('.dre-cod-pill').forEach(function(pill){
       pill.addEventListener('click',function(e){e.stopPropagation();dreOpenCodPicker(this,this.dataset.line);});
     });
   }
 
-
-  // CMV por produto
   const maxCMV=cmvPorProduto[0]?.total||1;
   const cmvEl=document.getElementById('dre-pg-cmv');
   if(cmvEl) cmvEl.innerHTML=cmvPorProduto.length?
