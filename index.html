@@ -3715,72 +3715,61 @@ function renderDREPage(){
       +'</div>';
   };
 
-  // ── Cálculo via cod map — TUDO pelo mapa de catCods ──
+  // ── Cálculo via cod map ──
   const _cm=dreGetCodMap();
-  const _S=(id,tipo)=>{ // sum by lineId using cod map, fallback to prefix default
+  function _S(id,tipo){
     const cods=_cm[id];
-    if(cods&&cods.length) return dreSumByCods(lancPeriod,cods,tipo);
-    return null; // null = use original var
-  };
+    if(cods&&cods.length)return dreSumByCods(lancPeriod,cods,tipo);
+    return null;
+  }
+  function _or(a,b){return a!==null?a:b;}
 
-  // Receitas de venda — do cod map ou fallback às vars originais
-  const _vPix       = _S('v_pix','receita')      ?? vPix;
-  const _vCred      = _S('v_cred','receita')     ?? vCred;
-  const _vDeb       = _S('v_deb','receita')      ?? vDeb;
-  const _vDin       = _S('v_din','receita')      ?? vDin;
-  const _vIF        = _S('v_ifood','receita')    ?? vIF;
-  const _vEnt       = _S('v_entrega','receita')  ?? _dreTaxaEnt;
-  const _recBruta   = _S('rec_bruta','receita')  ?? (_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
-
-  // Impostos e deduções
-  const _simples    = _S('imp_vendas','despesa') ?? simples;
-  const _icms       = _S('icms','despesa')       ?? 0;
-  const _iss        = _S('iss','despesa')        ?? 0;
-  const _pisCofins  = _S('pis_cofins','despesa') ?? 0;
-  const _taxaIF     = _S('taxa_if','despesa')    ?? taxaIF;
-  const _descontos  = _S('descontos','despesa')  ?? descontos;
-  const _cancelam   = _S('cancelam','despesa')   ?? cancelVal;
-  const _totalDed   = _simples+_icms+_iss+_pisCofins+_taxaIF+_descontos+_cancelam;
-  const _recLiq     = _recBruta - _totalDed;
-
-  // CPV
-  const _mp         = _S('mp','despesa')         ?? cmvFicha;
-  const _emb        = _S('emb','despesa')        ?? custEmb;
-  const _mod        = _S('mod','despesa')        ?? moDir;
-  const _cif        = _S('cif','despesa')        ?? cif;
-  const _cpv        = _mp+_emb+_mod+_cif;
-  const _lucBruto   = _recLiq - _cpv;
-
-  // Despesas operacionais
-  const _log        = _S('logistica','despesa')  ?? log421;
-  const _can        = _S('canais','despesa')     ?? can423;
-  const _ocup       = _S('ocupacao','despesa')   ?? ocup431;
-  const _util       = _S('utilidades','despesa') ?? util432;
-  const _serv       = _S('servicos','despesa')   ?? serv433;
-  const _pess       = _S('pessoal','despesa')    ?? pess434;
-  const _manu       = _S('manutencao','despesa') ?? manu435;
-  const _tec        = _S('tecnologia','despesa') ?? tec436;
-  const _trib       = _S('tributario','despesa') ?? trib437;
-  const _despVend   = _log+_can;
-  const _despAdm    = _ocup+_util+_serv+_pess+_manu+_tec+_trib;
-  const _recFin     = _S('rec_fin','receita')    ?? recFin;
-  const _despFin    = _S('desp_fin','despesa')   ?? despFin;
-  const _ebit       = _lucBruto - _despVend - _despAdm + _recFin - _despFin;
-
-  // Não operacional + IR
-  const _recNaoOp   = _S('nao_op','receita')     ?? recNaoOp;
-  const _despNaoOp  = _S('nao_op','despesa')     ?? despNaoOp;
-  const _provIR     = _S('prov_ir','despesa')    ?? provIR;
-  const _provCS     = _S('prov_cs','despesa')    ?? provCS;
-  const _partic     = _S('participac','despesa') ?? participacoes;
-  const _lucAntesIR = _ebit + _recNaoOp - _despNaoOp;
-  const _lucDepIR   = _lucAntesIR - _provIR - _provCS;
-  const _lucLiq     = _lucDepIR - _partic;
-
-  // KPIs atualizados
-  const _margemBruta = _recBruta>0?(_lucBruto/_recBruta*100):0;
-  const _margemLiq   = _recBruta>0?(_lucLiq/_recBruta*100):0;
-
+  const _vPix      =_or(_S('v_pix','receita'),vPix);
+  const _vCred     =_or(_S('v_cred','receita'),vCred);
+  const _vDeb      =_or(_S('v_deb','receita'),vDeb);
+  const _vDin      =_or(_S('v_din','receita'),vDin);
+  const _vIF       =_or(_S('v_ifood','receita'),vIF);
+  const _vEnt      =_or(_S('v_entrega','receita'),_dreTaxaEnt);
+  const _recBruta  =_or(_S('rec_bruta','receita'),_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
+  const _simples   =_or(_S('imp_vendas','despesa'),simples);
+  const _icms      =_or(_S('icms','despesa'),0);
+  const _iss       =_or(_S('iss','despesa'),0);
+  const _pisCofins =_or(_S('pis_cofins','despesa'),0);
+  const _taxaIF    =_or(_S('taxa_if','despesa'),taxaIF);
+  const _descontos =_or(_S('descontos','despesa'),descontos);
+  const _cancelam  =_or(_S('cancelam','despesa'),cancelVal);
+  const _totalDed  =_simples+_icms+_iss+_pisCofins+_taxaIF+_descontos+_cancelam;
+  const _recLiq    =_recBruta-_totalDed;
+  const _mp        =_or(_S('mp','despesa'),cmvFicha);
+  const _emb       =_or(_S('emb','despesa'),custEmb);
+  const _mod       =_or(_S('mod','despesa'),moDir);
+  const _cif       =_or(_S('cif','despesa'),cif);
+  const _cpv       =_mp+_emb+_mod+_cif;
+  const _lucBruto  =_recLiq-_cpv;
+  const _log       =_or(_S('logistica','despesa'),log421);
+  const _can       =_or(_S('canais','despesa'),can423);
+  const _ocup      =_or(_S('ocupacao','despesa'),ocup431);
+  const _util      =_or(_S('utilidades','despesa'),util432);
+  const _serv      =_or(_S('servicos','despesa'),serv433);
+  const _pess      =_or(_S('pessoal','despesa'),pess434);
+  const _manu      =_or(_S('manutencao','despesa'),manu435);
+  const _tec       =_or(_S('tecnologia','despesa'),tec436);
+  const _trib      =_or(_S('tributario','despesa'),trib437);
+  const _despVend  =_log+_can;
+  const _despAdm   =_ocup+_util+_serv+_pess+_manu+_tec+_trib;
+  const _recFin    =_or(_S('rec_fin','receita'),recFin);
+  const _despFin   =_or(_S('desp_fin','despesa'),despFin);
+  const _ebit      =_lucBruto-_despVend-_despAdm+_recFin-_despFin;
+  const _recNaoOp  =_or(_S('nao_op','receita'),recNaoOp);
+  const _despNaoOp =_or(_S('nao_op','despesa'),despNaoOp);
+  const _provIR    =_or(_S('prov_ir','despesa'),provIR);
+  const _provCS    =_or(_S('prov_cs','despesa'),provCS);
+  const _partic    =_or(_S('participac','despesa'),participacoes);
+  const _lucAntesIR=_ebit+_recNaoOp-_despNaoOp;
+  const _lucDepIR  =_lucAntesIR-_provIR-_provCS;
+  const _lucLiq    =_lucDepIR-_partic;
+  const _margemBruta=_recBruta>0?(_lucBruto/_recBruta*100):0;
+  const _margemLiq  =_recBruta>0?(_lucLiq/_recBruta*100):0;
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
