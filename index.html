@@ -7106,17 +7106,23 @@ function renderBancos(){
   window._bancAPList=lancAPGlobal;
 
   if(totalsEl)totalsEl.innerHTML=[
-    {label:'Total em Caixa',val:totCaixa,cor:'var(--t)',fn:''},
-    {label:'Total em Bancos',val:totBanco,cor:'var(--t)',fn:''},
-    {label:'Total Geral',val:totGeral,cor:'var(--green)',bold:true,fn:''},
-    {label:'A Receber',val:globalAR,cor:'var(--green)',fn:'bancShowARModal()'},
-    {label:'A Pagar',val:globalAP,cor:'var(--red)',fn:'bancShowAPModal()'},
+    {label:'Total em Caixa',val:totCaixa,bg:'#1E3A5F',bor:'#2D5BA3',lc:'#93C5FD',vc:'#E2EEF9',fn:''},
+    {label:'Total em Bancos',val:totBanco,bg:'#1E3A5F',bor:'#2D5BA3',lc:'#93C5FD',vc:'#E2EEF9',fn:''},
+    {label:'Total Geral',val:totGeral,bg:'#0F2040',bor:'#1E3A5F',lc:'#60A5FA',vc:'#ffffff',bold:true,fn:''},
+    {label:'A Receber',val:globalAR,bg:'#052e16',bor:'#166534',lc:'#86efac',vc:'#4ade80',fn:'bancShowARModal()'},
+    {label:'A Pagar',val:globalAP,bg:'#450a0a',bor:'#991b1b',lc:'#fca5a5',vc:'#f87171',fn:'bancShowAPModal()'},
   ].map(t=>{
     const clickable=t.fn?'cursor:pointer':'';
     const onclick=t.fn?'onclick="'+t.fn+'"':'';
-    return '<div '+onclick+' style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 18px;'+clickable+'">'
-      +'<div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">'+t.label+'</div>'
-      +'<div style="font-size:'+(t.bold?'20px':'16px')+';font-weight:'+(t.bold?800:700)+';color:'+t.cor+';font-variant-numeric:tabular-nums">R$ '+fmtN(t.val)+'</div>'
+    return '<div '+onclick+' style="'
+      +'background:'+t.bg+';'
+      +'border:1px solid '+t.bor+';'
+      +'border-radius:14px;padding:18px 20px;'
+      +'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;'
+      +clickable
+      +'">'
+      +'<div style="font-size:10px;font-weight:700;color:'+t.lc+';text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">'+t.label+'</div>'
+      +'<div style="font-size:'+(t.bold?'22px':'18px')+';font-weight:800;color:'+t.vc+';font-variant-numeric:tabular-nums;letter-spacing:-.3px">R$ '+fmtN(t.val)+'</div>'
       +'</div>';
   }).join('');
 
