@@ -11,31 +11,31 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
 :root{
-  --fox:#60A5FA;--fox-d:#3B82F6;--fox-l:rgba(96,165,250,.18);--fox-m:rgba(96,165,250,.28);
-  --bg:#0D1B2E;--bg2:#081422;--bg3:#152236;
-  --bor:#1E3A5F;--bor2:#162E4D;
-  --t:#E2EEF9;--t2:#7EAACF;--t3:#4A7399;
-  --green:#34D399;--green-bg:rgba(52,211,153,.12);
-  --amber:#FBBF24;--amber-bg:rgba(251,191,36,.12);
-  --blue:#60A5FA;--blue-bg:rgba(96,165,250,.12);
-  --purple:#A78BFA;--purple-bg:rgba(167,139,250,.12);
-  --red:#F87171;--red-bg:rgba(248,113,113,.12);
+  --fox:#2563EB;--fox-d:#1D4ED8;--fox-l:#EFF6FF;--fox-m:#BFDBFE;
+  --bg:#FFFFFF;--bg2:#F0F7FF;--bg3:#E1EFFE;
+  --bor:#BFDBFE;--bor2:#DBEAFE;
+  --t:#0F1F3D;--t2:#2D5BA3;--t3:#6B9BD2;
+  --green:#059669;--green-bg:#D1FAE5;
+  --amber:#D97706;--amber-bg:#FEF3C7;
+  --blue:#2563EB;--blue-bg:#DBEAFE;
+  --purple:#7C3AED;--purple-bg:#EDE9FE;
+  --red:#DC2626;--red-bg:#FEE2E2;
   --sidebar:216px;
-  --sb-bg:#060F1C;
-  --sb-border:rgba(96,165,250,0.12);
-  --sb-logo-t:#E2EEF9;
-  --sb-logo-s:rgba(226,238,249,0.4);
-  --sb-store-bg:rgba(96,165,250,0.08);
-  --sb-sname:#E2EEF9;
-  --sb-sloc:rgba(226,238,249,0.45);
-  --sb-nav-g:rgba(126,170,207,0.55);
-  --sb-ni:rgba(126,170,207,0.8);
-  --sb-ni-hover-bg:rgba(96,165,250,0.1);
-  --sb-ni-hover-c:#C7DFF2;
-  --sb-foot-bor:rgba(96,165,250,0.1);
-  --sb-user-hover:rgba(96,165,250,0.08);
-  --sb-uname:rgba(126,170,207,0.85);
-  --sb-out:rgba(126,170,207,0.45);
+  --sb-bg:#0F2040;
+  --sb-border:rgba(96,165,250,0.15);
+  --sb-logo-t:#E8F0FE;
+  --sb-logo-s:rgba(232,240,254,0.5);
+  --sb-store-bg:rgba(96,165,250,0.1);
+  --sb-sname:#E8F0FE;
+  --sb-sloc:rgba(232,240,254,0.5);
+  --sb-nav-g:rgba(147,197,253,0.6);
+  --sb-ni:rgba(147,197,253,0.8);
+  --sb-ni-hover-bg:rgba(96,165,250,0.15);
+  --sb-ni-hover-c:#BFDBFE;
+  --sb-foot-bor:rgba(96,165,250,0.12);
+  --sb-user-hover:rgba(96,165,250,0.1);
+  --sb-uname:rgba(147,197,253,0.85);
+  --sb-out:rgba(147,197,253,0.5);
 }
 html.light{
   --fox:#2563EB;--fox-d:#1D4ED8;--fox-l:#EFF6FF;--fox-m:#DBEAFE;
@@ -47,21 +47,21 @@ html.light{
   --blue:#2563EB;--blue-bg:#EFF6FF;
   --purple:#7C3AED;--purple-bg:#F5F3FF;
   --red:#DC2626;--red-bg:#FEF2F2;
-  --sb-bg:#060F1C;
-  --sb-border:rgba(96,165,250,0.12);
-  --sb-logo-t:#E2EEF9;
-  --sb-logo-s:rgba(226,238,249,0.4);
-  --sb-store-bg:rgba(96,165,250,0.08);
-  --sb-sname:#E2EEF9;
-  --sb-sloc:rgba(226,238,249,0.45);
-  --sb-nav-g:rgba(126,170,207,0.55);
-  --sb-ni:rgba(126,170,207,0.8);
-  --sb-ni-hover-bg:rgba(96,165,250,0.1);
-  --sb-ni-hover-c:#C7DFF2;
-  --sb-foot-bor:rgba(96,165,250,0.1);
-  --sb-user-hover:rgba(96,165,250,0.08);
-  --sb-uname:rgba(126,170,207,0.85);
-  --sb-out:rgba(126,170,207,0.45);
+  --sb-bg:#0F2040;
+  --sb-border:rgba(96,165,250,0.15);
+  --sb-logo-t:#E8F0FE;
+  --sb-logo-s:rgba(232,240,254,0.5);
+  --sb-store-bg:rgba(96,165,250,0.1);
+  --sb-sname:#E8F0FE;
+  --sb-sloc:rgba(232,240,254,0.5);
+  --sb-nav-g:rgba(147,197,253,0.6);
+  --sb-ni:rgba(147,197,253,0.8);
+  --sb-ni-hover-bg:rgba(96,165,250,0.15);
+  --sb-ni-hover-c:#BFDBFE;
+  --sb-foot-bor:rgba(96,165,250,0.12);
+  --sb-user-hover:rgba(96,165,250,0.1);
+  --sb-uname:rgba(147,197,253,0.85);
+  --sb-out:rgba(147,197,253,0.5);
 }
 html.light body{background:var(--bg2)}
 html.light .topbar,html.light .card,html.dark .modal,html.dark .btn-o,html.dark .search-in,html.dark .filter-sel,html.dark .fi,html.dark .lcard{background:var(--bg);border-color:var(--bor);color:var(--t)}
@@ -171,16 +171,16 @@ nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 .nav-g{font-size:9px;color:var(--sb-nav-g);text-transform:uppercase;letter-spacing:.9px;padding:12px 8px 4px;font-weight:600}
 .ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--sb-ni);transition:all .12s;margin-bottom:1px;white-space:nowrap;font-weight:400}
 .ni:hover{background:var(--sb-ni-hover-bg);color:var(--sb-ni-hover-c)}
-.ni.on{background:rgba(96,165,250,.18);color:#93C5FD;font-weight:600;border-left:2px solid #60A5FA}
+.ni.on{background:rgba(96,165,250,.2);color:#BFDBFE;font-weight:600;border-left:2px solid #93C5FD}
 .ni svg{flex-shrink:0;opacity:1}
 .ni-plain{font-size:12px;color:var(--sb-ni);padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .12s;margin-bottom:1px;display:flex;align-items:center;gap:9px}
 .ni-plain:hover{background:var(--sb-ni-hover-bg);color:var(--sb-ni-hover-c)}
-.ni-plain.on{background:rgba(96,165,250,.18);color:#93C5FD;font-weight:600}
+.ni-plain.on{background:rgba(96,165,250,.2);color:#BFDBFE;font-weight:600}
 .ni-badge{margin-left:auto;background:#FF3B30;color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:16px;text-align:center}
 .sb-foot{padding:10px 12px;border-top:1px solid var(--sb-foot-bor)}
 .sb-user{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer}
 .sb-user:hover{background:var(--sb-user-hover)}
-.av{width:28px;height:28px;border-radius:50%;background:rgba(96,165,250,.2);border:1px solid rgba(96,165,250,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#93C5FD;flex-shrink:0}
+.av{width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,.15);border:1px solid rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#93C5FD;flex-shrink:0}
 .sb-uname{font-size:11px;color:var(--sb-uname);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-out{background:none;border:none;cursor:pointer;color:var(--sb-out);display:flex;padding:2px;transition:color .12s}
 .sb-out:hover{color:#FF3B30}
@@ -438,15 +438,15 @@ html.light #login-logo-img{mix-blend-mode:screen;filter:brightness(10) saturate(
 .grp-drop{display:none;position:absolute;top:38px;left:0;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden}
 .grp-drop.right{left:auto;right:0}
 
-/* ── GLOBAL BLUE DARK DEFAULTS ── */
-select,input,textarea{background:var(--bg3)!important;color:var(--t)!important;border-color:var(--bor)!important}
+/* ── GLOBAL LIGHT BLUE DEFAULTS ── */
+select,input,textarea{background:#fff!important;color:var(--t)!important;border-color:var(--bor)!important}
 .card,.metric{background:var(--bg)!important;border-color:var(--bor)!important}
-.tbl th{background:var(--bg)!important;border-color:var(--bor)!important;color:var(--t2)!important;font-size:10.5px;letter-spacing:.6px}
-.tbl td{background:var(--bg)!important;border-color:var(--bor)!important}
-.tbl tr:hover td{background:var(--bg3)!important}
-.topbar{background:var(--bg2)!important;border-color:var(--bor)!important}
-.btn-o{background:var(--bg3)!important;border-color:var(--bor)!important;color:var(--t2)!important}
-.search-in,.filter-sel,.fi{background:var(--bg3)!important;border-color:var(--bor)!important;color:var(--t)!important}
+.tbl th{background:var(--bg2)!important;border-color:var(--bor)!important;color:var(--t2)!important;font-size:10.5px;letter-spacing:.6px}
+.tbl td{background:var(--bg)!important;border-color:var(--bor2)!important}
+.tbl tr:hover td{background:var(--bg2)!important}
+.topbar{background:var(--bg)!important;border-color:var(--bor)!important}
+.btn-o{background:var(--bg)!important;border-color:var(--bor)!important;color:var(--t2)!important}
+.search-in,.filter-sel,.fi{background:#fff!important;border-color:var(--bor)!important;color:var(--t)!important}
 .modal,.modal-box{background:var(--bg)!important;border-color:var(--bor)!important}
 .scroll,.content{background:var(--bg2)!important}
 .sb-store{background:var(--sb-store-bg)!important}
@@ -3662,8 +3662,11 @@ function renderDREPage(){
       <div style="font-size:10px;color:var(--t3);min-width:58px;text-align:right;margin-left:8px;font-variant-numeric:tabular-nums">${pct(val)}</div>
     </div>`;
   };
-  const SEP=lbl=>`<div style="padding:8px 20px 6px;background:var(--fox-l);border-top:1px solid var(--fox-m)">
-    <span style="font-size:10px;font-weight:700;color:var(--fox);text-transform:uppercase;letter-spacing:1px">${lbl}</span>
+  const SEP=lbl=>`<div style="padding:9px 20px 7px;background:var(--fox-l);border-top:2px solid var(--fox-m);margin-top:4px">
+    <span style="font-size:10px;font-weight:800;color:var(--fox);text-transform:uppercase;letter-spacing:1.2px">${lbl}</span>
+  </div>`;
+  const SEP2=lbl=>`<div style="padding:5px 20px 4px;background:var(--bg2);border-top:1px solid var(--bor2)">
+    <span style="font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;font-style:italic">${lbl}</span>
   </div>`;
   const TOT=(lbl,val)=>`<div style="display:flex;align-items:center;padding:10px 20px;background:${val>=0?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)'};border-top:2px solid ${val>=0?'rgba(39,174,96,.2)':'rgba(231,76,60,.2)'};border-bottom:1px solid var(--bor)">
     <div style="width:76px"></div>
@@ -3672,56 +3675,76 @@ function renderDREPage(){
     <div style="font-size:11px;font-weight:700;color:${val>=0?'var(--green)':'var(--red)'};min-width:58px;text-align:right;margin-left:8px">${pct(val)}</div>
   </div>`;
 
+  // Receitas/despesas não operacionais e provisões
+  const recNaoOp=lancPeriod.filter(l=>l.tipo==='receita'&&(l.catCod||'').startsWith('5.')).reduce((s,l)=>s+(l.valor||0),0);
+  const despNaoOp=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('5.')).reduce((s,l)=>s+(l.valor||0),0);
+  const ganhosCap=lancPeriod.filter(l=>l.tipo==='receita'&&(l.catCod||'').startsWith('5.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const recFin=lancPeriod.filter(l=>l.tipo==='receita'&&(l.catCod||'').startsWith('4.4')).reduce((s,l)=>s+(l.valor||0),0);
+  const despFin=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('4.4')).reduce((s,l)=>s+(l.valor||0),0);
+  const lucroAntesIR=ebit+recNaoOp-despNaoOp;
+  const provIR=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('6.1')).reduce((s,l)=>s+(l.valor||0),0);
+  const provCS=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('6.2')).reduce((s,l)=>s+(l.valor||0),0);
+  const lucroDepIR=lucroAntesIR-provIR-provCS;
+  const participacoes=lancPeriod.filter(l=>l.tipo==='despesa'&&(l.catCod||'').startsWith('7.')).reduce((s,l)=>s+(l.valor||0),0);
+  const lucroLiq=lucroDepIR-participacoes;
+
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
   dreBody.innerHTML=`
-    ${SEP('3 — RECEITAS')}
-    ${R('3.1','Receita Bruta Operacional',recBruta,0,true,'var(--green)')}
-    ${R('3.1.1.1','Vendas Pix',vPix,3)}
-    ${R('3.1.1.2','Vendas Dinheiro',vDin,3)}
-    ${R('3.1.1.3','Vendas Cartão de Crédito',vCred,3)}
-    ${R('3.1.1.4','Vendas Cartão de Débito',vDeb,3)}
-    ${R('3.1.1.5','Vendas iFood',vIF,3)}
-    ${_dreTaxaEnt>0?R('3.1.1.6','Taxas de Entrega',_dreTaxaEnt,3):''}
-    ${_dreTaxaAdic>0?R('3.1.1.7','Taxas Adicionais iFood',_dreTaxaAdic,3):''}
-    ${_dreDescIF>0?R('3.1.1.8','Descontos iFood (subsidiados)',_dreDescIF,3):''}
-    ${cancelVal>0?R('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,3):''}
-    ${R('3.2','(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF+simples),1,false,'var(--red)')}
-    ${simples>0?R('3.2.1.1','(-) Simples Nacional sobre Vendas (DAS)',-simples,3):''}
-    ${cancelVal>0?R('3.2.2.1','(-) Cancelamentos de Pedidos',-cancelVal,3):''}
-    ${descontos>0?R('3.2.2.3','(-) Descontos Incondicionais Concedidos',-descontos,3):''}
-    ${taxaIF>0?R('3.2.3.1','(-) Taxas iFood',-taxaIF,3):''}
-    ${TOT('(=) Receita Líquida Operacional',recLiq)}
+    ${SEP('RECEITA BRUTA')}
+    ${R('3.1','Receita Bruta',recBruta,0,true,'var(--green)')}
+    ${vPix>0?R('3.1.1','Vendas Pix',vPix,1):''}
+    ${vDin>0?R('3.1.2','Vendas Dinheiro',vDin,1):''}
+    ${vCred>0?R('3.1.3','Vendas Crédito',vCred,1):''}
+    ${vDeb>0?R('3.1.4','Vendas Débito',vDeb,1):''}
+    ${vIF>0?R('3.1.5','Vendas iFood',vIF,1):''}
+    ${_dreTaxaEnt>0?R('3.1.6','Taxas de Entrega',_dreTaxaEnt,1):''}
+    ${SEP('DEDUÇÕES')}
+    ${simples>0?R('3.2.1','Simples Nacional (DAS)',-simples,1):''}
+    ${cancelVal>0?R('3.2.2','(-) Cancelamentos',-cancelVal,1):''}
+    ${descontos>0?R('3.2.3','(-) Descontos Concedidos',-descontos,1):''}
+    ${taxaIF>0?R('3.2.4','(-) Taxas iFood',-taxaIF,1):''}
+    ${TOT('RECEITA LÍQUIDA',recLiq)}
 
-    ${SEP('4.1 — CUSTO DOS PRODUTOS VENDIDOS (CPV)')}
-    ${R('4.1.1','Matérias-Primas e Ingredientes',-cmvFicha,1,false,'var(--red)')}
-    ${R('4.1.1.1','Matérias-Primas Consumidas (Ficha Técnica)',-cmvFicha,3)}
-    ${(custEmb>0||numPedidos>0)?R('4.1.1.2',`Embalagens Consumidas ${custEmb===0?'— <span style="font-size:10px;color:var(--amber)">⚠ sem lançamentos catCod 4.1.1.5</span>':'(preço médio × pedidos)'}`,custEmb>0?-custEmb:0,3):''}
-    ${R('4.1.2','Mão de Obra Direta (MOD)',-moDir,1,false,'var(--red)')}
-    ${R('4.1.2.1','Salários — Equipe de Produção',-_s('4.1.2.1'),3)}
-    ${cif>0?R('4.1.3','Custos Indiretos de Fabricação (CIF)',-cif,1,false,'var(--red)'):''}
-    ${TOT('(=) Resultado Operacional Bruto — Margem Bruta '+margemBruta.toFixed(1)+'%',lucBruto)}
+    ${SEP('CUSTOS DAS MERCADORIAS VENDIDAS')}
+    ${R('4.1.1','Matérias-Primas (Ficha Técnica)',-cmvFicha,1)}
+    ${custEmb>0?R('4.1.2','Embalagens',-custEmb,1):''}
+    ${moDir>0?R('4.1.3','Mão de Obra Direta',-moDir,1):''}
+    ${cif>0?R('4.1.4','Custos Indiretos de Fabricação',-cif,1):''}
+    ${TOT('LUCRO BRUTO',lucBruto)}
 
-    ${SEP('4.2 — DESPESAS COM VENDAS')}
-    ${R('4.2.1','Logística e Entrega',-log421,1,false,'var(--red)')}
-    ${R('4.2.1.1','Salário — Entregador',-_s('4.2.1.1'),3)}
-    ${R('4.2.3','Canais de Venda',-can423,1,false,'var(--red)')}
-    ${R('4.2.3.1','Sistema Cardápio Web / Site',-_s('4.2.3.1'),3)}
+    ${SEP('DESPESAS OPERACIONAIS')}
+    ${SEP2('Vendas')}
+    ${log421>0?R('4.2.1','Logística e Entrega',-log421,1):''}
+    ${can423>0?R('4.2.3','Canais de Venda',-can423,1):''}
+    ${SEP2('Administrativas')}
+    ${ocup431>0?R('4.3.1','Ocupação',-ocup431,1):''}
+    ${util432>0?R('4.3.2','Utilidades',-util432,1):''}
+    ${serv433>0?R('4.3.3','Serviços Profissionais',-serv433,1):''}
+    ${pess434>0?R('4.3.4','Pessoal Administrativo',-pess434,1):''}
+    ${manu435>0?R('4.3.5','Manutenção',-manu435,1):''}
+    ${tec436>0?R('4.3.6','Tecnologia',-tec436,1):''}
+    ${trib437>0?R('4.3.7','Tributário e Legal',-trib437,1):''}
+    ${SEP2('Financeiras')}
+    ${despFin>0?R('4.4.1','Despesas Financeiras',-despFin,1):R('4.4.1','Despesas Financeiras',0,1)}
+    ${SEP2('Receitas Financeiras')}
+    ${recFin>0?R('4.4.2','Receitas Financeiras',recFin,1):R('4.4.2','Receitas Financeiras',0,1)}
+    ${TOT('LUCRO OPERACIONAL',ebit)}
 
-    ${SEP('4.3 — DESPESAS ADMINISTRATIVAS')}
-    ${ocup431>0?R('4.3.1','Ocupação',-ocup431,1,false,'var(--red)'):''}
-    ${util432>0?R('4.3.2','Utilidades',-util432,1,false,'var(--red)'):''}
-    ${serv433>0?R('4.3.3','Serviços Profissionais',-serv433,1,false,'var(--red)'):''}
-    ${pess434>0?`${R('4.3.4','Pessoal Administrativo',-pess434,1,false,'var(--red)')}
-      ${R('4.3.4.1','Pró-labore dos Sócios',-_s('4.3.4.1'),3)}
-      ${R('4.3.4.2','Salários — Pessoal Administrativo',-_s('4.3.4.2'),3)}
-      ${R('4.3.4.3','Encargos Sociais',-_s('4.3.4.3'),3)}`:''}
-    ${manu435>0?R('4.3.5','Manutenção Geral e Infraestrutura',-manu435,1,false,'var(--red)'):''}
-    ${tec436>0?R('4.3.6','Tecnologia e Sistemas',-tec436,1,false,'var(--red)'):''}
-    ${trib437>0?R('4.3.7','Tributário e Legal',-trib437,1,false,'var(--red)'):''}
+    ${SEP('RESULTADO NÃO OPERACIONAL')}
+    ${R('5.1','Despesas Não Operacionais',despNaoOp>0?-despNaoOp:0,1)}
+    ${R('5.2','Receitas Não Operacionais',recNaoOp,1)}
+    ${R('5.3','Ganhos de Capital',ganhosCap,1)}
+    ${TOT('LUCRO ANTES DO IR e CS',lucroAntesIR)}
 
-    ${TOT('(=) EBIT — Resultado Operacional Líquido',ebit)}
-    ${TOT('(=) Resultado Líquido do Exercício',ebit)}
+    ${SEP('PROVISÕES')}
+    ${R('6.1','Provisão p/ Imposto de Renda',provIR>0?-provIR:0,1)}
+    ${R('6.2','Provisão p/ Contribuição Social',provCS>0?-provCS:0,1)}
+    ${TOT('LUCRO DEPOIS DO IR e CS',lucroDepIR)}
+
+    ${SEP('PARTICIPAÇÕES')}
+    ${R('7.','Participações',participacoes>0?-participacoes:0,1)}
+    ${TOT('LUCRO LÍQUIDO DO EXERCÍCIO',lucroLiq)}
   `;
 
   // CMV por produto
