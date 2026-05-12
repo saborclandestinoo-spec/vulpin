@@ -8836,6 +8836,23 @@ function mergeNaHistoria(novos){
     }
 
     // Gera lançamento bancário para pedidos NOVOS não cancelados
+    // Sempre verifica: pedido money sem lançamento no caixa → reprocessa
+    if(!isCancelado){
+      const _lancProc=S.get('pedidos_lanc_gerado')||{};
+      if(_lancProc[p.id]){
+        const _temMoney=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
+        if(_temMoney){
+          const _caixaB=getBancos().find(b=>b.tipo==='caixa');
+          const _temLC=_caixaB&&getLanc().some(l=>l.pedidoId===p.id&&l.bancoId===_caixaB.id);
+          if(!_temLC){
+            S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
+            delete _lancProc[p.id];
+            S.set('pedidos_lanc_gerado',_lancProc);
+          }
+        }
+      }
+    }
+
     if(isNovo&&!isCancelado){
       const lancProcessados=S.get('pedidos_lanc_gerado')||{};
       // Reprocessa se lançamento gerado não tem bancoId
