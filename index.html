@@ -3645,10 +3645,10 @@ function renderDREPage(){
   // KPI Strip
   const kpiEl=document.getElementById('dre-pg-kpi');
   if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)'},
-    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)'},
-    {lbl:'Lucro Operacional',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)'},
-    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)'},
+    {lbl:'Receita Bruta',val:`R$ ${fmtN(_recBruta)}`,cor:'var(--green)'},
+    {lbl:'Margem Bruta',val:_margemBruta.toFixed(1)+'%',cor:_margemBruta>=30?'var(--green)':'var(--amber)'},
+    {lbl:'Lucro Operacional',val:`R$ ${fmtN(_ebit)}`,cor:_ebit>=0?'var(--blue)':'var(--red)'},
+    {lbl:'Margem Líquida',val:_margemLiq.toFixed(1)+'%',cor:_margemLiq>=20?'var(--green)':_margemLiq>=10?'var(--amber)':'var(--red)'},
   ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(30,58,95,.06)">
     <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.lbl}</div>
     <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div></div>`).join('');
@@ -3715,67 +3715,117 @@ function renderDREPage(){
       +'</div>';
   };
 
-  // ── Cálculo via cod map ──
+  // ── Cálculo via cod map — TUDO pelo mapa de catCods ──
   const _cm=dreGetCodMap();
-  const _sum=(ids,tipo)=>dreSumByCods(lancPeriod,ids,tipo);
+  const _S=(id,tipo)=>{ // sum by lineId using cod map, fallback to prefix default
+    const cods=_cm[id];
+    if(cods&&cods.length) return dreSumByCods(lancPeriod,cods,tipo);
+    return null; // null = use original var
+  };
 
-  // Override vars with cod-map driven values (fallback to existing vars when cod empty)
-  const _recNaoOp=_cm.nao_op?_sum(_cm.nao_op,'receita'):recNaoOp;
-  const _despNaoOp=_cm.nao_op?_sum(_cm.nao_op,'despesa'):despNaoOp;
-  const _ganhosCap=_cm.nao_op?_sum(_cm.nao_op.filter(c=>c.startsWith('5.2')),'receita'):ganhosCap;
-  const _recFin=_cm.rec_fin?_sum(_cm.rec_fin,'receita'):recFin;
-  const _despFin=_cm.desp_fin?_sum(_cm.desp_fin,'despesa'):despFin;
-  const _provIR=_cm.prov_ir?_sum(_cm.prov_ir,'despesa'):provIR;
-  const _provCS=_cm.prov_cs?_sum(_cm.prov_cs,'despesa'):provCS;
-  const _partic=_cm.participac?_sum(_cm.participac,'despesa'):participacoes;
-  const _lucAntesIR=ebit+_recNaoOp-_despNaoOp;
-  const _lucDepIR=_lucAntesIR-_provIR-_provCS;
-  const _lucLiq=_lucDepIR-_partic;
+  // Receitas de venda — do cod map ou fallback às vars originais
+  const _vPix       = _S('v_pix','receita')      ?? vPix;
+  const _vCred      = _S('v_cred','receita')     ?? vCred;
+  const _vDeb       = _S('v_deb','receita')      ?? vDeb;
+  const _vDin       = _S('v_din','receita')      ?? vDin;
+  const _vIF        = _S('v_ifood','receita')    ?? vIF;
+  const _vEnt       = _S('v_entrega','receita')  ?? _dreTaxaEnt;
+  const _recBruta   = _S('rec_bruta','receita')  ?? (_vPix+_vCred+_vDeb+_vDin+_vIF+_vEnt);
+
+  // Impostos e deduções
+  const _simples    = _S('imp_vendas','despesa') ?? simples;
+  const _icms       = _S('icms','despesa')       ?? 0;
+  const _iss        = _S('iss','despesa')        ?? 0;
+  const _pisCofins  = _S('pis_cofins','despesa') ?? 0;
+  const _taxaIF     = _S('taxa_if','despesa')    ?? taxaIF;
+  const _descontos  = _S('descontos','despesa')  ?? descontos;
+  const _cancelam   = _S('cancelam','despesa')   ?? cancelVal;
+  const _totalDed   = _simples+_icms+_iss+_pisCofins+_taxaIF+_descontos+_cancelam;
+  const _recLiq     = _recBruta - _totalDed;
+
+  // CPV
+  const _mp         = _S('mp','despesa')         ?? cmvFicha;
+  const _emb        = _S('emb','despesa')        ?? custEmb;
+  const _mod        = _S('mod','despesa')        ?? moDir;
+  const _cif        = _S('cif','despesa')        ?? cif;
+  const _cpv        = _mp+_emb+_mod+_cif;
+  const _lucBruto   = _recLiq - _cpv;
+
+  // Despesas operacionais
+  const _log        = _S('logistica','despesa')  ?? log421;
+  const _can        = _S('canais','despesa')     ?? can423;
+  const _ocup       = _S('ocupacao','despesa')   ?? ocup431;
+  const _util       = _S('utilidades','despesa') ?? util432;
+  const _serv       = _S('servicos','despesa')   ?? serv433;
+  const _pess       = _S('pessoal','despesa')    ?? pess434;
+  const _manu       = _S('manutencao','despesa') ?? manu435;
+  const _tec        = _S('tecnologia','despesa') ?? tec436;
+  const _trib       = _S('tributario','despesa') ?? trib437;
+  const _despVend   = _log+_can;
+  const _despAdm    = _ocup+_util+_serv+_pess+_manu+_tec+_trib;
+  const _recFin     = _S('rec_fin','receita')    ?? recFin;
+  const _despFin    = _S('desp_fin','despesa')   ?? despFin;
+  const _ebit       = _lucBruto - _despVend - _despAdm + _recFin - _despFin;
+
+  // Não operacional + IR
+  const _recNaoOp   = _S('nao_op','receita')     ?? recNaoOp;
+  const _despNaoOp  = _S('nao_op','despesa')     ?? despNaoOp;
+  const _provIR     = _S('prov_ir','despesa')    ?? provIR;
+  const _provCS     = _S('prov_cs','despesa')    ?? provCS;
+  const _partic     = _S('participac','despesa') ?? participacoes;
+  const _lucAntesIR = _ebit + _recNaoOp - _despNaoOp;
+  const _lucDepIR   = _lucAntesIR - _provIR - _provCS;
+  const _lucLiq     = _lucDepIR - _partic;
+
+  // KPIs atualizados
+  const _margemBruta = _recBruta>0?(_lucBruto/_recBruta*100):0;
+  const _margemLiq   = _recBruta>0?(_lucLiq/_recBruta*100):0;
+
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
     dreBody.innerHTML='<div style="width:100%">'+HDR()+`
-    ${V('rec_bruta')?GRP(LBL('rec_bruta','Receita Bruta'),recBruta,'rec_bruta'):''}
-    ${V('v_pix')&&vPix>0?R(LBL('v_pix','Vendas Pix'),vPix,1,'v_pix'):''}
-    ${V('v_cred')&&vCred>0?R(LBL('v_cred','Vendas Cartão de Crédito'),vCred,1,'v_cred'):''}
-    ${V('v_deb')&&vDeb>0?R(LBL('v_deb','Vendas Cartão de Débito'),vDeb,1,'v_deb'):''}
-    ${V('v_din')&&vDin>0?R(LBL('v_din','Vendas Dinheiro'),vDin,1,'v_din'):''}
-    ${V('v_ifood')&&vIF>0?R(LBL('v_ifood','Vendas iFood'),vIF,1,'v_ifood'):''}
-    ${V('v_entrega')&&_dreTaxaEnt>0?R(LBL('v_entrega','Taxas de Entrega'),_dreTaxaEnt,1,'v_entrega'):''}
-    ${V('imp_vendas')?GRP(LBL('imp_vendas','(-) Imposto Sobre Vendas'),-(simples),'imp_vendas'):''}
-    ${V('icms')?R(LBL('icms','ICMS'),0,1,'icms'):''}
-    ${V('iss')?R(LBL('iss','ISS'),0,1,'iss'):''}
-    ${V('pis_cofins')?R(LBL('pis_cofins','PIS/COFINS'),0,1,'pis_cofins'):''}
-    ${simples>0?R('Simples Nacional (DAS)',-simples,1,''):''}
-    ${V('deducoes')?GRP(LBL('deducoes','(-) Deduções da Receita Bruta'),-(cancelVal+descontos+taxaIF),'deducoes'):''}
-    ${V('taxa_if')&&taxaIF>0?R(LBL('taxa_if','Taxas iFood'),-taxaIF,1,'taxa_if'):''}
-    ${V('descontos')&&descontos>0?R(LBL('descontos','Descontos Concedidos'),-descontos,1,'descontos'):''}
-    ${V('cancelam')&&cancelVal>0?R(LBL('cancelam','Estornos/Cancelamentos'),-cancelVal,1,'cancelam'):''}
-    ${V('rec_liq')?TOT(LBL('rec_liq','Receita Líquida Operacional'),recLiq):''}
+    ${V('rec_bruta')?GRP(LBL('rec_bruta','Receita Bruta'),_recBruta,'rec_bruta'):''}
+    ${V('v_pix')&&_vPix>0?R(LBL('v_pix','Vendas Pix'),_vPix,1,'v_pix'):''}
+    ${V('v_cred')&&_vCred>0?R(LBL('v_cred','Vendas Cartão de Crédito'),_vCred,1,'v_cred'):''}
+    ${V('v_deb')&&_vDeb>0?R(LBL('v_deb','Vendas Cartão de Débito'),_vDeb,1,'v_deb'):''}
+    ${V('v_din')&&_vDin>0?R(LBL('v_din','Vendas Dinheiro'),_vDin,1,'v_din'):''}
+    ${V('v_ifood')&&_vIF>0?R(LBL('v_ifood','Vendas iFood'),_vIF,1,'v_ifood'):''}
+    ${V('v_entrega')&&_vEnt>0?R(LBL('v_entrega','Taxas de Entrega'),_vEnt,1,'v_entrega'):''}
+    ${V('imp_vendas')?GRP(LBL('imp_vendas','(-) Imposto Sobre Vendas'),-(_simples+_icms+_iss+_pisCofins),'imp_vendas'):''}
+    ${V('icms')?R(LBL('icms','ICMS'),_icms>0?-_icms:0,1,'icms'):''}
+    ${V('iss')?R(LBL('iss','ISS'),_iss>0?-_iss:0,1,'iss'):''}
+    ${V('pis_cofins')?R(LBL('pis_cofins','PIS/COFINS'),_pisCofins>0?-_pisCofins:0,1,'pis_cofins'):''}
+    ${_simples>0?R('Simples Nacional (DAS)',-_simples,1,''):''}
+    ${V('deducoes')?GRP(LBL('deducoes','(-) Deduções da Receita Bruta'),-(_taxaIF+_descontos+_cancelam),'deducoes'):''}
+    ${V('taxa_if')&&_taxaIF>0?R(LBL('taxa_if','Taxas iFood'),-_taxaIF,1,'taxa_if'):''}
+    ${V('descontos')&&_descontos>0?R(LBL('descontos','Descontos Concedidos'),-_descontos,1,'descontos'):''}
+    ${V('cancelam')&&_cancelam>0?R(LBL('cancelam','Estornos/Cancelamentos'),-_cancelam,1,'cancelam'):''}
+    ${V('rec_liq')?TOT(LBL('rec_liq','Receita Líquida Operacional'),_recLiq):''}
 
-    ${V('cpv')?GRP(LBL('cpv','(-) Custo dos Produtos Vendidos'),-(cpv),'cpv'):''}
-    ${V('mp')?R(LBL('mp','Matérias-Primas (Ficha Técnica)'),-cmvFicha,1,'mp'):''}
-    ${V('emb')&&custEmb>0?R(LBL('emb','Embalagens'),-custEmb,1,'emb'):''}
-    ${V('mod')&&moDir>0?R(LBL('mod','Mão de Obra Direta'),-moDir,1,'mod'):''}
-    ${V('cif')&&cif>0?R(LBL('cif','Custos Indiretos'),-cif,1,'cif'):''}
-    ${V('luc_bruto')?TOT(LBL('luc_bruto','Lucro Bruto'),lucBruto):''}
+    ${V('cpv')?GRP(LBL('cpv','(-) Custo dos Produtos Vendidos'),-_cpv,'cpv'):''}
+    ${V('mp')?R(LBL('mp','Matérias-Primas'),-_mp,1,'mp'):''}
+    ${V('emb')&&_emb>0?R(LBL('emb','Embalagens'),-_emb,1,'emb'):''}
+    ${V('mod')&&_mod>0?R(LBL('mod','Mão de Obra Direta'),-_mod,1,'mod'):''}
+    ${V('cif')&&_cif>0?R(LBL('cif','Custos Indiretos'),-_cif,1,'cif'):''}
+    ${V('luc_bruto')?TOT(LBL('luc_bruto','Lucro Bruto'),_lucBruto):''}
 
-    ${V('desp_vend')?GRP(LBL('desp_vend','(-) Despesas com Vendas'),-(despVendas),'desp_vend'):''}
-    ${V('logistica')&&log421>0?R(LBL('logistica','Logística e Entrega'),-log421,1,'logistica'):''}
-    ${V('canais')&&can423>0?R(LBL('canais','Canais de Venda'),-can423,1,'canais'):''}
-    ${V('desp_adm')?GRP(LBL('desp_adm','(-) Despesas Administrativas'),-(despAdmin),'desp_adm'):''}
-    ${V('ocupacao')&&ocup431>0?R(LBL('ocupacao','Ocupação'),-ocup431,1,'ocupacao'):''}
-    ${V('utilidades')&&util432>0?R(LBL('utilidades','Utilidades'),-util432,1,'utilidades'):''}
-    ${V('servicos')&&serv433>0?R(LBL('servicos','Serviços Profissionais'),-serv433,1,'servicos'):''}
-    ${V('pessoal')&&pess434>0?R(LBL('pessoal','Pessoal Administrativo'),-pess434,1,'pessoal'):''}
-    ${V('manutencao')&&manu435>0?R(LBL('manutencao','Manutenção'),-manu435,1,'manutencao'):''}
-    ${V('tecnologia')&&tec436>0?R(LBL('tecnologia','Tecnologia'),-tec436,1,'tecnologia'):''}
-    ${V('tributario')&&trib437>0?R(LBL('tributario','Tributário e Legal'),-trib437,1,'tributario'):''}
+    ${V('desp_vend')?GRP(LBL('desp_vend','(-) Despesas com Vendas'),-_despVend,'desp_vend'):''}
+    ${V('logistica')&&_log>0?R(LBL('logistica','Logística e Entrega'),-_log,1,'logistica'):''}
+    ${V('canais')&&_can>0?R(LBL('canais','Canais de Venda'),-_can,1,'canais'):''}
+    ${V('desp_adm')?GRP(LBL('desp_adm','(-) Despesas Administrativas'),-_despAdm,'desp_adm'):''}
+    ${V('ocupacao')&&_ocup>0?R(LBL('ocupacao','Ocupação'),-_ocup,1,'ocupacao'):''}
+    ${V('utilidades')&&_util>0?R(LBL('utilidades','Utilidades'),-_util,1,'utilidades'):''}
+    ${V('servicos')&&_serv>0?R(LBL('servicos','Serviços Profissionais'),-_serv,1,'servicos'):''}
+    ${V('pessoal')&&_pess>0?R(LBL('pessoal','Pessoal Administrativo'),-_pess,1,'pessoal'):''}
+    ${V('manutencao')&&_manu>0?R(LBL('manutencao','Manutenção'),-_manu,1,'manutencao'):''}
+    ${V('tecnologia')&&_tec>0?R(LBL('tecnologia','Tecnologia'),-_tec,1,'tecnologia'):''}
+    ${V('tributario')&&_trib>0?R(LBL('tributario','Tributário e Legal'),-_trib,1,'tributario'):''}
     ${V('rec_fin')?GRP(LBL('rec_fin','Receitas Financeiras'),_recFin,'rec_fin'):''}
     ${_recFin>0?R('Receitas Financeiras',_recFin,1,''):''}
     ${V('desp_fin')?GRP(LBL('desp_fin','(-) Despesas Financeiras'),-_despFin,'desp_fin'):''}
     ${_despFin>0?R('Despesas Financeiras',-_despFin,1,''):''}
-    ${V('luc_op')?TOT(LBL('luc_op','Lucro Operacional'),ebit):''}
+    ${V('luc_op')?TOT(LBL('luc_op','Lucro Operacional'),_ebit):''}
 
     ${V('nao_op')?GRP(LBL('nao_op','Resultado Não Operacional'),_recNaoOp-_despNaoOp,'nao_op'):''}
     ${_despNaoOp>0?R('Despesas Não Operacionais',-_despNaoOp,1,''):''}
@@ -3792,6 +3842,7 @@ function renderDREPage(){
     ${_partic>0?R('Participações',-_partic,1,''):''}
     ${V('luc_liq')?TOT(LBL('luc_liq','Lucro Líquido do Exercício'),_lucLiq):''}
   `+'</div>';
+
   // Bind cod pill clicks via delegation
   dreBody.querySelectorAll('.dre-cod-pill').forEach(function(pill){
     pill.addEventListener('click',function(e){e.stopPropagation();dreOpenCodPicker(this,this.dataset.line);});
