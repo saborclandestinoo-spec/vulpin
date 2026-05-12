@@ -1138,7 +1138,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <!-- BANCOS -->
     <div class="pg" id="pg-bancos">
       <div class="scroll">
-        <div id="bank-totals" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
+        <div id="bank-totals" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px"></div>
         <div class="bank-grid" id="bank-grid"></div>
         <div class="card">
           <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
@@ -7106,23 +7106,22 @@ function renderBancos(){
   window._bancAPList=lancAPGlobal;
 
   if(totalsEl)totalsEl.innerHTML=[
-    {label:'Total em Caixa',val:totCaixa,bg:'#1E3A5F',bor:'#2D5BA3',lc:'#93C5FD',vc:'#E2EEF9',fn:''},
-    {label:'Total em Bancos',val:totBanco,bg:'#1E3A5F',bor:'#2D5BA3',lc:'#93C5FD',vc:'#E2EEF9',fn:''},
-    {label:'Total Geral',val:totGeral,bg:'#0F2040',bor:'#1E3A5F',lc:'#60A5FA',vc:'#ffffff',bold:true,fn:''},
-    {label:'A Receber',val:globalAR,bg:'#052e16',bor:'#166534',lc:'#86efac',vc:'#4ade80',fn:'bancShowARModal()'},
-    {label:'A Pagar',val:globalAP,bg:'#450a0a',bor:'#991b1b',lc:'#fca5a5',vc:'#f87171',fn:'bancShowAPModal()'},
+    {label:'Total em Caixa',val:totCaixa,bg:'#1E3A5F',lc:'#93C5FD',vc:'#fff',fn:'',span:1},
+    {label:'Total em Bancos',val:totBanco,bg:'#1E3A5F',lc:'#93C5FD',vc:'#fff',fn:'',span:1},
+    {label:'Total Geral',val:totGeral,bg:'#0F172A',lc:'#60A5FA',vc:'#fff',bold:true,fn:'',span:2},
+    {label:'A Receber',val:globalAR,bg:'#14532D',lc:'#86EFAC',vc:'#4ADE80',fn:'bancShowARModal()',span:1},
+    {label:'A Pagar',val:globalAP,bg:'#7F1D1D',lc:'#FCA5A5',vc:'#FCA5A5',fn:'bancShowAPModal()',span:1},
+    {label:'Saldo Previsto',val:totGeral+globalAR-globalAP,bg:'#1E3A5F',lc:'#93C5FD',vc:totGeral+globalAR-globalAP>=0?'#4ADE80':'#F87171',fn:'',span:2},
   ].map(t=>{
-    const clickable=t.fn?'cursor:pointer':'';
     const onclick=t.fn?'onclick="'+t.fn+'"':'';
-    return '<div '+onclick+' style="'
-      +'background:'+t.bg+';'
-      +'border:1px solid '+t.bor+';'
-      +'border-radius:14px;padding:18px 20px;'
+    const cursor=t.fn?'cursor:pointer':'';
+    const fs=t.bold?'28px':'20px';
+    const ps=t.bold?'22px 28px':'18px 24px';
+    return '<div '+onclick+' style="background:'+t.bg+';border-radius:14px;padding:'+ps+';'
       +'display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;'
-      +clickable
-      +'">'
-      +'<div style="font-size:10px;font-weight:700;color:'+t.lc+';text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">'+t.label+'</div>'
-      +'<div style="font-size:'+(t.bold?'22px':'18px')+';font-weight:800;color:'+t.vc+';font-variant-numeric:tabular-nums;letter-spacing:-.3px">R$ '+fmtN(t.val)+'</div>'
+      +'grid-column:span '+t.span+';'+cursor+'">'
+      +'<div style="font-size:11px;font-weight:700;color:'+t.lc+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">'+t.label+'</div>'
+      +'<div style="font-size:'+fs+';font-weight:800;color:'+t.vc+';font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1">R$ '+fmtN(t.val)+'</div>'
       +'</div>';
   }).join('');
 
