@@ -3638,42 +3638,47 @@ function renderDREPage(){
   // KPI Strip
   const kpiEl=document.getElementById('dre-pg-kpi');
   if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)',ico:'💰'},
-    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)',ico:'📊'},
-    {lbl:'EBIT',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)',ico:'📈'},
-    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)',ico:'🎯'},
-  ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)">
-    <div style="font-size:24px">${k.ico}</div><div>
-    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">${k.lbl}</div>
-    <div style="font-size:18px;font-weight:800;color:${k.cor};line-height:1.1">${k.val}</div></div></div>`).join('');
+    {lbl:'Receita Bruta',val:`R$ ${fmtN(recBruta)}`,cor:'var(--green)'},
+    {lbl:'Margem Bruta',val:margemBruta.toFixed(1)+'%',cor:margemBruta>=30?'var(--green)':'var(--amber)'},
+    {lbl:'Lucro Operacional',val:`R$ ${fmtN(ebit)}`,cor:ebit>=0?'var(--blue)':'var(--red)'},
+    {lbl:'Margem Líquida',val:margemLiq.toFixed(1)+'%',cor:margemLiq>=20?'var(--green)':margemLiq>=10?'var(--amber)':'var(--red)'},
+  ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(30,58,95,.06)">
+    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.lbl}</div>
+    <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div></div>`).join('');
 
   // DRE helpers
-  const R=(cod,nome,val,niv=0,bold=false,cor='')=>{
-    const indent=niv*20;
+  // ── DRE TABLE HELPERS ──
+  const HDR=()=>'<div style="display:grid;grid-template-columns:1fr 100px 70px;background:#1E3A5F;color:#fff;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;border-radius:8px 8px 0 0"><div>DEMONSTRATIVO DE RESULTADOS DO EXERCÍCIO (DRE)</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
+  const R=(nome,val,nivel=1)=>{
     const isNeg=val<0;
-    const fmt=`R$ ${fmtN(Math.abs(val))}`;
-    const disp=val===0?'—':isNeg?`(${fmt})`:fmt;
-    const valColor=cor||(val<0?'var(--red)':val>0?'var(--t)':'var(--t3)');
-    const bg=bold?'background:var(--bg2);':'';
-    return `<div style="display:flex;align-items:center;padding:${bold?9:7}px 20px;border-bottom:1px solid var(--bor2);${bg}transition:background .1s" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='${bold?'var(--bg2)':'var(--bg)'}'">
-      <div style="width:76px;font-size:10px;font-weight:500;color:var(--t3);flex-shrink:0;font-family:'monospace'">${cod}</div>
-      <div style="flex:1;font-size:${bold?'13':'12'}px;font-weight:${bold?700:400};padding-left:${indent}px;color:var(--t)">${bold?`<strong>${nome}</strong>`:nome}</div>
-      <div style="font-size:${bold?'13':'12'}px;font-weight:${bold?700:500};color:${valColor};min-width:110px;text-align:right;font-variant-numeric:tabular-nums">${disp}</div>
-      <div style="font-size:10px;color:var(--t3);min-width:58px;text-align:right;margin-left:8px;font-variant-numeric:tabular-nums">${pct(val)}</div>
-    </div>`;
+    const abs=Math.abs(val);
+    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(abs)+')':'R$ '+fmtN(abs));
+    const pctVal=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
+    const pad=(nivel*16)+'px';
+    const fs=nivel===0?'13px':'12px';
+    const fw=nivel===0?700:400;
+    const fi=nivel===1?'italic':'normal';
+    const vc=isNeg?'#DC2626':val>0?'var(--t)':'var(--t3)';
+    const bg=nivel===0?'background:#F0F5FF;border-top:1px solid #BFDBFE;':'';
+    return '<div style="display:grid;grid-template-columns:1fr 100px 70px;padding:'+(nivel===0?'7':'5')+'px 16px;border-bottom:1px solid #E8F0FE;'+bg+'"><div style="font-size:'+fs+';font-weight:'+fw+';font-style:'+fi+';color:var(--t);padding-left:'+pad+'">'+nome+'</div><div style="font-size:'+fs+';font-weight:'+fw+';color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
   };
-  const SEP=lbl=>`<div style="padding:9px 20px 7px;background:var(--fox-l);border-top:2px solid var(--fox-m);margin-top:4px">
-    <span style="font-size:10px;font-weight:800;color:var(--fox);text-transform:uppercase;letter-spacing:1.2px">${lbl}</span>
-  </div>`;
-  const SEP2=lbl=>`<div style="padding:5px 20px 4px;background:var(--bg2);border-top:1px solid var(--bor2)">
-    <span style="font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;font-style:italic">${lbl}</span>
-  </div>`;
-  const TOT=(lbl,val)=>`<div style="display:flex;align-items:center;padding:10px 20px;background:${val>=0?'rgba(39,174,96,.08)':'rgba(231,76,60,.08)'};border-top:2px solid ${val>=0?'rgba(39,174,96,.2)':'rgba(231,76,60,.2)'};border-bottom:1px solid var(--bor)">
-    <div style="width:76px"></div>
-    <div style="flex:1;font-size:13px;font-weight:700;color:var(--t)">${lbl}</div>
-    <div style="font-size:14px;font-weight:800;color:${val>=0?'var(--green)':'var(--red)'};min-width:110px;text-align:right;font-variant-numeric:tabular-nums">R$ ${fmtN(val)}</div>
-    <div style="font-size:11px;font-weight:700;color:${val>=0?'var(--green)':'var(--red)'};min-width:58px;text-align:right;margin-left:8px">${pct(val)}</div>
-  </div>`;
+  const GRP=(nome,val)=>{
+    const isNeg=val<0;
+    const abs=Math.abs(val);
+    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(abs)+')':'R$ '+fmtN(abs));
+    const pctVal=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
+    const vc=isNeg?'#DC2626':'#0F2040';
+    return '<div style="display:grid;grid-template-columns:1fr 100px 70px;padding:7px 16px;background:#F0F5FF;border-bottom:1px solid #BFDBFE;border-top:2px solid #BFDBFE"><div style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</div><div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:600;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
+  };
+  const TOT=(lbl,val)=>{
+    const isNeg=val<0;
+    const abs=Math.abs(val);
+    const disp=val===0?'-':(isNeg?'(R$ '+fmtN(abs)+')':'R$ '+fmtN(abs));
+    const pctVal=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
+    const vc=isNeg?'#FCA5A5':'#6EE7B7';
+    const pc=isNeg?'#FCA5A5':'#A7F3D0';
+    return '<div style="display:grid;grid-template-columns:1fr 100px 70px;padding:9px 16px;background:#1E3A5F;border-bottom:1px solid #2D5BA3"><div style="font-size:13px;font-weight:700;color:#fff">(=) '+lbl+'</div><div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+pctVal+'</div></div>';
+  };
 
   // Receitas/despesas não operacionais e provisões
   const recNaoOp=lancPeriod.filter(l=>l.tipo==='receita'&&(l.catCod||'').startsWith('5.')).reduce((s,l)=>s+(l.valor||0),0);
@@ -3690,61 +3695,66 @@ function renderDREPage(){
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
-  dreBody.innerHTML=`
-    ${SEP('RECEITA BRUTA')}
-    ${R('3.1','Receita Bruta',recBruta,0,true,'var(--green)')}
-    ${vPix>0?R('3.1.1','Vendas Pix',vPix,1):''}
-    ${vDin>0?R('3.1.2','Vendas Dinheiro',vDin,1):''}
-    ${vCred>0?R('3.1.3','Vendas Crédito',vCred,1):''}
-    ${vDeb>0?R('3.1.4','Vendas Débito',vDeb,1):''}
-    ${vIF>0?R('3.1.5','Vendas iFood',vIF,1):''}
-    ${_dreTaxaEnt>0?R('3.1.6','Taxas de Entrega',_dreTaxaEnt,1):''}
-    ${SEP('DEDUÇÕES')}
-    ${simples>0?R('3.2.1','Simples Nacional (DAS)',-simples,1):''}
-    ${cancelVal>0?R('3.2.2','(-) Cancelamentos',-cancelVal,1):''}
-    ${descontos>0?R('3.2.3','(-) Descontos Concedidos',-descontos,1):''}
-    ${taxaIF>0?R('3.2.4','(-) Taxas iFood',-taxaIF,1):''}
-    ${TOT('RECEITA LÍQUIDA',recLiq)}
+  dreBody.innerHTML=HDR()+`
+    ${GRP('Receita Bruta',recBruta)}
+    ${vPix>0?R('Vendas Pix',vPix,1):''}
+    ${vCred>0?R('Vendas Cartão de Crédito',vCred,1):''}
+    ${vDeb>0?R('Vendas Cartão de Débito',vDeb,1):''}
+    ${vDin>0?R('Vendas Dinheiro',vDin,1):''}
+    ${vIF>0?R('Vendas iFood',vIF,1):''}
+    ${_dreTaxaEnt>0?R('Taxas de Entrega',_dreTaxaEnt,1):''}
+    ${GRP('(-) Imposto Sobre Vendas',-(simples),0)}
+    ${R('ICMS',0,1)}
+    ${R('ISS',0,1)}
+    ${R('PIS/COFINS',0,1)}
+    ${simples>0?R('Simples Nacional (DAS)',-simples,1):''}
+    ${GRP('(-) Deduções da Receita Bruta',-(cancelVal+descontos+taxaIF))}
+    ${taxaIF>0?R('Taxas iFood',-taxaIF,1):''}
+    ${descontos>0?R('Descontos Concedidos',-descontos,1):''}
+    ${cancelVal>0?R('Estornos/Cancelamentos',-cancelVal,1):''}
+    ${TOT('Receita Líquida Operacional',recLiq)}
 
-    ${SEP('CUSTOS DAS MERCADORIAS VENDIDAS')}
-    ${R('4.1.1','Matérias-Primas (Ficha Técnica)',-cmvFicha,1)}
-    ${custEmb>0?R('4.1.2','Embalagens',-custEmb,1):''}
-    ${moDir>0?R('4.1.3','Mão de Obra Direta',-moDir,1):''}
-    ${cif>0?R('4.1.4','Custos Indiretos de Fabricação',-cif,1):''}
-    ${TOT('LUCRO BRUTO',lucBruto)}
+    ${GRP('(-) Custo dos Produtos Vendidos (CPV)',-(cpv))}
+    ${R('Matérias-Primas (Ficha Técnica)',-cmvFicha,1)}
+    ${custEmb>0?R('Embalagens',-custEmb,1):''}
+    ${moDir>0?R('Mão de Obra Direta',-moDir,1):''}
+    ${cif>0?R('Custos Indiretos de Fabricação',-cif,1):''}
+    ${TOT('Lucro Bruto',lucBruto)}
 
-    ${SEP('DESPESAS OPERACIONAIS')}
-    ${SEP2('Vendas')}
-    ${log421>0?R('4.2.1','Logística e Entrega',-log421,1):''}
-    ${can423>0?R('4.2.3','Canais de Venda',-can423,1):''}
-    ${SEP2('Administrativas')}
-    ${ocup431>0?R('4.3.1','Ocupação',-ocup431,1):''}
-    ${util432>0?R('4.3.2','Utilidades',-util432,1):''}
-    ${serv433>0?R('4.3.3','Serviços Profissionais',-serv433,1):''}
-    ${pess434>0?R('4.3.4','Pessoal Administrativo',-pess434,1):''}
-    ${manu435>0?R('4.3.5','Manutenção',-manu435,1):''}
-    ${tec436>0?R('4.3.6','Tecnologia',-tec436,1):''}
-    ${trib437>0?R('4.3.7','Tributário e Legal',-trib437,1):''}
-    ${SEP2('Financeiras')}
-    ${despFin>0?R('4.4.1','Despesas Financeiras',-despFin,1):R('4.4.1','Despesas Financeiras',0,1)}
-    ${SEP2('Receitas Financeiras')}
-    ${recFin>0?R('4.4.2','Receitas Financeiras',recFin,1):R('4.4.2','Receitas Financeiras',0,1)}
-    ${TOT('LUCRO OPERACIONAL',ebit)}
+    ${GRP('(-) Despesas com Vendas',-(despVendas))}
+    ${log421>0?R('Logística e Entrega',-log421,1):''}
+    ${can423>0?R('Canais de Venda',-can423,1):''}
+    ${GRP('(-) Despesas Administrativas',-(despAdmin))}
+    ${ocup431>0?R('Ocupação',-ocup431,1):''}
+    ${util432>0?R('Utilidades',-util432,1):''}
+    ${serv433>0?R('Serviços Profissionais',-serv433,1):''}
+    ${pess434>0?R('Pessoal Administrativo',-pess434,1):''}
+    ${manu435>0?R('Manutenção',-manu435,1):''}
+    ${tec436>0?R('Tecnologia',-tec436,1):''}
+    ${trib437>0?R('Tributário e Legal',-trib437,1):''}
+    ${GRP('Receitas Financeiras',recFin)}
+    ${R('Receitas Financeiras',recFin,1)}
+    ${GRP('(-) Despesas Financeiras',-(despFin))}
+    ${R('Despesas Financeiras',despFin>0?-despFin:0,1)}
+    ${TOT('Lucro Operacional',ebit)}
 
-    ${SEP('RESULTADO NÃO OPERACIONAL')}
-    ${R('5.1','Despesas Não Operacionais',despNaoOp>0?-despNaoOp:0,1)}
-    ${R('5.2','Receitas Não Operacionais',recNaoOp,1)}
-    ${R('5.3','Ganhos de Capital',ganhosCap,1)}
-    ${TOT('LUCRO ANTES DO IR e CS',lucroAntesIR)}
+    ${GRP('(-) Despesas Não Operacionais',-(despNaoOp))}
+    ${R('Despesas Não Operacionais',despNaoOp>0?-despNaoOp:0,1)}
+    ${GRP('Receitas Não Operacionais',recNaoOp)}
+    ${R('Receitas Não Operacionais',recNaoOp,1)}
+    ${GRP('Ganhos de Capital',ganhosCap)}
+    ${R('Ganhos de Capital',ganhosCap,1)}
+    ${TOT('Lucro Antes do IR e CS',lucroAntesIR)}
 
-    ${SEP('PROVISÕES')}
-    ${R('6.1','Provisão p/ Imposto de Renda',provIR>0?-provIR:0,1)}
-    ${R('6.2','Provisão p/ Contribuição Social',provCS>0?-provCS:0,1)}
-    ${TOT('LUCRO DEPOIS DO IR e CS',lucroDepIR)}
+    ${GRP('(-) Provisão p/ Imposto de Renda',-(provIR))}
+    ${R('Imposto de Renda',provIR>0?-provIR:0,1)}
+    ${GRP('(-) Provisão p/ Contribuição Social',-(provCS))}
+    ${R('Contribuição Social',provCS>0?-provCS:0,1)}
+    ${TOT('Lucro Depois do IR e CS',lucroDepIR)}
 
-    ${SEP('PARTICIPAÇÕES')}
-    ${R('7.','Participações',participacoes>0?-participacoes:0,1)}
-    ${TOT('LUCRO LÍQUIDO DO EXERCÍCIO',lucroLiq)}
+    ${GRP('(-) Participações',-(participacoes))}
+    ${R('Participações',participacoes>0?-participacoes:0,1)}
+    ${TOT('Lucro Líquido do Exercício',lucroLiq)}
   `;
 
   // CMV por produto
