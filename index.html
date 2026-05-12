@@ -1138,7 +1138,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <!-- BANCOS -->
     <div class="pg" id="pg-bancos">
       <div class="scroll">
-        <div id="bank-totals" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+        <div id="bank-totals" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px"></div>
         <div class="bank-grid" id="bank-grid"></div>
         <div class="card">
           <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
@@ -7086,8 +7086,8 @@ function fixMoneyPedidosSemLanc(){
 
 
 function renderBancos(){
-  fixIfoodLancamentos();
-  fixMoneyPedidosSemLanc();
+  try{fixIfoodLancamentos();}catch(e){console.warn('fixIfood:',e);}
+  try{fixMoneyPedidosSemLanc();}catch(e){console.warn('fixMoney:',e);}
   const bancos=getBancos();
   // Totais por tipo
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
