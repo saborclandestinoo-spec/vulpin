@@ -8855,15 +8855,31 @@ function mergeNaHistoria(novos){
         pagamentos.forEach(pg=>{
           const pmKey=(pg.payment_method||'').toLowerCase();
           const pmType=(pg.payment_type||'').toLowerCase();
-          // online_credit_card e payment_type=online = pago pelo app iFood, não em dinheiro
-          const isOnlineIfood=pmKey==='online_credit_card'||pmType==='online'||pmKey==='ifood';
-          // Busca forma de pagamento pelo nome compatível
-          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito',ifood:'ifood',online_credit_card:'ifood'};
+
+          // Classifica o tipo de pagamento
+          // Pago online pelo app iFood → NÃO cai em nenhuma conta (iFood repassa depois)
+          const isPagoOnline=pmKey==='ifood'||pmKey==='online_credit_card'||pmType==='online';
+          // Pago na entrega em dinheiro → Caixa
+          const isPagoDinheiro=pmKey==='money';
+          // Pago na entrega com cartão crédito → conta cartão crédito
+          const isPagoCredito=pmKey==='credit_card';
+          // Pago na entrega com cartão débito → conta cartão débito
+          const isPagoDebito=pmKey==='debit_card';
+          // Pago via Pix → conta Pix
+          const isPagoPix=pmKey==='pix'||pmKey==='pix_auto';
+
+          if(isPagoOnline){
+            // Pago online pelo app: NÃO gera lançamento (iFood repassa em D+x via extrato)
+            return;
+          }
+
+          // Para pagamentos na entrega, mapeia para forma/banco correto
+          const _pmMap={money:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito'};
           const pmNome=_pmMap[pmKey]||pmKey;
           const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
-          // Se pagamento online iFood e não tem forma iFood configurada, NÃO lança no caixa
           const caixaBank=getBancos().find(b=>b.tipo==='caixa');
-          const bancoIdFinal=forma?.bancoId||(isOnlineIfood?'':caixaBank?.id)||'';
+          // Fallback: dinheiro → caixa, cartão → sem banco se não configurado
+          const bancoIdFinal=forma?.bancoId||(isPagoDinheiro?caixaBank?.id||'':'');
           if(!bancoIdFinal)return;
           const valor=pg.total||pg.value||0;
           if(!valor)return;
@@ -8920,40 +8936,60 @@ function mergeNaHistoria(novos){
 }
 
 
-// Fix: remove lançamentos de pedidos iFood gerados incorretamente no banco Caixa
+// Fix: remove lançamentos de pedidos iFood ONLINE gerados incorretamente no banco Caixa
 function fixIfoodLancamentos(){
   const hist=getHistorico();
   const bancos=getBancos();
   const caixa=bancos.find(b=>b.tipo==='caixa');
   if(!caixa)return;
-  
-  // Pedidos iFood: têm payment_method ifood/online_credit_card mas foram para caixa
-  const ifoodPedidoIds=new Set(hist.filter(p=>{
+
+  // Identifica pedidos que têm pagamento online iFood (NÃO dinheiro)
+  // Só remove do caixa pedidos cujo pagamento iFood é online e o valor no caixa
+  // não corresponde a nenhum pagamento em dinheiro real
+  const allLancs=getLanc();
+  const toRemoveIds=new Set();
+  const toResetIds=new Set();
+
+  hist.forEach(p=>{
     const pags=p.payments||[];
-    return pags.some(pg=>{
+    const temDinheiro=pags.some(pg=>(pg.payment_method||'').toLowerCase()==='money');
+    const temIfoodOnline=pags.some(pg=>{
       const pmk=(pg.payment_method||'').toLowerCase();
       const pmt=(pg.payment_type||'').toLowerCase();
       return pmk==='ifood'||pmk==='online_credit_card'||pmt==='online';
     });
-  }).map(p=>p.id));
 
-  if(!ifoodPedidoIds.size)return;
+    if(!temIfoodOnline)return; // pedido normal, não mexe
 
-  // Remove lançamentos desses pedidos que estão no banco caixa
-  const allLancs=getLanc();
-  const toRemove=allLancs.filter(l=>l.pedidoId&&ifoodPedidoIds.has(l.pedidoId)&&l.bancoId===caixa.id);
-  if(!toRemove.length)return;
+    // Lançamentos desse pedido no caixa
+    const lancCaixa=allLancs.filter(l=>l.pedidoId===p.id&&l.bancoId===caixa.id);
+    if(!lancCaixa.length)return;
 
-  const toRemoveIds=new Set(toRemove.map(l=>l.id));
-  const cleaned=allLancs.filter(l=>!toRemoveIds.has(l.id));
-  S.set('lancamentos',cleaned);
+    if(!temDinheiro){
+      // Pedido 100% online — remove tudo do caixa
+      lancCaixa.forEach(l=>toRemoveIds.add(l.id));
+      toResetIds.add(p.id);
+    } else {
+      // Pedido misto (dinheiro + iFood online) — remove só lançamentos cujo valor
+      // corresponde ao pagamento online (não ao money)
+      const valoresMoney=new Set(pags.filter(pg=>(pg.payment_method||'').toLowerCase()==='money').map(pg=>{
+        const taxa=pg.taxa||0;
+        return Math.round((pg.total||pg.value||0)*(1-taxa/100)*100);
+      }));
+      lancCaixa.forEach(l=>{
+        const v=Math.round((l.valor||0)*100);
+        if(!valoresMoney.has(v)) toRemoveIds.add(l.id);
+      });
+      if(toRemoveIds.size) toResetIds.add(p.id);
+    }
+  });
 
-  // Reset processed flag so they get reprocessed with correct mapping
+  if(!toRemoveIds.size)return;
+  S.set('lancamentos',allLancs.filter(l=>!toRemoveIds.has(l.id)));
   const processed=S.get('pedidos_lanc_gerado')||{};
-  ifoodPedidoIds.forEach(id=>delete processed[id]);
+  toResetIds.forEach(id=>delete processed[id]);
   S.set('pedidos_lanc_gerado',processed);
-
-  console.log('Fix: removidos',toRemove.length,'lançamentos iFood incorretos do Caixa');
+  console.log('Fix iFood: removidos',toRemoveIds.size,'lançamentos incorretos');
 }
 
 function renderHistoricoMesesFilter(){
