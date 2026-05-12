@@ -3661,42 +3661,47 @@ function renderDREPage(){
   const LBL=(id,fb)=>(_vmap[id]&&_vmap[id].label)||fb;
   const _bc=_e.borderColor;
   const _showPct=_e.showPct!==false;
-  const cols=_showPct?'90px 1fr 110px 58px':'90px 1fr 110px';
+  const cols=_showPct?'1fr 110px 56px':'1fr 110px';
 
   const HDR=()=>'<div style="display:grid;grid-template-columns:'+cols+';background:'+_e.hdrBg+';color:'+_e.hdrColor+';padding:10px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;border-radius:8px 8px 0 0">'
-    +'<div>Código</div><div>Conta</div><div style="text-align:right">R$</div>'+(_showPct?'<div style="text-align:right">%</div>':'')+'</div>';
+    +'<div>Código / Conta</div><div style="text-align:right">R$</div>'+(_showPct?'<div style="text-align:right">%</div>':'')+'</div>';
 
-  // R: sub-item row. lineId para puxar cod editável
+  // Sub-item: código pill + nome indentado na mesma célula
   const R=(nome,val,nivel,lineId)=>{
     nivel=nivel||1;
     const isNeg=val<0;
     const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
     const pct=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
-    const pad=(nivel*14)+'px';
+    const pad=(nivel*20)+'px';
     const vc=isNeg?'#DC2626':val>0?_e.grpColor:'#94A3B8';
+    const pill=lineId?dreCodCell(lineId):'';
     return '<div style="display:grid;grid-template-columns:'+cols+';padding:5px 16px;border-bottom:1px solid '+_bc+'">'
-      +'<div style="display:flex;justify-content:flex-end;align-items:center">'+(lineId?dreCodCell(lineId):'')+'</div>'
-      +'<div style="font-size:12px;font-style:italic;color:'+_e.grpColor+';padding-left:'+pad+'">'+nome+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'
+      +pill
+      +'<span style="font-size:12px;font-style:italic;color:'+_e.grpColor+'">'+nome+'</span>'
+      +'</div>'
       +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
       +(_showPct?'<div style="font-size:11px;color:#94A3B8;text-align:right">'+pct+'</div>':'')
       +'</div>';
   };
 
-  // GRP: group header row
+  // Grupo: código pill + nome em negrito, indentação menor
   const GRP=(nome,val,lineId)=>{
     const isNeg=val<0;
     const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
     const pct=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
     const vc=isNeg?'#DC2626':_e.grpColor;
+    const pill=lineId?dreCodCell(lineId):'';
     return '<div style="display:grid;grid-template-columns:'+cols+';padding:7px 16px;background:'+_e.grpBg+';border-bottom:1px solid '+_bc+';border-top:2px solid '+_bc+'">'
-      +'<div style="display:flex;justify-content:flex-end;align-items:center">'+(lineId?dreCodCell(lineId):'')+'</div>'
-      +'<div style="font-size:13px;font-weight:700;color:'+_e.grpColor+'">'+nome+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +pill
+      +'<span style="font-size:13px;font-weight:700;color:'+_e.grpColor+'">'+nome+'</span>'
+      +'</div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
       +(_showPct?'<div style="font-size:11px;font-weight:600;color:#94A3B8;text-align:right">'+pct+'</div>':'')
       +'</div>';
   };
 
-  // TOT: total/result row
   const TOT=(lbl,val)=>{
     const isNeg=val<0;
     const disp=val===0?'-':(isNeg?'(R$ '+fmtN(Math.abs(val))+')':'R$ '+fmtN(val));
@@ -3704,7 +3709,6 @@ function renderDREPage(){
     const vc=isNeg?'#FCA5A5':'#6EE7B7';
     const pc=isNeg?'#FCA5A5':'#A7F3D0';
     return '<div style="display:grid;grid-template-columns:'+cols+';padding:9px 16px;background:'+_e.hdrBg+';border-bottom:2px solid '+_e.hdrBg+'44">'
-      +'<div></div>'
       +'<div style="font-size:13px;font-weight:700;color:'+_e.hdrColor+'">(=) '+lbl+'</div>'
       +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div>'
       +(_showPct?'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+pct+'</div>':'')
