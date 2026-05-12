@@ -7004,6 +7004,7 @@ function updateCCSelect(){}
 // ═══════════════════════════════════════════
 let editBancoId=null,selectedBancoId=null;
 function renderBancos(){
+  fixIfoodLancamentos();
   const bancos=getBancos();
   // Totais por tipo
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
@@ -8916,6 +8917,43 @@ function mergeNaHistoria(novos){
 
   setHistorico(Object.values(mapa));
   renderHistoricoMesesFilter();
+}
+
+
+// Fix: remove lançamentos de pedidos iFood gerados incorretamente no banco Caixa
+function fixIfoodLancamentos(){
+  const hist=getHistorico();
+  const bancos=getBancos();
+  const caixa=bancos.find(b=>b.tipo==='caixa');
+  if(!caixa)return;
+  
+  // Pedidos iFood: têm payment_method ifood/online_credit_card mas foram para caixa
+  const ifoodPedidoIds=new Set(hist.filter(p=>{
+    const pags=p.payments||[];
+    return pags.some(pg=>{
+      const pmk=(pg.payment_method||'').toLowerCase();
+      const pmt=(pg.payment_type||'').toLowerCase();
+      return pmk==='ifood'||pmk==='online_credit_card'||pmt==='online';
+    });
+  }).map(p=>p.id));
+
+  if(!ifoodPedidoIds.size)return;
+
+  // Remove lançamentos desses pedidos que estão no banco caixa
+  const allLancs=getLanc();
+  const toRemove=allLancs.filter(l=>l.pedidoId&&ifoodPedidoIds.has(l.pedidoId)&&l.bancoId===caixa.id);
+  if(!toRemove.length)return;
+
+  const toRemoveIds=new Set(toRemove.map(l=>l.id));
+  const cleaned=allLancs.filter(l=>!toRemoveIds.has(l.id));
+  S.set('lancamentos',cleaned);
+
+  // Reset processed flag so they get reprocessed with correct mapping
+  const processed=S.get('pedidos_lanc_gerado')||{};
+  ifoodPedidoIds.forEach(id=>delete processed[id]);
+  S.set('pedidos_lanc_gerado',processed);
+
+  console.log('Fix: removidos',toRemove.length,'lançamentos iFood incorretos do Caixa');
 }
 
 function renderHistoricoMesesFilter(){
