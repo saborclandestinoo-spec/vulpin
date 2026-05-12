@@ -3643,16 +3643,6 @@ function renderDREPage(){
   const pct=v=>recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0.0%';
 
   // KPI Strip
-  const kpiEl=document.getElementById('dre-pg-kpi');
-  if(kpiEl) kpiEl.innerHTML=[
-    {lbl:'Receita Bruta',val:`R$ ${fmtN(_recBruta)}`,cor:'var(--green)'},
-    {lbl:'Margem Bruta',val:_margemBruta.toFixed(1)+'%',cor:_margemBruta>=30?'var(--green)':'var(--amber)'},
-    {lbl:'Lucro Operacional',val:`R$ ${fmtN(_ebit)}`,cor:_ebit>=0?'var(--blue)':'var(--red)'},
-    {lbl:'Margem Líquida',val:_margemLiq.toFixed(1)+'%',cor:_margemLiq>=20?'var(--green)':_margemLiq>=10?'var(--amber)':'var(--red)'},
-  ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(30,58,95,.06)">
-    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.lbl}</div>
-    <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div></div>`).join('');
-
   // DRE helpers
   // ── DRE TABLE HELPERS ──
   const _e=dreGetEstilo();
@@ -3770,6 +3760,17 @@ function renderDREPage(){
   const _lucLiq    =_lucDepIR-_partic;
   const _margemBruta=_recBruta>0?(_lucBruto/_recBruta*100):0;
   const _margemLiq  =_recBruta>0?(_lucLiq/_recBruta*100):0;
+
+  const kpiEl=document.getElementById('dre-pg-kpi');
+  if(kpiEl) kpiEl.innerHTML=[
+    {lbl:'Receita Bruta',val:`R$ ${fmtN(_recBruta)}`,cor:'var(--green)'},
+    {lbl:'Margem Bruta',val:_margemBruta.toFixed(1)+'%',cor:_margemBruta>=30?'var(--green)':'var(--amber)'},
+    {lbl:'Lucro Operacional',val:`R$ ${fmtN(_ebit)}`,cor:_ebit>=0?'var(--blue)':'var(--red)'},
+    {lbl:'Margem Líquida',val:_margemLiq.toFixed(1)+'%',cor:_margemLiq>=20?'var(--green)':_margemLiq>=10?'var(--amber)':'var(--red)'},
+  ].map(k=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:10px;padding:14px 18px;box-shadow:0 1px 3px rgba(30,58,95,.06)">
+    <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${k.lbl}</div>
+    <div style="font-size:20px;font-weight:800;color:${k.cor};line-height:1.1;font-variant-numeric:tabular-nums">${k.val}</div></div>`).join('');
+
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
