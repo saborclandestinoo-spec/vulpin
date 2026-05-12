@@ -3648,7 +3648,7 @@ function renderDREPage(){
 
   // DRE helpers
   // ── DRE TABLE HELPERS ──
-  const HDR=()=>'<div style="display:grid;grid-template-columns:auto 130px 68px;background:#1E3A5F;color:#fff;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;border-radius:8px 8px 0 0"><div>DEMONSTRATIVO DE RESULTADOS DO EXERCÍCIO (DRE)</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
+  const HDR=()=>'<div style="display:grid;grid-template-columns:1fr 120px 58px;background:#1E3A5F;color:#fff;padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;border-radius:8px 8px 0 0"><div>DEMONSTRATIVO DE RESULTADOS DO EXERCÍCIO (DRE)</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
   const R=(nome,val,nivel=1)=>{
     const isNeg=val<0;
     const abs=Math.abs(val);
@@ -3660,7 +3660,7 @@ function renderDREPage(){
     const fi=nivel===1?'italic':'normal';
     const vc=isNeg?'#DC2626':val>0?'var(--t)':'var(--t3)';
     const bg=nivel===0?'background:#F0F5FF;border-top:1px solid #BFDBFE;':'';
-    return '<div style="display:grid;grid-template-columns:auto 130px 68px;padding:'+(nivel===0?'7':'5')+'px 16px;border-bottom:1px solid #E8F0FE;'+bg+'"><div style="font-size:'+fs+';font-weight:'+fw+';font-style:'+fi+';color:var(--t);padding-left:'+pad+'">'+nome+'</div><div style="font-size:'+fs+';font-weight:'+fw+';color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
+    return '<div style="display:grid;grid-template-columns:1fr 120px 58px;padding:'+(nivel===0?'7':'5')+'px 16px;border-bottom:1px solid #E8F0FE;'+bg+'"><div style="font-size:'+fs+';font-weight:'+fw+';font-style:'+fi+';color:var(--t);padding-left:'+pad+'">'+nome+'</div><div style="font-size:'+fs+';font-weight:'+fw+';color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
   };
   const GRP=(nome,val)=>{
     const isNeg=val<0;
@@ -3668,7 +3668,7 @@ function renderDREPage(){
     const disp=val===0?'-':(isNeg?'(R$ '+fmtN(abs)+')':'R$ '+fmtN(abs));
     const pctVal=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
     const vc=isNeg?'#DC2626':'#0F2040';
-    return '<div style="display:grid;grid-template-columns:auto 130px 68px;padding:7px 16px;background:#F0F5FF;border-bottom:1px solid #BFDBFE;border-top:2px solid #BFDBFE"><div style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</div><div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:600;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
+    return '<div style="display:grid;grid-template-columns:1fr 120px 58px;padding:7px 16px;background:#F0F5FF;border-bottom:1px solid #BFDBFE;border-top:2px solid #BFDBFE"><div style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</div><div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:600;color:var(--t3);text-align:right">'+pctVal+'</div></div>';
   };
   const TOT=(lbl,val)=>{
     const isNeg=val<0;
@@ -3677,7 +3677,7 @@ function renderDREPage(){
     const pctVal=recBruta>0?(val/recBruta*100).toFixed(1)+'%':'0,0%';
     const vc=isNeg?'#FCA5A5':'#6EE7B7';
     const pc=isNeg?'#FCA5A5':'#A7F3D0';
-    return '<div style="display:grid;grid-template-columns:auto 130px 68px;padding:9px 16px;background:#1E3A5F;border-bottom:1px solid #2D5BA3"><div style="font-size:13px;font-weight:700;color:#fff">(=) '+lbl+'</div><div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+pctVal+'</div></div>';
+    return '<div style="display:grid;grid-template-columns:1fr 120px 58px;padding:9px 16px;background:#1E3A5F;border-bottom:1px solid #2D5BA3"><div style="font-size:13px;font-weight:700;color:#fff">(=) '+lbl+'</div><div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+disp+'</div><div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+pctVal+'</div></div>';
   };
 
   // Receitas/despesas não operacionais e provisões
@@ -3695,7 +3695,7 @@ function renderDREPage(){
 
   const dreBody=document.getElementById('dre-pg-body');
   if(!dreBody)return;
-  dreBody.style.maxWidth="680px";dreBody.innerHTML=HDR()+`
+  dreBody.innerHTML='<div style="width:100%">'+HDR()+`
     ${GRP('Receita Bruta',recBruta)}
     ${vPix>0?R('Vendas Pix',vPix,1):''}
     ${vCred>0?R('Vendas Cartão de Crédito',vCred,1):''}
@@ -3755,7 +3755,7 @@ function renderDREPage(){
     ${GRP('(-) Participações',-(participacoes))}
     ${R('Participações',participacoes>0?-participacoes:0,1)}
     ${TOT('Lucro Líquido do Exercício',lucroLiq)}
-  `;
+  `+'</div>';
 
   // CMV por produto
   const maxCMV=cmvPorProduto[0]?.total||1;
