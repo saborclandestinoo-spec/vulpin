@@ -7007,84 +7007,83 @@ function updateCCSelect(){}
 // BANCOS
 // ═══════════════════════════════════════════
 let editBancoId=null,selectedBancoId=null;
-let _fixMoneyRunning=false;
 function fixMoneyPedidosSemLanc(){
-  if(_fixMoneyRunning)return;
-  _fixMoneyRunning=true;
-  // Verifica TODOS os pedidos do histórico com pagamento money sem lançamento no caixa
   const hist=getHistorico();
-  const caixaB=getBancos().find(b=>b.tipo==='caixa');
-  if(!caixaB)return;
+  const caixaBank=getBancos().find(function(b){return b.tipo==='caixa';});
+  if(!caixaBank)return;
+  const formasPedido=getFormasPedido();
   const lancProc=S.get('pedidos_lanc_gerado')||{};
-  let changed=false;
+  const hoje=new Date().toLocaleDateString('sv-SE');
 
   hist.forEach(function(p){
-    if(!p.id)return;
-    const isCancelado=['CANCELLED','CANCELED','cancelled','canceled'].includes(p.status||'');
-    if(isCancelado)return;
+    if(!p.id||lancProc[p.id])return;
+    const status=(p.status||'').toUpperCase();
+    if(status==='CANCELLED'||status==='CANCELED'||status==='CANCELLATION_REQUESTED')return;
     const pags=p.payments||[];
-    const temMoney=pags.some(function(pg){
-      return ['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase());
-    });
-    if(!temMoney)return;
-    // Tem dinheiro mas não tem lançamento no caixa?
-    const temLanc=getLanc().some(function(l){return l.pedidoId===p.id&&l.bancoId===caixaB.id;});
-    if(!temLanc){
-      // Remove todos os lançamentos desse pedido e reprocessa
-      S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
-      delete lancProc[p.id];
-      changed=true;
-    }
-  });
+    if(!pags.length)return;
+    const data=(p.created_at||'').slice(0,10)||hoje;
+    let gerou=false;
 
-  if(changed){
-    S.set('pedidos_lanc_gerado',lancProc);
-    // Gera lançamentos diretamente para pedidos money sem caixa
-    const formasPedido=getFormasPedido();
-    const caixaBank=getBancos().find(b=>b.tipo==='caixa');
-    const lancProc2=S.get('pedidos_lanc_gerado')||{};
+    pags.forEach(function(pg){
+      const pmKey=(pg.payment_method||'').toLowerCase();
+      const pmType=(pg.payment_type||'').toLowerCase();
 
-    hist.forEach(function(p){
-      if(lancProc2[p.id])return; // já processado
-      const isCancelado=['CANCELLED','CANCELED','cancelled','canceled'].includes(p.status||'');
-      if(isCancelado)return;
-      const pags=p.payments||[];
-      const data=(p.created_at||'').slice(0,10)||new Date().toLocaleDateString('sv-SE');
-      let gerou=false;
-      pags.forEach(function(pg){
-        const pmKey=(pg.payment_method||'').toLowerCase();
-        const pmType=(pg.payment_type||'').toLowerCase();
-        const isPagoOnline=pmKey==='ifood'||pmKey==='online_credit_card'||pmType==='online';
-        if(isPagoOnline)return;
-        const isPagoDinheiro=['money','cash','dinheiro'].includes(pmKey);
-        const _pmMap={money:'dinheiro',cash:'dinheiro',dinheiro:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito'};
-        const pmNome=_pmMap[pmKey]||pmKey;
-        const forma=formasPedido.find(function(f){return f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome);});
-        const bancoIdFinal=forma?.bancoId||(isPagoDinheiro?caixaBank?.id||'':'');
-        if(!bancoIdFinal)return;
-        const valor=pg.value||pg.total||0;
-        if(!valor)return;
-        const taxa=forma?.taxaPct?valor*(forma.taxaPct/100):0;
-        const valorLiq=valor-taxa;
-        const lancs=getLanc();
-        lancs.push({
-          id:uid(),tipo:'receita',
-          desc:'Pedido #'+(p.display_id||p.id)+' — '+(forma?.nome||pmNome),
-          valor:valorLiq,data:data,venc:data,dataPag:data,
-          bancoId:bancoIdFinal,pago:data<=new Date().toLocaleDateString('sv-SE'),
-          obs:'Gerado automaticamente.',
-          pedidoId:p.id,
-        });
-        S.set('lancamentos',lancs);
-        gerou=true;
+      // Online iFood — não gera lançamento
+      if(pmKey==='ifood'||pmKey==='online_credit_card'||pmType==='online')return;
+
+      const isPagoDinheiro=pmKey==='money'||pmKey==='cash'||pmKey==='dinheiro';
+      const _pmMap={money:'dinheiro',cash:'dinheiro',dinheiro:'dinheiro',pix:'pix',pix_auto:'pix',credit_card:'cartão de crédito',debit_card:'cartão de débito'};
+      const pmNome=_pmMap[pmKey]||pmKey;
+      const forma=formasPedido.find(function(f){
+        return f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome);
       });
-      if(gerou){
-        lancProc2[p.id]=true;
-        S.set('pedidos_lanc_gerado',lancProc2);
+      const bancoId=forma&&forma.bancoId?forma.bancoId:(isPagoDinheiro?caixaBank.id:'');
+      if(!bancoId)return;
+
+      const valor=pg.value||pg.total||0;
+      if(!valor)return;
+      const taxa=forma&&forma.taxaPct?valor*(forma.taxaPct/100):0;
+      const valorLiq=valor-taxa;
+
+      // Calcular data de recebimento (D+N)
+      const diasRec=forma&&forma.dias?forma.dias:0;
+      let dtRec=new Date(data+'T12:00:00');
+      if(diasRec>0){
+        let added=0;
+        while(added<diasRec){
+          dtRec.setDate(dtRec.getDate()+1);
+          const wd=dtRec.getDay();
+          const ds=dtRec.toLocaleDateString('sv-SE');
+          const mm=ds.slice(5,10);
+          const feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
+          if(wd!==0&&wd!==6&&!feriados.includes(mm))added++;
+        }
       }
+      const dataRec=dtRec.toLocaleDateString('sv-SE');
+      const pago=dataRec<=hoje;
+
+      const lancs=getLanc();
+      // Evitar duplicata
+      const jaExiste=lancs.some(function(l){
+        return l.pedidoId===p.id&&l.bancoId===bancoId;
+      });
+      if(jaExiste)return;
+
+      lancs.push({
+        id:uid(),tipo:'receita',
+        desc:'Pedido #'+(p.display_id||p.id)+' — '+(forma?forma.nome:pmNome),
+        valor:valorLiq,data:dataRec,venc:dataRec,dataPag:pago?dataRec:null,
+        bancoId:bancoId,pago:pago,
+        obs:'Gerado automaticamente.',pedidoId:p.id,
+      });
+      S.set('lancamentos',lancs);
+      gerou=true;
     });
-  }
+
+    if(gerou){lancProc[p.id]=true;S.set('pedidos_lanc_gerado',lancProc);}
+  });
 }
+
 
 function renderBancos(){
   fixIfoodLancamentos();
