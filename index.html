@@ -9454,6 +9454,61 @@ function toggleTema(){
   }
 })();
 
+// DRE style + lines helpers
+const DRE_ESTILO_DEFAULT={hdrBg:'#1E3A5F',hdrColor:'#ffffff',grpBg:'#F0F5FF',grpColor:'#0F2040',borderColor:'#BFDBFE',showPct:true};
+const DRE_LINHAS_DEFAULT=[
+  {id:'rec_bruta', label:'Receita Bruta',               visivel:true},
+  {id:'v_pix',     label:'Vendas Pix',                  visivel:true},
+  {id:'v_cred',    label:'Vendas Cartão de Crédito',    visivel:true},
+  {id:'v_deb',     label:'Vendas Cartão de Débito',     visivel:true},
+  {id:'v_din',     label:'Vendas Dinheiro',             visivel:true},
+  {id:'v_ifood',   label:'Vendas iFood',                visivel:true},
+  {id:'v_entrega', label:'Taxas de Entrega',            visivel:true},
+  {id:'imp_vendas',label:'(-) Imposto Sobre Vendas',    visivel:true},
+  {id:'icms',      label:'ICMS',                        visivel:true},
+  {id:'iss',       label:'ISS',                         visivel:true},
+  {id:'pis_cofins',label:'PIS/COFINS',                  visivel:true},
+  {id:'deducoes',  label:'(-) Deduções da Receita',     visivel:true},
+  {id:'taxa_if',   label:'Taxas iFood',                 visivel:true},
+  {id:'descontos', label:'Descontos Concedidos',        visivel:true},
+  {id:'cancelam',  label:'Estornos/Cancelamentos',      visivel:true},
+  {id:'rec_liq',   label:'Receita Líquida Operacional', visivel:true},
+  {id:'cpv',       label:'(-) CPV',                     visivel:true},
+  {id:'mp',        label:'Matérias-Primas',             visivel:true},
+  {id:'emb',       label:'Embalagens',                  visivel:true},
+  {id:'mod',       label:'Mão de Obra Direta',          visivel:true},
+  {id:'cif',       label:'Custos Indiretos',            visivel:true},
+  {id:'luc_bruto', label:'Lucro Bruto',                 visivel:true},
+  {id:'desp_vend', label:'(-) Despesas com Vendas',     visivel:true},
+  {id:'logistica', label:'Logística e Entrega',         visivel:true},
+  {id:'canais',    label:'Canais de Venda',             visivel:true},
+  {id:'desp_adm',  label:'(-) Despesas Administrativas',visivel:true},
+  {id:'ocupacao',  label:'Ocupação',                    visivel:true},
+  {id:'utilidades',label:'Utilidades',                  visivel:true},
+  {id:'servicos',  label:'Serviços Profissionais',      visivel:true},
+  {id:'pessoal',   label:'Pessoal Administrativo',      visivel:true},
+  {id:'manutencao',label:'Manutenção',                  visivel:true},
+  {id:'tecnologia',label:'Tecnologia',                  visivel:true},
+  {id:'tributario',label:'Tributário e Legal',          visivel:true},
+  {id:'rec_fin',   label:'Receitas Financeiras',        visivel:true},
+  {id:'desp_fin',  label:'(-) Despesas Financeiras',    visivel:true},
+  {id:'luc_op',    label:'Lucro Operacional',           visivel:true},
+  {id:'nao_op',    label:'Resultado Não Operacional',   visivel:true},
+  {id:'luc_ir',    label:'Lucro Antes do IR e CS',      visivel:true},
+  {id:'prov_ir',   label:'(-) Provisão IR',             visivel:true},
+  {id:'prov_cs',   label:'(-) Provisão CS',             visivel:true},
+  {id:'luc_dep_ir',label:'Lucro Depois do IR e CS',     visivel:true},
+  {id:'participac',label:'(-) Participações',           visivel:true},
+  {id:'luc_liq',   label:'Lucro Líquido do Exercício',  visivel:true},
+];
+function dreGetCfg(){try{return JSON.parse(localStorage.getItem('verp_dre_cfg')||'{}');}catch(e){return {};}}
+function dreGetEstilo(){return Object.assign({},DRE_ESTILO_DEFAULT,dreGetCfg().estilo||{});}
+function dreGetLinhas(){
+  const saved=(dreGetCfg().linhas)||[];
+  const map=Object.fromEntries(saved.map(l=>[l.id,l]));
+  return DRE_LINHAS_DEFAULT.map(d=>Object.assign({},d,map[d.id]||{}));
+}
+
 // ═══════════════════════════════════════════════════════
 // DRE CONFIG - mapeamento de catCod por linha
 // ═══════════════════════════════════════════════════════
