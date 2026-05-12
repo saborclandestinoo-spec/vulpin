@@ -7097,7 +7097,7 @@ function renderBancos(){
   const hoje2=new Date().toLocaleDateString('sv-SE');
   const todosLancs=getLanc();
   const globalAR=todosLancs.filter(l=>l.tipo==='receita'&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
-  const globalAP=todosLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
+  const globalAP=todosLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&!l.pedidoId&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
 
   const totalsEl=document.getElementById('bank-totals');
   if(totalsEl)totalsEl.innerHTML=[
@@ -7152,7 +7152,7 @@ function selectBanco(id){
 
   // A pagar: despesas futuras
   const aPagar=allLancs
-    .filter(l=>l.tipo==='despesa'&&!l.pago&&(l.venc||l.data||'')>hoje)
+    .filter(l=>l.tipo==='despesa'&&!l.pago&&!l.pedidoId&&(l.venc||l.data||'')>hoje)
     .sort((a,b)=>(a.venc||a.data||'').localeCompare(b.venc||b.data||''));
 
   // Saldo real (só lançamentos até hoje)
