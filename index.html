@@ -7093,14 +7093,22 @@ function renderBancos(){
   const totCaixa=bancos.filter(b=>b.tipo==='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
   const totBanco=bancos.filter(b=>b.tipo!=='caixa').reduce((s,b)=>s+getSaldoBanco(b.id),0);
   const totGeral=totCaixa+totBanco;
+  // Global A Receber / A Pagar totals
+  const hoje2=new Date().toLocaleDateString('sv-SE');
+  const todosLancs=getLanc();
+  const globalAR=todosLancs.filter(l=>l.tipo==='receita'&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
+  const globalAP=todosLancs.filter(l=>l.tipo==='despesa'&&!l.pago&&(l.venc||l.data||'')>hoje2).reduce((s,l)=>s+(l.valor||0),0);
+
   const totalsEl=document.getElementById('bank-totals');
   if(totalsEl)totalsEl.innerHTML=[
-    {label:'💵 Total em Caixa',val:totCaixa,cor:'var(--fox)'},
-    {label:'🏦 Total em Bancos',val:totBanco,cor:'var(--blue)'},
-    {label:'💰 Total Geral',val:totGeral,cor:'var(--green)',bold:true},
-  ].map(t=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px 20px">
-    <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${t.label}</div>
-    <div style="font-size:${t.bold?'22px':'18px'};font-weight:${t.bold?800:700};color:${t.cor}">R$ ${fmtN(t.val)}</div>
+    {label:'Total em Caixa',val:totCaixa,cor:'var(--t)'},
+    {label:'Total em Bancos',val:totBanco,cor:'var(--t)'},
+    {label:'Total Geral',val:totGeral,cor:'var(--green)',bold:true},
+    {label:'A Receber',val:globalAR,cor:'var(--green)'},
+    {label:'A Pagar',val:globalAP,cor:'var(--red)'},
+  ].map(t=>`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 18px">
+    <div style="font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${t.label}</div>
+    <div style="font-size:${t.bold?'20px':'16px'};font-weight:${t.bold?800:700};color:${t.cor};font-variant-numeric:tabular-nums">R$ ${fmtN(t.val)}</div>
   </div>`).join('');
 
   const grid=document.getElementById('bank-grid');
@@ -7132,13 +7140,19 @@ function selectBanco(id){
   const allLancs=getLanc().filter(l=>l.bancoId===id);
 
   // Extrato: só lançamentos com data <= hoje
+  // Extrato: todos lançamentos com venc/data <= hoje (receitas E despesas)
   const lancs=allLancs
     .filter(l=>{ const d=l.venc||l.data||''; return d<=hoje&&(!dataInicial||d>=dataInicial); })
     .sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
 
-  // A receber: lançamentos receita com venc > hoje
+  // A receber: receitas futuras
   const aReceber=allLancs
     .filter(l=>l.tipo==='receita'&&(l.venc||l.data||'')>hoje)
+    .sort((a,b)=>(a.venc||a.data||'').localeCompare(b.venc||b.data||''));
+
+  // A pagar: despesas futuras
+  const aPagar=allLancs
+    .filter(l=>l.tipo==='despesa'&&!l.pago&&(l.venc||l.data||'')>hoje)
     .sort((a,b)=>(a.venc||a.data||'').localeCompare(b.venc||b.data||''));
 
   // Saldo real (só lançamentos até hoje)
@@ -7165,26 +7179,34 @@ function selectBanco(id){
   const arEl=document.getElementById('bank-a-receber');
   if(arEl){
     const totalAR=aReceber.reduce((s,l)=>s+(l.valor||0),0);
-    if(aReceber.length){
+    const totalAP=aPagar.reduce((s,l)=>s+(l.valor||0),0);
+    if(aReceber.length||aPagar.length){
       arEl.style.display='block';
-      arEl.innerHTML=`<div style="padding:14px 20px;border-top:2px solid var(--bor)">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      const mkTable=(rows,corVal,sinal)=>`<table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Data Prevista</th>
+          <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Descrição</th>
+          <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:right;text-transform:uppercase;letter-spacing:.5px">Valor</th>
+        </tr></thead>
+        <tbody>${rows.map(l=>`<tr style="border-bottom:1px solid var(--bor2)">
+          <td style="padding:6px 10px;font-size:12px;color:var(--t2)">${fmtDate(l.venc||l.data)}</td>
+          <td style="padding:6px 10px;font-size:12px;color:var(--t)">${l.desc}</td>
+          <td style="padding:6px 10px;font-size:12px;font-weight:600;color:${corVal};text-align:right">${sinal}R$ ${fmtN(l.valor)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+      let html='<div style="padding:14px 20px;border-top:2px solid var(--bor)">';
+      if(aReceber.length) html+=`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="font-size:13px;font-weight:700;color:var(--t)">A Receber</div>
           <div style="font-size:13px;font-weight:700;color:var(--green)">+R$ ${fmtN(totalAR)}</div>
-        </div>
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--bg2)">
-            <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Data Prevista</th>
-            <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:left;text-transform:uppercase;letter-spacing:.5px">Descrição</th>
-            <th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--t3);text-align:right;text-transform:uppercase;letter-spacing:.5px">Valor</th>
-          </tr></thead>
-          <tbody>${aReceber.map(l=>`<tr style="border-bottom:1px solid var(--bor2)">
-            <td style="padding:6px 10px;font-size:12px;color:var(--t2)">${fmtDate(l.venc||l.data)}</td>
-            <td style="padding:6px 10px;font-size:12px;color:var(--t)">${l.desc}</td>
-            <td style="padding:6px 10px;font-size:12px;font-weight:600;color:var(--green);text-align:right">+R$ ${fmtN(l.valor)}</td>
-          </tr>`).join('')}</tbody>
-        </table>
-      </div>`;
+        </div>${mkTable(aReceber,'var(--green)','+')}<div style="margin-bottom:14px"></div>`;
+      if(aPagar.length) html+=`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:4px">
+          <div style="font-size:13px;font-weight:700;color:var(--t)">A Pagar</div>
+          <div style="font-size:13px;font-weight:700;color:var(--red)">-R$ ${fmtN(totalAP)}</div>
+        </div>${mkTable(aPagar,'var(--red)','-')}`;
+      html+='</div>';
+      arEl.innerHTML=html;
     } else {
       arEl.style.display='none';
     }
