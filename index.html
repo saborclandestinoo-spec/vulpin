@@ -7007,7 +7007,10 @@ function updateCCSelect(){}
 // BANCOS
 // ═══════════════════════════════════════════
 let editBancoId=null,selectedBancoId=null;
+let _fixMoneyRunning=false;
 function fixMoneyPedidosSemLanc(){
+  if(_fixMoneyRunning)return;
+  _fixMoneyRunning=true;
   // Verifica TODOS os pedidos do histórico com pagamento money sem lançamento no caixa
   const hist=getHistorico();
   const caixaB=getBancos().find(b=>b.tipo==='caixa');
