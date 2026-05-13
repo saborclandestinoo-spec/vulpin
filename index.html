@@ -5173,31 +5173,83 @@ function renderFluxo(){
 
   // Despesas por catCod — hierarquia expansível com sub-itens
   const despCats=[...new Set(despLancs.map(l=>l.catCod||l.ccId||''))].sort((a,b)=>(a||'').localeCompare(b||'',undefined,{numeric:true,sensitivity:'base'}));
+  // Group despCats by 2-level prefix (e.g. "4.1", "4.2", "3.9")
+  const catGroups={};
   despCats.forEach(catId=>{
-    const catL=despLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
-    const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
-    if(!catTotal)return;
-    const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(c=>c.cod===catId):null;
-    let catNome=plano?`${catId} ${plano.nome}`:(catId?catNames[catId]||catId:'Sem categoria');
-    const catKey='fc-cat-'+catId.replace(/\./g,'_');
-    html+=`<tr style="cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${catKey}')">
-      <td style="padding:9px 14px 9px 20px;position:sticky;left:0;z-index:2;background:var(--bg);width:240px;border-right:2px solid var(--bor);overflow:hidden">
-        <span style="display:inline-flex;align-items:center;gap:8px">
-          <span id="${catKey}-ico" style="color:var(--red);font-size:11px">›</span>
-          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--red);flex-shrink:0"></span>
-          <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap">${catNome}</span>
-        </span>
-      </td>
-      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+catL.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:13px;padding:10px 10px;color:${v?'var(--t)':('var(--bor)')};font-weight:${v?'600':'400'}">${v?'- '+fmtN(v):'–'}</td>`;}).join('')}
-      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">- ${fmtN(catTotal)}</td></tr>`;
-    catL.forEach(l=>{
-      html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2);cursor:pointer" onclick="openLancEdit('${l.id}')">
-        <td style="padding:7px 14px 7px 44px;position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);color:var(--t3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳ ${l.desc||'—'}</td>
-        ${allDays.map(d=>{const v=(l.data||'')==d?l.valor:0;return`<td style="text-align:right;font-size:12px;color:${v?'var(--t)':'#C8C8CC'};font-weight:${v?'600':'400'};border-left:1px solid var(--bor2);padding:7px 12px">${v?'- '+fmtN(v):'0,00'}</td>`;}).join('')}
-        <td style="text-align:right;font-size:12px;color:var(--t3);padding:7px 10px">- ${fmtN(l.valor)}</td></tr>`;
-    });
+    const parts=(catId||'').split('.');
+    const grpKey=parts.length>=2?parts.slice(0,2).join('.'):catId||'_';
+    if(!catGroups[grpKey])catGroups[grpKey]=[];
+    catGroups[grpKey].push(catId);
   });
 
+  Object.keys(catGroups).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(grpKey=>{
+    const grpCats=catGroups[grpKey];
+    const grpLancs=despLancs.filter(l=>grpCats.includes(l.catCod||l.ccId||''));
+    const grpTotal=grpLancs.reduce((s,l)=>s+(l.valor||0),0);
+    if(!grpTotal)return;
+
+    // Find group name from PLANO_CONTAS or use key
+    const planoGrp=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(p=>p.cod===grpKey):null;
+    const grpNome=planoGrp?grpKey+' '+planoGrp.nome:grpKey;
+    const grpHtmlKey='fc-grp-'+grpKey.replace(/\./g,'_');
+    const multiCat=grpCats.length>1;
+
+    // Group header row
+    html+=`<tr style="cursor:pointer;background:#F8FAFF;border-bottom:1px solid var(--bor2);border-top:1px solid var(--bor2)" onclick="fcToggleCat('${grpHtmlKey}')">
+      <td style="padding:7px 12px 7px 14px;position:sticky;left:0;z-index:2;background:#F8FAFF;font-size:11px;font-weight:700;color:var(--t);border-right:1px solid var(--bor2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <span id="${grpHtmlKey}-ico" style="color:var(--t3);font-size:10px;transition:transform .15s">${multiCat?'▶':''}</span>
+          <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--red);flex-shrink:0"></span>
+          <span style="font-size:11px;font-weight:700;color:var(--t)">${grpNome}</span>
+        </span>
+      </td>
+      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+grpLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return'<td style="text-align:right;font-size:11px;padding:6px 8px;color:'+(v?'var(--red)':'var(--t3)')+';font-weight:'+(v?'700':'400')+';border-left:1px solid var(--bor2)">'+(v?'- '+fmtN(v):'–')+'</td>';}).join('')}
+      <td style="text-align:right;font-size:11px;font-weight:700;color:var(--red);padding:6px 8px;border-left:1px solid var(--bor2)">- ${fmtN(grpTotal)}</td>
+    </tr>`;
+
+    // Sub-category rows (only if multiple cats in group)
+    if(multiCat){
+      grpCats.forEach(catId=>{
+        const catL=despLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
+        const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
+        if(!catTotal)return;
+        const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(p=>p.cod===catId):null;
+        const catNome=plano?catId+' '+plano.nome:(catId||'Sem categoria');
+        const catKey='fc-cat-'+catId.replace(/\./g,'_');
+        html+=`<tr class="${grpHtmlKey}-item" style="display:none;cursor:pointer;background:var(--bg);border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${catKey}')">
+          <td style="padding:6px 12px 6px 28px;position:sticky;left:0;z-index:2;background:var(--bg);font-size:11px;color:var(--t2);border-right:1px solid var(--bor2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            <span style="display:inline-flex;align-items:center;gap:5px">
+              <span id="${catKey}-ico" style="color:var(--t3);font-size:9px">▶</span>
+              <span>${catNome}</span>
+            </span>
+          </td>
+          ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+catL.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return'<td style="text-align:right;font-size:11px;padding:5px 8px;color:'+(v?'var(--t)':'var(--t3)')+';border-left:1px solid var(--bor2)">'+(v?'- '+fmtN(v):'–')+'</td>';}).join('')}
+          <td style="text-align:right;font-size:11px;color:var(--t2);padding:5px 8px;border-left:1px solid var(--bor2)">- ${fmtN(catTotal)}</td>
+        </tr>`;
+        // Individual lancamentos
+        catL.forEach(l=>{
+          html+=`<tr class="${catKey}-item" style="display:none;background:#FAFCFF;cursor:pointer" onclick="openLancEdit('${l.id}')">
+            <td style="padding:5px 12px 5px 44px;position:sticky;left:0;z-index:2;background:#FAFCFF;font-size:10px;color:var(--t3);border-right:1px solid var(--bor2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">↳ ${l.desc||'—'}</td>
+            ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+((l.venc||l.data)===d?l.valor:0),0);return'<td style="text-align:right;font-size:10px;color:'+(v?'var(--t)':'var(--t3)')+';border-left:1px solid var(--bor2);padding:4px 8px">'+(v?'- '+fmtN(v):'–')+'</td>';}).join('')}
+            <td style="text-align:right;font-size:10px;color:var(--t3);padding:4px 8px;border-left:1px solid var(--bor2)">- ${fmtN(l.valor)}</td>
+          </tr>`;
+        });
+      });
+    } else {
+      // Single cat: show lancamentos directly
+      const catId=grpCats[0];
+      const catL=despLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
+      catL.forEach(l=>{
+        html+=`<tr class="${grpHtmlKey}-item" style="display:none;background:#FAFCFF;cursor:pointer" onclick="openLancEdit('${l.id}')">
+          <td style="padding:5px 12px 5px 28px;position:sticky;left:0;z-index:2;background:#FAFCFF;font-size:10px;color:var(--t3);border-right:1px solid var(--bor2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">↳ ${l.desc||'—'}</td>
+          ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+((l.venc||l.data)===d?l.valor:0),0);return'<td style="text-align:right;font-size:10px;color:'+(v?'var(--t)':'var(--t3)')+';border-left:1px solid var(--bor2);padding:4px 8px">'+(v?'- '+fmtN(v):'–')+'</td>';}).join('')}
+          <td style="text-align:right;font-size:10px;color:var(--t3);padding:4px 8px;border-left:1px solid var(--bor2)">- ${fmtN(l.valor)}</td>
+        </tr>`;
+      });
+    }
+  });
+
+  
   // Saldo final row — calc por dia
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);padding:10px 14px;font-size:12px">Saldo final do período</td>`;
   let acc=0;
