@@ -5116,55 +5116,104 @@ function renderFluxo(){
     ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const d=colDays[colDays.length-1]||col;return'<td style="text-align:right;font-weight:600;color:var(--blue);font-size:11px;padding:6px 8px"><span style="color:var(--blue);font-weight:600">'+fmtN(_saldoAcumDia[d])+'</span></td>';}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue);font-size:13px;padding:11px 12px;border-left:2px solid var(--bor)">${fmtN(saldoInicial)}</td></tr>`;
 
-  // ── RECEITAS HEADER ──
-  html+=`<tr style="background:#F0FDF4;border-left:3px solid var(--green)">
-    <td style="font-weight:700;color:var(--green);position:sticky;left:0;z-index:2;background:rgba(39,174,96,.07);width:240px;padding:11px 14px;font-size:13px;font-weight:700;border-left:3px solid var(--green);border-right:2px solid var(--bor)">Total de receitas</td>
-    ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>(s+(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((ss,l)=>ss+(l.valor||0),0)),0);return`<td style="text-align:right;font-size:11px;padding:6px 8px;color:${v?'var(--green)':'#C8C8CC'};font-weight:700;border-left:1px solid var(--bor2)">${v?fmtN(v):'<span style="color:#C8C8CC">—</span>'}</td>`;}).join('')}
-    <td style="text-align:right;font-weight:700;color:var(--green);font-size:11px;padding:6px 8px">${fmtN(recTotal)}</td></tr>`;
+  // ── RECEITAS ──
+  // Pedidos: usa venc do lancamento gerado (ou data do pedido como fallback)
+  const recPedLancs=recLancs.filter(l=>l.pedidoId); // receitas de pedidos
+  const recManualLancs=recLancs.filter(l=>!l.pedidoId); // receitas manuais
+  
+  // Agrupa pedidos por data de vencimento do lançamento
+  const pedMapaVenc={};
+  recPedLancs.forEach(l=>{
+    const d=l.venc||l.data||'';
+    if(!d)return;
+    pedMapaVenc[d]=(pedMapaVenc[d]||0)+(l.valor||0);
+  });
+  // Fallback: se não há lançamentos de pedidos, usa pedMapaRec (data criação)
+  const pedMapaFinal=recPedLancs.length?pedMapaVenc:pedMapaRec;
 
-  // Pedidos = histórico + receitas manuais juntos (tudo é pedido)
-  const recPedCombTotal=recPedTotal+recLancTotal;
-  if(recPedCombTotal>0){
+  // Total receitas header
+  html+=`<tr style="background:#F0FDF4;border-left:3px solid var(--green)">
+    <td style="font-weight:700;color:var(--green);position:sticky;left:0;z-index:2;background:#F0FDF4;padding:7px 12px;font-size:11px;font-weight:700;border-right:1px solid var(--bor2)">Total de receitas</td>
+    ${cols.map(col=>{
+      const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);
+      const v=colDays.reduce((s,d)=>s+(pedMapaFinal[d]||0)+recManualLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);
+      return '<td style="text-align:right;font-size:11px;padding:6px 8px;color:'+(v?'var(--green)':'#C8C8CC')+';font-weight:700;border-left:1px solid var(--bor2)">'+(v?fmtN(v):'—')+'</td>';
+    }).join('')}
+    <td style="text-align:right;font-weight:700;color:var(--green);font-size:11px;padding:6px 8px;border-left:1px solid var(--bor2)">${fmtN(recTotal)}</td>
+  </tr>`;
+
+  // Pedidos row
+  const pedTotal=recPedLancs.length?recPedLancs.reduce((s,l)=>s+(l.valor||0),0):Object.values(pedMapaRec).reduce((s,v)=>s+v,0);
+  if(pedTotal>0){
     const recPedKey='fc-cat-pedidos';
     html+=`<tr style="cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${recPedKey}')">
-      <td style="padding:9px 14px 9px 20px;position:sticky;left:0;z-index:2;background:var(--bg);width:240px;border-right:2px solid var(--bor);overflow:hidden">
-        <span style="display:inline-flex;align-items:center;gap:8px">
-          <span id="${recPedKey}-ico" style="color:var(--green);font-size:11px">›</span>
-          <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--green);flex-shrink:0"></span>
-          <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap">🛒 Pedidos</span>
+      <td style="padding:6px 12px 6px 14px;position:sticky;left:0;z-index:2;background:var(--bg);font-size:11px;font-weight:600;color:var(--t);border-right:1px solid var(--bor2);white-space:nowrap">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <span id="${recPedKey}-ico" style="color:var(--t3);font-size:9px">▶</span>
+          <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);flex-shrink:0"></span>
+          3.1 Pedidos / Vendas
         </span>
       </td>
-      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:13px;color:${v?'var(--t)':'#C8C8CC'};font-weight:${v?'600':'400'};border-left:1px solid var(--bor2);padding:10px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
-      <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">${fmtN(recPedCombTotal)}</td></tr>`;
-
-    // Sub-itens agrupados por forma de pagamento (já com taxa descontada)
-    const formasPedido=getFormasPedido();
-    const formasUsadas=[...new Set(recLancs.map(l=>{
-      // Extrai forma do desc "Pedido #X — Forma"
-      const m=(l.desc||'').match(/—\s*(.+)$/);
-      return m?m[1].trim():'Outros';
-    }))];
-    formasUsadas.forEach(forma=>{
-      const fKey='fc-ped-'+forma.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-      const fLancs=recLancs.filter(l=>{const m=(l.desc||'').match(/—\s*(.+)$/);return (m?m[1].trim():'Outros')===forma;});
-      const fTotal=fLancs.reduce((s,l)=>s+(l.valor||0),0);
-      if(!fTotal)return;
-      const fp=formasPedido.find(f=>f.nome.toLowerCase()===forma.toLowerCase());
-      const taxa=fp?.taxaPct?fp.taxaPct+'%':'';
-      const label=forma+(taxa?` (taxa ${taxa})`:'');
-      html+=`<tr class="${recPedKey}-item" style="display:none;cursor:pointer;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${fKey}')">
-        <td style="padding:8px 14px 8px 34px;position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);overflow:hidden">
-          <span style="display:inline-flex;align-items:center;gap:6px">
-            <span id="${fKey}-ico" style="color:var(--green);font-size:10px">›</span>
-            <span style="font-size:11px;font-weight:600;color:var(--t2);white-space:nowrap">${label}</span>
-          </span>
-        </td>
-        ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+fLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:11px;color:${v?'var(--t)':'#C8C8CC'};border-left:1px solid var(--bor2);padding:8px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
-        <td style="text-align:right;font-size:11px;font-weight:600;color:var(--t2);padding:8px 10px">${fmtN(fTotal)}</td></tr>`;
-    });
+      ${cols.map(col=>{
+        const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);
+        const v=colDays.reduce((s,d)=>s+(pedMapaFinal[d]||0),0);
+        return '<td style="text-align:right;font-size:11px;padding:6px 8px;color:'+(v?'var(--t)':'#C8C8CC')+';border-left:1px solid var(--bor2)">'+(v?fmtN(v):'—')+'</td>';
+      }).join('')}
+      <td style="text-align:right;font-size:11px;color:var(--t);padding:6px 8px;border-left:1px solid var(--bor2)">${fmtN(pedTotal)}</td>
+    </tr>`;
   }
 
-  // ── DESPESAS HEADER ──
+  // Receitas manuais agrupadas por categoria (igual às despesas)
+  const recCats=[...new Set(recManualLancs.map(l=>l.catCod||l.ccId||''))].sort((a,b)=>(a||'').localeCompare(b||'',undefined,{numeric:true}));
+  const recGrpMap={
+    '3.2':'Outras Receitas Operacionais','3.9':'Deduções','4.4':'Receitas Financeiras',
+    '5.':'Receitas Não Operacionais','5.1':'Receitas Não Operacionais','5.2':'Ganhos de Capital',
+  };
+  const recGroups={};
+  recCats.forEach(catId=>{
+    const parts=(catId||'').split('.');
+    const grpKey=parts.length>=2?parts.slice(0,2).join('.'):catId||'_';
+    if(!recGroups[grpKey])recGroups[grpKey]=[];
+    recGroups[grpKey].push(catId);
+  });
+  Object.keys(recGroups).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).forEach(grpKey=>{
+    const grpCats=recGroups[grpKey];
+    const grpLancs=recManualLancs.filter(l=>grpCats.includes(l.catCod||l.ccId||''));
+    const grpTotal=grpLancs.reduce((s,l)=>s+(l.valor||0),0);
+    if(!grpTotal)return;
+    const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
+    const firstChild=plano.find(p=>p.cod.startsWith(grpKey+'.'));
+    let grpNome=recGrpMap[grpKey]?grpKey+' '+recGrpMap[grpKey]:(firstChild?grpKey+' '+firstChild.nome.split(' — ')[0]:grpKey);
+    const grpHKey='fc-rgrp-'+grpKey.replace(/\./g,'_');
+    html+=`<tr style="cursor:pointer;background:#F0FDF4;border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${grpHKey}')">
+      <td style="padding:6px 12px 6px 14px;position:sticky;left:0;z-index:2;background:#F0FDF4;font-size:11px;font-weight:700;color:var(--t);border-right:1px solid var(--bor2);white-space:nowrap">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <span id="${grpHKey}-ico" style="color:var(--t3);font-size:9px">${grpCats.length>1?'▶':''}</span>
+          <span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--green);flex-shrink:0"></span>
+          ${grpNome}
+        </span>
+      </td>
+      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+grpLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return'<td style="text-align:right;font-size:11px;padding:6px 8px;color:'+(v?'var(--green)':'#C8C8CC')+';border-left:1px solid var(--bor2)">'+(v?fmtN(v):'—')+'</td>';}).join('')}
+      <td style="text-align:right;font-size:11px;font-weight:700;color:var(--green);padding:6px 8px;border-left:1px solid var(--bor2)">${fmtN(grpTotal)}</td>
+    </tr>`;
+    if(grpCats.length>1){
+      grpCats.forEach(catId=>{
+        const catL=recManualLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
+        const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
+        if(!catTotal)return;
+        const ex=plano.find(p=>p.cod===catId);
+        const catNome=ex?catId+' '+ex.nome:(catId||'Sem categoria');
+        const catKey='fc-rcat-'+catId.replace(/\./g,'_');
+        html+=`<tr class="${grpHKey}-item" style="display:none;cursor:pointer;background:var(--bg);border-bottom:1px solid var(--bor2)" onclick="fcToggleCat('${catKey}')">
+          <td style="padding:5px 12px 5px 28px;position:sticky;left:0;z-index:2;background:var(--bg);font-size:11px;color:var(--t2);border-right:1px solid var(--bor2);white-space:nowrap">${catNome}</td>
+          ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+catL.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return'<td style="text-align:right;font-size:11px;padding:5px 8px;color:'+(v?'var(--t)':'#C8C8CC')+';border-left:1px solid var(--bor2)">'+(v?fmtN(v):'—')+'</td>';}).join('')}
+          <td style="text-align:right;font-size:11px;color:var(--t2);padding:5px 8px;border-left:1px solid var(--bor2)">${fmtN(catTotal)}</td>
+        </tr>`;
+      });
+    }
+  });
+
+    // ── DESPESAS HEADER ──
   const despTotal=despLancs.reduce((s,l)=>s+(l.valor||0),0);
   html+=`<tr style="background:rgba(231,76,60,.07);border-left:3px solid var(--red)">
     <td style="font-weight:700;color:var(--red);position:sticky;left:0;z-index:2;background:rgba(231,76,60,.07);width:240px;padding:11px 14px;font-size:13px;font-weight:700;border-left:3px solid var(--red);border-right:2px solid var(--bor)">Total de despesas</td>
