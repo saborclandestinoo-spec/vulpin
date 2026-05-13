@@ -2600,7 +2600,7 @@ const PAGE_ACTIONS={
   estoque:()=>``,
   financeiro:()=>``,
   lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
-  bancos:()=>`<button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
+  bancos:()=>`<button onclick="reprocessarPagamentosMultiplos()" style="background:var(--amber);color:#fff;border:none;border-radius:8px;padding:0 12px;font-size:11px;font-weight:600;cursor:pointer;height:32px;font-family:Poppins,sans-serif;margin-right:6px">Reprocessar Pagtos</button><button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
   produtos:()=>`<button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="importarCatalogoCW()">⬇ Importar CW</button><button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
   centrocusto:()=>`<button class="btn-p" onclick="openCC('despesa')">+ Despesa</button><button class="btn-p" onclick="openCC('receita')" style="background:var(--green)">+ Receita</button>`,
@@ -7283,6 +7283,31 @@ function fixMoneyPedidosSemLanc(){
 }
 
 
+
+// Força reprocessamento de todos os pedidos com múltiplos pagamentos
+function reprocessarPagamentosMultiplos(){
+  const hist=getHistorico();
+  const lancProc=S.get('pedidos_lanc_gerado')||{};
+  let count=0;
+  hist.forEach(function(p){
+    const pags=p.payments||[];
+    if(pags.length<2)return;
+    const status=(p.status||'').toUpperCase();
+    if(status==='CANCELLED'||status==='CANCELED')return;
+    // Delete and reprocess
+    S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
+    delete lancProc[p.id];
+    count++;
+  });
+  S.set('pedidos_lanc_gerado',lancProc);
+  if(count>0){
+    mergeNaHistoria(hist);
+    alert('Reprocessados '+count+' pedidos com múltiplos pagamentos.');
+    renderBancos();
+  } else {
+    alert('Nenhum pedido com múltiplos pagamentos encontrado.');
+  }
+}
 function renderBancos(){
   try{fixIfoodLancamentos();}catch(e){console.warn('fixIfood:',e);}
   try{fixMoneyPedidosSemLanc();}catch(e){console.warn('fixMoney:',e);}
@@ -9462,9 +9487,10 @@ function mergeNaHistoria(novos){
           const bancoIdFinal=forma?.bancoId||(isPagoDinheiro?caixaBank?.id||'':'');
           if(!bancoIdFinal)return;
           // Cada pg já vem com seu valor correto da API
-          // Fallback só se 1 pagamento e valor zerado
-          let valor=pg.value||pg.total||pg.valor||0;
+          let valor=pg.value||pg.total||pg.valor||pg.prepaid||pg.paid_value||0;
+          // Fallback: 1 pagamento com valor 0 → usa total do pedido
           if(!valor&&(p.payments||[]).length===1){valor=p.total||p.totalAmount||0;}
+          console.log('[Pagto] Pedido',p.display_id,'pg:',pmKey,'valor:',valor,'raw:',JSON.stringify(pg));
           if(!valor)return;
           // Aplica taxa
           const taxa=forma?.taxaPct?valor*(forma.taxaPct/100):0;
