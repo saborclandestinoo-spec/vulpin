@@ -5001,15 +5001,8 @@ function renderFluxo(){
   // Saldo inicial = saldo de todos os bancos no dia anterior ao range
   // Saldo inicial = saldo atual dos bancos (hoje)
   const _hoje=todayISO();
-  // saldoHoje = saldo real dos bancos agora (âncora)
+  // saldoHoje = saldo real dos bancos agora (âncora) — saldoInicial calculado depois
   const saldoHoje=bancos.reduce((s,b)=>{if(bFilter&&b.id!==bFilter)return s;return s+getSaldoBanco(b.id);},0);
-  // saldoInicial = saldo no INÍCIO do período (primeiro dia do range)
-  // Calculado: saldoHoje - receitas de hoje até fim do range + despesas de hoje até fim do range
-  // Mais simples: saldoHoje - todas receitas do período + todas despesas do período (antes de hoje)
-  const recAteHoje=recLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
-  const pedAteHoje=Object.entries(pedMapaRec).filter(([d])=>d<=_hoje&&d>=range.start).reduce((s,[,v])=>s+v,0);
-  const despAteHoje=despLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
-  saldoInicial=saldoHoje-(pedAteHoje+recAteHoje)+despAteHoje;
 
   // KPIs
   const kpiEl=document.getElementById('fc-kpis');
@@ -5111,6 +5104,12 @@ function renderFluxo(){
   const recLancTotal=recLancs.reduce((s,l)=>s+(l.valor||0),0);
   const recPedTotal=Object.values(pedMapaRec).reduce((s,v)=>s+v,0);
   const recTotal=recPedTotal+recLancTotal;
+  // saldoInicial = reconstruído a partir do saldoHoje
+  const recAteHoje=recLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
+  const pedAteHoje=Object.entries(pedMapaRec).filter(([d])=>d<=_hoje&&d>=range.start).reduce((s,[,v])=>s+v,0);
+  const despAteHoje=despLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
+  saldoInicial=saldoHoje-(pedAteHoje+recAteHoje)+despAteHoje;
+
   // Pré-calcula saldo por dia (agora que pedMapaRec e recLancs existem)
   // Build _saldoAcumDia: today's balance, then project forward/backward
   const _saldoAcumDia={};
