@@ -5001,13 +5001,15 @@ function renderFluxo(){
   // Saldo inicial = saldo de todos os bancos no dia anterior ao range
   // Saldo inicial = saldo atual dos bancos (hoje)
   const _hoje=todayISO();
-  saldoInicial=bancos.reduce((s,b)=>{
-    if(bFilter&&b.id!==bFilter)return s;
-    return s+getSaldoBanco(b.id);
-  },0);
-  // Para dias passados no período: recalcula partindo do saldo inicial de hoje,
-  // indo para trás (subtrai receitas, soma despesas)
-  // Para dias futuros: parte do saldo de hoje, soma receitas previstas, subtrai despesas previstas
+  // saldoHoje = saldo real dos bancos agora (âncora)
+  const saldoHoje=bancos.reduce((s,b)=>{if(bFilter&&b.id!==bFilter)return s;return s+getSaldoBanco(b.id);},0);
+  // saldoInicial = saldo no INÍCIO do período (primeiro dia do range)
+  // Calculado: saldoHoje - receitas de hoje até fim do range + despesas de hoje até fim do range
+  // Mais simples: saldoHoje - todas receitas do período + todas despesas do período (antes de hoje)
+  const recAteHoje=recLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
+  const pedAteHoje=Object.entries(pedMapaRec).filter(([d])=>d<=_hoje&&d>=range.start).reduce((s,[,v])=>s+v,0);
+  const despAteHoje=despLancs.filter(l=>(l.venc||l.data)<=_hoje&&(l.venc||l.data)>=range.start).reduce((s,l)=>s+(l.valor||0),0);
+  saldoInicial=saldoHoje-(pedAteHoje+recAteHoje)+despAteHoje;
 
   // KPIs
   const kpiEl=document.getElementById('fc-kpis');
@@ -5116,9 +5118,13 @@ function renderFluxo(){
   const _pastDays=allDays.filter(d=>d<_hoje);
   const _todayAndFuture=allDays.filter(d=>d>=_hoje);
   // For today onwards: start from saldoInicial (today's real balance)
-  let _saldoCorr=saldoInicial;
-  _todayAndFuture.forEach(d=>{
-    // Saldo mostrado = saldo no FINAL do dia (após movimentações)
+  // Today and future: start from saldoHoje BEFORE today's movements
+  // saldoHoje already includes today's movements, so we start from it at END of today
+  let _saldoCorr=saldoHoje;
+  // First set today = saldoHoje (the real balance)
+  _saldoAcumDia[_hoje]=saldoHoje;
+  // Future days: project forward from today
+  _todayAndFuture.filter(d=>d>_hoje).forEach(d=>{
     const r=(pedMapaRec[d]||0)+recLancs.filter(l=>(l.venc||l.data)===d).reduce((s,l)=>s+(l.valor||0),0);
     const dv=despLancs.filter(l=>(l.venc||l.data)===d).reduce((s,l)=>s+(l.valor||0),0);
     _saldoCorr+=r-dv;
