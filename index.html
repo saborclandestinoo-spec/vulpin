@@ -1026,7 +1026,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <!-- Tabela view -->
         <div id="fc-view-tabela">
           <div class="card" style="padding:0">
-            <div id="fc-table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+            <div id="fc-table-wrap" style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;width:100%;display:block"></div>
           </div>
         </div>
         <!-- Gráfico view -->
@@ -5075,8 +5075,8 @@ function renderFluxo(){
     <col style="width:110px;min-width:110px">
   </colgroup>
   <thead><tr>
-    <th style="min-width:220px;position:sticky;left:0;background:var(--bg);z-index:3"></th>
-    ${cols.map(d=>`<th style="text-align:right;min-width:62px;white-space:nowrap;border-left:1px solid var(--bor2);padding:8px 8px;font-size:11px">${colLabel(d)}</th>`).join('')}
+    <th style="min-width:180px;max-width:220px;position:sticky;left:0;background:var(--bg);z-index:3"></th>
+    ${cols.map(d=>`<th style="text-align:right;min-width:52px;white-space:nowrap;border-left:1px solid var(--bor2);padding:8px 8px;font-size:11px">${colLabel(d)}</th>`).join('')}
     <th style="text-align:right;min-width:100px;font-weight:700;border-left:1px solid var(--bor);padding:10px 12px">Total</th>
   </tr></thead><tbody>`;
 
