@@ -5188,20 +5188,29 @@ function renderFluxo(){
     const grpTotal=grpLancs.reduce((s,l)=>s+(l.valor||0),0);
     if(!grpTotal)return;
 
-    // Find group name: try exact match, then parent prefix, then derive from first child
+    // Build group name from children in PLANO_CONTAS
     const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
-    const planoGrp=plano.find(p=>p.cod===grpKey);
+    // Get all children of this group
+    const children=plano.filter(p=>p.cod.startsWith(grpKey+'.'));
     let grpNome=grpKey;
-    if(planoGrp){
-      grpNome=grpKey+' '+planoGrp.nome;
-    } else {
-      // Try to find a common parent name from children
-      const firstChild=plano.find(p=>p.cod.startsWith(grpKey+'.'));
-      if(firstChild){
-        // Extract the part after the group prefix from the first child
-        const parts=firstChild.nome.split(' — ');
-        grpNome=grpKey+(parts.length>1?' — '+parts[0]:' '+parts[0]);
+    if(children.length){
+      // Find common prefix in names: all children share a category context
+      // Use the most common word/phrase before ' — ' separator
+      const beforeDash=children.map(p=>{const i=p.nome.indexOf(' — ');return i>-1?p.nome.slice(0,i):p.nome;});
+      // Find longest common prefix among names
+      const unique=[...new Set(beforeDash)];
+      if(unique.length===1){
+        grpNome=grpKey+' '+unique[0];
+      } else {
+        // Find common start
+        let common=unique[0];
+        unique.forEach(n=>{while(!n.startsWith(common)&&common.length>0)common=common.slice(0,common.lastIndexOf(' ')||common.length-1);});
+        grpNome=grpKey+(common.trim()?' — '+common.trim():'');
       }
+    } else {
+      // Single cat with exact match or use catCod name
+      const exact=plano.find(p=>p.cod===grpCats[0]);
+      if(exact) grpNome=grpKey+' '+exact.nome;
     }
     const grpHtmlKey='fc-grp-'+grpKey.replace(/\./g,'_');
     const multiCat=grpCats.length>1;
