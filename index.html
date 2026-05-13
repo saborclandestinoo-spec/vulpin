@@ -7153,9 +7153,14 @@ function selectBanco(id){
   const allLancs=getLanc().filter(l=>l.bancoId===id);
 
   // Extrato: só lançamentos com data <= hoje
-  // Extrato: todos lançamentos com venc/data <= hoje (receitas E despesas)
+  // Extrato: lançamentos com venc<=hoje OU já pagos (independente da data)
   const lancs=allLancs
-    .filter(l=>{ const d=l.venc||l.data||''; return d<=hoje&&(!dataInicial||d>=dataInicial); })
+    .filter(l=>{
+      const d=l.venc||l.data||'';
+      const dentroData=d<=hoje&&(!dataInicial||d>=dataInicial);
+      const pagoAntesDaData=l.pago&&(!dataInicial||(l.dataPag||d)>=dataInicial);
+      return dentroData||pagoAntesDaData;
+    })
     .sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
 
   // A receber: receitas futuras
@@ -8343,7 +8348,7 @@ function deleteCC(){
 // HELPERS
 // ═══════════════════════════════════════════
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
-function todayISO(){return new Date().toISOString().slice(0,10);}
+function todayISO(){return new Date().toLocaleDateString('sv-SE');}
 function fmtN(n){return (n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtN2(n){return (n||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:1});}
 function fmtDate(s){if(!s)return'—';const[y,m,d]=s.split('-');return`${d}/${m}/${y}`;}
