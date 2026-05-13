@@ -5083,21 +5083,22 @@ function renderFluxo(){
   const hist=getHistorico();
   // Mapa pedidos por data BRT
   const pedMapaRec={};
-  // pedMapaRec só para saldo acumulado (fallback quando não há lançamentos gerados)
-  const temLancPedidos=lancs.some(l=>l.pedidoId);
-  if(!temLancPedidos){
-    // Sem lançamentos de pedidos gerados — usa p.total direto
-    hist.forEach(p=>{
+  // Pedidos por data recebimento: D+0 padrão, D+1 útil para cartão
+  (function(){
+    var feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
+    function addUteis(d,n){var r=new Date(d);for(var i=0;i<n;){r.setDate(r.getDate()+1);var wd=r.getDay(),mm=r.toISOString().slice(5,10);if(wd!==0&&wd!==6&&!feriados.includes(mm))i++;}return r;}
+    hist.forEach(function(p){
       if(_stCancel.has(p.status||''))return;
-      const dt=p.created_at||p.createdAt||'';if(!dt)return;
-      const ms=new Date(dt).getTime()-3*60*60*1000;
-      const d=new Date(ms);
-      const dStr=`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-      if(dStr>=range.start&&dStr<=range.end){
-        pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
-      }
+      var dt=p.created_at||p.createdAt||'';if(!dt)return;
+      var ms=new Date(dt).getTime()-3*60*60*1000;
+      var base=new Date(ms);
+      var baseStr=base.getUTCFullYear()+'-'+String(base.getUTCMonth()+1).padStart(2,'0')+'-'+String(base.getUTCDate()).padStart(2,'0');
+      var pags=p.payments||[];
+      var hasCard=pags.some(function(pg){var pmk=(pg.payment_method||'').toLowerCase();return pmk==='credit_card'||pmk==='debit_card';});
+      var dStr=hasCard?addUteis(base,1).toISOString().slice(0,10):baseStr;
+      if(dStr>=range.start&&dStr<=range.end)pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
     });
-  }
+  })();
   // Receitas manuais (lançamentos tipo receita — inclui os gerados pelos pedidos)
   const recLancs=lancs.filter(l=>l.tipo==='receita');
   const despLancs=lancs.filter(l=>l.tipo==='despesa'); // needed for _saldoAcumDia
@@ -5117,19 +5118,10 @@ function renderFluxo(){
     <td style="text-align:right;font-weight:700;color:var(--blue);font-size:13px;padding:11px 12px;border-left:2px solid var(--bor)">${fmtN(saldoInicial)}</td></tr>`;
 
   // ── RECEITAS ──
-  // Pedidos: usa venc do lancamento gerado (ou data do pedido como fallback)
-  const recPedLancs=recLancs.filter(l=>l.pedidoId); // receitas de pedidos
-  const recManualLancs=recLancs.filter(l=>!l.pedidoId); // receitas manuais
-  
-  // Agrupa pedidos por data de vencimento do lançamento
-  const pedMapaVenc={};
-  recPedLancs.forEach(l=>{
-    const d=l.venc||l.data||'';
-    if(!d)return;
-    pedMapaVenc[d]=(pedMapaVenc[d]||0)+(l.valor||0);
-  });
-  // Fallback: se não há lançamentos de pedidos, usa pedMapaRec (data criação)
-  const pedMapaFinal=recPedLancs.length?pedMapaVenc:pedMapaRec;
+  // Pedidos: sempre usa pedMapaRec (calculado com D+1 para cartão, D+0 para o resto)
+  const recPedLancs=recLancs.filter(l=>l.pedidoId);
+  const recManualLancs=recLancs.filter(l=>!l.pedidoId);
+  const pedMapaFinal=pedMapaRec;
 
   // Total receitas header
   html+=`<tr style="background:#F0FDF4;border-left:3px solid var(--green)">
@@ -5376,7 +5368,29 @@ function renderFluxo(){
     if(wrap)wrap.innerHTML=`<div style="padding:20px;color:var(--red);font-size:13px;font-family:monospace">Erro: ${e.message}<br><small>${e.stack?.split('\n')[1]||''}</small></div>`;
     console.error('renderFluxo error:',e);
   }
-}
+  pedMapaRec={};
+  // Mapa pedidos por data de recebimento (D+1 só para cartão)
+  function _fluxoRecDate(p){
+    const pags=p.payments||[];
+    const dt=(p.created_at||p.createdAt||'');
+    if(!dt)return null;
+    const ms=new Date(dt).getTime()-3*60*60*1000;
+    const base=new Date(ms);
+    const baseStr=base.getUTCFullYear()+'-'+String(base.getUTCMonth()+1).padStart(2,'0')+'-'+String(base.getUTCDate()).padStart(2,'0');
+    const hasCard=pags.some(function(pg){const pmk=(pg.payment_method||'').toLowerCase();return pmk==='credit_card'||pmk==='debit_card';});
+    if(hasCard){
+      const d=new Date(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate()+1);
+      while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    return baseStr;
+  }
+  hist.forEach(function(p){
+    if(_stCancel.has(p.status||''))return;
+    const dStr=_fluxoRecDate(p);
+    if(!dStr||dStr<range.start||dStr>range.end)return;
+    pedMapaRec[dStr]=(pedMapaRec[dStr]||0)+(p.total||0);
+  });}
 
 function renderFluxoChart(range){
   const ctx=document.getElementById('chart-fluxo');if(!ctx)return;
