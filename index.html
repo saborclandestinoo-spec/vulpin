@@ -961,6 +961,11 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">Tabela</button>
           <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Gráfico</button>
         </div>
+        <div style="display:flex;gap:2px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor);flex-shrink:0">
+          <button id="fc-agrup-dia" onclick="window._fluxoAgrup='dia';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Dia</button>
+          <button id="fc-agrup-semana" onclick="window._fluxoAgrup='semana';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Semana</button>
+          <button id="fc-agrup-mes" onclick="window._fluxoAgrup='mes';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Mês</button>
+        </div>
         <!-- Range picker igual ao de pedidos -->
         <button class="fc-month-btn" onclick="fcNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
         <div style="position:relative" id="fc-range-wrap">
@@ -5024,6 +5029,41 @@ function renderFluxo(){
   const cur=new Date(startD);
   while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
 
+  // Agrupamento
+  const agrup=window._fluxoAgrup||'dia';
+  ['dia','semana','mes'].forEach(function(a){
+    const btn=document.getElementById('fc-agrup-'+a);
+    if(btn){btn.style.background=agrup===a?'var(--fox)':'transparent';btn.style.color=agrup===a?'#fff':'var(--t3)';}
+  });
+  let cols=allDays;
+  let colLabel=function(d){return new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});};
+  if(agrup==='semana'){
+    const weekMap={};
+    allDays.forEach(function(d){
+      const dt=new Date(d+'T12:00:00');const day=dt.getDay();
+      const off=day===0?-6:1-day;const mon=new Date(dt);mon.setDate(dt.getDate()+off);
+      const wk=mon.toLocaleDateString('sv-SE');
+      if(!weekMap[wk])weekMap[wk]=[];weekMap[wk].push(d);
+    });
+    cols=Object.keys(weekMap).sort();
+    colLabel=function(d){
+      const days=weekMap[d];if(!days)return d;
+      const f=new Date(days[0]+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      const l=new Date(days[days.length-1]+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      return f+' – '+l;
+    };
+    window._fluxoColMap=function(d){const dt=new Date(d+'T12:00:00');const day=dt.getDay();const off=day===0?-6:1-day;const mon=new Date(dt);mon.setDate(dt.getDate()+off);return mon.toLocaleDateString('sv-SE');};
+  } else if(agrup==='mes'){
+    const mesMap={};
+    allDays.forEach(function(d){const m=d.slice(0,7);if(!mesMap[m])mesMap[m]=[];mesMap[m].push(d);});
+    cols=Object.keys(mesMap).sort();
+    colLabel=function(d){return new Date(d+'-01T12:00:00').toLocaleDateString('pt-BR',{month:'short',year:'2-digit'});};
+    window._fluxoColMap=function(d){return d.slice(0,7);};
+  } else {
+    window._fluxoColMap=function(d){return d;};
+  }
+  const getCol=window._fluxoColMap;
+
   // Agrupa por categoria
   const catNames={};
   getCC().forEach(c=>{catNames[c.id]=c.nome;});
@@ -5035,8 +5075,8 @@ function renderFluxo(){
     <col style="width:110px;min-width:110px">
   </colgroup>
   <thead><tr>
-    <th style="min-width:300px;position:sticky;left:0;background:var(--bg);z-index:3"></th>
-    ${allDays.map(d=>`<th style="text-align:right;min-width:90px;white-space:nowrap;border-left:1px solid var(--bor2);padding:10px 12px">${new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</th>`).join('')}
+    <th style="min-width:220px;position:sticky;left:0;background:var(--bg);z-index:3"></th>
+    ${cols.map(d=>`<th style="text-align:right;min-width:62px;white-space:nowrap;border-left:1px solid var(--bor2);padding:8px 8px;font-size:11px">${colLabel(d)}</th>`).join('')}
     <th style="text-align:right;min-width:100px;font-weight:700;border-left:1px solid var(--bor);padding:10px 12px">Total</th>
   </tr></thead><tbody>`;
 
@@ -5075,14 +5115,14 @@ function renderFluxo(){
     _saldoCorr+=r-dv;
   });
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);padding:10px 14px;font-size:12px">Saldo inicial do período</td>
-    ${allDays.map(d=>`<td style="text-align:right;font-weight:600;color:var(--blue);font-size:13px;padding:11px 10px"><span style="color:var(--blue);font-weight:600">${fmtN(_saldoAcumDia[d])}</span></td>`).join('')}
+    ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const d=colDays[colDays.length-1]||col;return'<td style="text-align:right;font-weight:600;color:var(--blue);font-size:11px;padding:6px 8px"><span style="color:var(--blue);font-weight:600">'+fmtN(_saldoAcumDia[d])+'</span></td>';}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue);font-size:13px;padding:11px 12px;border-left:2px solid var(--bor)">${fmtN(saldoInicial)}</td></tr>`;
 
   // ── RECEITAS HEADER ──
   html+=`<tr style="background:rgba(39,174,96,.07);border-left:3px solid var(--green)">
     <td style="font-weight:700;color:var(--green);position:sticky;left:0;z-index:2;background:rgba(39,174,96,.07);width:240px;padding:11px 14px;font-size:13px;font-weight:700;border-left:3px solid var(--green);border-right:2px solid var(--bor)">Total de receitas</td>
-    ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;padding:12px 10px;color:${v?'var(--green)':('#C8C8CC')};font-weight:700;border-left:1px solid var(--bor2);padding:12px 12px">${v?fmtN(v):'<span style="color:#C8C8CC">0,00</span>'}</td>`;}).join('')}
-    <td style="text-align:right;font-weight:700;color:var(--green);font-size:13px;padding:12px 10px">${fmtN(recTotal)}</td></tr>`;
+    ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>(s+(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((ss,l)=>ss+(l.valor||0),0)),0);return`<td style="text-align:right;font-size:11px;padding:6px 8px;color:${v?'var(--green)':'#C8C8CC'};font-weight:700;border-left:1px solid var(--bor2)">${v?fmtN(v):'<span style="color:#C8C8CC">—</span>'}</td>`;}).join('')}
+    <td style="text-align:right;font-weight:700;color:var(--green);font-size:11px;padding:6px 8px">${fmtN(recTotal)}</td></tr>`;
 
   // Pedidos = histórico + receitas manuais juntos (tudo é pedido)
   const recPedCombTotal=recPedTotal+recLancTotal;
@@ -5096,7 +5136,7 @@ function renderFluxo(){
           <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap">🛒 Pedidos</span>
         </span>
       </td>
-      ${allDays.map(d=>{const v=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;color:${v?'var(--t)':'#C8C8CC'};font-weight:${v?'600':'400'};border-left:1px solid var(--bor2);padding:10px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
+      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:13px;color:${v?'var(--t)':'#C8C8CC'};font-weight:${v?'600':'400'};border-left:1px solid var(--bor2);padding:10px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
       <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">${fmtN(recPedCombTotal)}</td></tr>`;
 
     // Sub-itens agrupados por forma de pagamento (já com taxa descontada)
@@ -5121,7 +5161,7 @@ function renderFluxo(){
             <span style="font-size:11px;font-weight:600;color:var(--t2);white-space:nowrap">${label}</span>
           </span>
         </td>
-        ${allDays.map(d=>{const v=fLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:11px;color:${v?'var(--t)':'#C8C8CC'};border-left:1px solid var(--bor2);padding:8px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
+        ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+fLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:11px;color:${v?'var(--t)':'#C8C8CC'};border-left:1px solid var(--bor2);padding:8px 12px">${v?fmtN(v):'0,00'}</td>`;}).join('')}
         <td style="text-align:right;font-size:11px;font-weight:600;color:var(--t2);padding:8px 10px">${fmtN(fTotal)}</td></tr>`;
     });
   }
@@ -5130,11 +5170,11 @@ function renderFluxo(){
   const despTotal=despLancs.reduce((s,l)=>s+(l.valor||0),0);
   html+=`<tr style="background:rgba(231,76,60,.07);border-left:3px solid var(--red)">
     <td style="font-weight:700;color:var(--red);position:sticky;left:0;z-index:2;background:rgba(231,76,60,.07);width:240px;padding:11px 14px;font-size:13px;font-weight:700;border-left:3px solid var(--red);border-right:2px solid var(--bor)">Total de despesas</td>
-    ${allDays.map(d=>{const v=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;padding:12px 10px;color:${v?'var(--red)':('#C8C8CC')};font-weight:700;border-left:1px solid var(--bor2);padding:12px 12px">${v?'- '+fmtN(v):'<span style="color:#C8C8CC">0,00</span>'}</td>`;}).join('')}
-    <td style="text-align:right;font-weight:700;color:var(--red);font-size:13px;padding:12px 10px">- ${fmtN(despTotal)}</td></tr>`;
+    ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+despLancs.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:11px;padding:6px 8px;color:${v?'var(--red)':('#C8C8CC')};font-weight:700;border-left:1px solid var(--bor2);padding:12px 12px">${v?'- '+fmtN(v):'<span style="color:#C8C8CC">0,00</span>'}</td>`;}).join('')}
+    <td style="text-align:right;font-weight:700;color:var(--red);font-size:11px;padding:6px 8px">- ${fmtN(despTotal)}</td></tr>`;
 
   // Despesas por catCod — hierarquia expansível com sub-itens
-  const despCats=[...new Set(despLancs.map(l=>l.catCod||l.ccId||''))];
+  const despCats=[...new Set(despLancs.map(l=>l.catCod||l.ccId||''))].sort((a,b)=>(a||'').localeCompare(b||'',undefined,{numeric:true,sensitivity:'base'}));
   despCats.forEach(catId=>{
     const catL=despLancs.filter(l=>(l.catCod||l.ccId||'')===(catId||''));
     const catTotal=catL.reduce((s,l)=>s+(l.valor||0),0);
@@ -5150,7 +5190,7 @@ function renderFluxo(){
           <span style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap">${catNome}</span>
         </span>
       </td>
-      ${allDays.map(d=>{const v=catL.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);return`<td style="text-align:right;font-size:13px;padding:10px 10px;color:${v?'var(--t)':('var(--bor)')};font-weight:${v?'600':'400'}">${v?'- '+fmtN(v):'–'}</td>`;}).join('')}
+      ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const v=colDays.reduce((s,d)=>s+catL.filter(l=>(l.venc||l.data)===d).reduce((ss,l)=>ss+(l.valor||0),0),0);return`<td style="text-align:right;font-size:13px;padding:10px 10px;color:${v?'var(--t)':('var(--bor)')};font-weight:${v?'600':'400'}">${v?'- '+fmtN(v):'–'}</td>`;}).join('')}
       <td style="text-align:right;font-size:13px;font-weight:600;color:var(--t2);padding:10px 10px">- ${fmtN(catTotal)}</td></tr>`;
     catL.forEach(l=>{
       html+=`<tr class="${catKey}-item" style="display:none;background:var(--bg2);cursor:pointer" onclick="openLancEdit('${l.id}')">
