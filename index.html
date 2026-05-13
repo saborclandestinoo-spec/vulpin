@@ -9234,7 +9234,7 @@ function slim(p){
     unit_price:i.unit_price||0,
     options:(i.options||[]).map(o=>({name:o.name||'',price:o.price||0})),
   }));
-  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.total||pg.value||pg.valor||0,payment_type:pg.payment_type||'',change_of:pg.change_of||null}));
+  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.value||pg.total||pg.paid||pg.amount||pg.valor||0,payment_type:pg.payment_type||pg.paymentType||'',change_of:pg.change_of||null}));
   const addr=p.delivery_address||p.deliveryAddress||null;
   return{
     id:p.id,
@@ -9443,7 +9443,10 @@ function mergeNaHistoria(novos){
           // Fallback: dinheiro → caixa, cartão → sem banco se não configurado
           const bancoIdFinal=forma?.bancoId||(isPagoDinheiro?caixaBank?.id||'':'');
           if(!bancoIdFinal)return;
-          const valor=pg.total||pg.value||0;
+          // Cada pg já vem com seu valor correto da API
+          // Fallback só se 1 pagamento e valor zerado
+          let valor=pg.value||pg.total||pg.valor||0;
+          if(!valor&&(p.payments||[]).length===1){valor=p.total||p.totalAmount||0;}
           if(!valor)return;
           // Aplica taxa
           const taxa=forma?.taxaPct?valor*(forma.taxaPct/100):0;
