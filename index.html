@@ -9357,6 +9357,24 @@ function mergeNaHistoria(novos){
     if(!isCancelado){
       const _lancProc=S.get('pedidos_lanc_gerado')||{};
       if(_lancProc[p.id]){
+        // Pedido com múltiplos pagamentos — verificar se tem lançamento pra cada um
+        const _pags=p.payments||[];
+        if(_pags.length>1){
+          const _lancsDoPedido=getLanc().filter(l=>l.pedidoId===p.id&&l.tipo==='receita');
+          const _pagsFisicos=_pags.filter(pg=>{
+            const pmk=(pg.payment_method||'').toLowerCase();
+            const pmt=(pg.payment_type||'').toLowerCase();
+            return pmk!=='ifood'&&pmk!=='online_credit_card'&&pmt!=='online';
+          });
+          if(_lancsDoPedido.length<_pagsFisicos.length){
+            // Faltam lançamentos — apaga e reprocessa
+            S.set('lancamentos',getLanc().filter(l=>l.pedidoId!==p.id));
+            delete _lancProc[p.id];
+            S.set('pedidos_lanc_gerado',_lancProc);
+          }
+        }
+      }
+      if(_lancProc[p.id]){
         const _temMoney=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
         if(_temMoney){
           const _caixaB=getBancos().find(b=>b.tipo==='caixa');
