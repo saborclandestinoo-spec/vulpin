@@ -5006,6 +5006,16 @@ function renderFluxo(){
 
 
 
+  if(_fcTab==='grafico'){renderFluxoChart(range);return;}
+
+  try{
+  // Build tabela por dia
+  const startD=new Date(range.start+'T12:00:00');
+  const endD=new Date(range.end+'T12:00:00');
+  const allDays=[];
+  const cur=new Date(startD);
+  while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
+
   // Agrupamento
   const agrup=window._fluxoAgrup||'dia';
   ['dia','semana','mes'].forEach(function(a){
@@ -5101,16 +5111,6 @@ function renderFluxo(){
     <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">${k.ico} ${k.l}</div>
     <div style="font-size:20px;font-weight:700;color:${k.cor}">${k.v}</div>
   </div>`).join('');
-
-  if(_fcTab==='grafico'){renderFluxoChart(range);return;}
-
-  try{
-  // Build tabela por dia
-  const startD=new Date(range.start+'T12:00:00');
-  const endD=new Date(range.end+'T12:00:00');
-  const allDays=[];
-  const cur=new Date(startD);
-  while(cur<=endD){allDays.push(cur.toLocaleDateString('sv-SE'));cur.setDate(cur.getDate()+1);}
 
   // Pré-calcula saldo por dia (agora que pedMapaRec e recLancs existem)
   // Build _saldoAcumDia: today's balance, then project forward/backward
