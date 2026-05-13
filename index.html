@@ -5188,9 +5188,21 @@ function renderFluxo(){
     const grpTotal=grpLancs.reduce((s,l)=>s+(l.valor||0),0);
     if(!grpTotal)return;
 
-    // Find group name from PLANO_CONTAS or use key
-    const planoGrp=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS.find(p=>p.cod===grpKey):null;
-    const grpNome=planoGrp?grpKey+' '+planoGrp.nome:grpKey;
+    // Find group name: try exact match, then parent prefix, then derive from first child
+    const plano=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
+    const planoGrp=plano.find(p=>p.cod===grpKey);
+    let grpNome=grpKey;
+    if(planoGrp){
+      grpNome=grpKey+' '+planoGrp.nome;
+    } else {
+      // Try to find a common parent name from children
+      const firstChild=plano.find(p=>p.cod.startsWith(grpKey+'.'));
+      if(firstChild){
+        // Extract the part after the group prefix from the first child
+        const parts=firstChild.nome.split(' — ');
+        grpNome=grpKey+(parts.length>1?' — '+parts[0]:' '+parts[0]);
+      }
+    }
     const grpHtmlKey='fc-grp-'+grpKey.replace(/\./g,'_');
     const multiCat=grpCats.length>1;
 
