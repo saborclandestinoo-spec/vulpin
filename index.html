@@ -4198,13 +4198,24 @@ function renderDREPage(){
     var m2; try{m2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m2={};}
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
-    var badges=cods.map(function(cod){
+    if(!cods.length){
+      return '<span class="dre-cod-pill" data-line="'+lid+'" style="cursor:pointer;font-size:10px;font-weight:600;color:#94A3B8;border:1px dashed #CBD5E1;border-radius:10px;padding:1px 8px;white-space:nowrap">+ categorias</span>';
+    }
+    // Show categories below the line: each cod on its own sub-row
+    var rows=cods.map(function(cod){
       var item=plano.find(function(x){return x.cod===cod;});
-      var nome=item?item.nome.split(' — ')[0].slice(0,16):cod;
-      return '<span style="display:inline-flex;align-items:center;gap:2px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:600;color:#3B82F6;white-space:nowrap">'+cod+' <span style="color:#64748B;font-weight:400">'+nome+'</span></span>';
-    }).join(' ');
-    return '<span class="dre-cod-pill" data-line="'+lid+'" style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;cursor:pointer;min-width:60px">'
-      +(badges||'<span style="font-size:10px;font-weight:600;color:#94A3B8;border:1px dashed #CBD5E1;border-radius:10px;padding:1px 8px">+ categorias</span>')
+      var nome=item?item.nome:'—';
+      var depth=cod.split('.').length;
+      var pl=(depth*16)+'px';
+      var dotC=item&&item.tipo==='receita'?'#22C55E':'#EF4444';
+      return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0 3px '+pl+'">'
+        +'<span style="width:5px;height:5px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
+        +'<span style="font-size:10px;font-weight:700;color:#3B82F6;flex-shrink:0">'+cod+'</span>'
+        +'<span style="font-size:10px;color:#64748B">'+nome+'</span>'
+        +'</div>';
+    }).join('');
+    return '<span class="dre-cod-pill" data-line="'+lid+'" style="cursor:pointer;display:block">'
+      +rows
       +'</span>';
   }
 
@@ -4212,17 +4223,23 @@ function renderDREPage(){
   function _R2(nome,val,nivel,lid){
     var pad=((nivel||1)*20)+'px';
     var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
+    var pillHtml=lid?_pill2(lid):'';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:5px 16px;border-bottom:1px solid '+_Bor+'">'
-      +'<div style="display:flex;align-items:center;gap:6px;padding-left:'+pad+'">'+(lid?_pill2(lid):'')
+      +'<div style="display:flex;flex-direction:column;padding-left:'+pad+';gap:2px">'
+      +'<div style="display:flex;align-items:center;gap:6px">'
       +'<span style="font-size:12px;font-style:italic;color:#1E3A5F">'+nome+'</span></div>'
-      +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
-      +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
+      +(pillHtml?'<div style="padding-left:4px">'+pillHtml+'</div>':'')
+      +'</div>'
+      +'<div style="font-size:12px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:5px">'+_fmt(val)+'</div>'
+      +'<div style="font-size:11px;color:#94A3B8;text-align:right;align-self:start;padding-top:5px">'+_pct(val)+'</div></div>';
   }
   function _G2(nome,val,lid){
     var vc=val<0?'#DC2626':'#0F2040';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
-      +'<div style="display:flex;align-items:center;gap:8px">'+(lid?_pill2(lid):'')
-      +'<span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
+      +'<div style="display:flex;flex-direction:column;gap:2px">'
+      +'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
+      +(lid?'<div style="padding-left:4px">'+_pill2(lid)+'</div>':'')
+      +'</div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
   }
