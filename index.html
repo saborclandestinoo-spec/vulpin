@@ -5124,7 +5124,7 @@ function renderFluxo(){
     _saldoAcumDia[d]=_sc;
   });
   // Ajusta a partir de hoje com saldo real
-  var _diff2=_saldoHoje-(_saldoAcumDia[_hoje]||_sc);
+  var _diff2=saldoHoje-(_saldoAcumDia[_hoje]||_sc);
   allDays.forEach(function(d){ if(d>=_hoje) _saldoAcumDia[d]+=_diff2; });
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);padding:10px 14px;font-size:12px">Saldo inicial do período</td>
     ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const d=colDays[colDays.length-1]||col;return'<td style="text-align:right;font-weight:600;color:var(--blue);font-size:11px;padding:6px 8px"><span style="color:var(--blue);font-weight:600">'+fmtN(_saldoAcumDia[d])+'</span></td>';}).join('')}
