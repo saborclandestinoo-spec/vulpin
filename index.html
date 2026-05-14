@@ -4329,7 +4329,7 @@ function renderDREPage(){
   function _R2(nome,val,nivel,lid){
     var pad=((nivel||1)*20)+'px';
     var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
-    var cats=lid?_catsList(lid):'';
+    var cats=(lid&&!children)?_catsList(lid):'';
     // filhas: sem botão +; se tem cats mapeadas mostra só cats, senão mostra nome
     if(cats) return cats;
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
@@ -4339,7 +4339,7 @@ function renderDREPage(){
   }
   function _G2(nome,val,lid,children){
     var vc=val<0?'#DC2626':'#0F2040';
-    var cats=lid?_catsList(lid):'';
+    var cats=(lid&&!children)?_catsList(lid):'';
     // if children passed: render each child's cats in hierarchy instead of separate _R2 rows
     var childRows='';
     if(children&&children.length){
@@ -4407,7 +4407,7 @@ function renderDREPage(){
       +childRows;
   }
   function _T2(nome,val,lid){
-    var cats=lid?_catsList(lid):'';
+    var cats=(lid&&!children)?_catsList(lid):'';
     var hasCats=cats.length>0;
     // when cats mapped: light bg like _G2, dark text; else: dark header
     var bg=hasCats?_GrpBg:_HdrBg;
@@ -4444,7 +4444,7 @@ function renderDREPage(){
   if(_taxaIF2>0)_dedChildren.push(['Taxas iFood',-_taxaIF2,'taxa_if']);
   if(_descontos2>0)_dedChildren.push(['Descontos Concedidos',-_descontos2,'descontos']);
   if(_cancelam2>0)_dedChildren.push(['Estornos/Cancelamentos',-_cancelam2,'cancelam']);
-  _rows2+=_G2('(-) Deduções da Receita Bruta',-_totalDed2,null,_dedChildren);
+  _rows2+=_G2('(-) Deduções da Receita Bruta',-_totalDed2,'deducoes',_dedChildren);
   _rows2+=_T2('Receita Líquida Operacional',_recLiq2);
   var _cpvChildren=[['Matérias-Primas',-_mp2,'mp']];
   if(_emb2>0)_cpvChildren.push(['Embalagens',-_emb2,'emb']);
