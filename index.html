@@ -2858,7 +2858,7 @@ function dreOpenCodPicker(pill, lineId){
   function renderList(filter){
     const list=document.getElementById('dre-cod-list');
     if(!list)return;
-    const cats=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
+    const cats=typeof catGetData==='function'?catGetData():(typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[]);
     const f=(filter||'').toLowerCase();
     const filtered=f?cats.filter(ct=>(ct.cod+' '+ct.nome).toLowerCase().includes(f)):cats;
     // build set of visible cods for hierarchy
