@@ -4299,7 +4299,9 @@ function renderDREPage(){
       var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
       var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
       var pct2=recBruta>0&&val2>0?(val2/recBruta*100).toFixed(1)+'%':'';
-      return '<div style="display:grid;grid-template-columns:'+_cols+';padding:'+(isLeafCod?'5px':'3px')+' 16px '+(isLeafCod?'5px':'3px')+' '+(16+rel*14)+'px;border-bottom:1px solid '+_Bor+'">'
+      var rightPad=(16-rel*4)+'px';
+      var colsRow='1fr '+(110-rel*8)+'px '+(58-rel*4)+'px';
+      return '<div style="display:grid;grid-template-columns:'+colsRow+';padding:'+(isLeafCod?'5px':'3px')+' '+rightPad+' '+(isLeafCod?'5px':'3px')+' '+(16+rel*14)+'px;border-bottom:1px solid '+_Bor+'">'
         +'<div style="display:flex;align-items:center;gap:6px">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
