@@ -5113,23 +5113,19 @@ function renderFluxo(){
 
   // Pré-calcula saldo por dia (agora que pedMapaRec e recLancs existem)
   // Build _saldoAcumDia: today's balance, then project forward/backward
+  // _saldoAcumDia[d] = saldo total no FINAL do dia d
+  // A partir de hoje: âncora no saldo real dos bancos
   const _saldoAcumDia={};
-  // Split days into past (before today) and future (from today)
-  const _pastDays=allDays.filter(d=>d<_hoje);
-  const _todayAndFuture=allDays.filter(d=>d>=_hoje);
-  // For today onwards: start from saldoInicial (today's real balance)
-  // Today and future: start from saldoHoje BEFORE today's movements
-  // saldoHoje already includes today's movements, so we start from it at END of today
-  let _saldoCorr=saldoHoje;
-  // First set today = saldoHoje (the real balance)
-  _saldoAcumDia[_hoje]=saldoHoje;
-  // Future days: project forward from today
-  _todayAndFuture.filter(d=>d>_hoje).forEach(d=>{
-    const r=(pedMapaRec[d]||0)+recLancs.filter(l=>(l.venc||l.data)===d).reduce((s,l)=>s+(l.valor||0),0);
-    const dv=despLancs.filter(l=>(l.venc||l.data)===d).reduce((s,l)=>s+(l.valor||0),0);
-    _saldoCorr+=r-dv;
-    _saldoAcumDia[d]=_saldoCorr;
+  let _sc=saldoInicial;
+  allDays.forEach(function(d){
+    var r=(pedMapaRec[d]||0)+recLancs.filter(function(l){return(l.venc||l.data)===d;}).reduce(function(s,l){return s+(l.valor||0);},0);
+    var dv=despLancs.filter(function(l){return(l.venc||l.data)===d;}).reduce(function(s,l){return s+(l.valor||0);},0);
+    _sc+=r-dv;
+    _saldoAcumDia[d]=_sc;
   });
+  // Ajusta a partir de hoje com saldo real
+  var _diff2=_saldoHoje-(_saldoAcumDia[_hoje]||_sc);
+  allDays.forEach(function(d){ if(d>=_hoje) _saldoAcumDia[d]+=_diff2; });
   html+=`<tr style="background:var(--bg2)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:var(--bg2);width:240px;border-right:2px solid var(--bor);padding:10px 14px;font-size:12px">Saldo inicial do período</td>
     ${cols.map(col=>{const colDays=agrup==='dia'?[col]:allDays.filter(d=>getCol(d)===col);const d=colDays[colDays.length-1]||col;return'<td style="text-align:right;font-weight:600;color:var(--blue);font-size:11px;padding:6px 8px"><span style="color:var(--blue);font-weight:600">'+fmtN(_saldoAcumDia[d])+'</span></td>';}).join('')}
     <td style="text-align:right;font-weight:700;color:var(--blue);font-size:13px;padding:11px 12px;border-left:2px solid var(--bor)">${fmtN(saldoInicial)}</td></tr>`;
@@ -5356,16 +5352,16 @@ function renderFluxo(){
   });
   html+=`<td style="text-align:right;font-weight:700;color:${sal>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(sal)}</td></tr>`;
 
-  // Saldo total row
-  html+=`<tr style="border-top:2px solid var(--bor)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:var(--bg);width:240px;padding:9px 14px;border-right:2px solid var(--bor)">Saldo total</td>`;
-  let accTotal=saldoInicial;
-  allDays.forEach(d=>{
-    const r=(pedMapaRec[d]||0)+recLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
-    const dv=despLancs.filter(l=>l.data===d).reduce((s,l)=>s+(l.valor||0),0);
-    accTotal+=r-dv;
-    html+=`<td style="text-align:right;font-weight:700;color:${accTotal?accTotal>=0?'var(--green)':'var(--red)':'#C8C8CC'};border-left:1px solid var(--bor2);padding:10px 12px">${accTotal?fmtN(accTotal):'<span style="color:#C8C8CC">0,00</span>'}</td>`;
+  // Saldo total = _saldoAcumDia (ancorado no saldo real a partir de hoje)
+  html+='<tr style="background:#F0F5FF;border-top:2px solid var(--bor)"><td style="font-weight:700;color:var(--t);position:sticky;left:0;z-index:2;background:#F0F5FF;padding:8px 12px;border-right:1px solid var(--bor2)">Saldo total</td>';
+  cols.forEach(function(col){
+    var colDays=agrup==='dia'?[col]:allDays.filter(function(d){return getCol(d)===col;});
+    var lastD=colDays[colDays.length-1]||col;
+    var st=_saldoAcumDia[lastD]||saldoInicial;
+    html+='<td style="text-align:right;font-weight:700;padding:8px 8px;border-left:1px solid var(--bor2);font-size:11px;color:'+(st>=0?'var(--green)':'var(--red)')+'">'+fmtN(st)+'</td>';
   });
-  html+=`<td style="text-align:right;font-weight:700;color:${(saldoInicial+sal)>=0?'var(--green)':'var(--red)'}">R$ ${fmtN(saldoInicial+sal)}</td></tr>`;
+  var finalST=_saldoAcumDia[allDays[allDays.length-1]]||saldoInicial;
+  html+='<td style="text-align:right;font-weight:700;font-size:11px;color:'+(finalST>=0?'var(--green)':'var(--red)')+'">'+fmtN(finalST)+'</td></tr>';
 
   html+='</tbody></table>';
   const wrap=document.getElementById('fc-table-wrap');
@@ -7288,25 +7284,48 @@ function fixMoneyPedidosSemLanc(){
 function reprocessarPagamentosMultiplos(){
   const hist=getHistorico();
   const lancProc=S.get('pedidos_lanc_gerado')||{};
-  let count=0;
+  const toReset=[];
+
   hist.forEach(function(p){
     const pags=p.payments||[];
-    if(pags.length<2)return;
     const status=(p.status||'').toUpperCase();
     if(status==='CANCELLED'||status==='CANCELED')return;
-    // Delete and reprocess
-    S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
-    delete lancProc[p.id];
-    count++;
+
+    // Pagamentos físicos (excluindo online iFood)
+    const pagsFisicos=pags.filter(function(pg){
+      const pmk=(pg.payment_method||'').toLowerCase();
+      const pmt=(pg.payment_type||'').toLowerCase();
+      return pmk!=='ifood'&&pmk!=='online_credit_card'&&pmt!=='online';
+    });
+    if(pagsFisicos.length<2)return; // só 1 pagamento físico, não precisa
+
+    // Verificar se os lançamentos existentes têm os valores corretos
+    const lancsExist=getLanc().filter(function(l){return l.pedidoId===p.id&&l.tipo==='receita';});
+    
+    // Esperamos N lançamentos (1 por pagamento físico)
+    // OU se existe apenas 1 lançamento com o valor total (errado)
+    const needsReprocess=lancsExist.length!==pagsFisicos.length;
+    
+    if(needsReprocess){
+      toReset.push(p.id);
+    }
   });
-  S.set('pedidos_lanc_gerado',lancProc);
-  if(count>0){
-    mergeNaHistoria(hist);
-    alert('Reprocessados '+count+' pedidos com múltiplos pagamentos.');
-    renderBancos();
-  } else {
-    alert('Nenhum pedido com múltiplos pagamentos encontrado.');
+
+  if(!toReset.length){
+    alert('Todos os pedidos com múltiplos pagamentos já estão corretos.');
+    return;
   }
+
+  // Remove lançamentos dos pedidos a reprocessar
+  const lancAtual=getLanc().filter(function(l){return !toReset.includes(l.pedidoId);});
+  S.set('lancamentos',lancAtual);
+  toReset.forEach(function(id){delete lancProc[id];});
+  S.set('pedidos_lanc_gerado',lancProc);
+
+  // Reprocessar
+  mergeNaHistoria(hist);
+  alert('Reprocessados '+toReset.length+' pedidos com múltiplos pagamentos.');
+  renderBancos();
 }
 function renderBancos(){
   try{fixIfoodLancamentos();}catch(e){console.warn('fixIfood:',e);}
