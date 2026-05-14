@@ -7258,8 +7258,9 @@ function fixMoneyPedidosSemLanc(){
 
       const lancs=getLanc();
       // Evitar duplicata
+      // Permite múltiplos pagamentos no mesmo banco (verifica por valor também)
       const jaExiste=lancs.some(function(l){
-        return l.pedidoId===p.id&&l.bancoId===bancoId;
+        return l.pedidoId===p.id&&l.bancoId===bancoId&&Math.abs((l.valor||0)-valorLiq)<0.02;
       });
       if(jaExiste)return;
 
