@@ -2860,30 +2860,53 @@ function dreOpenCodPicker(pill, lineId){
     if(!list)return;
     const cats=typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[];
     const f=(filter||'').toLowerCase();
-    const filtered=cats.filter(ct=>!f||(ct.cod+' '+ct.nome).toLowerCase().includes(f));
-    list.innerHTML='';
-    filtered.slice(0,80).forEach(ct=>{
-      const checked=selected.includes(ct.cod);
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;user-select:none;'
-        +(checked?'background:var(--fox-l)':'');
-      row.innerHTML='<input type="checkbox" '+(checked?'checked':'')
-        +' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0;pointer-events:none">'
-        +'<span style="font-size:10px;font-weight:600;color:var(--fox);width:56px;flex-shrink:0">'+ct.cod+'</span>'
-        +'<span style="font-size:11px;color:var(--t)">'+ct.nome+'</span>';
-      row.addEventListener('click',function(e){
-        e.stopPropagation();
-        const cb=this.querySelector('input');
-        if(selected.includes(ct.cod)){
-          selected=selected.filter(s=>s!==ct.cod);
-          cb.checked=false;
-          this.style.background='';
-        } else {
-          selected.push(ct.cod);
-          cb.checked=true;
-          this.style.background='var(--fox-l)';
+    const filtered=f?cats.filter(ct=>(ct.cod+' '+ct.nome).toLowerCase().includes(f)):cats;
+    // build set of visible cods for hierarchy
+    const visSet=new Set(filtered.map(ct=>ct.cod));
+    // when filtering, also show parents of matches
+    if(f){
+      filtered.forEach(ct=>{
+        const parts=ct.cod.split('.');
+        for(let i=1;i<parts.length;i++){
+          visSet.add(parts.slice(0,i).join('.'));
         }
       });
+    }
+    // sort by cod
+    const visible=cats.filter(ct=>visSet.has(ct.cod));
+    list.innerHTML='';
+    visible.forEach(ct=>{
+      const depth=ct.cod.split('.').length-1;
+      const isLeaf=!cats.some(c=>c.cod!==ct.cod&&c.cod.startsWith(ct.cod+'.'));
+      const checked=selected.includes(ct.cod);
+      const indent=(depth*14)+'px';
+      const fw=depth<=1?'700':'400';
+      const fs=depth<=1?'11px':'11px';
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 12px 5px '+(12+depth*14)+'px;cursor:'+(isLeaf?'pointer':'default')+';user-select:none;border-bottom:1px solid var(--bor2,var(--bor));'
+        +(checked?'background:var(--fox-l)':'');
+      const cbHtml=isLeaf?'<input type="checkbox" '+(checked?'checked':'')+' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0;pointer-events:none">'
+        :'<span style="width:13px;height:13px;flex-shrink:0"></span>';
+      const dotC=ct.tipo==='receita'?'#22C55E':'#EF4444';
+      row.innerHTML=cbHtml
+        +'<span style="width:6px;height:6px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
+        +'<span style="font-size:10px;font-weight:700;color:var(--fox);flex-shrink:0">'+ct.cod+'</span>'
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:var(--t)">'+ct.nome+'</span>';
+      if(isLeaf){
+        row.addEventListener('click',function(e){
+          e.stopPropagation();
+          const cb=this.querySelector('input');
+          if(selected.includes(ct.cod)){
+            selected=selected.filter(s=>s!==ct.cod);
+            if(cb){cb.checked=false;}
+            this.style.background='';
+          } else {
+            selected.push(ct.cod);
+            if(cb){cb.checked=true;}
+            this.style.background='var(--fox-l)';
+          }
+        });
+      }
       list.appendChild(row);
     });
   }
