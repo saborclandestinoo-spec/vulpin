@@ -3741,88 +3741,161 @@ function dreRenderCfgLinhas(body){
   if(!body)body=document.getElementById('dre-inline-body');
   if(!body)return;
   const codMap=dreGetCodMap();
-  const cfg=dreGetCfg();
-  const linhas=(cfg.linhas||DRE_LINHAS_DEFAULT).map(function(l){
-    return Object.assign({},DRE_LINHAS_DEFAULT.find(function(d){return d.id===l.id;})||l,l);
-  });
-  // Group lines by section
-  const sections=[
-    {title:'Receitas',ids:['rec_bruta','v_pix','v_cred','v_deb','v_din','v_ifood','v_entrega']},
-    {title:'Deduções',ids:['imp_vendas','icms','iss','pis_cofins','deducoes','taxa_if','descontos','cancelam']},
-    {title:'CPV',ids:['cpv','mp','emb','mod','cif']},
-    {title:'Despesas Vendas',ids:['desp_vend','logistica','canais','marketing']},
-    {title:'Despesas Administrativas',ids:['desp_adm','ocupacao','utilidades','servicos','pessoal','manutencao','tecnologia','tributario']},
-    {title:'Resultado',ids:['rec_fin','desp_fin','nao_op','prov_ir','prov_cs','participac']},
-  ];
-  // Remaining lines not in sections
-  const allSectionIds=sections.reduce(function(a,s){return a.concat(s.ids);},[]);
-  const remaining=linhas.filter(function(l){return allSectionIds.indexOf(l.id)===-1&&l.id!=='rec_liq'&&l.id!=='luc_bruto'&&l.id!=='ebit'&&l.id!=='luc_liq'&&l.id!=='luc_antes_ir'&&l.id!=='luc_dep_ir';});
-  if(remaining.length) sections.push({title:'Outras',ids:remaining.map(function(l){return l.id;})});
+  const plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
+  const accentColor='#3B82F6';
 
-  function lineRow(l){
-    if(!l)return '';
-    const cods=codMap[l.id]||[];
-    const vis=l.visivel!==false;
-    const plano=catGetData?catGetData():PLANO_CONTAS;
-    const codBadges=cods.map(function(cod){
+  // DRE structure: hierarchical sections > groups > lines
+  const DRE_TREE=[
+    {id:'receitas',label:'Receitas',tipo:'total',children:[
+      {id:'rec_bruta',label:'(=) Receita Bruta',tipo:'total',children:[
+        {id:'v_pix',label:'Vendas Pix',tipo:'linha'},
+        {id:'v_cred',label:'Vendas Cartão de Crédito',tipo:'linha'},
+        {id:'v_deb',label:'Vendas Cartão de Débito',tipo:'linha'},
+        {id:'v_din',label:'Vendas Dinheiro',tipo:'linha'},
+        {id:'v_ifood',label:'Vendas iFood',tipo:'linha'},
+        {id:'v_entrega',label:'Taxas de Entrega',tipo:'linha'},
+      ]},
+      {id:'deducoes_sec',label:'(-) Deduções',tipo:'grupo',children:[
+        {id:'imp_vendas',label:'(-) Impostos sobre Vendas',tipo:'linha'},
+        {id:'icms',label:'ICMS',tipo:'linha'},
+        {id:'iss',label:'ISS',tipo:'linha'},
+        {id:'pis_cofins',label:'PIS/COFINS',tipo:'linha'},
+        {id:'deducoes',label:'(-) Deduções da Receita',tipo:'linha'},
+        {id:'taxa_if',label:'Taxas iFood',tipo:'linha'},
+        {id:'descontos',label:'Descontos Concedidos',tipo:'linha'},
+        {id:'cancelam',label:'Estornos/Cancelamentos',tipo:'linha'},
+      ]},
+      {id:'rec_liq',label:'(=) Receita Líquida Operacional',tipo:'total'},
+    ]},
+    {id:'cpv_sec',label:'Custo dos Produtos Vendidos',tipo:'grupo',children:[
+      {id:'cpv',label:'(-) CPV Total',tipo:'linha'},
+      {id:'mp',label:'Matérias-Primas',tipo:'linha'},
+      {id:'emb',label:'Embalagens',tipo:'linha'},
+      {id:'mod',label:'Mão de Obra Direta',tipo:'linha'},
+      {id:'cif',label:'Custos Indiretos',tipo:'linha'},
+      {id:'luc_bruto',label:'(=) Lucro Bruto',tipo:'total'},
+    ]},
+    {id:'desp_sec',label:'Despesas Operacionais',tipo:'grupo',children:[
+      {id:'desp_vend',label:'(-) Despesas com Vendas',tipo:'grupo',children:[
+        {id:'logistica',label:'Logística e Entrega',tipo:'linha'},
+        {id:'canais',label:'Canais de Venda',tipo:'linha'},
+        {id:'marketing',label:'Marketing',tipo:'linha'},
+      ]},
+      {id:'desp_adm',label:'(-) Despesas Administrativas',tipo:'grupo',children:[
+        {id:'ocupacao',label:'Ocupação',tipo:'linha'},
+        {id:'utilidades',label:'Utilidades',tipo:'linha'},
+        {id:'servicos',label:'Serviços Profissionais',tipo:'linha'},
+        {id:'pessoal',label:'Pessoal Administrativo',tipo:'linha'},
+        {id:'manutencao',label:'Manutenção',tipo:'linha'},
+        {id:'tecnologia',label:'Tecnologia',tipo:'linha'},
+        {id:'tributario',label:'Tributário e Legal',tipo:'linha'},
+      ]},
+    ]},
+    {id:'resultado_sec',label:'Resultado',tipo:'grupo',children:[
+      {id:'rec_fin',label:'Receitas Financeiras',tipo:'linha'},
+      {id:'desp_fin',label:'(-) Despesas Financeiras',tipo:'linha'},
+      {id:'ebit',label:'(=) Lucro Operacional (EBIT)',tipo:'total'},
+      {id:'nao_op',label:'Resultado Não Operacional',tipo:'linha'},
+      {id:'luc_antes_ir',label:'(=) Lucro Antes do IR',tipo:'total'},
+      {id:'prov_ir',label:'(-) Provisão IR',tipo:'linha'},
+      {id:'prov_cs',label:'(-) Provisão CS',tipo:'linha'},
+      {id:'luc_dep_ir',label:'(=) Lucro Depois do IR',tipo:'total'},
+      {id:'participac',label:'(-) Participações',tipo:'linha'},
+      {id:'luc_liq',label:'(=) Lucro Líquido do Exercício',tipo:'total'},
+    ]},
+  ];
+
+  var _dreOpen={};
+
+  function togNode(nid){
+    _dreOpen[nid]=!_dreOpen[nid];
+    const ch=document.getElementById('dren-'+nid+'-ch');
+    const ico=document.getElementById('dren-'+nid+'-ico');
+    if(ch)ch.style.display=_dreOpen[nid]?'block':'none';
+    if(ico)ico.style.transform=_dreOpen[nid]?'rotate(90deg)':'rotate(0)';
+  }
+  window._dreTog=togNode;
+
+  function renderNode(node, depth){
+    const cods=codMap[node.id]||[];
+    const isTotal=node.tipo==='total';
+    const isGrupo=node.tipo==='grupo';
+    const isLinha=node.tipo==='linha';
+    const hasKids=node.children&&node.children.length>0;
+    const nid=node.id;
+    const isOpen=!!_dreOpen[nid];
+
+    const bg=depth===0?'#F0F5FF':isTotal?'#EFF6FF':'var(--bg)';
+    const fw=isTotal?700:isGrupo?600:400;
+    const fs=depth===0?'13px':'12px';
+    const pl=(12+depth*18)+'px';
+    const dotC=isTotal?'#2563EB':isGrupo?'#64748B':'#94A3B8';
+
+    // Cod badges
+    const badges=cods.map(function(cod){
       const item=plano.find(function(x){return x.cod===cod;});
-      return '<span style="display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:1px 8px;font-size:10px;font-weight:600;color:var(--fox);cursor:pointer" data-act="dre-rmcod" data-lid="'+l.id+'" data-cod="'+cod+'">'
-        +cod+(item?' <span style="color:var(--t3);font-weight:400">'+item.nome.split(' — ')[0].slice(0,20)+'</span>':'')+' <span style="color:#EF4444;margin-left:1px">×</span></span>';
+      const label=item?item.nome.split(' — ')[0].slice(0,18):cod;
+      return '<span data-act="rmcod" data-nid="'+nid+'" data-cod="'+cod+'" style="display:inline-flex;align-items:center;gap:3px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:1px 6px 1px 8px;font-size:10px;font-weight:600;color:#2563EB;cursor:pointer;white-space:nowrap">'
+        +cod+' <span style="color:var(--t3);font-weight:400;font-size:10px">'+label+'</span>'
+        +' <span style="color:#EF4444;font-size:11px;margin-left:1px">×</span></span>';
     }).join('');
 
-    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 16px;border-bottom:1px solid var(--bor2);min-height:40px">'
-      // visibility toggle
-      +'<input type="checkbox"'+(vis?' checked':'')+' data-act="dre-vis" data-lid="'+l.id+'" style="width:14px;height:14px;cursor:pointer;flex-shrink:0">'
-      // label (editable)
-      +'<span class="dre-line-lbl" data-lid="'+l.id+'" style="font-size:12px;font-weight:600;color:'+(vis?'var(--t)':'var(--t3)')+';min-width:180px;flex-shrink:0;cursor:text" title="Clique para editar">'+l.label+'</span>'
-      // cod badges
-      +'<div style="display:flex;flex-wrap:wrap;gap:4px;flex:1">'+codBadges+'</div>'
-      // add cod button
-      +'<button data-act="dre-addcod" data-lid="'+l.id+'" style="height:24px;padding:0 10px;border:1px dashed var(--fox);border-radius:12px;background:transparent;cursor:pointer;font-size:11px;color:var(--fox);font-family:Poppins,sans-serif;flex-shrink:0">+ cat</button>'
-      +'</div>';
+    var html='<div>';
+    html+='<div style="display:flex;align-items:center;gap:6px;padding:7px 12px 7px '+pl+';border-bottom:1px solid #F1F5F9;background:'+bg+';min-height:38px">';
+
+    // Toggle arrow
+    if(hasKids){
+      html+='<span id="dren-'+nid+'-ico" data-act="tog" data-nid="'+nid+'" style="font-size:9px;color:#94A3B8;display:inline-block;cursor:pointer;transform:'+(isOpen?'rotate(90deg)':'rotate(0)')+';transition:transform .15s;width:14px;flex-shrink:0">▶</span>';
+    } else {
+      html+='<span style="display:inline-flex;align-items:center;width:14px;flex-shrink:0"><span style="width:5px;height:1px;background:#E2E8F0;display:inline-block;margin-left:4px"></span></span>';
+    }
+
+    // Dot
+    html+='<span style="width:7px;height:7px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>';
+
+    // Label (editable on click)
+    html+='<span class="dre-lbl" data-nid="'+nid+'" style="font-size:'+fs+';font-weight:'+fw+';color:#1E293B;flex-shrink:0;cursor:text;min-width:180px">'+node.label+'</span>';
+
+    // Badges (only for linha nodes)
+    if(isLinha){
+      html+='<div style="display:flex;flex-wrap:wrap;gap:3px;flex:1;min-width:0">'+badges+'</div>';
+      html+='<button data-act="addcod" data-nid="'+nid+'" style="height:22px;padding:0 8px;border:1px dashed #93C5FD;border-radius:10px;background:transparent;cursor:pointer;font-size:10px;font-weight:600;color:#3B82F6;font-family:Poppins,sans-serif;flex-shrink:0;white-space:nowrap">+ categoria</button>';
+    } else {
+      html+='<div style="flex:1"></div>';
+    }
+
+    html+='</div>';
+
+    if(hasKids){
+      html+='<div id="dren-'+nid+'-ch" style="display:'+(isOpen?'block':'none')+'">';
+      node.children.forEach(function(child){html+=renderNode(child,depth+1);});
+      html+='</div>';
+    }
+    html+='</div>';
+    return html;
   }
 
-  let html='<div style="padding:8px 0">';
-  sections.forEach(function(sec){
-    const secLines=sec.ids.map(function(id){return linhas.find(function(l){return l.id===id;});}).filter(Boolean);
-    if(!secLines.length)return;
-    html+='<div style="background:var(--bg2);padding:7px 16px;border-bottom:1px solid var(--bor);border-top:1px solid var(--bor);margin-top:8px">'
-      +'<span style="font-size:11px;font-weight:700;color:var(--t);text-transform:uppercase;letter-spacing:.5px">'+sec.title+'</span>'
-      +'</div>';
-    secLines.forEach(function(l){html+=lineRow(l);});
-  });
-  html+='</div>';
-  body.innerHTML=html;
+  body.innerHTML='<div>'+DRE_TREE.map(function(n){return renderNode(n,0);}).join('')+'</div>';
 
-  // Events
   body.addEventListener('click',function(e){
-    const btn=e.target.closest('[data-act]');
-    if(!btn)return;
-    const act=btn.dataset.act,lid=btn.dataset.lid;
-    if(act==='dre-addcod'){
-      dreAddCodToLine(lid);
-    } else if(act==='dre-rmcod'){
-      dreRmCodFromLine(lid,btn.dataset.cod);
-    }
+    const el=e.target.closest('[data-act]');
+    if(!el)return;
+    const act=el.dataset.act,nid=el.dataset.nid;
+    if(act==='tog')togNode(nid);
+    else if(act==='addcod')dreAddCodToLine(nid);
+    else if(act==='rmcod')dreRmCodFromLine(nid,el.dataset.cod);
   });
-  body.addEventListener('change',function(e){
-    if(e.target.dataset.act==='dre-vis'){
-      dreToggleLineVis(e.target.dataset.lid,e.target.checked);
-    }
-  });
-  // Label click to edit
-  body.querySelectorAll('.dre-line-lbl').forEach(function(el){
+
+  body.querySelectorAll('.dre-lbl').forEach(function(el){
     el.addEventListener('click',function(){
-      const lid=this.dataset.lid;
+      const nid=this.dataset.nid;
       const cur=this.textContent;
       const inp=document.createElement('input');
       inp.value=cur;
-      inp.style.cssText='border:1px solid var(--fox);border-radius:5px;padding:2px 6px;font-size:12px;font-family:Poppins,sans-serif;outline:none;width:200px';
-      this.replaceWith(inp);
-      inp.focus();inp.select();
+      inp.style.cssText='border:1px solid #3B82F6;border-radius:5px;padding:2px 6px;font-size:12px;font-family:Poppins,sans-serif;outline:none;min-width:180px;color:#1E293B';
+      this.replaceWith(inp);inp.focus();inp.select();
       inp.addEventListener('blur',function(){
-        const nv=inp.value.trim()||cur;
-        dreSaveLineLabel(lid,nv);
+        dreSaveLineLabel(nid,inp.value.trim()||cur);
         dreRenderCfgLinhas(body);
       });
       inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}});
