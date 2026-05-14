@@ -7281,6 +7281,25 @@ function fixMoneyPedidosSemLanc(){
 
 
 // Força reprocessamento de todos os pedidos com múltiplos pagamentos
+function reEnriquecerPagamentosZerados(){
+  // Force re-fetch of all pedidos with payments value=0
+  const hist=getHistorico();
+  const zerados=hist.filter(function(p){
+    return (p.payments||[]).some(function(pg){return !pg.value;}) &&
+           (p.payments||[]).length>0;
+  });
+  if(!zerados.length){alert('Nenhum pedido com pagamento zerado.');return;}
+  // Reset processed flag for these pedidos
+  const lancProc=S.get('pedidos_lanc_gerado')||{};
+  zerados.forEach(function(p){
+    S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
+    delete lancProc[p.id];
+  });
+  S.set('pedidos_lanc_gerado',lancProc);
+  alert('Resetados '+zerados.length+' pedidos. Sincronize para re-enriquecer.');
+  renderBancos();
+}
+
 function reprocessarPagamentosMultiplos(){
   const hist=getHistorico();
   const lancProc=S.get('pedidos_lanc_gerado')||{};
@@ -9529,8 +9548,11 @@ function mergeNaHistoria(novos){
           const caixaBank=getBancos().find(b=>b.tipo==='caixa');
           // Fallback: dinheiro → caixa, cartão → sem banco se não configurado
           // Fallback por tipo de pagamento se forma não tem banco configurado
-          const _bancoPix=getBancos().find(function(b){return (b.nome||'').toLowerCase().includes('pix');});
-          const _bancoCredito=getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('crédito')||n.includes('credito')||n.includes('credit');});
+          // Find pix bank: by name, or from formas de pagamento configuradas
+          const _formaPix=formasPedido.find(function(f){return f.status==='ativa'&&(f.nome||'').toLowerCase().includes('pix');});
+          const _bancoPix=(_formaPix&&_formaPix.bancoId?getBancos().find(function(b){return b.id===_formaPix.bancoId;}):null)||getBancos().find(function(b){return (b.nome||'').toLowerCase().includes('pix');});
+          const _formaCredito=formasPedido.find(function(f){return f.status==='ativa'&&(f.nome||'').toLowerCase().includes('crédito')||f.status==='ativa'&&(f.nome||'').toLowerCase().includes('credito');});
+          const _bancoCredito=(_formaCredito&&_formaCredito.bancoId?getBancos().find(function(b){return b.id===_formaCredito.bancoId;}):null)||getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('crédito')||n.includes('credito')||n.includes('credit');});
           const _bancoDebito=getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('débito')||n.includes('debito')||n.includes('debit');});
           const _bancoFallback=isPagoDinheiro?(caixaBank?.id||''):
             (isPagoPix?(_bancoPix?.id||''):
