@@ -8389,27 +8389,24 @@ function toggleDREIncluded(cod){
 }
 
 function renderCat(){
-  catSetTab('despesa', document.getElementById('cat-tab-desp'));
+  catSetTab('despesa',document.getElementById('cat-tab-desp'));
 }
 
 let _catTab='despesa';
-let _catDraft=null; // working copy of PLANO_CONTAS
+let _catDraft=null;
 
 function catGetData(){
   if(_catDraft)return _catDraft;
-  // Try localStorage override, else use PLANO_CONTAS
   try{
     const saved=localStorage.getItem('verp_plano_contas');
-    if(saved) _catDraft=JSON.parse(saved);
+    if(saved)_catDraft=JSON.parse(saved);
     else _catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));
   }catch(e){_catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));}
   return _catDraft;
 }
 
 function catSave(){
-  _catDraft=catCollectEdits();
   localStorage.setItem('verp_plano_contas',JSON.stringify(_catDraft));
-  // Update PLANO_CONTAS in memory
   PLANO_CONTAS.length=0;
   _catDraft.forEach(function(x){PLANO_CONTAS.push(x);});
   const st=document.getElementById('cat-save-status');
@@ -8417,26 +8414,13 @@ function catSave(){
   catRenderBody();
 }
 
-function catCollectEdits(){
-  const rows=document.querySelectorAll('.cat-row[data-cod]');
-  const result=[];
-  rows.forEach(function(row){
-    const codEl=row.querySelector('.cat-cod-in');
-    const nomeEl=row.querySelector('.cat-nome-in');
-    const tipo=row.dataset.tipo;
-    if(codEl&&nomeEl&&codEl.value.trim()&&nomeEl.value.trim()){
-      result.push({cod:codEl.value.trim(),nome:nomeEl.value.trim(),tipo:tipo});
-    }
-  });
-  return result;
-}
-
 function catSetTab(tipo,btn){
   _catTab=tipo;
-  document.querySelectorAll('[id^="cat-tab-"]').forEach(function(b){
-    b.style.background='transparent';b.style.color='var(--t3)';
+  ['desp','rec'].forEach(function(t){
+    const b=document.getElementById('cat-tab-'+t);
+    if(b){b.style.background=((tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec'))?'var(--fox)':'transparent';
+    b.style.color=((tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec'))?'#fff':'var(--t3)';}
   });
-  if(btn){btn.style.background='var(--fox)';btn.style.color='#fff';}
   catRenderBody();
 }
 
@@ -8445,140 +8429,134 @@ function catRenderBody(){
   if(!body)return;
   const data=catGetData().filter(function(x){return x.tipo===_catTab;});
 
-  // Build tree: group by level-2 prefix, subgroup by level-3, leaves at level-4
-  const groups={};
-  data.forEach(function(item){
-    const parts=item.cod.split('.');
-    const g=parts.slice(0,2).join('.');
-    const sg=parts.length>=3?parts.slice(0,3).join('.'):null;
-    if(!groups[g])groups[g]={items:[],subgroups:{}};
-    if(sg){
-      if(!groups[g].subgroups[sg])groups[g].subgroups[sg]=[];
-      groups[g].subgroups[sg].push(item);
-    } else {
-      groups[g].items.push(item);
-    }
+  // Sort by cod
+  data.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
+
+  // Build tree structure
+  function getLevel(cod){return (cod||'').split('.').length;}
+  function getParent(cod){const p=cod.split('.');return p.slice(0,-1).join('.');}
+
+  let html='<table style="width:100%;border-collapse:collapse">';
+
+  data.forEach(function(item,idx){
+    const level=getLevel(item.cod);
+    const indent=(level-1)*24;
+    const isGroup=data.some(function(x){return x.cod!==item.cod&&x.cod.startsWith(item.cod+'.');});
+
+    // Row background by level
+    const bg=level===1?'#F0F5FF':level===2?'#F8FAFF':'#FFFFFF';
+    const fw=level<=2?'600':'400';
+    const fs=level===1?'13px':level===2?'12px':'12px';
+
+    html+='<tr class="cat-row-item" style="border-bottom:1px solid var(--bor2);background:'+bg+'">';
+
+    // Drag handle + indent + content
+    html+='<td style="padding:9px 12px 9px '+(16+indent)+'px;width:100%">';
+    html+='<div style="display:flex;align-items:center;gap:8px">';
+
+    // Drag handle
+    html+='<span style="color:var(--bor);font-size:14px;cursor:grab;flex-shrink:0">⠿</span>';
+
+    // Dot
+    const dotColor=_catTab==='despesa'?'#DC2626':'#16A34A';
+    html+='<span style="width:8px;height:8px;border-radius:50%;background:'+dotColor+';flex-shrink:0"></span>';
+
+    // Code (editable)
+    html+='<input class="cat-cod-in" value="'+item.cod+'" data-orig="'+item.cod+'" style="width:'+(level===1?60:level===2?72:84)+'px;border:none;border-bottom:1px solid transparent;background:transparent;font-size:11px;font-weight:600;color:var(--fox);font-family:Poppins,sans-serif;outline:none;padding:1px 2px">';
+
+    // Name (editable)
+    html+='<input class="cat-nome-in" value="'+item.nome.replace(/"/g,'&quot;')+'" style="flex:1;border:none;border-bottom:1px solid transparent;background:transparent;font-size:'+fs+';font-weight:'+fw+';color:var(--t);font-family:Poppins,sans-serif;outline:none;padding:1px 4px;min-width:0">';
+
+    html+='</div></td>';
+
+    // Status badge
+    html+='<td style="padding:9px 8px;white-space:nowrap"><span style="background:#DCFCE7;color:#16A34A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px">Ativa</span></td>';
+
+    // Action buttons
+    html+='<td style="padding:9px 8px;white-space:nowrap;display:flex;align-items:center;gap:4px">';
+    html+='<button title="Adicionar filho" data-act="add" data-cod="'+item.cod+'" style="width:28px;height:28px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);cursor:pointer;font-size:14px;color:var(--t3)">+</button>';
+    html+='<button title="Excluir" data-act="del" data-cod="'+item.cod+'" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEF2F2;cursor:pointer;font-size:14px;color:#DC2626">×</button>';
+    html+='</td>';
+
+    html+='</tr>';
   });
 
-  let html='';
-  const dotColor=_catTab==='despesa'?'#DC2626':'#16A34A';
-
-  Object.keys(groups).sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});}).forEach(function(gKey){
-    const grp=groups[gKey];
-    const allItems=[...grp.items];
-    Object.values(grp.subgroups).forEach(function(sg){sg.forEach(function(i){allItems.push(i);});});
-    const grpId='cg-'+gKey.replace(/\./g,'_');
-
-    // Group header
-    html+='<div style="background:#F0F5FF;border-bottom:1px solid var(--bor);padding:8px 16px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="catToggle(\''+grpId+'\')">'
-      +'<span id="'+grpId+'-ico" style="font-size:10px;color:var(--t3)">▶</span>'
-      +'<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+dotColor+';flex-shrink:0"></span>'
-      +'<span style="font-size:12px;font-weight:700;color:var(--t);flex:1">'+gKey+'</span>'
-      +'<button onclick="event.stopPropagation();catAddItem(\''+gKey+'\')" style="font-size:10px;padding:2px 8px;border:1px solid var(--bor);border-radius:5px;background:var(--bg);cursor:pointer;font-family:Poppins,sans-serif;color:var(--t3)">+ item</button>'
-      +'<button onclick="event.stopPropagation();catAddSubgroup(\''+gKey+'\')" style="font-size:10px;padding:2px 8px;border:1px solid var(--bor);border-radius:5px;background:var(--bg);cursor:pointer;font-family:Poppins,sans-serif;color:var(--t3)">+ subgrupo</button>'
-      +'<button onclick="event.stopPropagation();catDelGroup(\''+gKey+'\')" style="font-size:10px;padding:2px 6px;border:1px solid #FCA5A5;border-radius:5px;background:#FEF2F2;cursor:pointer;color:#DC2626">×</button>'
-      +'</div>';
-
-    html+='<div id="'+grpId+'-body" style="display:none">';
-
-    // Subgroups
-    Object.keys(grp.subgroups).sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});}).forEach(function(sgKey){
-      const sgId='csg-'+sgKey.replace(/\./g,'_');
-      html+='<div style="background:var(--bg2);border-bottom:1px solid var(--bor2);padding:6px 16px 6px 28px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="catToggle(\''+sgId+'\')">'
-        +'<span id="'+sgId+'-ico" style="font-size:9px;color:var(--t3)">▶</span>'
-        +'<span style="font-size:11px;font-weight:600;color:var(--t2);flex:1">'+sgKey+'</span>'
-        +'<button onclick="event.stopPropagation();catAddItem(\''+sgKey+'\')" style="font-size:10px;padding:1px 6px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-family:Poppins,sans-serif;color:var(--t3)">+ item</button>'
-        +'<button onclick="event.stopPropagation();catDelGroup(\''+sgKey+'\')" style="font-size:10px;padding:1px 5px;border:1px solid #FCA5A5;border-radius:4px;background:#FEF2F2;cursor:pointer;color:#DC2626">×</button>'
-        +'</div>';
-      html+='<div id="'+sgId+'-body" style="display:none">';
-      grp.subgroups[sgKey].forEach(function(item){
-        html+=catItemRow(item, 44);
-      });
-      html+='</div>';
-    });
-
-    // Direct items
-    grp.items.forEach(function(item){
-      html+=catItemRow(item, 28);
-    });
-
-    html+='</div>';
-  });
-
-  if(!html) html='<div style="padding:24px;text-align:center;color:var(--t3);font-size:13px">Nenhuma categoria. Clique em "+ Novo Grupo" para começar.</div>';
+  html+='</table>';
   body.innerHTML=html;
+  body.querySelectorAll('.cat-cod-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateCod(this);});
+  });
+  body.querySelectorAll('.cat-nome-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateNome(this,this.dataset.cod);});
+  });
+  body.querySelectorAll('[data-act="add"]').forEach(function(btn){
+    btn.addEventListener('click',function(){catAddChild(this.dataset.cod);});
+  });
+  body.querySelectorAll('[data-act="del"]').forEach(function(btn){
+    btn.addEventListener('click',function(){catDelItem(this.dataset.cod);});
+  });
 }
 
-function catItemRow(item, indent){
-  return '<div class="cat-row" data-cod="'+item.cod+'" data-tipo="'+item.tipo+'" style="display:flex;align-items:center;gap:8px;padding:6px 16px 6px '+indent+'px;border-bottom:1px solid var(--bor2)">'
-    +'<input class="cat-cod-in" value="'+item.cod+'" style="width:80px;border:1px solid var(--bor);border-radius:5px;padding:3px 6px;font-size:10px;font-family:Poppins,sans-serif;color:var(--t2);background:var(--bg)">'
-    +'<input class="cat-nome-in" value="'+item.nome+'" style="flex:1;border:1px solid var(--bor);border-radius:5px;padding:3px 8px;font-size:11px;font-family:Poppins,sans-serif;color:var(--t)">'
-    +'<button onclick="catDelItem(\''+item.cod+'\')" style="width:24px;height:24px;border:1px solid #FCA5A5;border-radius:5px;background:#FEF2F2;cursor:pointer;color:#DC2626;font-size:12px;flex-shrink:0">×</button>'
-    +'</div>';
+function catUpdateCod(input){
+  input.style.borderBottomColor='transparent';
+  const orig=input.dataset.orig;
+  const newCod=input.value.trim();
+  if(!newCod||newCod===orig)return;
+  const data=catGetData();
+  // Update this item and all children
+  data.forEach(function(x){
+    if(x.cod===orig)x.cod=newCod;
+    else if(x.cod.startsWith(orig+'.'))x.cod=newCod+x.cod.slice(orig.length);
+  });
+  input.dataset.orig=newCod;
+  _catDraft=data;
 }
 
-function catToggle(id){
-  const body=document.getElementById(id+'-body');
-  const ico=document.getElementById(id+'-ico');
-  if(!body)return;
-  const open=body.style.display==='none';
-  body.style.display=open?'block':'none';
-  if(ico)ico.textContent=open?'▼':'▶';
+function catUpdateNome(input,cod){
+  input.style.borderBottomColor='transparent';
+  const data=catGetData();
+  const item=data.find(function(x){return x.cod===cod;});
+  if(item)item.nome=input.value.trim();
 }
 
 function catAddGrupo(){
   const tipo=_catTab;
   const data=catGetData();
-  // Find next available group code
-  const codes=data.filter(function(x){return x.tipo===tipo;}).map(function(x){return x.cod.split('.').slice(0,2).join('.');});
-  const nums=codes.map(function(c){return parseFloat(c)||0;}).filter(function(n){return n>0;});
-  const maxN=nums.length?Math.max.apply(null,nums):0;
-  const newCod=(Math.floor(maxN)+1)+'.1.1';
-  data.push({cod:newCod,nome:'Nova Categoria',tipo:tipo});
+  const nums=data.filter(function(x){return x.tipo===tipo;}).map(function(x){
+    return parseInt(x.cod.split('.')[0])||0;
+  });
+  const maxN=nums.length?Math.max.apply(null,nums):3;
+  const newCod=(maxN+1)+'.1';
+  data.push({cod:newCod,nome:'Novo Grupo',tipo:tipo});
+  _catDraft=data;
   catRenderBody();
 }
 
-function catAddSubgroup(parentKey){
+function catAddChild(parentCod){
   const tipo=_catTab;
   const data=catGetData();
-  const parts=parentKey.split('.');
   const children=data.filter(function(x){
-    const cp=x.cod.split('.');
-    return cp.length>=3&&cp.slice(0,parts.length).join('.')===parentKey;
+    return x.cod!==parentCod&&x.cod.startsWith(parentCod+'.');
   });
-  const subNums=children.map(function(x){return parseInt(x.cod.split('.')[parts.length])||0;});
-  const nextSub=(subNums.length?Math.max.apply(null,subNums):0)+1;
-  const newCod=parentKey+'.'+nextSub+'.1';
-  data.push({cod:newCod,nome:'Novo Subgrupo',tipo:tipo});
-  catRenderBody();
-}
-
-function catAddItem(parentKey){
-  const tipo=_catTab;
-  const data=catGetData();
-  const parts=parentKey.split('.');
-  const children=data.filter(function(x){
-    const cp=x.cod.split('.');
-    return cp.slice(0,parts.length).join('.')===parentKey;
-  });
-  const leafNums=children.map(function(x){return parseInt(x.cod.split('.').pop())||0;});
-  const nextLeaf=(leafNums.length?Math.max.apply(null,leafNums):0)+1;
-  const newCod=parentKey+'.'+nextLeaf;
-  data.push({cod:newCod,nome:'Nova Categoria',tipo:tipo});
+  // Direct children only (1 level deeper)
+  const level=parentCod.split('.').length;
+  const direct=children.filter(function(x){return x.cod.split('.').length===level+1;});
+  const nums=direct.map(function(x){return parseInt(x.cod.split('.').pop())||0;});
+  const next=(nums.length?Math.max.apply(null,nums):0)+1;
+  const newCod=parentCod+'.'+next;
+  // Insert after parent's last descendant
+  const lastIdx=Math.max.apply(null,data.map(function(x,i){
+    return (x.cod===parentCod||x.cod.startsWith(parentCod+'.'))?i:-1;
+  }));
+  data.splice(lastIdx+1,0,{cod:newCod,nome:'Nova Categoria',tipo:tipo});
+  _catDraft=data;
   catRenderBody();
 }
 
 function catDelItem(cod){
-  if(!confirm('Excluir esta categoria?'))return;
-  _catDraft=catGetData().filter(function(x){return x.cod!==cod;});
-  catRenderBody();
-}
-
-function catDelGroup(key){
-  if(!confirm('Excluir grupo '+key+' e todas as categorias filhas?'))return;
-  const parts=key.split('.');
+  if(!confirm('Excluir "'+cod+'" e todas as subcategorias?'))return;
   _catDraft=catGetData().filter(function(x){
-    return x.cod.split('.').slice(0,parts.length).join('.')!==key;
+    return x.cod!==cod&&!x.cod.startsWith(cod+'.');
   });
   catRenderBody();
 }
