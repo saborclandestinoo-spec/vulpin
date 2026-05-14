@@ -4180,6 +4180,11 @@ function renderDREPage(){
     }).reduce(function(s,l){return s+(l.valor||0);},0);
   }
   function _or2(a,b){return a!==null?a:b;}
+  function _dFs(depth){return Math.max(11,15-Math.round(depth*1.2))+'px';}
+  function _dFw(depth){return depth<=1?'700':depth===2?'600':'400';}
+  function _dTc(depth){return depth<=1?'#1E3A5F':depth===2?'#475569':'var(--t)';}
+  function _dCc(depth){return depth<=1?'#1E3A5F':depth===2?'#475569':'#3B82F6';}
+  function _dDot(depth){return depth<=1?'8px':depth===2?'7px':'6px';}
   // map catCod -> valor from pedidos lines (any cod that matches gets that line's value)
   function _sumCod(cod){
     // 1. check if any venda lid has this exact cod mapped → return that lid's value
@@ -4289,12 +4294,11 @@ function renderDREPage(){
       // depth-based sizing: shallower = bigger
       var depth2=cod.split('.').length-1;
 
-      var sizeStep=maxD>minD?(maxD-depth2)/(maxD-minD):0;
-      var fs=(11+Math.round(sizeStep*3))+'px';
-      var fw=depth2===minD?'700':(isLeafCod?'400':'600');
-      var tc=isLeafCod?'var(--t)':(depth2===minD?'#1E3A5F':'#475569');
-      var codc=isLeafCod?'#3B82F6':(depth2===minD?'#1E3A5F':'#475569');
-      var dotSz=isLeafCod?'8px':(depth2===minD?'7px':'5px');
+      var fs=_dFs(depth2);
+      var fw=_dFw(depth2);
+      var tc=_dTc(depth2);
+      var codc=_dCc(depth2);
+      var dotSz=_dDot(depth2);
       var val2=_sumCod(cod);
       var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
       var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
@@ -4354,12 +4358,12 @@ function renderDREPage(){
             var dotC=item?(item.tipo==='receita'?'#22C55E':'#EF4444'):(cod.charAt(0)==='3'?'#22C55E':'#EF4444');
             var rel=Math.max(0,cod.split('.').length-1-chMinD);
             var indL=(20+(parentDepth+rel)*20)+'px';
-            var sizeStep=chMaxD>chMinD?(chMaxD-(cod.split('.').length-1))/(chMaxD-chMinD):0;
-            var fs=(11+Math.round(sizeStep*2))+'px';
-            var fw=rel===0?'600':'400';
-            var tc=rel===0?'var(--t)':'#475569';
-            var codc=rel===0?'#3B82F6':'#475569';
-            var dotSz=rel===0?'7px':'6px';
+            var chDepth=cod.split('.').length-1;
+            var fs=_dFs(chDepth);
+            var fw=_dFw(chDepth);
+            var tc=_dTc(chDepth);
+            var codc=_dCc(chDepth);
+            var dotSz=_dDot(chDepth);
             var v2=_sumCod(cod);
             var vFmt=v2?'R$ '+fmtN(v2):'—';
             var vC=v2?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
