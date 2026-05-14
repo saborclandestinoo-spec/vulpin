@@ -4206,8 +4206,10 @@ function renderDREPage(){
       var nome=item?item.nome:'—';
       var dotC=item&&item.tipo==='receita'?'#22C55E':'#EF4444';
       var depth2=cod.split('.').length-1;
-      var indPill=(depth2>1?(depth2-1)*14:0)+'px';
-      var arrowHtml=depth2>1?'<span style="color:#94A3B8;font-size:10px;margin-right:2px">'+('›').repeat(depth2-1)+'</span>':'';
+      var minDepth=Math.min.apply(null,cods.map(function(c){return c.split('.').length-1;}));
+      var relDepth=depth2-minDepth;
+      var indPill=(relDepth>0?relDepth*14:0)+'px';
+      var arrowHtml=relDepth>0?'<span style="color:#94A3B8;font-size:10px;margin-right:2px">'+('›').repeat(relDepth)+'</span>':'';
       return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;padding-left:'+indPill+'">'
         +arrowHtml
         +'<span style="width:7px;height:7px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
@@ -4216,6 +4218,14 @@ function renderDREPage(){
         +'</div>';
     }).join('');
     return '<span class="dre-cod-pill" data-line="'+lid+'" style="cursor:pointer;display:block">'+rows+'</span>';
+  }
+  function _pill2T(lid){
+    var m2; try{m2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m2={};}
+    var cods=m2[lid]||[];
+    if(!cods.length){
+      return '<span class="dre-cod-pill" data-line="'+lid+'" style="cursor:pointer;font-size:11px;font-weight:600;color:rgba(255,255,255,.7);border:1px dashed rgba(255,255,255,.4);border-radius:10px;padding:2px 10px;white-space:nowrap">+ categorias</span>';
+    }
+    return _pill2(lid);
   }
 
   // Row builders
@@ -4226,9 +4236,7 @@ function renderDREPage(){
     // If cats mapped: show only cats. If no cats: show line name + + categorias pill
     var labelHtml=pillHtml
       ?'<div style="display:flex;flex-direction:column;gap:2px">'+pillHtml+'</div>'
-      :'<div style="display:flex;align-items:center;gap:8px">'
-        +((nivel||1)>1?'<span style="color:#94A3B8;font-size:11px">'+('›').repeat((nivel||1)-1)+'</span>':'')
-        +'<span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
+      :'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
       +'<div style="padding-left:'+pad+'">'+labelHtml+'</div>'
       +'<div style="font-size:13px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
@@ -4243,10 +4251,13 @@ function renderDREPage(){
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
   }
-  function _T2(nome,val){
+  function _T2(nome,val,lid){
     var vc=val<0?'#FCA5A5':'#6EE7B7', pc=val<0?'#FCA5A5':'#A7F3D0';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:9px 16px;background:'+_HdrBg+';border-bottom:2px solid rgba(255,255,255,.1)">'
-      +'<div style="font-size:13px;font-weight:700;color:#fff">(=) '+nome+'</div>'
+      +('<div style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:13px;font-weight:700;color:#fff">(=) '+nome+'</span>'
+      +(lid?_pill2T(lid):'')
+      +'</div>')
       +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+_pct(val)+'</div></div>';
   }
@@ -4255,7 +4266,7 @@ function renderDREPage(){
     +'<div>Código / Conta</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
 
   var _rows2='';
-  _rows2+=_T2('Receita Bruta',_recBruta2);
+  _rows2+=_T2('Receita Bruta',_recBruta2,'rec_bruta');
   if(_vPix2>0)_rows2+=_R2('Vendas Pix',_vPix2,1,'v_pix');
   if(_vCred2>0)_rows2+=_R2('Vendas Cartão de Crédito',_vCred2,1,'v_cred');
   if(_vDeb2>0)_rows2+=_R2('Vendas Cartão de Débito',_vDeb2,1,'v_deb');
