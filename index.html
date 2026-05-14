@@ -8402,6 +8402,46 @@ function catGetData(){
     if(saved)_catDraft=JSON.parse(saved);
     else _catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));
   }catch(e){_catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));}
+  // Auto-generate missing parent nodes from leaf codes
+  var existing=_catDraft.map(function(x){return x.cod;});
+  var toAdd=[];
+  _catDraft.forEach(function(item){
+    var parts=item.cod.split('.');
+    for(var i=1;i<parts.length;i++){
+      var parentCod=parts.slice(0,i).join('.');
+      if(existing.indexOf(parentCod)===-1&&toAdd.indexOf(parentCod)===-1){
+        toAdd.push(parentCod);
+      }
+    }
+  });
+  toAdd.forEach(function(cod){
+    // Find a name hint from children
+    var firstChild=_catDraft.find(function(x){return x.cod.indexOf(cod+'.')===0;});
+    var tipo=firstChild?firstChild.tipo:'despesa';
+    // Use static name map if available
+    var nameMap={
+      '3':'Receitas Operacionais','3.1':'Vendas','3.1.1':'Vendas por Canal',
+      '3.2':'Outras Receitas','3.9':'Deduções da Receita Bruta',
+      '3.9.1':'Impostos sobre Vendas','3.9.2':'Devoluções e Cancelamentos',
+      '3.9.3':'Taxas de Marketplace e Maquininhas',
+      '4':'Despesas','4.1':'CPV — Custo dos Produtos Vendidos',
+      '4.1.1':'Matérias-Primas e Ingredientes','4.1.2':'Mão de Obra Direta',
+      '4.1.3':'Custos Indiretos de Fabricação',
+      '4.2':'Despesas com Vendas','4.2.1':'Logística e Entrega',
+      '4.2.2':'Marketing e Publicidade','4.2.3':'Canais e Plataformas',
+      '4.3':'Despesas Administrativas','4.3.1':'Ocupação e Infraestrutura',
+      '4.3.2':'Utilidades','4.3.3':'Serviços Profissionais',
+      '4.3.4':'Pessoal Administrativo','4.3.5':'Manutenção',
+      '4.3.6':'Tecnologia','4.3.7':'Tributário e Legal',
+      '4.4':'Despesas Financeiras','4.5':'Provisões e Perdas',
+      '4.6':'Depreciação e Amortização','4.7':'Investimentos e Imobilizado',
+      '5':'Resultado Não Operacional',
+    };
+    _catDraft.push({cod:cod,nome:nameMap[cod]||cod,tipo:tipo});
+    existing.push(cod);
+  });
+  // Sort
+  _catDraft.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
   return _catDraft;
 }
 
