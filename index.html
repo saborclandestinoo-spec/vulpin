@@ -4227,11 +4227,10 @@ function renderDREPage(){
     var pad=((nivel||1)*20)+'px';
     var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
     var cats=lid?_catsList(lid):'';
-    var label='<div style="display:flex;align-items:center;gap:6px">'
-      +'<span style="font-size:13px;font-weight:500;color:var(--t)">'+nome+'</span>'
-      +_addBtn(lid)
-      +'</div>'
-      +(cats?'<div style="margin-top:4px">'+cats+'</div>':'');
+    // filhas: sem botão +; se tem cats mapeadas mostra só cats, senão mostra nome
+    var label=cats
+      ?cats
+      :'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:500;color:var(--t)">'+nome+'</span></div>';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
       +'<div style="padding-left:'+pad+'">'+label+'</div>'
       +'<div style="font-size:13px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
