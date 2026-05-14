@@ -4169,7 +4169,7 @@ function renderDREPage(){
   const _cols='1fr 110px 58px';
 
   // cod map para lancamentos
-  var _cm2; try{_cm2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){_cm2={};}
+  var _cm2=typeof dreGetCodMap==='function'?dreGetCodMap():(function(){try{return Object.assign({},DRE_COD_DEFAULT,JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}'));}catch(e){return Object.assign({},DRE_COD_DEFAULT);}})();
   function _SS2(id,tipo){
     var cods=_cm2[id];
     if(!cods||!cods.length)return null;
