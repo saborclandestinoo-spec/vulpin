@@ -7409,7 +7409,14 @@ function selectBanco(id){
       const pagoAntesDaData=l.pago&&(!dataInicial||(l.dataPag||d)>=dataInicial);
       return dentroData||pagoAntesDaData;
     })
-    .sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
+    .sort((a,b)=>{
+      const dA=b.venc||b.data||'', dB=a.venc||a.data||'';
+      if(dA!==dB) return dA.localeCompare(dB);
+      // Mesmo dia: mais recente por id (pedidos mais altos = mais recentes)
+      const idA=parseInt((b.pedidoId||b.id||'0').toString().replace(/\D/g,''))||0;
+      const idB=parseInt((a.pedidoId||a.id||'0').toString().replace(/\D/g,''))||0;
+      return idA-idB;
+    });
 
   // A receber: receitas futuras
   const aReceber=allLancs
