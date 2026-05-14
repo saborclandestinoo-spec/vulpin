@@ -4181,7 +4181,6 @@ function renderDREPage(){
   }
   function _or2(a,b){return a!==null?a:b;}
   // map catCod -> valor from pedidos lines (any cod that matches gets that line's value)
-  var _lineVals2={'v_pix':_vPix2,'v_cred':_vCred2,'v_deb':_vDeb2,'v_din':_vDin2,'v_ifood':_vIF2,'v_entrega':_vEnt2};
   function _sumCod(cod){
     // 1. check if any venda lid has this exact cod mapped → return that lid's value
     var total=0;
@@ -4209,6 +4208,7 @@ function renderDREPage(){
   // Receitas de venda vêm de histPeriod (pedidos), não lancPeriod
   // Usar vars já calculadas, cod map só para despesas/lançamentos
   var _vPix2=vPix, _vCred2=vCred, _vDeb2=vDeb, _vDin2=vDin, _vIF2=vIF, _vEnt2=_dreTaxaEnt;
+  var _lineVals2={'v_pix':_vPix2,'v_cred':_vCred2,'v_deb':_vDeb2,'v_din':_vDin2,'v_ifood':_vIF2,'v_entrega':_vEnt2};
   var _recBruta2=recBruta;
   var _simples2=_or2(_SS2('imp_vendas','despesa'),simples);
   var _taxaIF2=_or2(_SS2('taxa_if','despesa'),taxaIF);
@@ -4258,7 +4258,7 @@ function renderDREPage(){
   // ── DRE helpers ──
   // Render mapped cats below a line (hierarchical, like foto 2)
   function _catsList(lid){
-    var m2; try{m2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m2={};}
+    var m2=typeof dreGetCodMap==='function'?dreGetCodMap():(function(){try{return Object.assign({},DRE_COD_DEFAULT,JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}'));}catch(e){return Object.assign({},DRE_COD_DEFAULT);}})();
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
     if(!cods.length) return '';
@@ -4360,7 +4360,7 @@ function renderDREPage(){
 
   var _rows2='';
   _rows2+=_T2('Receita Bruta',_recBruta2,'rec_bruta');
-  var _recBrutaHasCats=(function(){var m;try{m=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m={};}return (m['rec_bruta']||[]).length>0;})();
+  var _recBrutaHasCats=(function(){var m=typeof dreGetCodMap==='function'?dreGetCodMap():{};return (m['rec_bruta']||[]).length>0;})();
   if(!_recBrutaHasCats){
     if(_vPix2>0)_rows2+=_R2('Vendas Pix',_vPix2,1,'v_pix');
     if(_vCred2>0)_rows2+=_R2('Vendas Cartão de Crédito',_vCred2,1,'v_cred');
