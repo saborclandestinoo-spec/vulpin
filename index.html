@@ -653,13 +653,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div id="dre-pg-body"></div>
         </div>
 
-        <!-- DRE Config: Configurar Linhas -->
-        <div style="margin:14px 20px 0;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
-          <div style="display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bor);padding:0 16px">
-            <button id="dre-itab-linhas" onclick="dreInlineTab('linhas',this)" style="padding:10px 16px;border:none;background:var(--fox-l);color:var(--fox);border-bottom:2px solid var(--fox);font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif">Configurar Linhas do DRE</button>
-          </div>
-          <div id="dre-inline-body"></div>
-        </div>
+
 
         <!-- CMV por Produto -->
         <div style="margin:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -4203,7 +4197,15 @@ function renderDREPage(){
   function _pill2(lid){
     var m2; try{m2=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');}catch(e){m2={};}
     var cods=m2[lid]||[];
-    return '<span class="dre-cod-pill" data-line="'+lid+'" style="font-size:10px;font-weight:600;cursor:pointer;color:'+(cods.length?'var(--fox)':'var(--t3)')+';flex-shrink:0">'+(cods.length?cods.join(', '):'+ cod')+'</span>';
+    var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
+    var badges=cods.map(function(cod){
+      var item=plano.find(function(x){return x.cod===cod;});
+      var nome=item?item.nome.split(' — ')[0].slice(0,16):cod;
+      return '<span style="display:inline-flex;align-items:center;gap:2px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:600;color:#3B82F6;white-space:nowrap">'+cod+' <span style="color:#64748B;font-weight:400">'+nome+'</span></span>';
+    }).join(' ');
+    return '<span class="dre-cod-pill" data-line="'+lid+'" style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;cursor:pointer;min-width:60px">'
+      +(badges||'<span style="font-size:10px;font-weight:600;color:#94A3B8;border:1px dashed #CBD5E1;border-radius:10px;padding:1px 8px">+ categorias</span>')
+      +'</span>';
   }
 
   // Row builders
@@ -4333,8 +4335,6 @@ function renderDREPage(){
   </div>`
   :'<div style="font-size:11px;color:var(--t3)">Sem despesas no período</div>';
 
-  // Render config panel
-  dreRenderCfgLinhas(document.getElementById('dre-inline-body'));
 }
 function renderPrecificacao(){
   const now=new Date();
