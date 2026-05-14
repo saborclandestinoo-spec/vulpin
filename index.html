@@ -4329,7 +4329,7 @@ function renderDREPage(){
   function _R2(nome,val,nivel,lid){
     var pad=((nivel||1)*20)+'px';
     var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
-    var cats=(lid&&!children)?_catsList(lid):'';
+    var cats=lid?_catsList(lid):'';
     // filhas: sem botão +; se tem cats mapeadas mostra só cats, senão mostra nome
     if(cats) return cats;
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
@@ -4339,7 +4339,7 @@ function renderDREPage(){
   }
   function _G2(nome,val,lid,children){
     var vc=val<0?'#DC2626':'#0F2040';
-    var cats=(lid&&!children)?_catsList(lid):'';
+    var cats=(lid&&!(children&&children.length))?_catsList(lid):'';
     // if children passed: render each child's cats in hierarchy instead of separate _R2 rows
     var childRows='';
     if(children&&children.length){
@@ -4407,7 +4407,7 @@ function renderDREPage(){
       +childRows;
   }
   function _T2(nome,val,lid){
-    var cats=(lid&&!children)?_catsList(lid):'';
+    var cats=lid?_catsList(lid):'';
     var hasCats=cats.length>0;
     // when cats mapped: light bg like _G2, dark text; else: dark header
     var bg=hasCats?_GrpBg:_HdrBg;
