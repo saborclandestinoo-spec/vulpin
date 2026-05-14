@@ -9278,7 +9278,12 @@ function slim(p){
     unit_price:i.unit_price||0,
     options:(i.options||[]).map(o=>({name:o.name||'',price:o.price||0})),
   }));
-  const pag=(p.payments||[]).map(pg=>({payment_method:pg.payment_method||'',value:pg.value||pg.total||pg.paid||pg.amount||pg.valor||0,payment_type:pg.payment_type||pg.paymentType||'',change_of:pg.change_of||null}));
+  const pag=(p.payments||[]).map(pg=>({
+    payment_method:pg.payment_method||pg.method||pg.type||'',
+    value:pg.value||pg.total||pg.paid||pg.amount||pg.valor||pg.price||pg.prepaid||pg.paid_value||pg.totalValue||0,
+    payment_type:pg.payment_type||pg.paymentType||pg.type||'',
+    change_of:pg.change_of||pg.changeOf||null,
+  }));
   const addr=p.delivery_address||p.deliveryAddress||null;
   return{
     id:p.id,
@@ -9311,7 +9316,14 @@ function mergeNaHistoria(novos){
   novos.forEach(p=>{
     if(!p.id)return;
     const isNovo=!mapa[p.id]; // pedido que nunca foi visto
-    mapa[p.id]=slim(p); // upsert comprimido
+    // If new version has richer payment data, merge it
+    const existing=mapa[p.id];
+    const slimmed=slim(p);
+    if(existing&&slimmed.payments&&slimmed.payments.every(pg=>!pg.value)&&existing.payments&&existing.payments.some(pg=>pg.value>0)){
+      // Keep existing payments (have values) but update other fields
+      slimmed.payments=existing.payments;
+    }
+    mapa[p.id]=slimmed; // upsert comprimido
 
     const isCancelado=new Set(['CANCELLED','CANCELED','cancelled','canceled','CANCELLATION_REQUESTED','cancellation_requested']).has(p.status||'');
 
