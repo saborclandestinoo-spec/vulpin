@@ -4237,17 +4237,22 @@ function renderDREPage(){
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
     if(!cods.length) return '';
-    // expand cods to include all ancestors for display
-    var allCods=[];
+    // expand: only add parents that are shared by 2+ mapped cods (group headers)
+    var leafCods=new Set(cods);
+    var parentCount={};
     cods.forEach(function(cod){
       var parts=cod.split('.');
-      for(var i=1;i<=parts.length;i++){
+      // add all ancestors except root (depth 0)
+      for(var i=2;i<parts.length;i++){
         var anc=parts.slice(0,i).join('.');
-        if(allCods.indexOf(anc)<0) allCods.push(anc);
+        parentCount[anc]=(parentCount[anc]||0)+1;
       }
     });
+    var allCods=cods.slice();
+    Object.keys(parentCount).forEach(function(anc){
+      if(parentCount[anc]>1&&allCods.indexOf(anc)<0) allCods.push(anc);
+    });
     allCods.sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});});
-    var leafCods=new Set(cods);
     var minD=Math.min.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
     return allCods.map(function(cod){
       var item=plano.find(function(x){return x.cod===cod;});
@@ -4256,11 +4261,11 @@ function renderDREPage(){
       var isLeafCod=leafCods.has(cod);
       var rel=cod.split('.').length-1-minD;
       var pad=(rel*14)+'px';
-      var fs=isLeafCod?'12px':'11px';
-      var fw=isLeafCod?'500':'600';
-      var tc=isLeafCod?'var(--t)':'#94A3B8';
-      var codc=isLeafCod?'#3B82F6':'#94A3B8';
-      var dotSz=isLeafCod?'7px':'5px';
+      var fs=isLeafCod?'13px':'11px';
+      var fw=isLeafCod?'500':'700';
+      var tc=isLeafCod?'var(--t)':'#64748B';
+      var codc=isLeafCod?'#3B82F6':'#64748B';
+      var dotSz=isLeafCod?'8px':'5px';
       return '<div style="display:flex;align-items:center;gap:6px;padding:'+(isLeafCod?'3px':'1px')+' 0;padding-left:'+pad+'">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
@@ -4331,8 +4336,7 @@ function renderDREPage(){
     if(_vIF2>0)_rows2+=_R2('Vendas iFood',_vIF2,1,'v_ifood');
     if(_vEnt2>0)_rows2+=_R2('Taxas de Entrega',_vEnt2,1,'v_entrega');
   }
-  _rows2+=_G2('(-) Imposto Sobre Vendas',-_simples2,'imp_vendas');
-  if(_simples2>0)_rows2+=_R2('Simples Nacional (DAS)',-_simples2,1,'');
+
   _rows2+=_G2('(-) Deduções da Receita Bruta',-(_taxaIF2+_descontos2+_cancelam2),'deducoes');
   if(_taxaIF2>0)_rows2+=_R2('Taxas iFood',-_taxaIF2,1,'taxa_if');
   if(_descontos2>0)_rows2+=_R2('Descontos Concedidos',-_descontos2,1,'descontos');
