@@ -4329,16 +4329,33 @@ function renderDREPage(){
       +'<div style="font-size:13px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right;align-self:start;padding-top:4px">'+_pct(val)+'</div></div>';
   }
-  function _G2(nome,val,lid){
+  function _G2(nome,val,lid,children){
     var vc=val<0?'#DC2626':'#0F2040';
     var cats=lid?_catsList(lid):'';
-
+    // if children passed: render each child's cats in hierarchy instead of separate _R2 rows
+    var childRows='';
+    if(children&&children.length){
+      children.forEach(function(ch){
+        // ch = [nome, val, lid]
+        var chCats=ch[2]?_catsList(ch[2]):'';
+        if(chCats) childRows+=chCats;
+        else {
+          // no cats: show as plain child row
+          childRows+='<div style="border-bottom:1px solid '+_Bor+';padding:5px 16px 5px 36px">'
+            +'<div style="display:flex;align-items:center;gap:6px">'
+            +'<span style="font-size:13px;font-weight:500;color:var(--t);flex:1">'+ch[0]+'</span>'
+            +'<span style="font-size:13px;font-weight:500;color:'+(ch[1]<0?'#DC2626':'#1E3A5F')+';font-variant-numeric:tabular-nums">'+_fmt(ch[1])+'</span>'
+            +'</div></div>';
+        }
+      });
+    }
     var labelNoCAts='<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span>'+_addBtn(lid)+'</div>';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
       +'<div>'+labelNoCAts+'</div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right;align-self:start;padding-top:4px">'+_pct(val)+'</div></div>'
-      +(cats||'');
+      +(cats||'')
+      +childRows;
   }
   function _T2(nome,val,lid){
     var cats=lid?_catsList(lid):'';
@@ -4372,28 +4389,31 @@ function renderDREPage(){
     if(_vEnt2>0)_rows2+=_R2('Taxas de Entrega',_vEnt2,1,'v_entrega');
   }
 
-  _rows2+=_G2('(-) Deduções da Receita Bruta',-(_taxaIF2+_descontos2+_cancelam2),'deducoes');
-  if(_taxaIF2>0)_rows2+=_R2('Taxas iFood',-_taxaIF2,1,'taxa_if');
-  if(_descontos2>0)_rows2+=_R2('Descontos Concedidos',-_descontos2,1,'descontos');
-  if(_cancelam2>0)_rows2+=_R2('Estornos/Cancelamentos',-_cancelam2,1,'cancelam');
+  var _dedChildren=[];
+  if(_taxaIF2>0)_dedChildren.push(['Taxas iFood',-_taxaIF2,'taxa_if']);
+  if(_descontos2>0)_dedChildren.push(['Descontos Concedidos',-_descontos2,'descontos']);
+  if(_cancelam2>0)_dedChildren.push(['Estornos/Cancelamentos',-_cancelam2,'cancelam']);
+  _rows2+=_G2('(-) Deduções da Receita Bruta',-(_taxaIF2+_descontos2+_cancelam2),'deducoes',_dedChildren);
   _rows2+=_T2('Receita Líquida Operacional',_recLiq2);
-  _rows2+=_G2('(-) Custo dos Produtos Vendidos',-_cpv2,'cpv');
-  _rows2+=_R2('Matérias-Primas',-_mp2,1,'mp');
-  if(_emb2>0)_rows2+=_R2('Embalagens',-_emb2,1,'emb');
-  if(_mod2>0)_rows2+=_R2('Mão de Obra Direta',-_mod2,1,'mod');
-  if(_cif2>0)_rows2+=_R2('Custos Indiretos',-_cif2,1,'cif');
+  var _cpvChildren=[['Matérias-Primas',-_mp2,'mp']];
+  if(_emb2>0)_cpvChildren.push(['Embalagens',-_emb2,'emb']);
+  if(_mod2>0)_cpvChildren.push(['Mão de Obra Direta',-_mod2,'mod']);
+  if(_cif2>0)_cpvChildren.push(['Custos Indiretos',-_cif2,'cif']);
+  _rows2+=_G2('(-) Custo dos Produtos Vendidos',-_cpv2,'cpv',_cpvChildren);
   _rows2+=_T2('Lucro Bruto',_lucBruto2);
-  _rows2+=_G2('(-) Despesas com Vendas',-(_log2+_can2),'desp_vend');
-  if(_log2>0)_rows2+=_R2('Logística e Entrega',-_log2,1,'logistica');
-  if(_can2>0)_rows2+=_R2('Canais de Venda',-_can2,1,'canais');
-  _rows2+=_G2('(-) Despesas Administrativas',-(_ocup2+_util2+_serv2+_pess2+_manu2+_tec2+_trib2),'desp_adm');
-  if(_ocup2>0)_rows2+=_R2('Ocupação',-_ocup2,1,'ocupacao');
-  if(_util2>0)_rows2+=_R2('Utilidades',-_util2,1,'utilidades');
-  if(_serv2>0)_rows2+=_R2('Serviços Profissionais',-_serv2,1,'servicos');
-  if(_pess2>0)_rows2+=_R2('Pessoal Administrativo',-_pess2,1,'pessoal');
-  if(_manu2>0)_rows2+=_R2('Manutenção',-_manu2,1,'manutencao');
-  if(_tec2>0)_rows2+=_R2('Tecnologia',-_tec2,1,'tecnologia');
-  if(_trib2>0)_rows2+=_R2('Tributário e Legal',-_trib2,1,'tributario');
+  var _dvChildren=[];
+  if(_log2>0)_dvChildren.push(['Logística e Entrega',-_log2,'logistica']);
+  if(_can2>0)_dvChildren.push(['Canais de Venda',-_can2,'canais']);
+  _rows2+=_G2('(-) Despesas com Vendas',-(_log2+_can2),'desp_vend',_dvChildren);
+  var _daChildren=[];
+  if(_ocup2>0)_daChildren.push(['Ocupação',-_ocup2,'ocupacao']);
+  if(_util2>0)_daChildren.push(['Utilidades',-_util2,'utilidades']);
+  if(_serv2>0)_daChildren.push(['Serviços Profissionais',-_serv2,'servicos']);
+  if(_pess2>0)_daChildren.push(['Pessoal Administrativo',-_pess2,'pessoal']);
+  if(_manu2>0)_daChildren.push(['Manutenção',-_manu2,'manutencao']);
+  if(_tec2>0)_daChildren.push(['Tecnologia',-_tec2,'tecnologia']);
+  if(_trib2>0)_daChildren.push(['Tributário e Legal',-_trib2,'tributario']);
+  _rows2+=_G2('(-) Despesas Administrativas',-(_ocup2+_util2+_serv2+_pess2+_manu2+_tec2+_trib2),'desp_adm',_daChildren);
   if(_recFin2>0)_rows2+=_G2('Receitas Financeiras',_recFin2,'rec_fin');
   if(_despFin2>0)_rows2+=_G2('(-) Despesas Financeiras',-_despFin2,'desp_fin');
   _rows2+=_T2('Lucro Operacional',_ebit2);
