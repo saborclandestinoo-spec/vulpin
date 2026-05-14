@@ -4303,15 +4303,15 @@ function renderDREPage(){
       var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
       var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
       var pct2=recBruta>0&&val2>0?(val2/recBruta*100).toFixed(1)+'%':'';
-      var indL=(20+rel*20)+'px';
-      return '<div style="border-bottom:1px solid '+_Bor+';padding:'+(isLeafCod?'6px':'3px')+' 16px '+(isLeafCod?'6px':'3px')+' '+indL+'">'
+      var indL=(16+rel*20)+'px';
+      return '<div style="display:grid;grid-template-columns:'+_cols+';padding:'+(isLeafCod?'6px':'3px')+' 16px '+(isLeafCod?'6px':'3px')+' '+indL+';border-bottom:1px solid '+_Bor+'">'
         +'<div style="display:flex;align-items:center;gap:6px">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
-        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+';flex:1">'+nome+'</span>'
-        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+valColor2+';font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:12px">'+valFmt2+'</span>'
-        +(pct2?'<span style="font-size:'+(parseInt(fs)-1)+'px;color:#94A3B8;white-space:nowrap;margin-left:8px;min-width:38px;text-align:right">'+pct2+'</span>':'')
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+'">'+nome+'</span>'
         +'</div>'
+        +'<div style="font-size:'+fs+';font-weight:'+fw+';color:'+valColor2+';text-align:right;font-variant-numeric:tabular-nums;align-self:center">'+valFmt2+'</div>'
+        +'<div style="font-size:'+(parseInt(fs)-1)+'px;color:#94A3B8;text-align:right;align-self:center">'+pct2+'</div>'
         +'</div>';
     }).join('');
   }
@@ -4367,24 +4367,30 @@ function renderDREPage(){
             var v2=_sumCod(cod);
             var vFmt=v2?'R$ '+fmtN(v2):'—';
             var vC=v2?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
-            childRows+='<div style="border-bottom:1px solid '+_Bor+';padding:'+(rel===0?'5px':'4px')+' 16px '+(rel===0?'5px':'4px')+' '+indL+'">'
+            var chPct=recBruta>0&&v2>0?(v2/recBruta*100).toFixed(1)+'%':'';
+            childRows+='<div style="display:grid;grid-template-columns:'+_cols+';padding:'+(rel===0?'5px':'4px')+' 16px '+(rel===0?'5px':'4px')+' '+indL+';border-bottom:1px solid '+_Bor+'">'
               +'<div style="display:flex;align-items:center;gap:6px">'
               +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
               +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
-              +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+';flex:1">'+cNome+'</span>'
-              +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+vC+';font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:12px">'+vFmt+'</span>'
-              +'</div></div>';
+              +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+'">'+cNome+'</span>'
+              +'</div>'
+              +'<div style="font-size:'+fs+';font-weight:'+fw+';color:'+vC+';text-align:right;font-variant-numeric:tabular-nums;align-self:center">'+vFmt+'</div>'
+              +'<div style="font-size:'+(parseInt(fs)-1)+'px;color:#94A3B8;text-align:right;align-self:center">'+chPct+'</div>'
+              +'</div>';
           });
         } else {
           // no cats: plain child row indented 1 level below parent
-          var indL2=(20+(parentDepth+1)*20)+'px';
+          var indL2=(16+(parentDepth+1)*20)+'px';
           var vC2=chVal<0?'#DC2626':'#1E3A5F';
-          childRows+='<div style="border-bottom:1px solid '+_Bor+';padding:5px 16px 5px '+indL2+'">'
+          var chPct2=recBruta>0&&chVal?(Math.abs(chVal)/recBruta*100).toFixed(1)+'%':'';
+          childRows+='<div style="display:grid;grid-template-columns:'+_cols+';padding:5px 16px 5px '+indL2+';border-bottom:1px solid '+_Bor+'">'
             +'<div style="display:flex;align-items:center;gap:6px">'
             +'<span style="width:6px;height:6px;border-radius:50%;background:'+(chVal<0?'#EF4444':'#22C55E')+';flex-shrink:0"></span>'
-            +'<span style="font-size:12px;font-weight:500;color:var(--t);flex:1">'+chNome+'</span>'
-            +'<span style="font-size:12px;font-weight:500;color:'+vC2+';font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:12px">'+_fmt(chVal)+'</span>'
-            +'</div></div>';
+            +'<span style="font-size:12px;font-weight:500;color:var(--t)">'+chNome+'</span>'
+            +'</div>'
+            +'<div style="font-size:12px;font-weight:500;color:'+vC2+';text-align:right;font-variant-numeric:tabular-nums;align-self:center">'+_fmt(chVal)+'</div>'
+            +'<div style="font-size:11px;color:#94A3B8;text-align:right;align-self:center">'+chPct2+'</div>'
+            +'</div>';
         }
       });
     }
