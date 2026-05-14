@@ -4126,7 +4126,7 @@ function renderDREPage(){
   
 
   // ── DRE TABLE ──
-  const _HdrBg='#1E3A5F', _Bor='#BFDBFE', _GrpBg='#EFF6FF';
+  const _HdrBg='#1E3A5F', _Bor='#E2E8F0', _GrpBg='var(--bg2)';
   const _pct=function(v){return recBruta>0?(v/recBruta*100).toFixed(1)+'%':'0,0%';};
   const _fmt=function(v){return v===0?'-':(v<0?'(R$ '+fmtN(Math.abs(v))+')':'R$ '+fmtN(v));};
   const _cols='1fr 110px 58px';
@@ -4205,7 +4205,11 @@ function renderDREPage(){
       var item=plano.find(function(x){return x.cod===cod;});
       var nome=item?item.nome:'—';
       var dotC=item&&item.tipo==='receita'?'#22C55E':'#EF4444';
-      return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0">'
+      var depth2=cod.split('.').length-1;
+      var indPill=(depth2>1?(depth2-1)*14:0)+'px';
+      var arrowHtml=depth2>1?'<span style="color:#94A3B8;font-size:10px;margin-right:2px">'+('›').repeat(depth2-1)+'</span>':'';
+      return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;padding-left:'+indPill+'">'
+        +arrowHtml
         +'<span style="width:7px;height:7px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:12px;font-weight:700;color:#3B82F6;flex-shrink:0">'+cod+'</span>'
         +'<span style="font-size:12px;color:#1E293B">'+nome+'</span>'
@@ -4222,7 +4226,9 @@ function renderDREPage(){
     // If cats mapped: show only cats. If no cats: show line name + + categorias pill
     var labelHtml=pillHtml
       ?'<div style="display:flex;flex-direction:column;gap:2px">'+pillHtml+'</div>'
-      :'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
+      :'<div style="display:flex;align-items:center;gap:8px">'
+        +((nivel||1)>1?'<span style="color:#94A3B8;font-size:11px">'+('›').repeat((nivel||1)-1)+'</span>':'')
+        +'<span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
       +'<div style="padding-left:'+pad+'">'+labelHtml+'</div>'
       +'<div style="font-size:13px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
@@ -4233,7 +4239,6 @@ function renderDREPage(){
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
       +'<div style="display:flex;flex-direction:column;gap:2px">'
       +'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
-      +(lid?'<div style="padding-left:20px">'+_pill2(lid)+'</div>':'')
       +'</div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
