@@ -4299,15 +4299,14 @@ function renderDREPage(){
       var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
       var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
       var pct2=recBruta>0&&val2>0?(val2/recBruta*100).toFixed(1)+'%':'';
-      var vFs=fs; var vFw=fw;
-      return '<div style="display:grid;grid-template-columns:'+_cols+';padding:'+(isLeafCod?'5px':'3px')+' 16px '+(isLeafCod?'5px':'3px')+' '+(16+rel*14)+'px;border-bottom:1px solid '+_Bor+'">'
+      return '<div style="border-bottom:1px solid '+_Bor+';padding:'+(isLeafCod?'5px':'3px')+' 16px '+(isLeafCod?'5px':'3px')+' '+(16+rel*14)+'px">'
         +'<div style="display:flex;align-items:center;gap:6px">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
-        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+'">'+nome+'</span>'
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+';flex:1">'+nome+'</span>'
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+valColor2+';font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:12px">'+valFmt2+'</span>'
+        +(pct2?'<span style="font-size:'+(parseInt(fs)-1)+'px;color:#94A3B8;white-space:nowrap;margin-left:8px;min-width:38px;text-align:right">'+pct2+'</span>':'')
         +'</div>'
-        +'<div style="font-size:'+vFs+';font-weight:'+vFw+';color:'+valColor2+';text-align:right;font-variant-numeric:tabular-nums;align-self:center">'+valFmt2+'</div>'
-        +'<div style="font-size:'+vFs+';color:#94A3B8;text-align:right;align-self:center">'+pct2+'</div>'
         +'</div>';
     }).join('');
   }
