@@ -2858,26 +2858,35 @@ function dreOpenCodPicker(pill, lineId){
   function renderList(filter){
     const list=document.getElementById('dre-cod-list');
     if(!list)return;
-    const cats=typeof catGetData==='function'?catGetData():(typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[]);
-    const f=(filter||'').toLowerCase();
-    const filtered=f?cats.filter(ct=>(ct.cod+' '+ct.nome).toLowerCase().includes(f)):cats;
-    // build set of visible cods for hierarchy
-    const visSet=new Set(filtered.map(ct=>ct.cod));
-    // when filtering, also show parents of matches
-    if(f){
-      filtered.forEach(ct=>{
-        const parts=ct.cod.split('.');
-        for(let i=1;i<parts.length;i++){
-          visSet.add(parts.slice(0,i).join('.'));
+    const rawCats=typeof catGetData==='function'?catGetData():(typeof PLANO_CONTAS!=='undefined'?PLANO_CONTAS:[]);
+    // build full tree including auto-generated parent nodes
+    const nodeMap={};
+    rawCats.forEach(ct=>{
+      nodeMap[ct.cod]=ct;
+      // ensure all ancestors exist
+      const parts=ct.cod.split('.');
+      for(let i=1;i<parts.length;i++){
+        const pCod=parts.slice(0,i).join('.');
+        if(!nodeMap[pCod]){
+          const pNome=(typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[pCod])||pCod;
+          nodeMap[pCod]={cod:pCod,nome:pNome,tipo:ct.tipo,_auto:true};
         }
-      });
-    }
-    // sort by cod
+      }
+    });
+    const cats=Object.values(nodeMap).sort((a,b)=>a.cod.localeCompare(b.cod,undefined,{numeric:true}));
+    const leafSet=new Set(rawCats.map(c=>c.cod));
+    const f=(filter||'').toLowerCase();
+    const filtered=f?rawCats.filter(ct=>(ct.cod+' '+ct.nome).toLowerCase().includes(f)):rawCats;
+    const visSet=new Set(filtered.map(ct=>ct.cod));
+    filtered.forEach(ct=>{
+      const parts=ct.cod.split('.');
+      for(let i=1;i<parts.length;i++) visSet.add(parts.slice(0,i).join('.'));
+    });
     const visible=cats.filter(ct=>visSet.has(ct.cod));
     list.innerHTML='';
     visible.forEach(ct=>{
       const depth=ct.cod.split('.').length-1;
-      const isLeaf=!cats.some(c=>c.cod!==ct.cod&&c.cod.startsWith(ct.cod+'.'));
+      const isLeaf=leafSet.has(ct.cod);
       const checked=selected.includes(ct.cod);
       const indent=(depth*14)+'px';
       // mães: fonte menor, cinza; folhas: fonte normal, cor escura
@@ -4228,19 +4237,34 @@ function renderDREPage(){
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
     if(!cods.length) return '';
-    var minD=Math.min.apply(null,cods.map(function(c){return c.split('.').length-1;}));
-    return cods.map(function(cod){
+    var minD=Math.min.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
+    // expand cods to include all ancestors for display
+    var allCods=[];
+    cods.forEach(function(cod){
+      var parts=cod.split('.');
+      for(var i=1;i<=parts.length;i++){
+        var anc=parts.slice(0,i).join('.');
+        if(allCods.indexOf(anc)<0) allCods.push(anc);
+      }
+    });
+    allCods.sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});});
+    var leafCods=new Set(cods);
+    return allCods.map(function(cod){
       var item=plano.find(function(x){return x.cod===cod;});
       var nome=item?item.nome:((typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[cod])||cod);
       var dotC=item?(item.tipo==='receita'?'#22C55E':'#EF4444'):(cod.charAt(0)==='3'?'#22C55E':'#EF4444');
+      var isLeafCod=leafCods.has(cod);
       var rel=cod.split('.').length-1-minD;
-      var dots=rel>0?('<span style="color:#94A3B8;font-size:10px;letter-spacing:-1px;margin-right:4px">'+('…').repeat(rel)+'</span>'):'';
-      var fw=rel===0?'600':'400';
-      return '<div style="display:flex;align-items:center;gap:6px;padding:2px 0;padding-left:'+(rel*14)+'px">'
-        +dots
-        +'<span style="width:7px;height:7px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
-        +'<span style="font-size:12px;font-weight:700;color:#3B82F6;flex-shrink:0">'+cod+'</span>'
-        +'<span style="font-size:12px;font-weight:'+fw+';color:var(--t)">'+nome+'</span>'
+      var pad=(rel*14)+'px';
+      var fs=isLeafCod?'12px':'11px';
+      var fw=isLeafCod?'500':'600';
+      var tc=isLeafCod?'var(--t)':'#94A3B8';
+      var codc=isLeafCod?'#3B82F6':'#94A3B8';
+      var dotSz=isLeafCod?'7px':'5px';
+      return '<div style="display:flex;align-items:center;gap:6px;padding:'+(isLeafCod?'3px':'1px')+' 0;padding-left:'+pad+'">'
+        +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
+        +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+'">'+nome+'</span>'
         +'</div>';
     }).join('');
   }
