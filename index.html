@@ -4190,12 +4190,11 @@ function renderDREPage(){
       if(lCods.indexOf(cod)>=0){total+=_lineVals2[lid];matched=true;}
     });
     if(matched) return total;
-    // 2. check if cod is parent of any mapped venda cod
+    // 2. check if cod is parent of any mapped venda cod (each lid counted once)
     Object.keys(_lineVals2).forEach(function(lid){
       var lCods=_cm2[lid]||[];
-      lCods.forEach(function(lc){
-        if(lc===cod||lc.startsWith(cod+'.')) total+=_lineVals2[lid];
-      });
+      var hits=lCods.filter(function(lc){return lc===cod||lc.startsWith(cod+'.');});
+      if(hits.length>0) total+=_lineVals2[lid];
     });
     if(total>0) return total;
     // 3. fallback: lancPeriod (despesas)
