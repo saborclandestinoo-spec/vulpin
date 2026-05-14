@@ -9521,7 +9521,15 @@ function mergeNaHistoria(novos){
           const forma=formasPedido.find(f=>f.status==='ativa'&&(f.nome||'').toLowerCase().includes(pmNome));
           const caixaBank=getBancos().find(b=>b.tipo==='caixa');
           // Fallback: dinheiro → caixa, cartão → sem banco se não configurado
-          const bancoIdFinal=forma?.bancoId||(isPagoDinheiro?caixaBank?.id||'':'');
+          // Fallback por tipo de pagamento se forma não tem banco configurado
+          const _bancoPix=getBancos().find(function(b){return (b.nome||'').toLowerCase().includes('pix');});
+          const _bancoCredito=getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('crédito')||n.includes('credito')||n.includes('credit');});
+          const _bancoDebito=getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('débito')||n.includes('debito')||n.includes('debit');});
+          const _bancoFallback=isPagoDinheiro?(caixaBank?.id||''):
+            (isPagoPix?(_bancoPix?.id||''):
+            (isPagoCredito?(_bancoCredito?.id||''):
+            (isPagoDebito?(_bancoDebito?.id||''):'')));
+          const bancoIdFinal=(forma?.bancoId)||_bancoFallback;
           if(!bancoIdFinal)return;
           // Cada pg já vem com seu valor correto da API
           let valor=pg.value||pg.total||pg.valor||pg.prepaid||pg.paid_value||0;
