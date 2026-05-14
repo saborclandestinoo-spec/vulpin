@@ -4251,8 +4251,10 @@ function renderDREPage(){
   }
   function _T2(nome,val,lid){
     var vc=val<0?'#FCA5A5':'#6EE7B7', pc=val<0?'#FCA5A5':'#A7F3D0';
+    var addBtn=lid?'<span class="dre-cod-pill" data-line="'+lid+'" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.4);color:rgba(255,255,255,.8);font-size:14px;font-weight:700;flex-shrink:0;line-height:1" title="Adicionar categoria">+</span>':'';
+    var cats=lid?_catsList(lid):'';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:9px 16px;background:'+_HdrBg+';border-bottom:2px solid rgba(255,255,255,.1)">'
-      +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700;color:#fff">(=) '+nome+'</span></div>'
+      +'<div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700;color:#fff">(=) '+nome+'</span>'+addBtn+'</div>'+(cats?'<div style="margin-top:4px">'+cats+'</div>':'')+'</div>'
       +'<div style="font-size:13px;font-weight:800;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;font-weight:700;color:'+pc+';text-align:right">'+_pct(val)+'</div></div>';
   }
@@ -4261,7 +4263,7 @@ function renderDREPage(){
     +'<div>Código / Conta</div><div style="text-align:right">R$</div><div style="text-align:right">%</div></div>';
 
   var _rows2='';
-  _rows2+=_T2('Receita Bruta',_recBruta2);
+  _rows2+=_T2('Receita Bruta',_recBruta2,'rec_bruta');
   if(_vPix2>0)_rows2+=_R2('Vendas Pix',_vPix2,1,'v_pix');
   if(_vCred2>0)_rows2+=_R2('Vendas Cartão de Crédito',_vCred2,1,'v_cred');
   if(_vDeb2>0)_rows2+=_R2('Vendas Cartão de Débito',_vDeb2,1,'v_deb');
