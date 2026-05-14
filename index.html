@@ -4261,11 +4261,15 @@ function renderDREPage(){
       var isLeafCod=leafCods.has(cod);
       var rel=cod.split('.').length-1-minD;
       var pad=(rel*14)+'px';
-      var fs=isLeafCod?'13px':'11px';
-      var fw=isLeafCod?'500':'700';
-      var tc=isLeafCod?'var(--t)':'#64748B';
-      var codc=isLeafCod?'#3B82F6':'#64748B';
-      var dotSz=isLeafCod?'8px':'5px';
+      // depth-based sizing: shallower = bigger
+      var depth2=cod.split('.').length-1;
+      var maxD=Math.max.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
+      var sizeStep=maxD>minD?(maxD-depth2)/(maxD-minD):0;
+      var fs=(11+Math.round(sizeStep*3))+'px';
+      var fw=depth2===minD?'700':(isLeafCod?'400':'600');
+      var tc=isLeafCod?'var(--t)':(depth2===minD?'#1E3A5F':'#475569');
+      var codc=isLeafCod?'#3B82F6':(depth2===minD?'#1E3A5F':'#475569');
+      var dotSz=isLeafCod?'8px':(depth2===minD?'7px':'5px');
       return '<div style="display:flex;align-items:center;gap:6px;padding:'+(isLeafCod?'3px':'1px')+' 0;padding-left:'+pad+'">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
