@@ -8418,6 +8418,278 @@ function catSetTab(tipo,btn){
   _catTab=tipo;
   ['desp','rec'].forEach(function(t){
     const b=document.getElementById('cat-tab-'+t);
+    const active=(tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec');
+    if(b){b.style.background=active?'var(--fox)':'transparent';b.style.color=active?'#fff':'var(--t3)';}
+  });
+  catRenderBody();
+}
+
+function catToggleNode(id){
+  const ch=document.getElementById(id+'-ch');
+  const tog=document.getElementById(id+'-tog');
+  if(!ch)return;
+  const open=ch.style.display==='none';
+  ch.style.display=open?'block':'none';
+  if(tog)tog.textContent=open?'▼':'▶';
+}
+
+function catRenderBody(){
+  const body=document.getElementById('cat-body');
+  if(!body)return;
+  const all=catGetData().filter(function(x){return x.tipo===_catTab;});
+  all.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
+  const dotC=_catTab==='despesa'?'#DC2626':'#16A34A';
+
+  function buildTree(items,parentCod,depth){
+    var r='';
+    var pParts=parentCod?parentCod.split('.'):[]; 
+    var children=items.filter(function(x){
+      var xp=x.cod.split('.');
+      return xp.length===pParts.length+1&&(parentCod?x.cod.indexOf(parentCod+'.')===0:true);
+    });
+    children.forEach(function(item){
+      var nodeId='cn'+item.cod.replace(/[^a-z0-9]/gi,'_');
+      var hasKids=items.some(function(x){return x.cod.indexOf(item.cod+'.')===0;});
+      var pl=depth===0?16:depth===1?36:56;
+      var bg=depth===0?'var(--bg2)':'var(--bg)';
+      var fw=depth===0?700:depth===1?600:400;
+      var fs=depth===0?'13px':'12px';
+      var borderLeft=depth===0?'3px solid '+dotC:'none';
+
+      r+='<div>';
+      r+='<div style="display:flex;align-items:center;gap:8px;padding:0 12px 0 '+pl+'px;border-bottom:1px solid var(--bor2);background:'+bg+';border-left:'+borderLeft+';min-height:42px">';
+      
+      // toggle
+      if(hasKids){
+        r+='<button id="'+nodeId+'-tog" data-act="tog" data-nid="'+nodeId+'" style="width:20px;height:20px;border:none;background:transparent;cursor:pointer;color:var(--t3);font-size:10px;flex-shrink:0;padding:0">▶</button>';
+      } else {
+        r+='<span style="display:inline-block;width:20px;flex-shrink:0"></span>';
+      }
+
+      // dot
+      r+='<span style="width:8px;height:8px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>';
+
+      // code input
+      r+='<input class="cat-cod-in" value="'+item.cod+'" data-orig="'+item.cod+'" style="width:'+(depth===0?52:depth===1?64:76)+'px;border:none;border-bottom:1px dashed var(--bor);background:transparent;font-size:11px;font-weight:700;color:var(--fox);font-family:Poppins,sans-serif;outline:none;padding:0 2px;flex-shrink:0">';
+
+      // name input
+      r+='<input class="cat-nome-in" value="'+item.nome.replace(/"/g,'&quot;')+'" data-cod="'+item.cod+'" style="flex:1;border:none;background:transparent;font-size:'+fs+';font-weight:'+fw+';color:var(--t);font-family:Poppins,sans-serif;outline:none;padding:0 4px;min-width:0">';
+
+      // ativa badge
+      r+='<span style="background:#DCFCE7;color:#16A34A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0">Ativa</span>';
+
+      // add child button
+      r+='<button data-act="add" data-cod="'+item.cod+'" title="Adicionar filho" style="width:26px;height:26px;border:1px solid var(--bor);border-radius:6px;background:var(--bg);cursor:pointer;color:var(--t3);font-size:15px;flex-shrink:0">+</button>';
+
+      // delete button
+      r+='<button data-act="del" data-cod="'+item.cod+'" title="Excluir" style="width:26px;height:26px;border:1px solid #FCA5A5;border-radius:6px;background:#FEF2F2;cursor:pointer;color:#DC2626;font-size:13px;flex-shrink:0">×</button>';
+
+      r+='</div>';
+
+      if(hasKids){
+        r+='<div id="'+nodeId+'-ch" style="display:none">';
+        r+=buildTree(items,item.cod,depth+1);
+        r+='</div>';
+      }
+      r+='</div>';
+    });
+    return r;
+  }
+
+  body.innerHTML=buildTree(all,'',0);
+
+  // Event delegation
+  body.addEventListener('click',function(e){
+    const act=e.target.dataset.act;
+    if(act==='tog'){catToggleNode(e.target.dataset.nid);}
+    else if(act==='add'){catAddChild(e.target.dataset.cod);}
+    else if(act==='del'){catDelItem(e.target.dataset.cod);}
+  });
+  body.querySelectorAll('.cat-cod-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateCod(this);});
+  });
+  body.querySelectorAll('.cat-nome-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateNome(this,this.dataset.cod);});
+  });
+}
+
+function catUpdateCod(input){
+  const orig=input.dataset.orig;
+  const nv=input.value.trim();
+  if(!nv||nv===orig)return;
+  const data=catGetData();
+  data.forEach(function(x){
+    if(x.cod===orig)x.cod=nv;
+    else if(x.cod.indexOf(orig+'.')===0)x.cod=nv+x.cod.slice(orig.length);
+  });
+  input.dataset.orig=nv;
+  _catDraft=data;
+}
+
+function catUpdateNome(input,cod){
+  const data=catGetData();
+  const item=data.find(function(x){return x.cod===cod;});
+  if(item)item.nome=input.value.trim();
+}
+
+function catAddGrupo(){
+  const tipo=_catTab;
+  const data=catGetData();
+  const nums=data.filter(function(x){return x.tipo===tipo;}).map(function(x){return parseInt(x.cod.split('.')[0])||0;});
+  const maxN=nums.length?Math.max.apply(null,nums):3;
+  data.push({cod:(maxN+1)+'.1',nome:'Novo Grupo',tipo:tipo});
+  _catDraft=data;catRenderBody();
+}
+
+function catAddChild(parentCod){
+  const tipo=_catTab;
+  const data=catGetData();
+  const lvl=parentCod.split('.').length;
+  const direct=data.filter(function(x){return x.cod.indexOf(parentCod+'.')===0&&x.cod.split('.').length===lvl+1;});
+  const nums=direct.map(function(x){return parseInt(x.cod.split('.').pop())||0;});
+  const next=(nums.length?Math.max.apply(null,nums):0)+1;
+  const newCod=parentCod+'.'+next;
+  var lastIdx=0;
+  data.forEach(function(x,i){if(x.cod===parentCod||x.cod.indexOf(parentCod+'.')===0)lastIdx=i;});
+  data.splice(lastIdx+1,0,{cod:newCod,nome:'Nova Categoria',tipo:tipo});
+  _catDraft=data;catRenderBody();
+}
+
+function catDelItem(cod){
+  if(!confirm('Excluir "'+cod+'" e subcategorias?'))return;
+  _catDraft=catGetData().filter(function(x){return x.cod!==cod&&x.cod.indexOf(cod+'.')!==0;});
+  catRenderBody();
+}
+function catGetData(){
+  if(_catDraft)return _catDraft;
+  try{
+    const saved=localStorage.getItem('verp_plano_contas');
+    if(saved)_catDraft=JSON.parse(saved);
+    else _catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));
+  }catch(e){_catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));}
+  return _catDraft;
+}
+
+function catSave(){
+  localStorage.setItem('verp_plano_contas',JSON.stringify(_catDraft));
+  PLANO_CONTAS.length=0;
+  _catDraft.forEach(function(x){PLANO_CONTAS.push(x);});
+  const st=document.getElementById('cat-save-status');
+  if(st){st.style.display='inline';setTimeout(function(){st.style.display='none';},2000);}
+  catRenderBody();
+}
+
+function catSetTab(tipo,btn){
+  _catTab=tipo;
+  ['desp','rec'].forEach(function(t){
+    const b=document.getElementById('cat-tab-'+t);
+    const active=(tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec');
+    if(b){b.style.background=active?'var(--fox)':'transparent';b.style.color=active?'#fff':'var(--t3)';}
+  });
+  catRenderBody();
+}
+
+function catRenderBody(){
+  const body=document.getElementById('cat-body');
+  if(!body)return;
+  const all=catGetData().filter(function(x){return x.tipo===_catTab;});
+  all.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
+
+  // Build tree: each item knows its children
+  
+
+  body.innerHTML='<div>'+buildTree(all,'',0)+'</div>';
+
+  // Bind events
+  body.querySelectorAll('.cat-cod-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateCod(this);});
+  });
+  body.querySelectorAll('.cat-nome-in').forEach(function(el){
+    el.addEventListener('blur',function(){catUpdateNome(this,this.dataset.cod);});
+  });
+  body.querySelectorAll('[data-act="add"]').forEach(function(btn){
+    btn.addEventListener('click',function(){catAddChild(this.dataset.cod);});
+  });
+  body.querySelectorAll('[data-act="del"]').forEach(function(btn){
+    btn.addEventListener('click',function(){catDelItem(this.dataset.cod);});
+  });
+}
+
+
+
+function catUpdateCod(input){
+  const orig=input.dataset.orig;
+  const newCod=input.value.trim();
+  if(!newCod||newCod===orig)return;
+  const data=catGetData();
+  data.forEach(function(x){
+    if(x.cod===orig)x.cod=newCod;
+    else if(x.cod.startsWith(orig+'.'))x.cod=newCod+x.cod.slice(orig.length);
+  });
+  input.dataset.orig=newCod;
+  _catDraft=data;
+}
+
+function catUpdateNome(input,cod){
+  const data=catGetData();
+  const item=data.find(function(x){return x.cod===cod;});
+  if(item)item.nome=input.value.trim();
+}
+
+function catAddGrupo(){
+  const tipo=_catTab;
+  const data=catGetData();
+  const nums=data.filter(function(x){return x.tipo===tipo;}).map(function(x){
+    return parseInt(x.cod.split('.')[0])||0;
+  });
+  const maxN=nums.length?Math.max.apply(null,nums):3;
+  data.push({cod:(maxN+1)+'.1',nome:'Novo Grupo',tipo:tipo});
+  _catDraft=data;
+  catRenderBody();
+}
+
+function catAddChild(parentCod){
+  const tipo=_catTab;
+  const data=catGetData();
+  const level=parentCod.split('.').length;
+  const direct=data.filter(function(x){return x.cod.startsWith(parentCod+'.')&&x.cod.split('.').length===level+1;});
+  const nums=direct.map(function(x){return parseInt(x.cod.split('.').pop())||0;});
+  const next=(nums.length?Math.max.apply(null,nums):0)+1;
+  const newCod=parentCod+'.'+next;
+  const lastIdx=data.reduce(function(acc,x,i){return (x.cod===parentCod||x.cod.startsWith(parentCod+'.'))?i:acc;},-1);
+  data.splice(lastIdx+1,0,{cod:newCod,nome:'Nova Categoria',tipo:tipo});
+  _catDraft=data;
+  catRenderBody();
+}
+
+function catDelItem(cod){
+  if(!confirm('Excluir "'+cod+'" e subcategorias?'))return;
+  _catDraft=catGetData().filter(function(x){return x.cod!==cod&&!x.cod.startsWith(cod+'.');});
+  catRenderBody();
+}
+function catGetData(){
+  if(_catDraft)return _catDraft;
+  try{
+    const saved=localStorage.getItem('verp_plano_contas');
+    if(saved)_catDraft=JSON.parse(saved);
+    else _catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));
+  }catch(e){_catDraft=JSON.parse(JSON.stringify(PLANO_CONTAS));}
+  return _catDraft;
+}
+
+function catSave(){
+  localStorage.setItem('verp_plano_contas',JSON.stringify(_catDraft));
+  PLANO_CONTAS.length=0;
+  _catDraft.forEach(function(x){PLANO_CONTAS.push(x);});
+  const st=document.getElementById('cat-save-status');
+  if(st){st.style.display='inline';setTimeout(function(){st.style.display='none';},2000);}
+  catRenderBody();
+}
+
+function catSetTab(tipo,btn){
+  _catTab=tipo;
+  ['desp','rec'].forEach(function(t){
+    const b=document.getElementById('cat-tab-'+t);
     if(b){b.style.background=((tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec'))?'var(--fox)':'transparent';
     b.style.color=((tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec'))?'#fff':'var(--t3)';}
   });
