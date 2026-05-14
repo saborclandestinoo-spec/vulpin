@@ -653,6 +653,14 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div id="dre-pg-body"></div>
         </div>
 
+        <!-- DRE Config: Configurar Linhas -->
+        <div style="margin:14px 20px 0;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
+          <div style="display:flex;align-items:center;gap:0;border-bottom:1px solid var(--bor);padding:0 16px">
+            <button id="dre-itab-linhas" onclick="dreInlineTab('linhas',this)" style="padding:10px 16px;border:none;background:var(--fox-l);color:var(--fox);border-bottom:2px solid var(--fox);font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif">Configurar Linhas do DRE</button>
+          </div>
+          <div id="dre-inline-body"></div>
+        </div>
+
         <!-- CMV por Produto -->
         <div style="margin:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
@@ -3729,6 +3737,189 @@ function dreInlineTab(tab, btn){
   else dreRenderCfgEstilo(body);
 }
 
+function dreRenderCfgLinhas(body){
+  if(!body)body=document.getElementById('dre-inline-body');
+  if(!body)return;
+  const codMap=dreGetCodMap();
+  const cfg=dreGetCfg();
+  const linhas=(cfg.linhas||DRE_LINHAS_DEFAULT).map(function(l){
+    return Object.assign({},DRE_LINHAS_DEFAULT.find(function(d){return d.id===l.id;})||l,l);
+  });
+  // Group lines by section
+  const sections=[
+    {title:'Receitas',ids:['rec_bruta','v_pix','v_cred','v_deb','v_din','v_ifood','v_entrega']},
+    {title:'Deduções',ids:['imp_vendas','icms','iss','pis_cofins','deducoes','taxa_if','descontos','cancelam']},
+    {title:'CPV',ids:['cpv','mp','emb','mod','cif']},
+    {title:'Despesas Vendas',ids:['desp_vend','logistica','canais','marketing']},
+    {title:'Despesas Administrativas',ids:['desp_adm','ocupacao','utilidades','servicos','pessoal','manutencao','tecnologia','tributario']},
+    {title:'Resultado',ids:['rec_fin','desp_fin','nao_op','prov_ir','prov_cs','participac']},
+  ];
+  // Remaining lines not in sections
+  const allSectionIds=sections.reduce(function(a,s){return a.concat(s.ids);},[]);
+  const remaining=linhas.filter(function(l){return allSectionIds.indexOf(l.id)===-1&&l.id!=='rec_liq'&&l.id!=='luc_bruto'&&l.id!=='ebit'&&l.id!=='luc_liq'&&l.id!=='luc_antes_ir'&&l.id!=='luc_dep_ir';});
+  if(remaining.length) sections.push({title:'Outras',ids:remaining.map(function(l){return l.id;})});
+
+  function lineRow(l){
+    if(!l)return '';
+    const cods=codMap[l.id]||[];
+    const vis=l.visivel!==false;
+    const plano=catGetData?catGetData():PLANO_CONTAS;
+    const codBadges=cods.map(function(cod){
+      const item=plano.find(function(x){return x.cod===cod;});
+      return '<span style="display:inline-flex;align-items:center;gap:3px;background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:1px 8px;font-size:10px;font-weight:600;color:var(--fox);cursor:pointer" data-act="dre-rmcod" data-lid="'+l.id+'" data-cod="'+cod+'">'
+        +cod+(item?' <span style="color:var(--t3);font-weight:400">'+item.nome.split(' — ')[0].slice(0,20)+'</span>':'')+' <span style="color:#EF4444;margin-left:1px">×</span></span>';
+    }).join('');
+
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 16px;border-bottom:1px solid var(--bor2);min-height:40px">'
+      // visibility toggle
+      +'<input type="checkbox"'+(vis?' checked':'')+' data-act="dre-vis" data-lid="'+l.id+'" style="width:14px;height:14px;cursor:pointer;flex-shrink:0">'
+      // label (editable)
+      +'<span class="dre-line-lbl" data-lid="'+l.id+'" style="font-size:12px;font-weight:600;color:'+(vis?'var(--t)':'var(--t3)')+';min-width:180px;flex-shrink:0;cursor:text" title="Clique para editar">'+l.label+'</span>'
+      // cod badges
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px;flex:1">'+codBadges+'</div>'
+      // add cod button
+      +'<button data-act="dre-addcod" data-lid="'+l.id+'" style="height:24px;padding:0 10px;border:1px dashed var(--fox);border-radius:12px;background:transparent;cursor:pointer;font-size:11px;color:var(--fox);font-family:Poppins,sans-serif;flex-shrink:0">+ cat</button>'
+      +'</div>';
+  }
+
+  let html='<div style="padding:8px 0">';
+  sections.forEach(function(sec){
+    const secLines=sec.ids.map(function(id){return linhas.find(function(l){return l.id===id;});}).filter(Boolean);
+    if(!secLines.length)return;
+    html+='<div style="background:var(--bg2);padding:7px 16px;border-bottom:1px solid var(--bor);border-top:1px solid var(--bor);margin-top:8px">'
+      +'<span style="font-size:11px;font-weight:700;color:var(--t);text-transform:uppercase;letter-spacing:.5px">'+sec.title+'</span>'
+      +'</div>';
+    secLines.forEach(function(l){html+=lineRow(l);});
+  });
+  html+='</div>';
+  body.innerHTML=html;
+
+  // Events
+  body.addEventListener('click',function(e){
+    const btn=e.target.closest('[data-act]');
+    if(!btn)return;
+    const act=btn.dataset.act,lid=btn.dataset.lid;
+    if(act==='dre-addcod'){
+      dreAddCodToLine(lid);
+    } else if(act==='dre-rmcod'){
+      dreRmCodFromLine(lid,btn.dataset.cod);
+    }
+  });
+  body.addEventListener('change',function(e){
+    if(e.target.dataset.act==='dre-vis'){
+      dreToggleLineVis(e.target.dataset.lid,e.target.checked);
+    }
+  });
+  // Label click to edit
+  body.querySelectorAll('.dre-line-lbl').forEach(function(el){
+    el.addEventListener('click',function(){
+      const lid=this.dataset.lid;
+      const cur=this.textContent;
+      const inp=document.createElement('input');
+      inp.value=cur;
+      inp.style.cssText='border:1px solid var(--fox);border-radius:5px;padding:2px 6px;font-size:12px;font-family:Poppins,sans-serif;outline:none;width:200px';
+      this.replaceWith(inp);
+      inp.focus();inp.select();
+      inp.addEventListener('blur',function(){
+        const nv=inp.value.trim()||cur;
+        dreSaveLineLabel(lid,nv);
+        dreRenderCfgLinhas(body);
+      });
+      inp.addEventListener('keydown',function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}});
+    });
+  });
+}
+
+function dreAddCodToLine(lid){
+  // Show inline picker from PLANO_CONTAS
+  const plano=catGetData?catGetData():PLANO_CONTAS;
+  const codMap=dreGetCodMap();
+  const current=codMap[lid]||[];
+
+  // Build modal with PLANO_CONTAS tree checkboxes
+  const old=document.getElementById('dre-cod-add-modal');
+  if(old)old.remove();
+  const modal=document.createElement('div');
+  modal.id='dre-cod-add-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;display:flex;align-items:center;justify-content:center';
+
+  const items=plano.filter(function(x){return x.tipo==='despesa'||x.tipo==='receita';});
+  items.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
+
+  const listHtml=items.map(function(item){
+    const checked=current.indexOf(item.cod)!==-1;
+    const depth=item.cod.split('.').length-1;
+    const pl=8+depth*16;
+    return '<label style="display:flex;align-items:center;gap:8px;padding:5px 12px 5px '+pl+'px;cursor:pointer;border-bottom:1px solid var(--bor2)">'
+      +'<input type="checkbox"'+(checked?' checked':'')+' value="'+item.cod+'" style="width:14px;height:14px;flex-shrink:0">'
+      +'<span style="font-size:11px;color:var(--fox);font-weight:700;flex-shrink:0;min-width:60px">'+item.cod+'</span>'
+      +'<span style="font-size:11px;color:var(--t)">'+item.nome+'</span>'
+      +'</label>';
+  }).join('');
+
+  modal.innerHTML='<div style="background:var(--bg);border-radius:14px;width:500px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.18)">'
+    +'<div style="padding:16px 20px;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between">'
+    +'<span style="font-size:14px;font-weight:700;color:var(--t)">Categorias para esta linha</span>'
+    +'<input id="dre-cod-search" placeholder="Buscar..." style="border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:12px;font-family:Poppins,sans-serif;outline:none;width:140px">'
+    +'</div>'
+    +'<div style="overflow-y:auto;flex:1" id="dre-cod-list">'+listHtml+'</div>'
+    +'<div style="padding:12px 16px;border-top:1px solid var(--bor);display:flex;gap:8px;justify-content:flex-end">'
+    +'<button id="dre-cod-cancel" style="padding:7px 16px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif;color:var(--t2)">Cancelar</button>'
+    +'<button id="dre-cod-save" style="padding:7px 16px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:Poppins,sans-serif">Salvar</button>'
+    +'</div></div>';
+
+  document.body.appendChild(modal);
+
+  // Search
+  document.getElementById('dre-cod-search').addEventListener('input',function(){
+    const q=this.value.toLowerCase();
+    document.querySelectorAll('#dre-cod-list label').forEach(function(el){
+      el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';
+    });
+  });
+
+  document.getElementById('dre-cod-cancel').onclick=function(){modal.remove();};
+  modal.onclick=function(e){if(e.target===modal)modal.remove();};
+  document.getElementById('dre-cod-save').onclick=function(){
+    const checked=[...document.querySelectorAll('#dre-cod-list input:checked')].map(function(i){return i.value;});
+    const map=dreGetCodMap();
+    map[lid]=checked;
+    localStorage.setItem('verp_dre_codmap',JSON.stringify(map));
+    modal.remove();
+    const body=document.getElementById('dre-inline-body');
+    if(body)dreRenderCfgLinhas(body);
+  };
+}
+
+function dreRmCodFromLine(lid,cod){
+  const map=dreGetCodMap();
+  map[lid]=(map[lid]||[]).filter(function(c){return c!==cod;});
+  localStorage.setItem('verp_dre_codmap',JSON.stringify(map));
+  const body=document.getElementById('dre-inline-body');
+  if(body)dreRenderCfgLinhas(body);
+}
+
+function dreToggleLineVis(lid,vis){
+  const cfg=dreGetCfg();
+  const linhas=(cfg.linhas||JSON.parse(JSON.stringify(DRE_LINHAS_DEFAULT)));
+  const l=linhas.find(function(x){return x.id===lid;});
+  if(l)l.visivel=vis;
+  cfg.linhas=linhas;
+  localStorage.setItem('verp_dre_cfg',JSON.stringify(cfg));
+}
+
+function dreSaveLineLabel(lid,label){
+  const cfg=dreGetCfg();
+  const linhas=(cfg.linhas||JSON.parse(JSON.stringify(DRE_LINHAS_DEFAULT)));
+  const l=linhas.find(function(x){return x.id===lid;});
+  if(l)l.label=label;
+  cfg.linhas=linhas;
+  localStorage.setItem('verp_dre_cfg',JSON.stringify(cfg));
+}
+
+function dreRenderCfgCats(body){}
+function dreRenderCfgEstilo(body){}
+
 function renderDREPage(){
   if(!_grp['dre']){grpInit('dre');grpPreset('dre','mes');grpApply('dre',null);}
   const range=grpGetRange('dre');
@@ -4078,6 +4269,9 @@ function renderDREPage(){
     <span style="font-size:11px;font-weight:700;color:var(--red)">R$ ${fmtN(totalDesp)}</span>
   </div>`
   :'<div style="font-size:11px;color:var(--t3)">Sem despesas no período</div>';
+
+  // Render config panel
+  dreRenderCfgLinhas(document.getElementById('dre-inline-body'));
 }
 function renderPrecificacao(){
   const now=new Date();
