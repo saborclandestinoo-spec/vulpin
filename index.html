@@ -4180,6 +4180,31 @@ function renderDREPage(){
     }).reduce(function(s,l){return s+(l.valor||0);},0);
   }
   function _or2(a,b){return a!==null?a:b;}
+  // pedidos map: catCod -> valor (from histPeriod, already computed)
+  var _pedMapaRec2={};
+  (function(){
+    var map=_cm2;
+    // map each lineId's cods to its value
+    var lineVals={'v_pix':_vPix2,'v_cred':_vCred2,'v_deb':_vDeb2,'v_din':_vDin2,'v_ifood':_vIF2,'v_entrega':_vEnt2};
+    Object.keys(lineVals).forEach(function(lid){
+      var cods2=map[lid]||[];
+      var val=lineVals[lid];
+      if(cods2.length===1) _pedMapaRec2[cods2[0]]=val;
+    });
+  })();
+  // sum lancPeriod by exact catCod prefix (for _catsList values)
+  function _sumCod(cod,tipo){
+    // check pedidos map first (receita from histPeriod)
+    if(_pedMapaRec2[cod]!==undefined) return _pedMapaRec2[cod];
+    // check if any pedMapaRec key starts with cod (parent node)
+    var subTotal=Object.keys(_pedMapaRec2).filter(function(k){return k===cod||k.startsWith(cod+'.');}).reduce(function(s,k){return s+_pedMapaRec2[k];},0);
+    if(subTotal>0) return subTotal;
+    return lancPeriod.filter(function(l){
+      if(tipo&&l.tipo!==tipo)return false;
+      var cc=l.catCod||'';
+      return cc===cod||cc.startsWith(cod+'.');
+    }).reduce(function(s,l){return s+(l.valor||0);},0);
+  }
 
   // Receitas de venda vêm de histPeriod (pedidos), não lancPeriod
   // Usar vars já calculadas, cod map só para despesas/lançamentos
@@ -4270,10 +4295,14 @@ function renderDREPage(){
       var tc=isLeafCod?'var(--t)':(depth2===minD?'#1E3A5F':'#475569');
       var codc=isLeafCod?'#3B82F6':(depth2===minD?'#1E3A5F':'#475569');
       var dotSz=isLeafCod?'8px':(depth2===minD?'7px':'5px');
+      var val2=_sumCod(cod,cod.charAt(0)==='3'?'receita':'despesa');
+      var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
+      var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
       return '<div style="display:flex;align-items:center;gap:6px;padding:'+(isLeafCod?'3px':'1px')+' 0;padding-left:'+pad+'">'
         +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
         +'<span style="font-size:10px;font-weight:700;color:'+codc+';flex-shrink:0">'+cod+'</span>'
-        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+'">'+nome+'</span>'
+        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:'+tc+';flex:1">'+nome+'</span>'
+        +'<span style="font-size:11px;font-weight:600;color:'+valColor2+';margin-left:8px;white-space:nowrap">'+valFmt2+'</span>'
         +'</div>';
     }).join('');
   }
