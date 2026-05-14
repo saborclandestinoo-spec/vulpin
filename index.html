@@ -4237,7 +4237,6 @@ function renderDREPage(){
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
     if(!cods.length) return '';
-    var minD=Math.min.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
     // expand cods to include all ancestors for display
     var allCods=[];
     cods.forEach(function(cod){
@@ -4249,6 +4248,7 @@ function renderDREPage(){
     });
     allCods.sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});});
     var leafCods=new Set(cods);
+    var minD=Math.min.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
     return allCods.map(function(cod){
       var item=plano.find(function(x){return x.cod===cod;});
       var nome=item?item.nome:((typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[cod])||cod);
