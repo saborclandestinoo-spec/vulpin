@@ -2880,18 +2880,23 @@ function dreOpenCodPicker(pill, lineId){
       const isLeaf=!cats.some(c=>c.cod!==ct.cod&&c.cod.startsWith(ct.cod+'.'));
       const checked=selected.includes(ct.cod);
       const indent=(depth*14)+'px';
-      const fw=depth<=1?'700':'400';
-      const fs=depth<=1?'11px':'11px';
+      // mães: fonte menor, cinza; folhas: fonte normal, cor escura
+      const isParent=!isLeaf;
+      const rowFs=isParent?'10px':'11px';
+      const rowFw=isParent?'600':'400';
+      const rowColor=isParent?'#94A3B8':'var(--t)';
+      const rowPad=isParent?'3px 12px 3px '+(12+depth*14)+'px':'5px 12px 5px '+(12+depth*14)+'px';
+      const dotC=ct.tipo==='receita'?'#22C55E':'#EF4444';
+      const dotSz=isParent?'5px':'7px';
       const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 12px 5px '+(12+depth*14)+'px;cursor:'+(isLeaf?'pointer':'default')+';user-select:none;border-bottom:1px solid var(--bor2,var(--bor));'
+      row.style.cssText='display:flex;align-items:center;gap:6px;padding:'+rowPad+';cursor:'+(isLeaf?'pointer':'default')+';user-select:none;'+(isParent?'':'border-bottom:1px solid var(--bor2,var(--bor));')
         +(checked?'background:var(--fox-l)':'');
       const cbHtml=isLeaf?'<input type="checkbox" '+(checked?'checked':'')+' style="accent-color:var(--fox);width:13px;height:13px;flex-shrink:0;pointer-events:none">'
         :'<span style="width:13px;height:13px;flex-shrink:0"></span>';
-      const dotC=ct.tipo==='receita'?'#22C55E':'#EF4444';
       row.innerHTML=cbHtml
-        +'<span style="width:6px;height:6px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
-        +'<span style="font-size:10px;font-weight:700;color:var(--fox);flex-shrink:0">'+ct.cod+'</span>'
-        +'<span style="font-size:'+fs+';font-weight:'+fw+';color:var(--t)">'+ct.nome+'</span>';
+        +'<span style="width:'+dotSz+';height:'+dotSz+';border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
+        +'<span style="font-size:10px;font-weight:700;color:'+(isParent?'#94A3B8':'var(--fox)')+';flex-shrink:0">'+ct.cod+'</span>'
+        +'<span style="font-size:'+rowFs+';font-weight:'+rowFw+';color:'+rowColor+'">'+ct.nome+'</span>';
       if(isLeaf){
         row.addEventListener('click',function(e){
           e.stopPropagation();
@@ -4226,8 +4231,8 @@ function renderDREPage(){
     var minD=Math.min.apply(null,cods.map(function(c){return c.split('.').length-1;}));
     return cods.map(function(cod){
       var item=plano.find(function(x){return x.cod===cod;});
-      var nome=item?item.nome:'—';
-      var dotC=item&&item.tipo==='receita'?'#22C55E':'#EF4444';
+      var nome=item?item.nome:((typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[cod])||cod);
+      var dotC=item?(item.tipo==='receita'?'#22C55E':'#EF4444'):(cod.charAt(0)==='3'?'#22C55E':'#EF4444');
       var rel=cod.split('.').length-1-minD;
       var dots=rel>0?('<span style="color:#94A3B8;font-size:10px;letter-spacing:-1px;margin-right:4px">'+('…').repeat(rel)+'</span>'):'';
       var fw=rel===0?'600':'400';
