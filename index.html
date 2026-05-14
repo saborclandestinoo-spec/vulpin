@@ -4219,11 +4219,12 @@ function renderDREPage(){
     var pad=((nivel||1)*20)+'px';
     var vc=val<0?'#DC2626':val>0?'#1E3A5F':'#94A3B8';
     var pillHtml=lid?_pill2(lid):'';
-    return '<div style="display:grid;grid-template-columns:'+_cols+';padding:8px 16px;border-bottom:1px solid '+_Bor+'">'
-      +'<div style="display:flex;flex-direction:column;padding-left:'+pad+';gap:4px">'
-      +'<span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'
-      +(pillHtml?'<div>'+pillHtml+'</div>':'')
-      +'</div>'
+    // If cats mapped: show only cats. If no cats: show line name + + categorias pill
+    var labelHtml=pillHtml
+      ?'<div style="flex-direction:column;gap:2px">'+pillHtml+'</div>'
+      :'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
+    return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
+      +'<div style="padding-left:'+pad+'">'+labelHtml+'</div>'
       +'<div style="font-size:13px;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums;align-self:start;padding-top:2px">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right;align-self:start;padding-top:4px">'+_pct(val)+'</div></div>';
   }
