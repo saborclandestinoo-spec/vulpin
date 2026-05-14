@@ -4219,7 +4219,8 @@ function renderDREPage(){
   var _taxaIF2=_or2(_SS2('taxa_if','despesa'),taxaIF);
   var _descontos2=_or2(_SS2('descontos','despesa'),descontos);
   var _cancelam2=_or2(_SS2('cancelam','despesa'),cancelVal);
-  var _recLiq2=_recBruta2-_simples2-_taxaIF2-_descontos2-_cancelam2;
+  var _totalDed2=_simples2+_taxaIF2+_descontos2+_cancelam2;
+  var _recLiq2=_recBruta2-_totalDed2;
   var _mp2=_or2(_SS2('mp','despesa'),cmvFicha);
   var _emb2=_or2(_SS2('emb','despesa'),custEmb);
   var _mod2=_or2(_SS2('mod','despesa'),moDir);
@@ -4437,10 +4438,11 @@ function renderDREPage(){
   }
 
   var _dedChildren=[];
+  if(_simples2>0)_dedChildren.push(['Impostos sobre Vendas',-_simples2,'imp_vendas']);
   if(_taxaIF2>0)_dedChildren.push(['Taxas iFood',-_taxaIF2,'taxa_if']);
   if(_descontos2>0)_dedChildren.push(['Descontos Concedidos',-_descontos2,'descontos']);
   if(_cancelam2>0)_dedChildren.push(['Estornos/Cancelamentos',-_cancelam2,'cancelam']);
-  _rows2+=_G2('(-) Deduções da Receita Bruta',-(_taxaIF2+_descontos2+_cancelam2),'deducoes',_dedChildren);
+  _rows2+=_G2('(-) Deduções da Receita Bruta',-_totalDed2,'deducoes',_dedChildren);
   _rows2+=_T2('Receita Líquida Operacional',_recLiq2);
   var _cpvChildren=[['Matérias-Primas',-_mp2,'mp']];
   if(_emb2>0)_cpvChildren.push(['Embalagens',-_emb2,'emb']);
