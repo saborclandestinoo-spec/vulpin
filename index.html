@@ -4221,7 +4221,7 @@ function renderDREPage(){
     var pillHtml=lid?_pill2(lid):'';
     // If cats mapped: show only cats. If no cats: show line name + + categorias pill
     var labelHtml=pillHtml
-      ?'<div style="flex-direction:column;gap:2px">'+pillHtml+'</div>'
+      ?'<div style="display:flex;flex-direction:column;gap:2px">'+pillHtml+'</div>'
       :'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:#1E3A5F">'+nome+'</span>'+_pill2(lid||'')+'</div>';
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;border-bottom:1px solid '+_Bor+'">'
       +'<div style="padding-left:'+pad+'">'+labelHtml+'</div>'
@@ -4233,7 +4233,7 @@ function renderDREPage(){
     return '<div style="display:grid;grid-template-columns:'+_cols+';padding:7px 16px;background:'+_GrpBg+';border-bottom:1px solid '+_Bor+';border-top:2px solid '+_Bor+'">'
       +'<div style="display:flex;flex-direction:column;gap:2px">'
       +'<div style="display:flex;align-items:center;gap:6px"><span style="font-size:13px;font-weight:700;color:#0F2040">'+nome+'</span></div>'
-      +(lid?'<div style="padding-left:4px">'+_pill2(lid)+'</div>':'')
+      +(lid?'<div style="padding-left:20px">'+_pill2(lid)+'</div>':'')
       +'</div>'
       +'<div style="font-size:13px;font-weight:700;color:'+vc+';text-align:right;font-variant-numeric:tabular-nums">'+_fmt(val)+'</div>'
       +'<div style="font-size:11px;color:#94A3B8;text-align:right">'+_pct(val)+'</div></div>';
