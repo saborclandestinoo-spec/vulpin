@@ -7865,7 +7865,7 @@ function selectBanco(id){
 
   const hoje=new Date().toLocaleDateString('sv-SE');
   const dataInicial=bk&&bk.dataInicial?bk.dataInicial:null;
-  const allLancs=getLanc().filter(l=>l.bancoId===id);
+  const allLancs=getLanc().filter(l=>l.bancoId===id||(l.tipo==='transferencia'&&l.bancoOrigemId===id));
 
   // Extrato: só lançamentos com data <= hoje
   // Extrato: lançamentos com venc<=hoje OU já pagos (independente da data)
@@ -7902,15 +7902,20 @@ function selectBanco(id){
   const lancsAsc=[...lancs].reverse();
   const saldos=[];
   let acc=bk?bk.saldoInicial:0;
-  lancsAsc.forEach(l=>{acc+=l.tipo==='receita'?(l.valor||0):-(l.valor||0); saldos.unshift(acc);});
+  lancsAsc.forEach(l=>{
+    const v=l.valor||0;
+    if(l.tipo==='transferencia'){acc+=l.bancoId===id?v:-v;}
+    else{acc+=l.tipo==='receita'?v:-v;}
+    saldos.unshift(acc);
+  });
 
   const tbody=document.querySelector('#tbl-bank tbody');
   tbody.innerHTML=lancs.length?lancs.map((l,i)=>{
     return`<tr>
       <td>${fmtDate(l.venc||l.data)}</td>
       <td style="font-weight:500;color:var(--t)">${l.desc}</td>
-      <td><span class="tag tag-${l.tipo}">${l.tipo==='receita'?'Receita':'Despesa'}</span></td>
-      <td style="color:${l.tipo==='receita'?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'?'+':'-'}R$ ${fmtN(l.valor)}</td>
+      <td><span class="tag tag-${l.tipo==='transferencia'?'receita':l.tipo}">${l.tipo==='receita'?'Receita':l.tipo==='transferencia'?(l.bancoId===id?'Transf. Entrada':'Transf. Saída'):'Despesa'}</span></td>
+      <td style="color:${l.tipo==='receita'||l.tipo==='transferencia'&&l.bancoId===id?'var(--green)':'var(--red)'};font-weight:600">${l.tipo==='receita'||l.tipo==='transferencia'&&l.bancoId===id?'+':'-'}R$ ${fmtN(l.valor)}</td>
       <td style="font-weight:600;color:${saldos[i]>=0?'var(--t)':'var(--red)'}">R$ ${fmtN(saldos[i])}</td>
     </tr>`;
   }).join(''):
