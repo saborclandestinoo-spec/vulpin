@@ -6362,7 +6362,7 @@ function renderLanc(){
   let data=getLanc().filter(l=>!l.pedidoId);
   if(lancTab_current!=='todos')data=data.filter(l=>l.tipo===lancTab_current);
   if(r.start)data=data.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
-  if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter);
+  if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter||(l.tipo==='transferencia'&&l.bancoOrigemId===bankFilter));
   if(search)data=data.filter(l=>l.desc.toLowerCase().includes(search));
   if(lancPillFilter==='vencidos')data=data.filter(l=>!l.pago&&l.venc<today);
   if(lancPillFilter==='hoje')data=data.filter(l=>!l.pago&&l.venc===today);
@@ -7577,7 +7577,7 @@ function saveTransf(){
   const obj={id:editLancId||uid(),tipo:'transferencia',desc,valor,data,venc:data,bancoId:destinoId,bancoOrigemId:origemId,obs,pago:true};
   let lancs=getLanc();
   if(editLancId)lancs=lancs.map(x=>x.id===editLancId?obj:x);else lancs.push(obj);
-  S.set('lancamentos',lancs);closeM('modal-transf');renderLanc();if(currentPage==='financeiro')renderFluxo();
+  S.set('lancamentos',lancs);closeM('modal-transf');lancTab_current='transferencia';const ltEl=document.getElementById('lt-transferencia');if(ltEl)lancTab('transferencia',ltEl);else renderLanc();if(currentPage==='financeiro')renderFluxo();
 }
 function deleteTransf(){
   if(!editLancId)return;
