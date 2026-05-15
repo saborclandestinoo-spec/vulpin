@@ -9988,6 +9988,17 @@ function mergeNaHistoria(novos){
         delete lancProcessados[p.id];
         S.set('pedidos_lanc_gerado',lancProcessados);
       }
+      // Reprocessa se pedido tem pix mas sem nenhum lançamento
+      if(lancProcessados[p.id]){
+        const temPix=(p.payments||[]).some(pg=>['pix','pix_auto'].includes((pg.payment_method||'').toLowerCase()));
+        if(temPix){
+          const temLancPix=getLanc().some(l=>l.pedidoId===p.id);
+          if(!temLancPix){
+            delete lancProcessados[p.id];
+            S.set('pedidos_lanc_gerado',lancProcessados);
+          }
+        }
+      }
       // Reprocessa se pedido tem pagamento money/cash mas não tem lançamento no caixa
       if(lancProcessados[p.id]){
         const temMoney=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
