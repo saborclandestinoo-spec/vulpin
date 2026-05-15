@@ -10053,7 +10053,7 @@ function mergeNaHistoria(novos){
           // Fallback por tipo de pagamento se forma não tem banco configurado
           // Find pix bank: by name, or from formas de pagamento configuradas
           const _formaPix=formasPedido.find(function(f){return f.status==='ativa'&&(f.nome||'').toLowerCase().includes('pix');});
-          const _bancoPix=(_formaPix&&_formaPix.bancoId?getBancos().find(function(b){return b.id===_formaPix.bancoId;}):null)||getBancos().find(function(b){return (b.nome||'').toLowerCase().includes('pix');});
+          const _bancoPix=(_formaPix&&_formaPix.bancoId?getBancos().find(function(b){return b.id===_formaPix.bancoId;}):null)||getBancos().find(function(b){return (b.nome||'').toLowerCase().includes('pix');})||caixaBank||getBancos().find(function(b){return b.tipo!=='cartao';});
           const _formaCredito=formasPedido.find(function(f){return f.status==='ativa'&&(f.nome||'').toLowerCase().includes('crédito')||f.status==='ativa'&&(f.nome||'').toLowerCase().includes('credito');});
           const _bancoCredito=(_formaCredito&&_formaCredito.bancoId?getBancos().find(function(b){return b.id===_formaCredito.bancoId;}):null)||getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('crédito')||n.includes('credito')||n.includes('credit');});
           const _bancoDebito=getBancos().find(function(b){var n=(b.nome||'').toLowerCase();return n.includes('débito')||n.includes('debito')||n.includes('debit');});
