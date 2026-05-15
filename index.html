@@ -5437,7 +5437,7 @@ function renderFluxo(){
     const d=l.data||'';
     return d>=range.start&&d<=range.end;
   });
-  if(bFilter)lancs=lancs.filter(l=>l.bancoId===bFilter);
+  if(bFilter)lancs=lancs.filter(l=>l.bancoId===bFilter||(l.tipo==='transferencia'&&l.bancoOrigemId===bFilter));
   lancs.sort((a,b)=>(a.data||'').localeCompare(b.data||''));
 
   // Receitas = pedidos + lançamentos receita; Despesas = lançamentos despesa
