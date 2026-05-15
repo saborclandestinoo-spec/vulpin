@@ -6174,10 +6174,12 @@ function lancMainTab(tab, el){
   // Show subtabs only for "todos"
   const sub=document.getElementById('lanc-subtabs');
   if(sub)sub.style.display=tab==='todos'?'flex':'none';
-  // Set lancTab_current based on main tab
-  if(tab==='pagar'){lancTab_current='despesa';}
-  else if(tab==='receber'){lancTab_current='receita';}
-  else{lancTab_current='todos';}
+  // Set lancTab_current based on main tab (don't override transferencia)
+  if(lancTab_current!=='transferencia'){
+    if(tab==='pagar'){lancTab_current='despesa';}
+    else if(tab==='receber'){lancTab_current='receita';}
+    else{lancTab_current='todos';}
+  }
   renderLanc();
 }
 
