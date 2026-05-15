@@ -4181,6 +4181,9 @@ function renderDREPage(){
   function _dDot(depth){return depth<=1?'8px':depth===2?'7px':'6px';}
   // map catCod -> valor from pedidos lines (any cod that matches gets that line's value)
   function _sumCod(cod){
+    // direct cod overrides
+    if(cod==='4.1.1.7'||cod.startsWith('4.1.1.7.'))return _mp2;
+    if(cod==='4.1.1.8'||cod.startsWith('4.1.1.8.'))return _emb2;
     // 1. check if any venda lid has this exact cod mapped → return that lid's value
     var total=0;
     var matched=false;
@@ -4207,7 +4210,7 @@ function renderDREPage(){
   // Usar vars já calculadas, cod map só para despesas/lançamentos
   var _vPix2=vPix, _vCred2=vCred, _vDeb2=vDeb, _vDin2=vDin, _vIF2=vIF, _vEnt2=_dreTaxaEnt;
   var _vCancel2=cancelVal;
-  var _lineVals2={'v_pix':_vPix2,'v_cred':_vCred2,'v_deb':_vDeb2,'v_din':_vDin2,'v_ifood':_vIF2,'v_entrega':_vEnt2,'v_cancelados':_vCancel2,'cancelam':_vCancel2};
+  var _lineVals2={'v_pix':_vPix2,'v_cred':_vCred2,'v_deb':_vDeb2,'v_din':_vDin2,'v_ifood':_vIF2,'v_entrega':_vEnt2,'v_cancelados':_vCancel2,'cancelam':_vCancel2,'mp':_mp2,'emb':_emb2};
   var _recBruta2=recBruta+cancelVal; // bruto total incluindo cancelados
   var _simples2=_or2(_SS2('imp_vendas','despesa'),simples);
   var _taxaIF2=_or2(_SS2('taxa_if','despesa'),taxaIF);
