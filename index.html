@@ -4129,19 +4129,9 @@ function renderDREPage(){
   // Também captura lançamentos com descrição de embalagem não categorizados
   const embLancDesc=lancPeriod.filter(l=>l.tipo==='despesa'&&!(l.catCod||'').startsWith('4.1.1.5')&&!(l.catCod||'').startsWith('4.2.1.7')&&(l.desc||'').toLowerCase().match(/embal|sacola|caixa.*cookie|bag/));
   custEmb+=embLancDesc.reduce((s,l)=>s+(l.valor||0),0);
+  // Fallback: numPedidos × R$1,625 × 1,10 (margem 10%)
   if(custEmb===0&&numPedidos>0){
-    const embMPs=mp.filter(m=>{
-      const c=(m.cat||m.categoria||'').toLowerCase();
-      return c.includes('embal')||c.includes('sacola')||c.includes('caixa')||c.includes('bag');
-    });
-    if(embMPs.length>0){
-      const custoPorEmb=embMPs.reduce((s,m)=>{
-        const pNF=m.valorNF||m.preco||m.custo||0;
-        const qtdEmb=m.qtdEmbalagem||m.qtd_emb||1;
-        return s+(qtdEmb>0?pNF/qtdEmb:pNF);
-      },0)/embMPs.length;
-      custEmb=custoPorEmb*numPedidos;
-    }
+    custEmb=numPedidos*1.625*1.10;
   }
 
   const moDir=_s('4.1.2'); const cif=_s('4.1.3');
