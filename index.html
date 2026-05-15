@@ -7753,7 +7753,15 @@ function reprocessarPagamentosMultiplos(){
       const pmt=(pg.payment_type||'').toLowerCase();
       return pmk!=='ifood'&&pmk!=='online_credit_card'&&pmt!=='online';
     });
-    if(pagsFisicos.length<2)return; // só 1 pagamento físico, não precisa
+    // Também reprocessa pix sem lançamento
+    if(pagsFisicos.length===1){
+      const temPix=pagsFisicos.some(function(pg){return ['pix','pix_auto'].includes((pg.payment_method||'').toLowerCase());});
+      if(temPix){
+        const temLanc=getLanc().some(function(l){return l.pedidoId===p.id&&l.tipo==='receita';});
+        if(!temLanc) toReset.push(p.id);
+      }
+      return;
+    }
 
     const lancsExist=getLanc().filter(function(l){return l.pedidoId===p.id&&l.tipo==='receita';});
     
