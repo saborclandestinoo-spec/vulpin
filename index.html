@@ -4455,12 +4455,14 @@ function renderDREPage(){
   if(_emb2>0)_cpvChildren.push(['Embalagens',-_emb2,'emb']);
   if(_mod2>0)_cpvChildren.push(['Mão de Obra Direta',-_mod2,'mod']);
   if(_cif2>0)_cpvChildren.push(['Custos Indiretos',-_cif2,'cif']);
-  _rows2+=_G2('(-) Custo dos Produtos Vendidos',-_cpv2,'cpv',_cpvChildren);
+  var _cpvHasCats=((_cm2['cpv']||[]).length>0);
+  _rows2+=_G2('(-) Custo dos Produtos Vendidos',-_cpv2,'cpv',_cpvHasCats?null:_cpvChildren);
   _rows2+=_T2('Lucro Bruto',_lucBruto2);
   var _dvChildren=[];
   if(_log2>0)_dvChildren.push(['Logística e Entrega',-_log2,'logistica']);
   if(_can2>0)_dvChildren.push(['Canais de Venda',-_can2,'canais']);
-  _rows2+=_G2('(-) Despesas com Vendas',-(_log2+_can2),'desp_vend',_dvChildren);
+  var _dvHasCats=((_cm2['desp_vend']||[]).length>0);
+  _rows2+=_G2('(-) Despesas com Vendas',-(_log2+_can2),'desp_vend',_dvHasCats?null:_dvChildren);
   var _daChildren=[];
   if(_ocup2>0)_daChildren.push(['Ocupação',-_ocup2,'ocupacao']);
   if(_util2>0)_daChildren.push(['Utilidades',-_util2,'utilidades']);
@@ -4469,7 +4471,8 @@ function renderDREPage(){
   if(_manu2>0)_daChildren.push(['Manutenção',-_manu2,'manutencao']);
   if(_tec2>0)_daChildren.push(['Tecnologia',-_tec2,'tecnologia']);
   if(_trib2>0)_daChildren.push(['Tributário e Legal',-_trib2,'tributario']);
-  _rows2+=_G2('(-) Despesas Administrativas',-(_ocup2+_util2+_serv2+_pess2+_manu2+_tec2+_trib2),'desp_adm',_daChildren);
+  var _daHasCats=((_cm2['desp_adm']||[]).length>0);
+  _rows2+=_G2('(-) Despesas Administrativas',-(_ocup2+_util2+_serv2+_pess2+_manu2+_tec2+_trib2),'desp_adm',_daHasCats?null:_daChildren);
   if(_recFin2>0)_rows2+=_G2('Receitas Financeiras',_recFin2,'rec_fin');
   if(_despFin2>0)_rows2+=_G2('(-) Despesas Financeiras',-_despFin2,'desp_fin');
   _rows2+=_T2('Lucro Operacional',_ebit2);
