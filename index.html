@@ -3983,6 +3983,7 @@ function dreAddCodToLine(lid){
     modal.remove();
     const body=document.getElementById('dre-inline-body');
     if(body)dreRenderCfgLinhas(body);
+    if(typeof renderDREPage==='function')renderDREPage();
   };
 }
 
