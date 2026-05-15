@@ -7789,10 +7789,18 @@ function reprocessarPagamentosMultiplos(){
     return;
   }
 
-  // Remove lançamentos dos pedidos a reprocessar
-  const lancAtual=getLanc().filter(function(l){return !toReset.includes(l.pedidoId);});
+  // Remove apenas lançamentos auto-gerados (preserva edições manuais)
+  const lancAtual=getLanc().filter(function(l){
+    if(!toReset.includes(l.pedidoId))return true;
+    // só remove se foi gerado automaticamente
+    return !(l.obs||'').includes('Gerado automaticamente');
+  });
   S.set('lancamentos',lancAtual);
-  toReset.forEach(function(id){delete lancProc[id];});
+  // Só reseta pedidos cujos lançamentos foram todos removidos
+  toReset.forEach(function(id){
+    const restantes=lancAtual.filter(function(l){return l.pedidoId===id;});
+    if(!restantes.length)delete lancProc[id];
+  });
   S.set('pedidos_lanc_gerado',lancProc);
 
   // Reprocessar
