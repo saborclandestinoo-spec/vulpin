@@ -2489,6 +2489,7 @@ function getSaldoBanco(bancoId){
   // Ignorar lançamentos anteriores à data inicial do saldo
   const lancs=dataInicial
     ? allLancs.filter(l=>{
+        if(l.tipo==='transferencia')return true; // transferências sempre contam
         const d=(l.data||l.dataPag||'');
         return d>=dataInicial;
       })
