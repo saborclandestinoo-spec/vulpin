@@ -7879,10 +7879,12 @@ function selectBanco(id){
     .sort((a,b)=>{
       const dA=b.venc||b.data||'', dB=a.venc||a.data||'';
       if(dA!==dB) return dA.localeCompare(dB);
-      // Mesmo dia: mais recente por id (pedidos mais altos = mais recentes)
-      const idA=parseInt((b.pedidoId||b.id||'0').toString().replace(/\D/g,''))||0;
-      const idB=parseInt((a.pedidoId||a.id||'0').toString().replace(/\D/g,''))||0;
-      return idA-idB;
+      // Mesmo dia: mais recente primeiro — usa pedidoId numérico ou id string
+      const pA=b.pedidoId?parseInt(b.pedidoId)||0:0;
+      const pB=a.pedidoId?parseInt(a.pedidoId)||0:0;
+      if(pA!==pB)return pA-pB;
+      // sem pedidoId: sort por id string desc (uid/timestamp mais alto = mais recente)
+      return (b.id||'').localeCompare(a.id||'');
     });
 
   // A receber: receitas futuras
