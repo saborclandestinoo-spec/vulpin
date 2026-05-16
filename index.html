@@ -9992,6 +9992,32 @@ function mergeNaHistoria(novos){
           }
         }
       }
+      // Check: forma de pagamento mudou → reprocessa
+      if(_lancProc[p.id]){
+        const _lancsDoPed=getLanc().filter(function(l){return l.pedidoId===p.id&&l.tipo==='receita';});
+        const _pagsFis=(p.payments||[]).filter(function(pg){
+          const pmk=(pg.payment_method||'').toLowerCase();
+          const pmt=(pg.payment_type||'').toLowerCase();
+          return pmk!=='ifood'&&pmk!=='online_credit_card'&&pmt!=='online';
+        });
+        // Se não tem lançamento mas está marcado como processado → reprocessa
+        if(_lancsDoPed.length===0&&_pagsFis.length>0){
+          delete _lancProc[p.id];
+          S.set('pedidos_lanc_gerado',_lancProc);
+        }
+        // Se venc está errado (>4 dias) → reprocessa
+        if(_lancsDoPed.length>0){
+          const _pData=(p.created_at||'').slice(0,10);
+          const _vencErrado=_lancsDoPed.some(function(l){
+            return _pData&&(new Date(l.venc)-new Date(_pData))/(86400000)>4;
+          });
+          if(_vencErrado){
+            S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
+            delete _lancProc[p.id];
+            S.set('pedidos_lanc_gerado',_lancProc);
+          }
+        }
+      }
       if(_lancProc[p.id]){
         const _temMoney=(p.payments||[]).some(pg=>['money','cash','dinheiro'].includes((pg.payment_method||'').toLowerCase()));
         if(_temMoney){
