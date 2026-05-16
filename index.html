@@ -10032,7 +10032,7 @@ function mergeNaHistoria(novos){
       }
     }
 
-    if(isNovo&&!isCancelado){
+    if(!isCancelado){
       const lancProcessados=S.get('pedidos_lanc_gerado')||{};
       // Reprocessa se lançamento gerado não tem bancoId
       const lancGeradosSemBanco=getLanc().filter(l=>l.pedidoId===p.id&&!l.bancoId);
