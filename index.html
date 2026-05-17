@@ -10213,7 +10213,7 @@ function mergeNaHistoria(novos){
           lancs.push({
             id:uid(),
             tipo:'receita',
-            desc:`Pedido #${p.display_id||p.displayId||p.id} — ${forma?.nome||pmNome}`,
+            desc:`Pedido #${p.display_id||p.displayId||p.id} — ${forma?.nome||pmNome} (${data})`,
             valor:valorLiq,
             data:dataRec,
             venc:dataRec,
