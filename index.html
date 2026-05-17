@@ -10156,19 +10156,8 @@ function mergeNaHistoria(novos){
           const diasRec=forma?.dias||0;
           const dtRec=new Date(data+'T12:00:00');
           if(diasRec>0){
-            // Avança em dias úteis (pula sábado, domingo e feriados nacionais)
-            let added=0;
-            while(added<diasRec){
-              dtRec.setDate(dtRec.getDate()+1);
-              const wd=dtRec.getDay(); // 0=dom, 6=sab
-              const ds=dtRec.toLocaleDateString('sv-SE');
-              const mm=ds.slice(5,10); // MM-DD
-              const feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
-              const isSab=wd===6;
-              const isDom=wd===0;
-              const isFer=feriados.includes(mm);
-              if(!isSab&&!isDom&&!isFer)added++;
-            }
+            // Avança em dias corridos (não pula fim de semana)
+            dtRec.setDate(dtRec.getDate()+diasRec);
           }
           const dataRec=dtRec.toLocaleDateString('sv-SE');
           // Cria lançamento de receita
