@@ -7961,23 +7961,35 @@ function selectBanco(id){
 
   const hoje=new Date().toLocaleDateString('sv-SE');
   const dataInicial=bk&&bk.dataInicial?bk.dataInicial:null;
-  // Fix venc cartão para dias corridos
+  // Fix venc cartão: D+1 corrido baseado na data do pedido no histórico
   (function(){
     const formas=getFormasPedido();
+    const hist=getHistorico();
     const all=getLanc();
     let ch=false;
     all.forEach(function(l){
-      if(l.tipo!=='receita'||!l.pedidoId||!l.data)return;
+      if(l.tipo!=='receita'||!l.pedidoId)return;
       const desc=(l.desc||'').toLowerCase();
-      if(!desc.includes('créd')&&!desc.includes('cred')&&!desc.includes('déb')&&!desc.includes('deb'))return;
+      const isCart=desc.includes('créd')||desc.includes('cred')||desc.includes('déb')||desc.includes('deb');
+      if(!isCart)return;
       const fNome=desc.includes('créd')||desc.includes('cred')?'crédito':'débito';
       const forma=formas.find(function(f){return (f.nome||'').toLowerCase().includes(fNome);});
       const dias=forma?(forma.dias||0):1;
       if(!dias)return;
-      const dt=new Date(l.data+'T12:00:00');
+      // Pega data real do pedido no histórico (horário local)
+      const p=hist.find(function(x){return x.id===l.pedidoId;});
+      const rawDate=p?(p.created_at||p.createdAt||''):'';
+      const dataPed=rawDate?new Date(rawDate).toLocaleDateString('sv-SE'):l.data;
+      if(!dataPed)return;
+      const dt=new Date(dataPed+'T12:00:00');
       dt.setDate(dt.getDate()+dias);
       const ve=dt.toLocaleDateString('sv-SE');
-      if(l.venc!==ve){l.venc=ve;l.dataPag=ve;ch=true;}
+      if(l.venc!==ve||l.data!==dataPed){
+        l.data=dataPed;
+        l.venc=ve;
+        l.dataPag=ve;
+        ch=true;
+      }
     });
     if(ch)localStorage.setItem('verp_lancamentos',JSON.stringify(all));
   })();
