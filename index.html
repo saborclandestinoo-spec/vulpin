@@ -10209,7 +10209,13 @@ function mergeNaHistoria(novos){
       if(!lancProcessados[p.id]){
         const formasPedido=getFormasPedido();
         const pagamentos=p.payments||[];
-        const data=(p.created_at||p.createdAt||'').slice(0,10)||new Date().toLocaleDateString('sv-SE');
+        const data=(function(){
+          const raw=p.created_at||p.createdAt||'';
+          if(!raw)return new Date().toLocaleDateString('sv-SE');
+          // Convert to local date (avoid UTC offset issue)
+          const d=new Date(raw);
+          return d.toLocaleDateString('sv-SE');
+        })();
         let mudouLanc=false;
         pagamentos.forEach(pg=>{
           const pmKey=(pg.payment_method||'').toLowerCase();
