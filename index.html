@@ -10005,11 +10005,27 @@ function mergeNaHistoria(novos){
           delete _lancProc[p.id];
           S.set('pedidos_lanc_gerado',_lancProc);
         }
-        // Se venc está errado (>4 dias) → reprocessa
+        // Se venc não bate com esperado (dias do pagamento) → reprocessa
         if(_lancsDoPed.length>0){
           const _pData=(p.created_at||'').slice(0,10);
+          const _formasPed=getFormasPedido();
           const _vencErrado=_lancsDoPed.some(function(l){
-            return _pData&&(new Date(l.venc)-new Date(_pData))/(86400000)>4;
+            if(!_pData) return false;
+            // acha a forma do pagamento desse lançamento
+            const _fNome=(l.desc||'').toLowerCase();
+            const _fMatch=_formasPed.find(function(f){return (f.nome||'').toLowerCase().split(' ').some(function(w){return _fNome.includes(w)&&w.length>3;});});
+            const _dias=_fMatch?(_fMatch.dias||0):0;
+            if(_dias===0) return false; // D+0 não verifica
+            // calcula venc esperado
+            const _dtExp=new Date(_pData+'T12:00:00');
+            let _added=0;
+            while(_added<_dias){
+              _dtExp.setDate(_dtExp.getDate()+1);
+              const _wd=_dtExp.getDay();
+              if(_wd!==0&&_wd!==6) _added++;
+            }
+            const _vencExp=_dtExp.toLocaleDateString('sv-SE');
+            return l.venc!==_vencExp;
           });
           if(_vencErrado){
             S.set('lancamentos',getLanc().filter(function(l){return l.pedidoId!==p.id;}));
