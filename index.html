@@ -1148,7 +1148,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div class="card">
           <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
           <div class="tbl-wrap"><table class="tbl" id="tbl-bank">
-            <thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo</th></tr></thead>
+            <thead><tr><th>Data Pedido</th><th>Data Recebimento</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo</th></tr></thead>
             <tbody><tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px">Selecione um banco para ver o extrato</td></tr></tbody>
           </table>
         <div id="bank-a-receber" style="display:none"></div>
@@ -4170,7 +4170,12 @@ function renderDREPage(){
         const dtExp=new Date(l.data+'T12:00:00');
         dtExp.setDate(dtExp.getDate()+dias);
         const vencExp=dtExp.toLocaleDateString('sv-SE');
-        if(l.venc!==vencExp){l.venc=vencExp;l.dataPag=vencExp;changed=true;}
+        if(l.venc!==vencExp){
+          l.venc=vencExp;l.dataPag=vencExp;changed=true;
+          // Also reset lancProcessados so it can be reprocessed
+          const _lp=S.get('pedidos_lanc_gerado')||{};
+          if(l.pedidoId&&_lp[l.pedidoId]){delete _lp[l.pedidoId];S.set('pedidos_lanc_gerado',_lp);}
+        }
       });
       if(changed)S.set('lancamentos',lancs);
     }catch(e){}
@@ -4197,7 +4202,12 @@ function renderDREPage(){
         const dtExp=new Date(l.data+'T12:00:00');
         dtExp.setDate(dtExp.getDate()+dias);
         const vencExp=dtExp.toLocaleDateString('sv-SE');
-        if(l.venc!==vencExp){l.venc=vencExp;l.dataPag=vencExp;changed=true;}
+        if(l.venc!==vencExp){
+          l.venc=vencExp;l.dataPag=vencExp;changed=true;
+          // Also reset lancProcessados so it can be reprocessed
+          const _lp=S.get('pedidos_lanc_gerado')||{};
+          if(l.pedidoId&&_lp[l.pedidoId]){delete _lp[l.pedidoId];S.set('pedidos_lanc_gerado',_lp);}
+        }
       });
       if(changed)S.set('lancamentos',lancs);
     }catch(e){}
@@ -7971,6 +7981,7 @@ function selectBanco(id){
   const tbody=document.querySelector('#tbl-bank tbody');
   tbody.innerHTML=lancs.length?lancs.map((l,i)=>{
     return`<tr>
+      <td>${fmtDate(l.data||l.venc)}</td>
       <td>${fmtDate(l.venc||l.data)}</td>
       <td style="font-weight:500;color:var(--t)">${l.desc}</td>
       <td><span class="tag tag-${l.tipo==='transferencia'?'receita':l.tipo}">${l.tipo==='receita'?'Receita':l.tipo==='transferencia'?(l.bancoId===id?'Transf. Entrada':'Transf. Saída'):'Despesa'}</span></td>
