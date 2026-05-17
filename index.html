@@ -6350,6 +6350,33 @@ setTimeout(()=>{
   lancMainTab('pagar',null);
   if(typeof currentPage!=='undefined'&&currentPage==='financeiro')renderFluxo();
 },300);
+// Fix startup: corrige venc de lancamentos de cartao para dias corridos
+(function fixVencCartao(){
+  try{
+    const formas=typeof getFormasPedido==='function'?getFormasPedido():[];
+    const lancs=typeof getLanc==='function'?getLanc():[];
+    let changed=false;
+    lancs.forEach(function(l){
+      if(l.tipo!=='receita'||!l.pedidoId||!l.data)return;
+      const desc=(l.desc||'').toLowerCase();
+      const isCartao=desc.includes('crédito')||desc.includes('credito')||desc.includes('débito')||desc.includes('debito');
+      if(!isCartao)return;
+      const fNome=desc.includes('créd')||desc.includes('cred')?'crédito':'débito';
+      const forma=formas.find(function(f){return (f.nome||'').toLowerCase().includes(fNome);});
+      const dias=forma?(forma.dias||0):1;
+      if(!dias)return;
+      const dtExp=new Date(l.data+'T12:00:00');
+      dtExp.setDate(dtExp.getDate()+dias);
+      const vencExp=dtExp.toLocaleDateString('sv-SE');
+      if(l.venc!==vencExp){l.venc=vencExp;l.dataPag=vencExp;changed=true;}
+    });
+    if(changed){
+      localStorage.setItem('verp_lancamentos',JSON.stringify(lancs));
+      console.log('[fix] venc cartao corrigido');
+    }
+  }catch(e){console.warn('fixVencCartao err',e);}
+})();
+
 
 function lancGetRange(){return grpGetRange('lanc');}
 function lancUpdateLabel(){}// handled by grpApply
