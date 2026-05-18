@@ -4077,12 +4077,11 @@ function renderDREPage(){
       const t=(pg.payment_type||'').toLowerCase();
       return m==='ifood'||m==='online_credit_card'||t==='online';
     });
-    // Pedido pago online pelo iFood: bruto = total + taxas iFood + descontos iFood
+    // Pedido pago online pelo iFood: bruto = total + descontos iFood (sem fees, fees é custo)
     if(temOnline){
       const descIF=(p.discounts||[]).reduce((s,d)=>s+(d.value||d.total||0),0)
         +(p.discount||p.store_discount||0);
-      const fees=typeof p.total_fees==='number'?p.total_fees:0;
-      vIF+=total+descIF+fees;
+      vIF+=total+descIF;
       return;
     }
     // Pago na entrega (pix/cartão/dinheiro): distribui por cada pagamento
