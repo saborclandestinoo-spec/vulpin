@@ -4065,24 +4065,37 @@ function renderDREPage(){
   // Para DRE mostramos: produtos + entrega + adic separados
   const recBruta=_dreTotal+_dreDescIF; // cancela o desconto para mostrar receita bruta real
 
-  // Pagamentos — value sempre 0 na API, usa total do pedido × método
+  // Pagamentos — distribui por forma de pagamento
   let vPix=0,vDin=0,vCred=0,vDeb=0,vIF=0;
   histPeriod.forEach(p=>{
     const total=p.total||0;
     const pgs=p.payments||[];
     if(!pgs.length) return;
-    // Se 1 pagamento: usa total do pedido
+    // Verifica se pedido tem algum pagamento online (ifood)
+    const temOnline=pgs.some(pg=>{
+      const m=(pg.payment_method||'').toLowerCase();
+      const t=(pg.payment_type||'').toLowerCase();
+      return m==='ifood'||m==='online_credit_card'||t==='online';
+    });
+    // Pedido pago online pelo iFood: bruto = total + taxas iFood + descontos iFood
+    if(temOnline){
+      const descIF=(p.discounts||[]).reduce((s,d)=>s+(d.value||d.total||0),0)
+        +(p.discount||p.store_discount||0);
+      const fees=typeof p.total_fees==='number'?p.total_fees:0;
+      vIF+=total+descIF+fees;
+      return;
+    }
+    // Pago na entrega (pix/cartão/dinheiro): distribui por cada pagamento
     if(pgs.length===1){
       const m=(pgs[0].payment_method||'').toLowerCase();
       if(m==='pix'||m==='pix_auto') vPix+=total;
       else if(m==='money'||m==='cash') vDin+=total;
       else if(m.includes('credit')) vCred+=total;
       else if(m.includes('debit')) vDeb+=total;
-      else if(m.includes('ifood')||m.includes('online')) vIF+=total;
       else vDin+=total;
       return;
     }
-    // Múltiplos pagamentos: usa value de cada um
+    // Múltiplos pagamentos físicos
     const sumPgs=pgs.reduce((s,pg)=>s+(pg.value||pg.paid_value||0),0);
     pgs.forEach(pg=>{
       const m=(pg.payment_method||'').toLowerCase();
@@ -4091,7 +4104,6 @@ function renderDREPage(){
       else if(m==='money'||m==='cash') vDin+=v;
       else if(m.includes('credit')) vCred+=v;
       else if(m.includes('debit')) vDeb+=v;
-      else if(m.includes('ifood')||m.includes('online')) vIF+=v;
       else vDin+=v;
     });
   });
