@@ -5084,6 +5084,12 @@ function deleteProd2(){
 let estCurrentTab='mp';
 let entradaMPId=null;
 
+function estoqueOpenItem(item){
+  // Open the appropriate edit modal based on type
+  if(item.tipo==='mp') openMP(item.id);
+  else if(item.tipo==='rec'&&typeof openRecheio==='function') openRecheio(item.id);
+  else if(item.tipo==='prod') openProduto(item.id);
+}
 function toggleEstSub(){
   const subs=document.getElementById('nav-est-subs');
   const chev=document.getElementById('est-chev');
@@ -5102,41 +5108,104 @@ function renderEstoque(){
   if(estCurrentTab==='mp'){renderEstMP();return;}
   if(estCurrentTab==='recheios'){renderEstRecheios();return;}
   if(estCurrentTab==='prod'){renderEstProd();return;}
-  // Tela principal de Estoque: só total
+  // Tela principal: Prateleiras Interativas
   const mp=getMP();
+  const recs=getRecheios?getRecheios():[];
   const prods=getProdutos();
-  const totalMP=mp.reduce((s,m)=>{const at=getEstoqueAtualMP(m.id);return s+Math.max(0,at*(getValorPorG(m)||0));},0);
-  const totalProd=prods.reduce((s,p)=>{const at=getEstoqueAtualProd?getEstoqueAtualProd(p.id):0;return s+Math.max(0,at*(p.custo||0));},0);
-  const alertaMP=mp.filter(m=>getEstoqueAtualMP(m.id)<=(m.min||0)).length;
+
+  // Seções das prateleiras
+  const secoes=[
+    {id:'insumos',icon:'🧂',label:'Insumos',cor:'#6366F1',corBg:'#EEF2FF',items:mp.map(m=>{
+      const at=getEstoqueAtualMP(m.id);
+      const pct=m.max?Math.min(1,at/(m.max||m.min*3||10)):Math.min(1,at/Math.max(at,m.min*2||1));
+      const status=at<=0?'zero':at<=(m.min||0)?'baixo':'ok';
+      return {id:m.id,nome:m.nome,cat:m.cat||'Geral',at,min:m.min||0,max:m.max||(m.min||1)*3,pct,status,unidade:m.unidade||'g',custo:getValorPorG?getValorPorG(m):0,tipo:'mp'};
+    })},
+    {id:'embalagens',icon:'📦',label:'Embalagens',cor:'#F59E0B',corBg:'#FFFBEB',items:mp.filter(m=>{const c=(m.cat||'').toLowerCase();return c.includes('embal')||c.includes('caixa')||c.includes('sacola')||c.includes('bag')||c.includes('fita');}).map(m=>{
+      const at=getEstoqueAtualMP(m.id);
+      const pct=Math.min(1,at/Math.max(at,m.min*2||10));
+      const status=at<=0?'zero':at<=(m.min||0)?'baixo':'ok';
+      return {id:m.id,nome:m.nome,cat:m.cat,at,min:m.min||0,pct,status,unidade:m.unidade||'un',tipo:'mp'};
+    })},
+    {id:'recheios',icon:'🍫',label:'Recheios',cor:'#EC4899',corBg:'#FDF2F8',items:recs.map(r=>{
+      const at=getEstoqueAtualRec?getEstoqueAtualRec(r.id):0;
+      const pct=Math.min(1,at/Math.max(at,r.min*2||100));
+      const status=at<=0?'zero':at<=(r.min||0)?'baixo':'ok';
+      return {id:r.id,nome:r.nome,cat:'Recheios',at,min:r.min||0,pct,status,unidade:'g',tipo:'rec'};
+    })},
+    {id:'congelados',icon:'🧊',label:'Cookies Congelados',cor:'#06B6D4',corBg:'#ECFEFF',items:prods.filter(p=>{const c=(p.cat||p.categoria||'').toLowerCase();return c.includes('congelad')||c.includes('frozen');}).map(p=>{
+      const at=getEstoqueAtualProd?getEstoqueAtualProd(p.id):0;
+      const pct=Math.min(1,at/Math.max(at,(p.estoqueMin||5)*2));
+      const status=at<=0?'zero':at<=(p.estoqueMin||0)?'baixo':'ok';
+      return {id:p.id,nome:p.nome,cat:p.cat||'Congelados',at,min:p.estoqueMin||0,pct,status,unidade:'un',tipo:'prod'};
+    })}
+  ];
+
+  const statusCor={ok:'#22C55E',baixo:'#F59E0B',zero:'#EF4444'};
+  const statusLabel={ok:'OK',baixo:'Baixo',zero:'Zerado'};
+  const statusBg={ok:'#F0FDF4',baixo:'#FFFBEB',zero:'#FEF2F2'};
+
+  function renderCaixinha(item){
+    const cor=statusCor[item.status];
+    const bg=statusBg[item.status];
+    const boxes=Math.max(1,Math.round(item.pct*5));
+    const boxesHtml=Array.from({length:5},(_,i)=>`
+      <div style="width:10px;height:10px;border-radius:2px;background:${i<boxes?cor:'#E2E8F0'};transition:background .3s"></div>
+    `).join('');
+    return `<div onclick="estoqueOpenItem(${JSON.stringify(item).replace(/"/g,'&quot;')})"
+      style="background:${bg};border:2px solid ${item.status==='zero'?cor:'transparent'};border-radius:14px;padding:12px;cursor:pointer;transition:all .2s;min-width:130px;position:relative"
+      onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'"
+      onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:${cor};background:${cor}22;padding:2px 7px;border-radius:20px">${statusLabel[item.status]}</div>
+        ${item.status!=='ok'?`<span style="font-size:14px">${item.status==='zero'?'🚨':'⚠️'}</span>`:''}
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#1E293B;margin-bottom:4px;line-height:1.3">${item.nome}</div>
+      <div style="font-size:20px;font-weight:800;color:${cor};line-height:1">${item.at}<span style="font-size:10px;font-weight:500;color:#94A3B8;margin-left:2px">${item.unidade}</span></div>
+      ${item.min?`<div style="font-size:9px;color:#94A3B8;margin-top:2px">mín: ${item.min} ${item.unidade}</div>`:''}
+      <div style="display:flex;gap:3px;margin-top:8px">${boxesHtml}</div>
+    </div>`;
+  }
+
   el.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px">
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:20px;display:flex;align-items:center;gap:14px">
-        <div style="width:48px;height:48px;border-radius:12px;background:var(--fox-l);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🧂</div>
-        <div>
-          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Insumos</div>
-          <div style="font-size:22px;font-weight:700;color:var(--t)">${mp.length}</div>
-          <div style="font-size:11px;color:var(--t3)">R$ ${fmtN(totalMP)} em estoque</div>
-        </div>
+  <div style="padding:20px">
+    <div style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#1E293B">🏪 Minhas Prateleiras</div>
+        <div style="font-size:13px;color:#94A3B8;margin-top:2px">Clique em qualquer item para editar</div>
       </div>
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:20px;display:flex;align-items:center;gap:14px">
-        <div style="width:48px;height:48px;border-radius:12px;background:var(--amber-bg,#FFF8E1);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🍫</div>
-        <div>
-          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Recheios</div>
-          <div style="font-size:22px;font-weight:700;color:var(--t)">—</div>
-          <div style="font-size:11px;color:var(--t3)">em breve</div>
-        </div>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:20px;display:flex;align-items:center;gap:14px">
-        <div style="width:48px;height:48px;border-radius:12px;background:var(--green-bg,#E8F5E9);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🍪</div>
-        <div>
-          <div style="font-size:11px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Produtos</div>
-          <div style="font-size:22px;font-weight:700;color:var(--t)">${prods.length}</div>
-          <div style="font-size:11px;color:var(--t3)">R$ ${fmtN(totalProd)} em estoque</div>
-        </div>
+      <div style="display:flex;gap:8px">
+        ${secoes.map(s=>{const zeros=s.items.filter(i=>i.status==='zero').length;const baixos=s.items.filter(i=>i.status==='baixo').length;
+          return `<div style="background:${s.corBg};border:1.5px solid ${s.cor}33;border-radius:12px;padding:10px 14px;text-align:center;min-width:80px">
+            <div style="font-size:18px">${s.icon}</div>
+            <div style="font-size:10px;font-weight:700;color:${s.cor}">${s.label}</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px">${s.items.length} itens</div>
+            ${zeros>0?`<div style="font-size:9px;color:#EF4444;font-weight:700">${zeros} zerado(s)</div>`:''}
+            ${baixos>0?`<div style="font-size:9px;color:#F59E0B;font-weight:700">${baixos} baixo(s)</div>`:''}
+          </div>`;
+        }).join('')}
       </div>
     </div>
-    ${alertaMP>0?`<div style="margin:0 20px 20px;background:#FEF3C7;border:1px solid #F59E0B;border-radius:10px;padding:12px 16px;font-size:12px;color:#92400E;font-weight:500">⚠️ ${alertaMP} insumo(s) abaixo do mínimo</div>`:''}
-  `;
+    ${secoes.map(s=>`
+      <div style="margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:36px;height:36px;border-radius:10px;background:${s.corBg};border:2px solid ${s.cor}44;display:flex;align-items:center;justify-content:center;font-size:18px">${s.icon}</div>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:${s.cor}">${s.label}</div>
+            <div style="font-size:11px;color:#94A3B8">${s.items.length} itens • ${s.items.filter(i=>i.status==='ok').length} OK • ${s.items.filter(i=>i.status!=='ok').length} atenção</div>
+          </div>
+          <div style="flex:1;height:3px;background:linear-gradient(90deg,${s.cor}44,transparent);border-radius:2px;margin-left:8px"></div>
+        </div>
+        ${s.items.length===0
+          ?`<div style="background:${s.corBg};border:2px dashed ${s.cor}44;border-radius:14px;padding:24px;text-align:center;color:#94A3B8;font-size:13px">Nenhum item cadastrado nesta seção</div>`
+          :`<div style="display:flex;flex-wrap:wrap;gap:12px">${s.items.map(renderCaixinha).join('')}</div>`
+        }
+        <div style="margin-top:10px;height:4px;background:#F1F5F9;border-radius:4px;position:relative">
+          <div style="height:100%;width:${s.items.length?Math.round(s.items.filter(i=>i.status==='ok').length/s.items.length*100):0}%;background:linear-gradient(90deg,${s.cor},${s.cor}88);border-radius:4px;transition:width .5s"></div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
 }
 function renderEstMP(){
   const mp=getMP();
