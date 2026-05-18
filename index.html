@@ -4077,11 +4077,10 @@ function renderDREPage(){
       const t=(pg.payment_type||'').toLowerCase();
       return m==='ifood'||m==='online_credit_card'||t==='online';
     });
-    // iFood online: total + descontos bancados pelo iFood = bruto real
+    // iFood online: total + descontos + benefits = bruto real
     if(temOnline){
-      const descIF=(p.discounts||[]).filter(function(d){
-        return (d.sponsorship||'').toLowerCase()==='ifood';
-      }).reduce(function(s,d){return s+(d.total||d.value||0);},0);
+      const descIF=(p.discounts||[]).reduce(function(s,d){return s+(d.value||d.total||0);},0)
+        +(p.benefits||[]).reduce(function(s,b){return s+(b.value||0);},0);
       vIF+=total+descIF;
       return;
     }
