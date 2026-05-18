@@ -5081,7 +5081,7 @@ function deleteProd2(){
 // ═══════════════════════════════════════════
 // ESTOQUE
 // ═══════════════════════════════════════════
-let estCurrentTab='mp';
+let estCurrentTab='';
 let entradaMPId=null;
 
 function estoqueOpenItem(item){
@@ -5097,6 +5097,8 @@ function toggleEstSub(){
   const open=subs.style.maxHeight!=='0px'&&subs.style.maxHeight!=='0'&&subs.style.maxHeight!=='';
   subs.style.maxHeight=open?'0':'120px';
   if(chev)chev.style.transform=open?'':'rotate(180deg)';
+  // Reset to shelf view
+  estCurrentTab='';
 }
 function estTab(tab){
   estCurrentTab=tab;
