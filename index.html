@@ -1602,7 +1602,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 <!-- MODALS -->
 <!-- Matéria-Prima -->
 <div class="overlay" id="modal-mp">
-  <div class="modal" style="max-width:680px;max-height:90vh;display:flex;flex-direction:column">
+  <div class="modal" style="max-width:680px;height:85vh;display:flex;flex-direction:column">
     <!-- HEADER -->
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0">
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
@@ -1625,18 +1625,18 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <input type="file" id="mmp-foto-input" accept="image/*" style="display:none" onchange="mmpFotoUpload(this)">
 
     <!-- TABS -->
-    <div style="display:flex;border-bottom:1px solid var(--bor);margin:12px 0 0;flex-shrink:0;overflow-x:auto">
-      <div class="mmp-tab on" id="mmp-tab-info" onclick="mmpTab('info')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">📋 Básico</div>
-      <div class="mmp-tab" id="mmp-tab-medidas" onclick="mmpTab('medidas')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">⚖️ Medidas</div>
-      <div class="mmp-tab" id="mmp-tab-financeiro" onclick="mmpTab('financeiro')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">💰 Financeiro</div>
-      <div class="mmp-tab" id="mmp-tab-est" onclick="mmpTab('est')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">📦 Estoque</div>
-      <div class="mmp-tab" id="mmp-tab-validade" onclick="mmpTab('validade')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">📅 Validade</div>
-      <div class="mmp-tab" id="mmp-tab-avancado" onclick="mmpTab('avancado')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">🏭 Avançado</div>
-      <div class="mmp-tab" id="mmp-tab-uso" onclick="mmpTab('uso')" style="padding:8px 14px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s">🧁 Uso</div>
+    <div style="display:flex;border-bottom:1px solid var(--bor);margin:12px 0 0;flex-shrink:0">
+      <div class="mmp-tab on" id="mmp-tab-info" onclick="mmpTab('info')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📋 Básico</div>
+      <div class="mmp-tab" id="mmp-tab-medidas" onclick="mmpTab('medidas')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">⚖️ Medidas</div>
+      <div class="mmp-tab" id="mmp-tab-financeiro" onclick="mmpTab('financeiro')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">💰 Financeiro</div>
+      <div class="mmp-tab" id="mmp-tab-est" onclick="mmpTab('est')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📦 Estoque</div>
+      <div class="mmp-tab" id="mmp-tab-validade" onclick="mmpTab('validade')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📅 Validade</div>
+      <div class="mmp-tab" id="mmp-tab-avancado" onclick="mmpTab('avancado')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">🏭 Avançado</div>
+      <div class="mmp-tab" id="mmp-tab-uso" onclick="mmpTab('uso')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">🧁 Uso</div>
     </div>
 
     <!-- SCROLL AREA -->
-    <div style="overflow-y:auto;flex:1;padding-top:16px;min-height:320px">
+    <div style="overflow-y:auto;flex:1;padding-top:16px">
 
     <!-- PANEL: BÁSICO -->
     <div id="mmp-panel-info">
