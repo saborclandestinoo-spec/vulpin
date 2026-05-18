@@ -526,20 +526,20 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12V5l5-4 5 4v7" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/><rect x="5" y="8" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/></svg>
       Produção
     </div>
-    <div class="ni" onclick="go('estoque',this)" id="nav-estoque">
+    <div class="ni" onclick="toggleEstSub();go('estoque',this)" id="nav-estoque">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 4V3a3 3 0 016 0v1" stroke="currentColor" stroke-width="1.3"/></svg>
       Estoque
       <span class="ni-badge" id="nb-est">0</span>
+      <span id="est-chev" style="margin-left:auto;font-size:10px;transition:transform .2s">▾</span>
     </div>
-    <div class="ni ni-plain ni-sub" onclick="go('estoque',this);setTimeout(function(){estTab('mp',document.querySelector('.est-tab'));},100)" id="nav-est-mp" style="padding-left:32px">
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Insumos</div>
-    <div class="ni ni-plain ni-sub" onclick="go('estoque',this);setTimeout(function(){estTab('recheios',document.querySelectorAll('.est-tab')[1]);},100)" id="nav-est-rec" style="padding-left:32px">
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M4 7h6M7 4v6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-      Recheios</div>
-    <div class="ni ni-plain ni-sub" onclick="go('estoque',this);setTimeout(function(){estTab('prod',document.querySelectorAll('.est-tab')[2]);},100)" id="nav-est-prod" style="padding-left:32px">
-      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
-      Produtos</div>
+    <div id="nav-est-subs" style="overflow:hidden;transition:max-height .25s ease;max-height:0">
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('mp',document.querySelector('.est-tab'));},100)" id="nav-est-mp" style="padding-left:32px;font-size:12px">
+        🧂 Insumos</div>
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('recheios',document.querySelectorAll('.est-tab')[1]);},100)" id="nav-est-rec" style="padding-left:32px;font-size:12px">
+        🍫 Recheios</div>
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('prod',document.querySelectorAll('.est-tab')[2]);},100)" id="nav-est-prod" style="padding-left:32px;font-size:12px">
+        🍪 Produtos</div>
+    </div>
     <div class="nav-g">Financeiro</div>
     <div class="ni ni-plain" onclick="go('lancamentos',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -5089,6 +5089,14 @@ function deleteProd2(){
 let estCurrentTab='mp';
 let entradaMPId=null;
 
+function toggleEstSub(){
+  const subs=document.getElementById('nav-est-subs');
+  const chev=document.getElementById('est-chev');
+  if(!subs)return;
+  const open=subs.style.maxHeight!=='0px'&&subs.style.maxHeight!=='0'&&subs.style.maxHeight!=='';
+  subs.style.maxHeight=open?'0':'120px';
+  if(chev)chev.style.transform=open?'':'rotate(180deg)';
+}
 function estTab(tab,el){
   estCurrentTab=tab;
   document.querySelectorAll('.est-tab').forEach(t=>t.classList.remove('on'));
