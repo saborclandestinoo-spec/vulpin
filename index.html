@@ -4077,11 +4077,9 @@ function renderDREPage(){
       const t=(pg.payment_type||'').toLowerCase();
       return m==='ifood'||m==='online_credit_card'||t==='online';
     });
-    // Pedido pago online pelo iFood: bruto = total + descontos bancados pelo iFood
+    // iFood online: total já líquido, não soma desconto nem taxas adicionais
     if(temOnline){
-      // Só soma descontos com sponsorship='ifood' (não desconto do lojista)
-      const descIF=(p.discounts||[]).filter(function(d){return (d.sponsorship||'').toLowerCase()==='ifood';}).reduce(function(s,d){return s+(d.total||d.value||0);},0);
-      vIF+=total+descIF;
+      vIF+=total;
       return;
     }
     // Pago na entrega (pix/cartão/dinheiro): distribui por cada pagamento
