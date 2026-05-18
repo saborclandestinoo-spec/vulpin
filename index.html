@@ -533,11 +533,11 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
       <span id="est-chev" style="margin-left:auto;font-size:10px;transition:transform .2s">▾</span>
     </div>
     <div id="nav-est-subs" style="overflow:hidden;transition:max-height .25s ease;max-height:0">
-      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('mp',document.querySelector('.est-tab'));},100)" id="nav-est-mp" style="padding-left:32px;font-size:12px">
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('mp');},100)" id="nav-est-mp" style="padding-left:32px;font-size:12px">
         🧂 Insumos</div>
-      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('recheios',document.querySelectorAll('.est-tab')[1]);},100)" id="nav-est-rec" style="padding-left:32px;font-size:12px">
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('recheios');},100)" id="nav-est-rec" style="padding-left:32px;font-size:12px">
         🍫 Recheios</div>
-      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('prod',document.querySelectorAll('.est-tab')[2]);},100)" id="nav-est-prod" style="padding-left:32px;font-size:12px">
+      <div class="ni ni-plain" onclick="go('estoque',this);setTimeout(function(){estTab('prod');},100)" id="nav-est-prod" style="padding-left:32px;font-size:12px">
         🍪 Produtos</div>
     </div>
     <div class="nav-g">Financeiro</div>
@@ -5092,10 +5092,8 @@ function toggleEstSub(){
   subs.style.maxHeight=open?'0':'120px';
   if(chev)chev.style.transform=open?'':'rotate(180deg)';
 }
-function estTab(tab,el){
+function estTab(tab){
   estCurrentTab=tab;
-  document.querySelectorAll('.est-tab').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
   renderEstoque();
 }
 function renderEstoque(){
