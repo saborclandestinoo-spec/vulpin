@@ -1881,6 +1881,24 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <select class="fi" id="ft-un"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">un</option></select>
         </div>
         <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftAddItem()">+ Add</button>
+        <button class="btn-o" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftOpenMulti()" title="Adicionar vários de uma vez">⊞ Vários</button>
+      </div>
+      <!-- Multi-add panel -->
+      <div id="ft-multi-panel" style="display:none;background:var(--bg2);border:1px solid var(--bor);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--t)">⊞ Adicionar Vários Itens</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select class="fi" id="ft-multi-tipo" onchange="ftMultiPopulate()" style="font-size:11px;padding:4px 8px;width:120px">
+              <option value="insumo">🧂 Insumos</option>
+              <option value="recheio">🍫 Recheios</option>
+              <option value="embalagem">📦 Embalagens</option>
+            </select>
+            <input class="fi" id="ft-multi-busca" placeholder="Buscar..." style="width:130px;font-size:11px;padding:5px 8px" oninput="ftMultiFilter()">
+            <button class="btn-o" style="font-size:10px;padding:4px 8px" onclick="ftMultiClose()">✕ Fechar</button>
+          </div>
+        </div>
+        <div id="ft-multi-lista" style="max-height:220px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+        <button class="btn-p" style="width:100%;margin-top:10px;justify-content:center;font-size:12px" onclick="ftMultiAdd()">✅ Adicionar Selecionados</button>
       </div>
       <div id="ft-lista" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
       <div id="ft-custo-calc" style="margin-top:12px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor);display:none">
@@ -9409,6 +9427,54 @@ function ftCalcCusto(){
   }
 }
 
+function ftOpenMulti(){
+  const panel=document.getElementById('ft-multi-panel');
+  if(panel){panel.style.display=panel.style.display==='none'?'block':'none';ftMultiPopulate();}
+}
+function ftMultiClose(){
+  const panel=document.getElementById('ft-multi-panel');
+  if(panel)panel.style.display='none';
+}
+function ftMultiPopulate(){
+  const tipo=(document.getElementById('ft-multi-tipo')||{}).value||'insumo';
+  const busca=((document.getElementById('ft-multi-busca')||{}).value||'').toLowerCase();
+  const lista=ftGetList(tipo);
+  const filtered=busca?lista.filter(m=>(m.nome||'').toLowerCase().includes(busca)):lista;
+  const el=document.getElementById('ft-multi-lista');
+  if(!el)return;
+  el.innerHTML=filtered.map(m=>{
+    const jatem=ftItems.some(x=>x.mpId===m.id&&x.tipo===tipo);
+    return`<div style="background:var(--bg);border:1px solid ${jatem?'var(--fox)':'var(--bor)'};border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="ftm-${m.id}" ${jatem?'checked':''} style="width:14px;height:14px;accent-color:var(--fox);flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome}</div>
+        <div style="font-size:10px;color:var(--t3)">${m.un}</div>
+      </div>
+      <input type="number" id="ftmq-${m.id}" step="0.01" min="0" placeholder="Qtd" value="${jatem?(ftItems.find(x=>x.mpId===m.id&&x.tipo===tipo)||{}).qtd||'':''}"
+        style="width:60px;border:1px solid var(--bor);border-radius:6px;padding:3px 6px;font-size:11px;font-family:'Poppins',sans-serif"
+        onclick="document.getElementById('ftm-${m.id}').checked=true">
+    </div>`;
+  }).join('');
+}
+function ftMultiFilter(){ftMultiPopulate();}
+function ftMultiAdd(){
+  const tipo=(document.getElementById('ft-multi-tipo')||{}).value||'insumo';
+  const lista=ftGetList(tipo);
+  let added=0;
+  lista.forEach(m=>{
+    const cb=document.getElementById('ftm-'+m.id);
+    const qtdEl=document.getElementById('ftmq-'+m.id);
+    if(!cb||!cb.checked)return;
+    const qtd=parseFloat(qtdEl?qtdEl.value:0)||0;
+    if(!qtd)return;
+    const existing=ftItems.findIndex(x=>x.mpId===m.id&&x.tipo===tipo);
+    if(existing>-1)ftItems[existing].qtd=qtd;
+    else ftItems.push({mpId:m.id,qtd,tipo});
+    added++;
+  });
+  if(added>0){ftMultiClose();ftRender();}
+  else alert('Selecione itens e informe as quantidades.');
+}
 function ftAddItem(){
   const mpId=document.getElementById('ft-mp-sel').value;
   const qtd=parseFloat(document.getElementById('ft-qtd').value)||0;
