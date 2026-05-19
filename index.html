@@ -1804,67 +1804,93 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 
 <!-- Produto -->
 <div class="overlay" id="modal-prod">
-  <div class="modal" style="max-width:560px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;gap:12px">
-      <input id="mprod-title-input"
-        style="font-size:18px;font-weight:700;color:var(--t);border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:'Poppins',sans-serif"
-        placeholder="Nome do produto"
-        oninput="document.getElementById('mprod-nome').value=this.value">
-      <button class="modal-close" onclick="closeM('modal-prod')" style="flex-shrink:0">×</button>
-    </div>
-    <div id="mprod-subtitle" style="font-size:11px;color:var(--t3);margin-bottom:10px"></div>
-    <!-- TABS -->
-    <div style="display:flex;border-bottom:1px solid var(--bor);margin-bottom:16px">
-      <div id="mpt-info" onclick="mprodTab('info')" style="padding:8px 16px;font-size:12px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;transition:all .15s">Informações</div>
-      <div id="mpt-ficha" onclick="mprodTab('ficha')" style="padding:8px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Ficha Técnica</div>
-    </div>
-    <!-- INFORMAÇÕES -->
-    <div id="mpp-info">
-      <div id="mprod-est-info" style="display:none;font-size:11px;color:var(--t2);background:var(--bg2);padding:8px 12px;border-radius:8px;margin-bottom:8px"></div>
-      <label class="fl">Categoria</label><input class="fi" id="mprod-cat" list="prod-cats-list" placeholder="Ex: Cookies Recheados">
-      <datalist id="prod-cats-list"></datalist>
-      <input type="hidden" id="mprod-nome">
-      <div class="fi-row">
-        <div><label class="fl">Custo Unit (R$)</label><input class="fi" id="mprod-custo" type="number" step="0.01" placeholder="0,00"></div>
-        <div><label class="fl">Preço de Venda (R$)</label><input class="fi" id="mprod-preco" type="number" step="0.01" placeholder="0,00"></div>
-      </div>
-      <div class="fi-row">
-        <div><label class="fl">Estoque Inicial (un)</label><input class="fi" id="mprod-estoque" type="number" placeholder="0" min="0" step="1"></div>
-        <div><label class="fl">Status</label>
-          <select class="fi" id="mprod-status"><option value="ativo">Ativo</option><option value="oculto">Oculto</option><option value="falta">Em falta</option><option value="inativo">Inativo</option></select>
+  <div class="modal" style="max-width:720px;height:88vh;display:flex;flex-direction:column">
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="mprod-foto-mini" style="width:44px;height:44px;border-radius:10px;background:var(--bg2);border:1px solid var(--bor);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;overflow:hidden" onclick="document.getElementById('mprod-foto-input').click()">🍪</div>
+        <div style="flex:1;min-width:0">
+          <input id="mprod-title-input" style="font-size:17px;font-weight:700;color:var(--t);border:none;outline:none;background:transparent;width:100%;font-family:'Poppins',sans-serif" placeholder="Nome do produto" oninput="document.getElementById('mprod-nome').value=this.value">
+          <div id="mprod-subtitle" style="font-size:11px;color:var(--t3);margin-top:1px"></div>
         </div>
       </div>
-      <div class="fi-row">
-        <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" type="text" placeholder="Ex: 1234567"></div>
-        <div><label class="fl">Aliases iFood (separe com |)</label><input class="fi" id="mprod-nome-ifood" type="text" placeholder="Ex: NUTELLA - CLANDESTINO|Nutella Clandestino"></div>
-        <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" type="text" placeholder="Ex: moh909rb..."></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <select class="fi" id="mprod-status" style="width:110px;font-size:11px;padding:4px 8px">
+          <option value="ativo">✅ Ativo</option>
+          <option value="oculto">👁️ Oculto</option>
+          <option value="falta">⚠️ Em falta</option>
+          <option value="inativo">⛔ Inativo</option>
+        </select>
+        <button class="modal-close" onclick="closeM('modal-prod')">×</button>
       </div>
-      <div id="mprod-margem-preview" style="font-size:11px;color:var(--t2);margin-top:6px;padding:6px 10px;background:var(--bg2);border-radius:7px;display:none"></div>
     </div>
+    <input type="hidden" id="mprod-nome">
+    <input type="hidden" id="mprod-foto-url">
+    <input type="file" id="mprod-foto-input" accept="image/*" style="display:none" onchange="mprodFotoUpload(this)">
+
+    <!-- TABS -->
+    <div style="display:flex;border-bottom:1px solid var(--bor);margin:12px 0 0;flex-shrink:0">
+      <div class="mpt-tab on" id="mpt-info" onclick="mprodTab('info')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">📋 Básico</div>
+      <div class="mpt-tab" id="mpt-ficha" onclick="mprodTab('ficha')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">🧪 Ficha</div>
+      <div class="mpt-tab" id="mpt-preco" onclick="mprodTab('preco')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">💰 Preço</div>
+      <div class="mpt-tab" id="mpt-estoque" onclick="mprodTab('estoque')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">📦 Estoque</div>
+      <div class="mpt-tab" id="mpt-producao" onclick="mprodTab('producao')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">🏭 Produção</div>
+      <div class="mpt-tab" id="mpt-variacoes" onclick="mprodTab('variacoes')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">🎛️ Variações</div>
+      <div class="mpt-tab" id="mpt-validade" onclick="mprodTab('validade')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">📅 Validade</div>
+      <div class="mpt-tab" id="mpt-integracao" onclick="mprodTab('integracao')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:1;text-align:center">🔗 Integração</div>
+    </div>
+
+    <div style="overflow-y:auto;flex:1;padding-top:14px">
+
+    <!-- BÁSICO -->
+    <div id="mpp-info">
+      <div class="fi-row">
+        <div><label class="fl">Categoria</label>
+          <input class="fi" id="mprod-cat" list="prod-cats-list" placeholder="Ex: Cookies Recheados">
+          <datalist id="prod-cats-list"></datalist>
+        </div>
+        <div><label class="fl">SKU / Código</label><input class="fi" id="mprod-sku" placeholder="Ex: COOK-001"></div>
+      </div>
+      <div><label class="fl">Descrição</label><textarea class="fi" id="mprod-desc" rows="2" style="resize:vertical" placeholder="Descrição do produto, características..."></textarea></div>
+      <div class="fi-row">
+        <div><label class="fl">Tempo de preparo (min)</label><input class="fi" id="mprod-tempo-prep" type="number" placeholder="Ex: 30"></div>
+        <div><label class="fl">Tempo de forno (min)</label><input class="fi" id="mprod-tempo-forno" type="number" placeholder="Ex: 15"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Tempo de resfriamento (min)</label><input class="fi" id="mprod-tempo-resfr" type="number" placeholder="Ex: 20"></div>
+        <div><label class="fl">Tempo de embalagem (min)</label><input class="fi" id="mprod-tempo-emb" type="number" placeholder="Ex: 5"></div>
+      </div>
+    </div>
+
     <!-- FICHA TÉCNICA -->
     <div id="mpp-ficha" style="display:none">
-      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Insumos e recheios utilizados para produzir <b id="ft-prod-nome">este produto</b> por unidade.</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:12px;background:var(--bg2);padding:10px 14px;border-radius:8px">
+        💡 Insumos, recheios e embalagens por unidade de <b id="ft-prod-nome">este produto</b>. O sistema calculará o custo automaticamente.
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
         <div style="flex:1"><label class="fl" style="margin-top:0">Tipo</label>
           <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()">
             <option value="insumo">🧂 Insumo</option>
             <option value="recheio">🍫 Recheio</option>
+            <option value="embalagem">📦 Embalagem</option>
           </select>
         </div>
         <div style="flex:2"><label class="fl" style="margin-top:0">Item</label><select class="fi" id="ft-mp-sel"><option value="">Selecione...</option></select></div>
-        <div style="flex:1"><label class="fl" style="margin-top:0">Qtd / unidade</label><input class="fi" id="ft-qtd" type="number" step="0.01" min="0" placeholder="Ex: 150"></div>
-        <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftAddItem()">+ Adicionar</button>
+        <div style="flex:1"><label class="fl" style="margin-top:0">Qtd</label><input class="fi" id="ft-qtd" type="number" step="0.01" min="0" placeholder="Ex: 150"></div>
+        <div style="width:64px"><label class="fl" style="margin-top:0">Un</label>
+          <select class="fi" id="ft-un"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">un</option></select>
+        </div>
+        <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="ftAddItem()">+ Add</button>
       </div>
       <div id="ft-lista" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
-      <!-- custo calculado + toggle -->
       <div id="ft-custo-calc" style="margin-top:12px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor);display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div>
-            <div style="font-size:12px;font-weight:600;color:var(--t);margin-bottom:2px">Custo calculado pela ficha: <span id="ft-custo-valor" style="color:var(--fox)">R$ 0,00</span></div>
-            <div style="font-size:10px;color:var(--t3)">por unidade produzida</div>
+            <div style="font-size:12px;font-weight:600;color:var(--t);margin-bottom:2px">Custo pela ficha: <span id="ft-custo-valor" style="color:var(--fox)">R$ 0,00</span></div>
+            <div style="font-size:10px;color:var(--t3)" id="ft-custo-detalhe"></div>
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-            <span style="font-size:11px;color:var(--t2)">Usar no custo do produto</span>
+            <span style="font-size:11px;color:var(--t2)">Usar como custo</span>
             <div id="ft-toggle" onclick="ftToggle()" style="width:36px;height:20px;border-radius:10px;background:var(--fox);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0">
               <div style="position:absolute;top:3px;left:17px;width:14px;height:14px;background:var(--bg);border-radius:50%;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
             </div>
@@ -1873,7 +1899,92 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div id="ft-toggle-hint" style="font-size:10px;color:var(--green);margin-top:6px">✓ O campo "Custo Unit" será atualizado automaticamente ao salvar</div>
       </div>
     </div>
-    <div class="modal-actions">
+
+    <!-- PREÇO -->
+    <div id="mpp-preco" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Custo Unit (R$)</label><input class="fi" id="mprod-custo" type="number" step="0.01" placeholder="0,00" oninput="mprodCalcMargem()"></div>
+        <div><label class="fl">Preço de Venda (R$)</label><input class="fi" id="mprod-preco" type="number" step="0.01" placeholder="0,00" oninput="mprodCalcMargem()"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Custo Operacional (R$)</label><input class="fi" id="mprod-custo-op" type="number" step="0.01" placeholder="0,00" oninput="mprodCalcMargem()"></div>
+        <div><label class="fl">Taxa Delivery %</label><input class="fi" id="mprod-taxa-del" type="number" step="0.1" placeholder="Ex: 12" oninput="mprodCalcMargem()"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Margem desejada %</label><input class="fi" id="mprod-margem-desej" type="number" step="0.1" placeholder="Ex: 50" oninput="mprodSugerirPreco()"></div>
+        <div><label class="fl">Preço sugerido</label><input class="fi" id="mprod-preco-sug" readonly style="background:var(--bg3);color:var(--fox);font-weight:700"></div>
+      </div>
+      <div id="mprod-margem-preview" style="display:none;padding:14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor);margin-top:8px;font-size:12px;line-height:2"></div>
+    </div>
+
+    <!-- ESTOQUE -->
+    <div id="mpp-estoque" style="display:none">
+      <div id="mprod-est-info" style="font-size:12px;font-weight:600;color:var(--t);margin-bottom:16px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor2)"></div>
+      <div class="fi-row">
+        <div><label class="fl">Estoque Inicial (un)</label><input class="fi" id="mprod-estoque" type="number" placeholder="0" min="0" step="1"></div>
+        <div><label class="fl">Estoque Mínimo (un)</label><input class="fi" id="mprod-est-min" type="number" placeholder="0" min="0"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Estoque Atual</label><input class="fi" id="mprod-est-atual" readonly style="background:var(--bg3);cursor:not-allowed;color:var(--t2)"></div>
+        <div><label class="fl">Estoque Disponível</label><input class="fi" id="mprod-est-disp" readonly style="background:var(--bg3);cursor:not-allowed;color:var(--t2)"></div>
+      </div>
+    </div>
+
+    <!-- PRODUÇÃO -->
+    <div id="mpp-producao" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Quantidade Produzida (un)</label><input class="fi" id="mprod-prod-qtd" type="number" placeholder="Ex: 24"></div>
+        <div><label class="fl">Responsável</label><input class="fi" id="mprod-prod-resp" placeholder="Nome do responsável"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Número do Lote</label><input class="fi" id="mprod-prod-lote" placeholder="Ex: COOK-180526-01"></div>
+        <div><label class="fl">Data de Produção</label><input class="fi" id="mprod-prod-data" type="date"></div>
+      </div>
+      <div><label class="fl">Observações</label><textarea class="fi" id="mprod-prod-obs" rows="2" style="resize:vertical" placeholder="Notas de produção, perdas..."></textarea></div>
+      <div class="fi-row">
+        <div><label class="fl">Perdas (un)</label><input class="fi" id="mprod-prod-perdas" type="number" placeholder="0" min="0"></div>
+        <div><label class="fl">Motivo das Perdas</label>
+          <select class="fi" id="mprod-prod-motivo"><option value="">Nenhuma</option><option value="queimado">🔥 Queimado</option><option value="quebrado">💔 Quebrado</option><option value="erro">❌ Erro de produção</option><option value="descarte">🗑️ Descarte</option></select>
+        </div>
+      </div>
+      <button class="btn-p" style="width:100%;margin-top:10px;justify-content:center" onclick="mprodRegistrarProducao()">✅ Registrar Produção</button>
+      <div style="margin-top:16px;font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">Últimas Produções</div>
+      <div id="mprod-prod-hist" style="max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- VARIAÇÕES -->
+    <div id="mpp-variacoes" style="display:none">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px;background:var(--bg2);padding:10px 14px;border-radius:8px">
+        💡 Variações são versões do mesmo produto. Ex: unidade, caixa c/ 4, caixa c/ 6, mini, jumbo.
+      </div>
+      <div id="mprod-var-lista"></div>
+      <button class="btn-o" style="width:100%;margin-top:8px;justify-content:center" onclick="mprodAddVariacao()">+ Adicionar Variação</button>
+    </div>
+
+    <!-- VALIDADE -->
+    <div id="mpp-validade" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Validade após produção (dias)</label><input class="fi" id="mprod-val-dias" type="number" placeholder="Ex: 7"></div>
+        <div><label class="fl">Validade Refrigerado (dias)</label><input class="fi" id="mprod-val-refrig" type="number" placeholder="Ex: 14"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Validade Congelado (dias)</label><input class="fi" id="mprod-val-cong" type="number" placeholder="Ex: 90"></div>
+        <div><label class="fl">Alerta de vencimento (dias antes)</label><input class="fi" id="mprod-val-alerta" type="number" placeholder="Ex: 2"></div>
+      </div>
+    </div>
+
+    <!-- INTEGRAÇÃO -->
+    <div id="mpp-integracao" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Código PDV (Cardápio Web)</label><input class="fi" id="mprod-codigo-pdv" placeholder="Ex: 1234567"></div>
+        <div><label class="fl">Código Interno</label><input class="fi" id="mprod-codigo-interno" placeholder="Gerado automaticamente" readonly style="background:var(--bg3)"></div>
+      </div>
+      <div><label class="fl">Aliases iFood (separe com |)</label><input class="fi" id="mprod-nome-ifood" placeholder="Ex: NUTELLA - CLANDESTINO|Nutella Clandestino"></div>
+    </div>
+
+    </div><!-- end scroll -->
+
+    <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
       <button class="btn-danger modal-del" id="mprod-del" onclick="deleteProd()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-prod')">Cancelar</button>
       <button class="btn-p" onclick="saveProd()">Salvar</button>
@@ -9099,14 +9210,114 @@ function renderProdutos(){
 }
 // ─── PRODUTO TABS ───
 function mprodTab(tab){
-  ['info','ficha'].forEach(t=>{
+  ['info','ficha','preco','estoque','producao','variacoes','validade','integracao'].forEach(t=>{
     const p=document.getElementById('mpp-'+t);
     const el=document.getElementById('mpt-'+t);
     const on=t===tab;
     if(p)p.style.display=on?'block':'none';
-    if(el){el.style.color=on?'var(--fox)':'var(--t3)';el.style.borderBottomColor=on?'var(--fox)':'transparent';el.style.fontWeight=on?'600':'500';}
+    if(el){el.style.color=on?'var(--fox)':'var(--t3)';el.style.borderBottomColor=on?'var(--fox)':'transparent';el.style.fontWeight=on?'700':'600';}
   });
-  if(tab==='ficha')ftRender();
+  if(tab==='ficha'){ftRender();ftPopulateSel();}
+  if(tab==='estoque')mprodRenderEst();
+  if(tab==='producao')mprodRenderProdHist();
+  if(tab==='variacoes')mprodRenderVar();
+  if(tab==='preco')setTimeout(mprodCalcMargem,50);
+}
+function mprodFotoUpload(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const url=e.target.result;
+    const mini=document.getElementById('mprod-foto-mini');
+    const hidden=document.getElementById('mprod-foto-url');
+    if(mini)mini.innerHTML='<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
+    if(hidden)hidden.value=url;
+  };
+  reader.readAsDataURL(file);
+}
+function mprodCalcMargem(){
+  const custo=(parseFloat((document.getElementById('mprod-custo')||{}).value)||0)+(parseFloat((document.getElementById('mprod-custo-op')||{}).value)||0);
+  const preco=parseFloat((document.getElementById('mprod-preco')||{}).value)||0;
+  const taxaDel=parseFloat((document.getElementById('mprod-taxa-del')||{}).value)||0;
+  const el=document.getElementById('mprod-margem-preview');
+  if(!el)return;
+  if(preco>0){
+    const taxaVal=preco*(taxaDel/100);
+    const lucro=preco-custo-taxaVal;
+    const m=(lucro/preco*100).toFixed(1);
+    const cor=parseFloat(m)>=50?'var(--green)':parseFloat(m)>=30?'var(--amber)':'var(--red)';
+    el.style.display='block';
+    el.innerHTML='💰 Custo: <b>R$ '+fmtN(custo)+'</b><br>🏷️ Preço: <b>R$ '+fmtN(preco)+'</b><br>📈 Lucro: <b style="color:var(--green)">R$ '+fmtN(lucro)+'</b><br>📊 Margem: <b style="color:'+cor+'">'+m+'%</b>';
+  } else el.style.display='none';
+}
+function mprodSugerirPreco(){
+  const custo=parseFloat((document.getElementById('mprod-custo')||{}).value)||0;
+  const marg=parseFloat((document.getElementById('mprod-margem-desej')||{}).value)||0;
+  const el=document.getElementById('mprod-preco-sug');
+  if(el&&custo>0&&marg>0&&marg<100)el.value='R$ '+fmtN(custo/(1-marg/100));
+}
+function mprodRenderEst(){
+  const id=editProdId;
+  const atual=id&&typeof getEstoqueAtualProd==='function'?getEstoqueAtualProd(id):0;
+  const el=document.getElementById('mprod-est-info');
+  if(el)el.textContent='Estoque atual: '+atual+' un';
+  const atEl=document.getElementById('mprod-est-atual');if(atEl)atEl.value=atual;
+  const dispEl=document.getElementById('mprod-est-disp');if(dispEl)dispEl.value=atual;
+}
+function mprodRenderProdHist(){
+  const el=document.getElementById('mprod-prod-hist');
+  if(!el||!editProdId)return;
+  const est=typeof getEstProd==='function'?getEstProd():{};
+  const e=est[editProdId]||{entradas:[],saidas:[]};
+  const prods=(e.entradas||[]).filter(x=>x.tipo==='producao'||!x.tipo);
+  if(!prods.length){el.innerHTML='<div style="color:var(--t3);font-size:12px">Nenhuma produção registrada.</div>';return;}
+  el.innerHTML=[...prods].reverse().map(p=>'<div style="background:var(--bg2);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px"><div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:var(--green)">+'+(p.qtd||0)+' un</span><span style="color:var(--t3)">'+(p.data||'')+'</span></div>'+(p.lote?'<div style="color:var(--t2)">Lote: '+p.lote+'</div>':'')+(p.resp?'<div style="color:var(--t2)">Resp: '+p.resp+'</div>':'')+'</div>').join('');
+}
+let mprodVars=[];
+function mprodRenderVar(){
+  const el=document.getElementById('mprod-var-lista');
+  if(!el)return;el.innerHTML='';
+  mprodVars.forEach(function(v,i){
+    const div=document.createElement('div');div.id='mprodv'+i;
+    div.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px;background:var(--bg2);padding:8px 12px;border-radius:8px';
+    div.setAttribute('data-vi',i);
+    div.innerHTML='<input class="fi" placeholder="Nome (ex: Caixa c/ 6)" style="flex:2" value="'+(v.nome||'')+'"><input class="fi" type="number" step="0.01" placeholder="Preço" style="flex:1" value="'+(v.preco||'')+'"><input class="fi" type="number" placeholder="Qtd" style="flex:1" value="'+(v.qtd||'')+'"><button data-act="del-var" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>';
+    div.querySelector('[data-act="del-var"]').onclick=function(){div.remove();};
+    el.appendChild(div);
+  });
+}
+function mprodAddVariacao(){
+  const el=document.getElementById('mprod-var-lista');if(!el)return;
+  const i=Date.now();const div=document.createElement('div');div.id='mprodv'+i;
+  div.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px;background:var(--bg2);padding:8px 12px;border-radius:8px';
+  div.innerHTML='<input class="fi" placeholder="Nome (ex: Caixa c/ 6)" style="flex:2"><input class="fi" type="number" step="0.01" placeholder="Preço" style="flex:1"><input class="fi" type="number" placeholder="Qtd" style="flex:1"><button data-act="del-var" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>';
+  div.querySelector('[data-act="del-var"]').onclick=function(){div.remove();};
+  el.appendChild(div);
+}
+function mprodGetVars(){
+  const el=document.getElementById('mprod-var-lista');if(!el)return[];
+  return [...el.querySelectorAll('div[id]')].map(function(div){
+    const inputs=div.querySelectorAll('input');
+    return{nome:inputs[0]?inputs[0].value:'',preco:parseFloat(inputs[1]?inputs[1].value:0)||0,qtd:parseFloat(inputs[2]?inputs[2].value:1)||1};
+  }).filter(function(v){return v.nome;});
+}
+function mprodRegistrarProducao(){
+  if(!editProdId){alert('Salve o produto primeiro.');return;}
+  const qtd=parseFloat((document.getElementById('mprod-prod-qtd')||{}).value)||0;
+  if(!qtd){alert('Informe a quantidade produzida.');return;}
+  const lote=(document.getElementById('mprod-prod-lote')||{}).value||'';
+  const resp=(document.getElementById('mprod-prod-resp')||{}).value||'';
+  const data=(document.getElementById('mprod-prod-data')||{}).value||new Date().toLocaleDateString('sv-SE');
+  const obs=(document.getElementById('mprod-prod-obs')||{}).value||'';
+  const perdas=parseFloat((document.getElementById('mprod-prod-perdas')||{}).value)||0;
+  const motivo=(document.getElementById('mprod-prod-motivo')||{}).value||'';
+  const est=typeof getEstProd==='function'?getEstProd():{};
+  if(!est[editProdId])est[editProdId]={inicial:0,entradas:[],saidas:[]};
+  est[editProdId].entradas.push({qtd,data,lote,resp,obs,perdas,motivo,tipo:'producao'});
+  S.set('est_prod',est);
+  ['mprod-prod-qtd','mprod-prod-lote','mprod-prod-obs'].forEach(function(id){const el=document.getElementById(id);if(el)el.value='';});
+  mprodRenderEst();mprodRenderProdHist();
+  alert('✅ '+qtd+' unidades registradas! Lote: '+(lote||'—'));
 }
 
 // ─── FICHA TÉCNICA ───
@@ -9244,47 +9455,54 @@ function openProd(id){
     if(v)v.oninput=calcMargem;
   },50);
 
+  const _sv=(eid,v)=>{const el=document.getElementById(eid);if(el)el.value=v||'';};
   if(id){
     const p=prods.find(x=>x.id===id);
     if(p){
-      document.getElementById('mprod-title-input').value=p.nome;
-      document.getElementById('mprod-subtitle').textContent=p.cat;
-      document.getElementById('mprod-cat').value=p.cat;
-      document.getElementById('mprod-nome').value=p.nome;
-      document.getElementById('mprod-custo').value=p.custo||'';
-      document.getElementById('mprod-preco').value=p.preco||'';
-      document.getElementById('mprod-status').value=p.status||'ativo';
-      document.getElementById('mprod-codigo-pdv').value=p.codigo_pdv||'';
-      document.getElementById('mprod-nome-ifood').value=p.nome_ifood||'';
-      document.getElementById('mprod-codigo-interno').value=p.id||'';
-      document.getElementById('mprod-del').style.display='block';
+      _sv('mprod-title-input',p.nome); _sv('mprod-nome',p.nome);
+      _sv('mprod-subtitle',p.cat); _sv('mprod-cat',p.cat);
+      _sv('mprod-sku',p.sku||p.cod); _sv('mprod-desc',p.descricao||p.desc);
+      _sv('mprod-custo',p.custo); _sv('mprod-preco',p.preco);
+      _sv('mprod-status',p.status||'ativo');
+      _sv('mprod-custo-op',p.custoOp); _sv('mprod-taxa-del',p.taxaDel);
+      _sv('mprod-margem-desej',p.margemDesej);
+      _sv('mprod-tempo-prep',p.tempoPrep); _sv('mprod-tempo-forno',p.tempoForno);
+      _sv('mprod-tempo-resfr',p.tempoResfr); _sv('mprod-tempo-emb',p.tempoEmb);
+      _sv('mprod-val-dias',p.valDias); _sv('mprod-val-refrig',p.valRefrig);
+      _sv('mprod-val-cong',p.valCong); _sv('mprod-val-alerta',p.valAlerta);
+      _sv('mprod-codigo-pdv',p.codigo_pdv||p.codigoPdv);
+      _sv('mprod-nome-ifood',p.nome_ifood||p.nomeIfood);
+      _sv('mprod-codigo-interno',p.id);
+      _sv('mprod-est-min',p.estoqueMin);
       const est=getEstProd();
       const e=est[id]||{inicial:0};
-      document.getElementById('mprod-estoque').value=e.inicial||0;
-      const atual=getEstoqueAtualProd(id);
-      infoEl.style.display='block';
-      infoEl.innerHTML=`<b>${p.nome}</b> &nbsp;·&nbsp; Estoque atual: <b style="color:${atual>0?'var(--green)':'var(--red)'}">${atual} un</b>`;
+      _sv('mprod-estoque',e.inicial||0);
+      document.getElementById('mprod-del').style.display='block';
+      const fotoMini=document.getElementById('mprod-foto-mini');
+      if(fotoMini)fotoMini.innerHTML=p.foto?'<img src="'+p.foto+'" style="width:100%;height:100%;object-fit:cover">':'🍪';
+      const fotoUrl=document.getElementById('mprod-foto-url');if(fotoUrl)fotoUrl.value=p.foto||'';
       const fichas=getFichas();
       ftItems=[...(fichas[id]||[])];
-      // load usar ficha preference
       const fichaPrefs=S.get('fichaPrefs')||{};
-      ftUsarFicha=fichaPrefs[id]!==false; // default true
+      ftUsarFicha=fichaPrefs[id]!==false;
       const ftNome=document.getElementById('ft-prod-nome');
       if(ftNome)ftNome.textContent=p.nome;
-      setTimeout(calcMargem,60);
+      mprodVars=[...(p.variacoes||[])];
     }
   } else {
-    document.getElementById('mprod-title-input').value='';
-    document.getElementById('mprod-subtitle').textContent='';
-    ['mprod-cat','mprod-nome','mprod-custo','mprod-preco','mprod-codigo-pdv','mprod-nome-ifood'].forEach(i=>document.getElementById(i).value='');
-    document.getElementById('mprod-codigo-interno').value='(gerado ao salvar)';
-    document.getElementById('mprod-estoque').value='0';
-    document.getElementById('mprod-status').value='ativo';
+    _sv('mprod-title-input',''); _sv('mprod-nome',''); _sv('mprod-subtitle','');
+    ['mprod-cat','mprod-sku','mprod-desc','mprod-custo','mprod-preco',
+     'mprod-custo-op','mprod-taxa-del','mprod-margem-desej',
+     'mprod-tempo-prep','mprod-tempo-forno','mprod-tempo-resfr','mprod-tempo-emb',
+     'mprod-val-dias','mprod-val-refrig','mprod-val-cong','mprod-val-alerta',
+     'mprod-codigo-pdv','mprod-nome-ifood','mprod-est-min'
+    ].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+    _sv('mprod-codigo-interno','(gerado ao salvar)');
+    _sv('mprod-estoque','0'); _sv('mprod-status','ativo');
     document.getElementById('mprod-del').style.display='none';
-    infoEl.style.display='none';
-    margemEl.style.display='none';
-    const ftNome=document.getElementById('ft-prod-nome');
-    if(ftNome)ftNome.textContent='este produto';
+    const fotoMini=document.getElementById('mprod-foto-mini');if(fotoMini)fotoMini.innerHTML='🍪';
+    const ftNome=document.getElementById('ft-prod-nome');if(ftNome)ftNome.textContent='este produto';
+    mprodVars=[];
   }
   openM('modal-prod');
 }
@@ -9380,16 +9598,26 @@ function saveProd(){
   const nome=(_ti?.value||_tn?.value||'').trim();
   if(!nome){alert('Informe o nome do produto');return;}
   const estoqueInicial=parseFloat(document.getElementById('mprod-estoque').value)||0;
+  const _gv=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const _gn=id=>parseFloat(_gv(id))||0;
   const obj={
     id:editProdId||uid(),
-    nome,
-    cat:document.getElementById('mprod-cat').value.trim(),
-    custo:parseFloat(document.getElementById('mprod-custo').value)||0,
-    preco:parseFloat(document.getElementById('mprod-preco').value)||0,
-    status:document.getElementById('mprod-status').value,
-    codigo_pdv:(document.getElementById('mprod-codigo-pdv').value||'').trim()||null,
-    nome_ifood:(document.getElementById('mprod-nome-ifood').value||'').trim().toUpperCase()||null,
-    id_externo:(document.getElementById('mprod-codigo-interno').value||'').trim()||null,
+    nome, cat:_gv('mprod-cat'), sku:_gv('mprod-sku'),
+    descricao:_gv('mprod-desc'),
+    custo:_gn('mprod-custo'), preco:_gn('mprod-preco'),
+    custoOp:_gn('mprod-custo-op'), taxaDel:_gn('mprod-taxa-del'),
+    margemDesej:_gn('mprod-margem-desej'),
+    status:_gv('mprod-status'),
+    estoqueMin:_gn('mprod-est-min'),
+    tempoPrep:_gn('mprod-tempo-prep'), tempoForno:_gn('mprod-tempo-forno'),
+    tempoResfr:_gn('mprod-tempo-resfr'), tempoEmb:_gn('mprod-tempo-emb'),
+    valDias:_gn('mprod-val-dias'), valRefrig:_gn('mprod-val-refrig'),
+    valCong:_gn('mprod-val-cong'), valAlerta:_gn('mprod-val-alerta'),
+    codigo_pdv:_gv('mprod-codigo-pdv')||null,
+    nome_ifood:(_gv('mprod-nome-ifood')||'').toUpperCase()||null,
+    id_externo:_gv('mprod-codigo-interno')||null,
+    foto:(()=>{const el=document.getElementById('mprod-foto-url');return el?el.value:''})(),
+    variacoes:mprodGetVars(),
   };
   // apply ficha custo if toggle is on
   if(ftUsarFicha&&ftItems.length>0){
