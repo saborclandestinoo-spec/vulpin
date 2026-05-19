@@ -1870,9 +1870,9 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
       <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
         <div style="flex:1"><label class="fl" style="margin-top:0">Tipo</label>
           <select class="fi" id="ft-tipo-sel" onchange="ftPopulateSel()">
-            <option value="insumo">🧂 Insumo</option>
-            <option value="recheio">🍫 Recheio</option>
-            <option value="embalagem">📦 Embalagem</option>
+            <option value="insumo"> Insumo</option>
+            <option value="recheio"> Recheio</option>
+            <option value="embalagem"> Embalagem</option>
           </select>
         </div>
         <div style="flex:2"><label class="fl" style="margin-top:0">Item</label><select class="fi" id="ft-mp-sel"><option value="">Selecione...</option></select></div>
@@ -1889,9 +1889,9 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div style="font-size:12px;font-weight:700;color:var(--t)">⊞ Adicionar Vários Itens</div>
           <div style="display:flex;gap:6px;align-items:center">
             <select class="fi" id="ft-multi-tipo" onchange="ftMultiPopulate()" style="font-size:11px;padding:4px 8px;width:120px">
-              <option value="insumo">🧂 Insumos</option>
-              <option value="recheio">🍫 Recheios</option>
-              <option value="embalagem">📦 Embalagens</option>
+              <option value="insumo"> Insumos</option>
+              <option value="recheio"> Recheios</option>
+              <option value="embalagem"> Embalagens</option>
             </select>
             <input class="fi" id="ft-multi-busca" placeholder="Buscar..." style="width:130px;font-size:11px;padding:5px 8px" oninput="ftMultiFilter()">
             <button class="btn-o" style="font-size:10px;padding:4px 8px" onclick="ftMultiClose()">✕ Fechar</button>
@@ -1900,7 +1900,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div id="ft-multi-lista" style="max-height:220px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
         <button class="btn-p" style="width:100%;margin-top:10px;justify-content:center;font-size:12px" onclick="ftMultiAdd()">✅ Adicionar Selecionados</button>
       </div>
-      <div id="ft-lista" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
+      <div id="ft-lista" style="display:flex;flex-direction:column;gap:0;max-height:360px;overflow-y:auto;padding-right:2px"></div>
       <div id="ft-custo-calc" style="margin-top:12px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor);display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
           <div>
@@ -2020,7 +2020,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <!-- Tipo: Cookie ou Recheio -->
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <button id="mprod2-btn-cookie" onclick="mprod2SetTipo('cookie')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--fox);background:var(--fox);color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">🍪 Cookie</button>
-      <button id="mprod2-btn-recheio" onclick="mprod2SetTipo('recheio')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--bor);background:var(--bg);color:var(--t2);font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer">🍫 Recheio</button>
+      <button id="mprod2-btn-recheio" onclick="mprod2SetTipo('recheio')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--bor);background:var(--bg);color:var(--t2);font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer"> Recheio</button>
       <input type="hidden" id="mprod2-tipo" value="cookie">
     </div>
     <!-- Produto/Recheio custom dropdown -->
@@ -9362,24 +9362,38 @@ function ftRender(){
   if(!lista)return;
   if(!ftItems.length){lista.innerHTML='<div style="font-size:11px;color:var(--t3);padding:10px 0">Nenhum item adicionado ainda.</div>';
     document.getElementById('ft-custo-calc').style.display='none';return;}
-  lista.innerHTML=ftItems.map((it,i)=>{
-    const src=ftGetList(it.tipo||'insumo');
-    const m=src.find(x=>x.id===it.mpId);
-    const vg=m?getValorPorG(m):0;
-    const custo=vg*it.qtd;
-    const tipoLabel=it.tipo==='recheio'?'🍫':'🧂';
-    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--bor2);border-radius:8px;background:var(--bg)">
-      <div style="flex:2">
-        <div style="font-size:12px;font-weight:500;color:var(--t)">${tipoLabel} ${m?m.nome:'?'}</div>
-        <div style="font-size:10px;color:var(--t3)">${it.qtd} ${m?m.un:''} &nbsp;·&nbsp; Custo: R$ ${fmtN(custo)}</div>
-      </div>
-      <input type="number" value="${it.qtd}" min="0" step="0.01"
-        style="width:80px;border:1px solid var(--bor);border-radius:7px;padding:5px 8px;font-size:11px;font-family:'Poppins',sans-serif;outline:none"
-        oninput="ftItems[${i}].qtd=parseFloat(this.value)||0;ftCalcCusto()">
-      <span style="font-size:10px;color:var(--t3)">${m?m.un:''}</span>
-      <button onclick="ftItems.splice(${i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:16px;line-height:1;padding:0 3px">×</button>
-    </div>`;
-  }).join('');
+  // Group by tipo
+  const grupos=[
+    {tipo:'insumo',label:'Insumos',cor:'#6366F1'},
+    {tipo:'recheio',label:'Recheios',cor:'#EC4899'},
+    {tipo:'embalagem',label:'Embalagens',cor:'#F59E0B'},
+  ];
+  let html='';
+  grupos.forEach(g=>{
+    const items=ftItems.map((it,i)=>({...it,_i:i})).filter(it=>(it.tipo||'insumo')===g.tipo);
+    if(!items.length)return;
+    html+=`<div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:${g.cor};margin-bottom:6px;padding:4px 0;border-bottom:2px solid ${g.cor}22">${g.label}</div>`;
+    items.forEach(it=>{
+      const src=ftGetList(it.tipo||'insumo');
+      const m=src.find(x=>x.id===it.mpId);
+      const vg=m?getValorPorG(m):0;
+      const custo=vg*it.qtd;
+      html+=`<div style="display:grid;grid-template-columns:1fr 90px 36px 24px;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);margin-bottom:5px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--t)">${m?m.nome:'?'}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:1px">R$ ${fmtN(custo)} &nbsp;·&nbsp; ${it.qtd} ${m?m.un:''}</div>
+        </div>
+        <input type="number" value="${it.qtd}" min="0" step="0.01"
+          style="border:1px solid var(--bor);border-radius:7px;padding:5px 8px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;text-align:right"
+          oninput="ftItems[${it._i}].qtd=parseFloat(this.value)||0;ftCalcCusto()">
+        <div style="font-size:11px;color:var(--t3);text-align:left">${m?m.un:''}</div>
+        <button onclick="ftItems.splice(${it._i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:18px;line-height:1;padding:0" title="Remover">×</button>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  lista.innerHTML=html||'<div style="font-size:11px;color:var(--t3);padding:10px 0">Nenhum item adicionado ainda.</div>';
   ftCalcCusto();
 }
 
