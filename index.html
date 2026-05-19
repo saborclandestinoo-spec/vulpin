@@ -8723,27 +8723,237 @@ function renderEstRecheiosTable(){
 }
 
 // ── CRUD Recheio ──
+function mrecTab(tab){
+  ['info','receita','porcoes','estoque','producao','validade','historico'].forEach(t=>{
+    const p=document.getElementById('mrec-panel-'+t);
+    const tb=document.getElementById('mrec-tab-'+t);
+    if(p)p.style.display=t===tab?'':'none';
+    if(tb){tb.style.color=t===tab?'var(--fox)':'var(--t3)';tb.style.borderBottomColor=t===tab?'var(--fox)':'transparent';tb.style.fontWeight=t===tab?'700':'600';}
+  });
+  if(tab==='estoque')mrecRenderEst();
+  if(tab==='historico')mrecRenderHist();
+  if(tab==='producao')mrecRenderProdHist();
+  if(tab==='porcoes')mrecRenderPorcoes();
+}
+function mrecFotoUpload(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const url=e.target.result;
+    const mini=document.getElementById('mrec-foto-mini');
+    const hidden=document.getElementById('mrec-foto-url');
+    if(mini)mini.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+    if(hidden)hidden.value=url;
+  };
+  reader.readAsDataURL(file);
+}
+function mrecCalcCusto(){
+  const mp=getMP();
+  let custoTotal=0;
+  recFtItems.forEach(it=>{
+    const m=mp.find(x=>x.id===it.mpId);
+    if(!m)return;
+    const cg=getValorPorG?getValorPorG(m):m.custoG||0;
+    custoTotal+=cg*(it.qtd||0);
+  });
+  const rendEl=document.getElementById('mrec-rendimento');
+  const perdaEl=document.getElementById('mrec-perda');
+  const rend=parseFloat(rendEl&&rendEl.value)||0;
+  const perda=parseFloat(perdaEl&&perdaEl.value)||0;
+  const rendLiq=rend*(1-(perda/100));
+  const custoPorG=rendLiq>0?custoTotal/rendLiq:0;
+  const el=document.getElementById('mrec2-custo-calc');
+  if(el&&custoTotal>0){
+    el.style.display='block';
+    el.innerHTML=`💰 Custo total: <b>R$ ${fmtN(custoTotal)}</b> &nbsp;|&nbsp; Rendimento líquido: <b>${fmtN(rendLiq)}g</b> &nbsp;|&nbsp; Custo/g: <b>R$ ${custoPorG.toFixed(4)}</b>`;
+  }
+}
+function mrecAddPorcao(){
+  const lista=document.getElementById('mrec-porcoes-lista');
+  if(!lista)return;
+  const id='p'+Date.now();
+  const div=document.createElement('div');
+  div.id=id;
+  div.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px;background:var(--bg2);padding:8px 12px;border-radius:8px';
+  div.innerHTML=`<input class="fi" placeholder="Nome (ex: Pequena)" style="flex:2">
+    <input class="fi" type="number" step="0.1" placeholder="Qtd (g)" style="flex:1" oninput="mrecCalcPorcao(this)">
+    <span style="font-size:12px;color:var(--fox);font-weight:700;min-width:80px" class="prec-custo"></span>
+    <button onclick="document.getElementById('${id}').remove()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>`;
+  lista.appendChild(div);
+}
+function mrecCalcPorcao(input){
+  const div=input.closest('div');
+  const el=div.querySelector('.prec-custo');
+  const qtd=parseFloat(input.value)||0;
+  const rendEl=document.getElementById('mrec-rendimento');
+  const rend=parseFloat(rendEl&&rendEl.value)||1;
+  const mp=getMP();
+  let custoTotal=0;
+  recFtItems.forEach(it=>{
+    const m=mp.find(x=>x.id===it.mpId);
+    if(!m)return;
+    custoTotal+=(getValorPorG?getValorPorG(m):m.custoG||0)*(it.qtd||0);
+  });
+  const custoPorG=rend>0?custoTotal/rend:0;
+  if(el)el.textContent=`R$ ${(custoPorG*qtd).toFixed(3)}/porção`;
+}
+function mrecRenderPorcoes(){
+  const lista=document.getElementById('mrec-porcoes-lista');
+  if(!lista)return;
+  lista.innerHTML='';
+  (mrecPorcoes||[]).forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.id='mrecp'+i;
+    div.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px;background:var(--bg2);padding:8px 12px;border-radius:8px';
+    div.innerHTML=`<input class="fi" placeholder="Nome" style="flex:2" value="${p.nome||''}">
+      <input class="fi" type="number" step="0.1" placeholder="Qtd (g)" style="flex:1" value="${p.qtd||''}">
+      <span style="font-size:12px;color:var(--fox);font-weight:700;min-width:80px">R$ ${fmtN(p.custo||0)}</span>
+      <button onclick="document.getElementById('mrecp${i}').remove()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px">×</button>`;
+    lista.appendChild(div);
+  });
+}
+function mrecGetPorcoes(){
+  const lista=document.getElementById('mrec-porcoes-lista');
+  if(!lista)return[];
+  return [...lista.querySelectorAll('div[id]')].map(div=>{
+    const inputs=div.querySelectorAll('input');
+    return {nome:inputs[0]?inputs[0].value:'',qtd:parseFloat(inputs[1]?inputs[1].value:0)||0};
+  }).filter(p=>p.nome);
+}
+function mrecRenderEst(){
+  const id=editRecheioId;
+  const at=id&&getEstoqueAtualRec?getEstoqueAtualRec(id):0;
+  const r=id?getRecheios().find(x=>x.id===id):null;
+  const info=document.getElementById('mrec-est-info');
+  if(info)info.textContent=`Estoque atual: ${fmtN(at)} ${r?r.un:'g'}`;
+  const atEl=document.getElementById('mrec-est-atual');
+  if(atEl)atEl.value=fmtN(at);
+  const dispEl=document.getElementById('mrec-est-disp');
+  if(dispEl)dispEl.value=fmtN(at);
+}
+function mrecRenderProdHist(){
+  const el=document.getElementById('mrec-prod-hist');
+  if(!el||!editRecheioId)return;
+  const est=getEstRecheios?getEstRecheios():{};
+  const e=est[editRecheioId]||{entradas:[],saidas:[]};
+  const prods=e.entradas||[];
+  if(!prods.length){el.innerHTML='<div style="color:var(--t3);font-size:12px">Nenhuma produção registrada.</div>';return;}
+  el.innerHTML=[...prods].reverse().map(p=>`
+    <div style="background:var(--bg2);border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:12px">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-weight:600;color:var(--green)">+${fmtN(p.qtd||0)}g</span>
+        <span style="color:var(--t3)">${p.data||''}</span>
+      </div>
+      ${p.lote?`<div style="color:var(--t2)">Lote: ${p.lote}</div>`:''}
+      ${p.resp?`<div style="color:var(--t2)">Responsável: ${p.resp}</div>`:''}
+    </div>`).join('');
+}
+function mrecRenderHist(){
+  const el=document.getElementById('mrec-historico-lista');
+  if(!el||!editRecheioId)return;
+  const est=getEstRecheios?getEstRecheios():{};
+  const e=est[editRecheioId]||{entradas:[],saidas:[]};
+  const all=[
+    ...(e.entradas||[]).map(x=>({...x,tipo:'entrada'})),
+    ...(e.saidas||[]).map(x=>({...x,tipo:'saida'}))
+  ].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  if(!all.length){el.innerHTML='<div style="color:var(--t3);font-size:12px">Sem movimentações.</div>';return;}
+  el.innerHTML=all.map(m=>`
+    <div style="background:var(--bg2);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <span style="font-size:11px;font-weight:700;color:${m.tipo==='entrada'?'var(--green)':'var(--red)'}">${m.tipo==='entrada'?'⬆️ Entrada':'⬇️ Saída'}</span>
+        <span style="font-size:12px;color:var(--t);margin-left:8px">${fmtN(m.qtd||0)}g</span>
+        ${m.obs?`<span style="font-size:11px;color:var(--t3);margin-left:8px">${m.obs}</span>`:''}
+      </div>
+      <span style="font-size:11px;color:var(--t3)">${m.data||''}</span>
+    </div>`).join('');
+}
+function mrecAlterar(){
+  if(!editRecheioId)return;
+  const qtd=parseFloat(prompt('Quantidade (positivo=entrada, negativo=saída):')||'0');
+  if(!qtd)return;
+  const obs=prompt('Motivo/Observação:')||'Ajuste manual';
+  const est=getEstRecheios();
+  if(!est[editRecheioId])est[editRecheioId]={entradas:[],saidas:[]};
+  const hoje=new Date().toLocaleDateString('sv-SE');
+  if(qtd>0) est[editRecheioId].entradas.push({qtd,data:hoje,obs});
+  else est[editRecheioId].saidas.push({qtd:Math.abs(qtd),data:hoje,obs});
+  S.set('est_recheios',est);
+  mrecRenderEst();
+}
+function mrecRegistrarProducao(){
+  if(!editRecheioId){alert('Salve o recheio primeiro.');return;}
+  const qtd=parseFloat(document.getElementById('mrec-prod-qtd').value)||0;
+  if(!qtd){alert('Informe a quantidade produzida.');return;}
+  const lote=document.getElementById('mrec-prod-lote').value;
+  const resp=document.getElementById('mrec-prod-resp').value;
+  const data=document.getElementById('mrec-prod-data').value||new Date().toLocaleDateString('sv-SE');
+  const venc=document.getElementById('mrec-prod-venc').value;
+  const obs=document.getElementById('mrec-prod-obs').value;
+  const est=getEstRecheios();
+  if(!est[editRecheioId])est[editRecheioId]={entradas:[],saidas:[]};
+  est[editRecheioId].entradas.push({qtd,data,lote,resp,venc,obs});
+  S.set('est_recheios',est);
+  // Clear form
+  ['mrec-prod-qtd','mrec-prod-lote','mrec-prod-obs'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  mrecRenderEst();
+  mrecRenderProdHist();
+  alert(`✅ ${fmtN(qtd)}g de recheio registrado! Lote: ${lote||'—'}`);
+}
+let mrecPorcoes=[];
 function openRecheio(id){
   editRecheioId=id||null;
   recFtItems=[];
+  mrecPorcoes=[];
+  mrecTab('info');
   const r=id?getRecheios().find(x=>x.id===id):null;
-  document.getElementById('mrec2-nome').value=r?r.nome:'';
-  document.getElementById('mrec2-un').value=r?(r.un||'un'):'un';
-  document.getElementById('mrec2-min').value=r?r.min:'';
-  document.getElementById('mrec2-del').style.display=id?'block':'none';
-  if(r)recFtItems=[...(r.fichaMP||[])];
+  const _sv=(eid,v)=>{const el=document.getElementById(eid);if(el)el.value=v||'';};
+  _sv('mrec2-nome',r?r.nome:'');
+  _sv('mrec-cat',r?r.cat:'');
+  _sv('mrec-sku',r?r.sku:'');
+  _sv('mrec-desc',r?r.desc:'');
+  _sv('mrec2-un',r?r.un||'g':'g');
+  _sv('mrec-conserv',r?r.conserv||'refrigerado':'refrigerado');
+  _sv('mrec-temp',r?r.temp:'');
+  _sv('mrec-tempo-fora',r?r.tempoFora:'');
+  _sv('mrec-rendimento',r?r.rendimento:'');
+  _sv('mrec-rend-un',r?r.rendUn||'g':'g');
+  _sv('mrec-perda',r?r.perda:'');
+  _sv('mrec2-min',r?r.min:'');
+  _sv('mrec-val-dias',r?r.valDias:'');
+  _sv('mrec-val-alerta',r?r.valAlerta:'');
+  _sv('mrec-val-refrig',r?r.valRefrig:'');
+  _sv('mrec-val-cong',r?r.valCong:'');
+  const stEl=document.getElementById('mrec-status');if(stEl)stEl.value=r&&r.inativo?'inativo':'ativo';
+  const subEl=document.getElementById('mrec-subtitle');if(subEl)subEl.textContent=r?r.cat:'';
+  const fotoMini=document.getElementById('mrec-foto-mini');
+  if(fotoMini)fotoMini.innerHTML=r&&r.foto?`<img src="${r.foto}" style="width:100%;height:100%;object-fit:cover">`:'🍫';
+  const fotoUrl=document.getElementById('mrec-foto-url');if(fotoUrl)fotoUrl.value=r&&r.foto?r.foto:'';
+  if(r){recFtItems=[...(r.fichaMP||[])];mrecPorcoes=[...(r.porcoes||[])];}
   recFtRender();
+  document.getElementById('mrec2-del').style.display=id?'block':'none';
+  // Set today as default production date
+  const pdEl=document.getElementById('mrec-prod-data');if(pdEl&&!pdEl.value)pdEl.value=new Date().toLocaleDateString('sv-SE');
   openM('modal-recheio');
 }
 function saveRecheio(){
-  const nome=document.getElementById('mrec2-nome').value.trim();
+  const nome=(document.getElementById('mrec2-nome').value||'').trim();
   if(!nome){alert('Informe o nome');return;}
+  const _gv=id=>{const el=document.getElementById(id);return el?el.value.trim():'';}
+  const _gn=id=>parseFloat(_gv(id))||0;
   const obj={
     id:editRecheioId||uid(),
-    nome,
-    un:document.getElementById('mrec2-un').value||'un',
-    min:parseFloat(document.getElementById('mrec2-min').value)||0,
+    nome, cat:_gv('mrec-cat'), sku:_gv('mrec-sku'), desc:_gv('mrec-desc'),
+    un:_gv('mrec2-un')||'g', conserv:_gv('mrec-conserv'),
+    temp:_gv('mrec-temp'), tempoFora:_gv('mrec-tempo-fora'),
+    rendimento:_gn('mrec-rendimento'), rendUn:_gv('mrec-rend-un'),
+    perda:_gn('mrec-perda'), min:_gn('mrec2-min'),
+    valDias:_gn('mrec-val-dias'), valAlerta:_gn('mrec-val-alerta'),
+    valRefrig:_gn('mrec-val-refrig'), valCong:_gn('mrec-val-cong'),
+    inativo:_gv('mrec-status')==='inativo',
+    foto:(()=>{const el=document.getElementById('mrec-foto-url');return el?el.value:''})(),
     fichaMP:[...recFtItems],
+    porcoes:mrecGetPorcoes(),
   };
   let data=getRecheios();
   if(editRecheioId)data=data.map(x=>x.id===editRecheioId?obj:x);
@@ -10884,25 +11094,154 @@ async function syncMes(){
 
 <!-- Modal: Cadastro de Recheio -->
 <div class="overlay" id="modal-recheio" onclick="if(event.target===this)closeM('modal-recheio')">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-t"><span>Recheio</span><button class="modal-close" onclick="closeM('modal-recheio')">×</button></div>
-    <div class="fi-row" style="margin-bottom:12px">
-      <div><label class="fl">Nome do Recheio</label><input class="fi" id="mrec2-nome" placeholder="Ex: Recheio Kinder"></div>
-      <div><label class="fl">Unidade</label>
-        <select class="fi" id="mrec2-un"><option value="un">un (porções)</option><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option></select>
+  <div class="modal" style="max-width:700px;height:88vh;display:flex;flex-direction:column">
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <div id="mrec-foto-mini" style="width:44px;height:44px;border-radius:10px;background:var(--bg2);border:1px solid var(--bor);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;overflow:hidden" onclick="document.getElementById('mrec-foto-input').click()">🍫</div>
+        <div style="flex:1;min-width:0">
+          <input id="mrec2-nome" style="font-size:17px;font-weight:700;color:var(--t);border:none;outline:none;background:transparent;width:100%;font-family:'Poppins',sans-serif" placeholder="Nome do recheio">
+          <div id="mrec-subtitle" style="font-size:11px;color:var(--t3);margin-top:1px"></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <select id="mrec-status" class="fi" style="width:100px;font-size:11px;padding:4px 8px">
+          <option value="ativo">✅ Ativo</option>
+          <option value="inativo">⛔ Inativo</option>
+        </select>
+        <button class="modal-close" onclick="closeM('modal-recheio')">×</button>
       </div>
     </div>
-    <div style="margin-bottom:14px"><label class="fl">Estoque Mínimo</label><input class="fi" id="mrec2-min" type="number" min="0" placeholder="0"></div>
-    <!-- Ficha técnica de insumos -->
-    <div style="font-size:11px;font-weight:600;color:var(--t);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">📋 Insumos por unidade produzida</div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
-      <div style="flex:2"><select class="fi" id="mrec2-mp-sel"><option value="">Selecione o insumo...</option></select></div>
-      <div style="flex:1"><input class="fi" id="mrec2-mp-qtd" type="number" step="0.01" min="0" placeholder="Qtd"></div>
-      <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="recFtAdd()">+ Add</button>
+    <input type="hidden" id="mrec-foto-url">
+    <input type="file" id="mrec-foto-input" accept="image/*" style="display:none" onchange="mrecFotoUpload(this)">
+
+    <!-- TABS -->
+    <div style="display:flex;border-bottom:1px solid var(--bor);margin:12px 0 0;flex-shrink:0">
+      <div class="mrec-tab on" id="mrec-tab-info" onclick="mrecTab('info')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📋 Básico</div>
+      <div class="mrec-tab" id="mrec-tab-receita" onclick="mrecTab('receita')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">🧪 Receita</div>
+      <div class="mrec-tab" id="mrec-tab-porcoes" onclick="mrecTab('porcoes')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">🥄 Porções</div>
+      <div class="mrec-tab" id="mrec-tab-estoque" onclick="mrecTab('estoque')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📦 Estoque</div>
+      <div class="mrec-tab" id="mrec-tab-producao" onclick="mrecTab('producao')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">🏭 Produção</div>
+      <div class="mrec-tab" id="mrec-tab-validade" onclick="mrecTab('validade')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📅 Validade</div>
+      <div class="mrec-tab" id="mrec-tab-historico" onclick="mrecTab('historico')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:all .15s;flex:1;text-align:center">📊 Histórico</div>
     </div>
-    <div id="mrec2-ft-lista" style="max-height:200px;overflow-y:auto"></div>
-    <div id="mrec2-custo-calc" style="display:none;font-size:11px;color:var(--fox);font-weight:600;padding:6px 10px;background:var(--fox-l);border-radius:7px;margin-top:8px"></div>
-    <div class="modal-actions">
+
+    <div style="overflow-y:auto;flex:1;padding-top:14px">
+
+    <!-- BÁSICO -->
+    <div id="mrec-panel-info">
+      <div class="fi-row">
+        <div><label class="fl">Categoria</label>
+          <input class="fi" id="mrec-cat" list="mrec-cats-list" placeholder="Ex: Brigadeiro, Ganache">
+          <datalist id="mrec-cats-list"><option>Brigadeiro</option><option>Ganache</option><option>Cream Cheese</option><option>Geleia</option><option>Pistache</option><option>Doce de Leite</option><option>Creme</option></datalist>
+        </div>
+        <div><label class="fl">Código / SKU</label><input class="fi" id="mrec-sku" placeholder="Ex: REC-001"></div>
+      </div>
+      <div><label class="fl">Descrição</label><textarea class="fi" id="mrec-desc" rows="2" style="resize:vertical" placeholder="Descrição, características, sabor..."></textarea></div>
+      <div class="fi-row">
+        <div><label class="fl">Unidade de Estoque</label>
+          <select class="fi" id="mrec2-un"><option value="g">g (gramas)</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">unidade</option></select>
+        </div>
+        <div><label class="fl">Conservação</label>
+          <select class="fi" id="mrec-conserv"><option value="refrigerado">❄️ Refrigerado</option><option value="congelado">🧊 Congelado</option><option value="temperatura_amb">🌡️ Temperatura ambiente</option></select>
+        </div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Temperatura Ideal</label><input class="fi" id="mrec-temp" placeholder="Ex: 2-8°C"></div>
+        <div><label class="fl">Tempo máx. fora refrigeração</label><input class="fi" id="mrec-tempo-fora" placeholder="Ex: 2 horas"></div>
+      </div>
+    </div>
+
+    <!-- RECEITA TÉCNICA -->
+    <div id="mrec-panel-receita" style="display:none">
+      <div style="background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">⚗️ Rendimento</div>
+        <div class="fi-row">
+          <div><label class="fl">Rendimento esperado</label><input class="fi" id="mrec-rendimento" type="number" step="0.1" placeholder="Ex: 1200" oninput="mrecCalcCusto()"></div>
+          <div><label class="fl">Unidade rendimento</label>
+            <select class="fi" id="mrec-rend-un"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">unidades</option></select>
+          </div>
+        </div>
+        <div><label class="fl">Perda estimada %</label><input class="fi" id="mrec-perda" type="number" step="0.1" min="0" max="100" placeholder="Ex: 5" oninput="mrecCalcCusto()"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">🧂 Ingredientes</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end">
+        <div style="flex:2"><select class="fi" id="mrec2-mp-sel"><option value="">Selecione o insumo...</option></select></div>
+        <div style="flex:1"><input class="fi" id="mrec2-mp-qtd" type="number" step="0.01" min="0" placeholder="Qtd"></div>
+        <div style="width:70px"><select class="fi" id="mrec2-mp-un"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">un</option></select></div>
+        <button class="btn-p" style="flex-shrink:0;padding:8px 12px;font-size:11px" onclick="recFtAdd()">+ Add</button>
+      </div>
+      <div id="mrec2-ft-lista" style="max-height:200px;overflow-y:auto;margin-bottom:10px"></div>
+      <div id="mrec2-custo-calc" style="display:none;font-size:12px;padding:12px 14px;background:var(--fox-l);border:1px solid var(--fox);border-radius:10px;line-height:1.8"></div>
+    </div>
+
+    <!-- PORÇÕES -->
+    <div id="mrec-panel-porcoes" style="display:none">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:14px;background:var(--bg2);padding:10px 14px;border-radius:8px">
+        💡 Defina porções para usar o mesmo recheio em diferentes quantidades. Ex: Pequena 15g, Média 30g, Grande 50g.
+      </div>
+      <div id="mrec-porcoes-lista"></div>
+      <button class="btn-o" style="width:100%;margin-top:8px;justify-content:center" onclick="mrecAddPorcao()">+ Adicionar Porção</button>
+    </div>
+
+    <!-- ESTOQUE -->
+    <div id="mrec-panel-estoque" style="display:none">
+      <div id="mrec-est-info" style="font-size:12px;font-weight:600;color:var(--t);margin-bottom:16px;padding:12px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--bor2)"></div>
+      <div class="fi-row">
+        <div><label class="fl">Estoque Mínimo</label><input class="fi" id="mrec2-min" type="number" min="0" placeholder="Ex: 500"></div>
+        <div><label class="fl">Estoque Atual</label><input class="fi" id="mrec-est-atual" type="number" readonly style="background:var(--bg3);cursor:not-allowed;color:var(--t2)"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Estoque Reservado</label><input class="fi" id="mrec-est-reservado" type="number" readonly style="background:var(--bg3);cursor:not-allowed;color:var(--t2)"></div>
+        <div><label class="fl">Estoque Disponível</label><input class="fi" id="mrec-est-disp" type="number" readonly style="background:var(--bg3);cursor:not-allowed;color:var(--t2)"></div>
+      </div>
+      <button class="btn-o" style="width:100%;margin-top:8px;justify-content:center" onclick="mrecAlterar()">Alterar Estoque</button>
+    </div>
+
+    <!-- PRODUÇÃO -->
+    <div id="mrec-panel-producao" style="display:none">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:12px">Registre uma nova produção deste recheio.</div>
+      <div class="fi-row">
+        <div><label class="fl">Quantidade Produzida</label><input class="fi" id="mrec-prod-qtd" type="number" step="0.1" placeholder="Ex: 1200" oninput="mrecCalcProd()"></div>
+        <div><label class="fl">Unidade</label>
+          <select class="fi" id="mrec-prod-un"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="un">un</option></select>
+        </div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Número do Lote</label><input class="fi" id="mrec-prod-lote" placeholder="Ex: BRIG-180526-01"></div>
+        <div><label class="fl">Responsável</label><input class="fi" id="mrec-prod-resp" placeholder="Nome do responsável"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Data de Produção</label><input class="fi" id="mrec-prod-data" type="date"></div>
+        <div><label class="fl">Validade</label><input class="fi" id="mrec-prod-venc" type="date"></div>
+      </div>
+      <div><label class="fl">Observações</label><textarea class="fi" id="mrec-prod-obs" rows="2" style="resize:vertical" placeholder="Notas de produção..."></textarea></div>
+      <div id="mrec-prod-custo" style="display:none;font-size:12px;padding:10px 14px;background:var(--fox-l);border-radius:8px;margin-top:8px"></div>
+      <button class="btn-p" style="width:100%;margin-top:10px;justify-content:center" onclick="mrecRegistrarProducao()">✅ Registrar Produção</button>
+      <div style="margin-top:16px;font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">Últimas Produções</div>
+      <div id="mrec-prod-hist" style="max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- VALIDADE -->
+    <div id="mrec-panel-validade" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Validade após produção (dias)</label><input class="fi" id="mrec-val-dias" type="number" placeholder="Ex: 7"></div>
+        <div><label class="fl">Alerta de vencimento (dias antes)</label><input class="fi" id="mrec-val-alerta" type="number" placeholder="Ex: 2"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Validade Refrigerado (dias)</label><input class="fi" id="mrec-val-refrig" type="number" placeholder="Ex: 14"></div>
+        <div><label class="fl">Validade Congelado (dias)</label><input class="fi" id="mrec-val-cong" type="number" placeholder="Ex: 90"></div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="mrec-panel-historico" style="display:none">
+      <div id="mrec-historico-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    </div><!-- end scroll -->
+
+    <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
       <button class="btn-danger modal-del" id="mrec2-del" onclick="deleteRecheio()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-recheio')">Cancelar</button>
       <button class="btn-p" onclick="saveRecheio()">Salvar</button>
