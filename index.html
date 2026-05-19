@@ -9379,15 +9379,13 @@ function ftRender(){
       const m=src.find(x=>x.id===it.mpId);
       const vg=m?getValorPorG(m):0;
       const custo=vg*it.qtd;
-      html+=`<div style="display:grid;grid-template-columns:1fr 90px 36px 24px;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);margin-bottom:5px">
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--t)">${m?m.nome:'?'}</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:1px">R$ ${fmtN(custo)} &nbsp;·&nbsp; ${it.qtd} ${m?m.un:''}</div>
-        </div>
+      html+=`<div style="display:grid;grid-template-columns:1fr auto 70px 30px 24px;align-items:center;gap:10px;padding:7px 12px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);margin-bottom:5px">
+        <div style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m?m.nome:'?'}</div>
+        <div style="font-size:11px;color:var(--fox);font-weight:600;white-space:nowrap">R$ ${fmtN(custo)}</div>
         <input type="number" value="${it.qtd}" min="0" step="0.01"
-          style="border:1px solid var(--bor);border-radius:7px;padding:5px 8px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;text-align:right"
+          style="border:1px solid var(--bor);border-radius:7px;padding:4px 8px;font-size:12px;font-family:'Poppins',sans-serif;outline:none;text-align:right;width:100%"
           oninput="ftItems[${it._i}].qtd=parseFloat(this.value)||0;ftCalcCusto()">
-        <div style="font-size:11px;color:var(--t3);text-align:left">${m?m.un:''}</div>
+        <div style="font-size:11px;color:var(--t3)">${m?m.un:''}</div>
         <button onclick="ftItems.splice(${it._i},1);ftRender()" style="background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:18px;line-height:1;padding:0" title="Remover">×</button>
       </div>`;
     });
