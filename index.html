@@ -1138,7 +1138,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
       <div class="scroll">
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-lanc">
-            <thead><tr><th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th><th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Vencimento</th><th>Situação</th><th>Valor</th><th></th></tr></thead>
+            <thead><tr><th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th><th>Vencimento</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th style="display:none"></th><th>Situação</th><th>Valor</th><th></th></tr></thead>
             <tbody></tbody>
           </table></div>
         </div>
@@ -6823,7 +6823,7 @@ function renderLanc(){
   // Restore normal header if coming from producao tab
   document.querySelector('#tbl-lanc thead tr').innerHTML=`
     <th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th>
-    <th>Data</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th>Vencimento</th><th>Situação</th><th>Valor</th>`;
+    <th>Vencimento</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th style="display:none"></th><th>Situação</th><th>Valor</th>`;
 
   let data=getLanc().filter(l=>!l.pedidoId);
   if(lancTab_current!=='todos')data=data.filter(l=>l.tipo===lancTab_current);
@@ -6884,11 +6884,14 @@ function renderLanc(){
     const sinal=isRec?'+':isDesp?'−':'⇄';
     return`<tr style="cursor:pointer" onclick="openLancEdit('${l.id}')">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="lanc-chk" value="${l.id}"></td>
-      <td style="color:var(--t3);font-size:11px">${fmtDate(l.data||l.venc)}</td>
+      <td style="font-size:11px">
+        <div style="font-weight:600;color:var(--t)">${fmtDate(l.venc||l.data)}</div>
+        ${l.data&&l.data!==(l.venc||l.data)?`<div style="font-size:10px;color:var(--t3);margin-top:1px">${fmtDate(l.data)}</div>`:''}
+      </td>
       <td style="font-weight:500;color:var(--t)">${l.desc}${l.parcela?` <span class="pill pill-parc" style="font-size:9px;padding:1px 6px">${l.recorrente?'🔄':'📦'} ${l.parcela}</span>`:''}</td>
       <td style="color:var(--t3);font-size:11px">${cat?cat.cod+' — '+cat.nome:'—'}</td>
       <td style="color:var(--t3)">${bk?bk.nome:'—'}</td>
-      <td style="color:var(--t3);font-size:11px">${fmtDate(l.venc)}</td>
+      <td style="display:none"></td>
       <td>${situacao}</td>
       <td style="font-weight:700;color:${cor}">${sinal} R$ ${fmtN(l.valor)}</td>
     </tr>`;
@@ -7188,7 +7191,7 @@ function openDesp(id){
       document.getElementById('mdesp-venc').value=l.venc||'';
       document.getElementById('mdesp-comp').value=l.comp||'';
       document.getElementById('mdesp-forn').value=l.forn||'';
-      document.getElementById('mdesp-data-pag').value=l.dataPag||'';
+      document.getElementById('mdesp-data-pag').value=l.dataPag||todayISO();
       document.getElementById('mdesp-obs').value=l.obs||'';
       // set custom drops
       if(l.bancoId){const bk=getBancos().find(b=>b.id===l.bancoId);if(bk)selectCustomDrop('mdesp-banco-drop',l.bancoId,bk.nome,null);}
@@ -7693,7 +7696,7 @@ function openRec(id){
       document.getElementById('mrec-venc').value=l.venc||'';
       document.getElementById('mrec-comp').value=l.comp||'';
       document.getElementById('mrec-cliente').value=l.cliente||'';
-      document.getElementById('mrec-data-rec').value=l.dataPag||'';
+      document.getElementById('mrec-data-rec').value=l.dataPag||todayISO();
       document.getElementById('mrec-obs').value=l.obs||'';
       if(l.bancoId){const bk=getBancos().find(b=>b.id===l.bancoId);if(bk)selectCustomDrop('mrec-banco-drop',l.bancoId,bk.nome,null);}
       else resetCustomDrop('mrec-banco-display','mrec-banco','—');
