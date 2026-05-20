@@ -6784,21 +6784,6 @@ function renderLanc(){
   const r=lancGetRange();
   const bankFilter=(document.getElementById('lanc-bank-filter')||{}).value||'';
   const today=todayISO();
-  // Show search total
-  const searchEl2=document.getElementById('lanc-search');
-  const searchTotalEl2=document.getElementById('lanc-search-total');
-  const searchVal2=(searchEl2&&searchEl2.value||'').trim();
-  if(searchTotalEl2){
-    if(searchVal2){
-      const totPos=data.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
-      const totNeg=data.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
-      const tot=totPos-totNeg;
-      searchTotalEl2.style.display='flex';
-      searchTotalEl2.innerHTML=data.length+' itens &nbsp;·&nbsp; <span style="color:var(--green);margin:0 3px">+R$ '+fmtN(totPos)+'</span> / <span style="color:var(--red);margin:0 3px">-R$ '+fmtN(totNeg)+'</span> &nbsp;=&nbsp; <span style="color:'+(tot>=0?'var(--green)':'var(--red)')+';font-weight:800">'+(tot>=0?'+':'')+' R$ '+fmtN(Math.abs(tot))+'</span>';
-    } else {
-      searchTotalEl2.style.display='none';
-    }
-  }
   const tbody=document.querySelector('#tbl-lanc tbody');
   if(!tbody)return;
 
@@ -6850,6 +6835,22 @@ function renderLanc(){
   if(lancPillFilter==='avencer')data=data.filter(l=>!l.pago&&l.venc>today);
   if(lancPillFilter==='pagos')data=data.filter(l=>l.pago);
   data=[...data].sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
+  // Show search total after all filters
+  const _sTotEl=document.getElementById('lanc-search-total');
+  const _sVal=(document.getElementById('lanc-search')||{}).value||'';
+  if(_sTotEl){
+    if(_sVal.trim()){
+      const _tPos=data.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+      const _tNeg=data.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+      const _tTot=_tPos-_tNeg;
+      _sTotEl.style.display='flex';
+      _sTotEl.style.alignItems='center';
+      _sTotEl.style.gap='4px';
+      _sTotEl.innerHTML='<b>'+data.length+' itens</b> &nbsp;·&nbsp; <span style="color:var(--green)">+R$ '+fmtN(_tPos)+'</span> / <span style="color:var(--red)">-R$ '+fmtN(_tNeg)+'</span> = <span style="color:'+ (_tTot>=0?'var(--green)':' var(--red)')+';font-weight:800">'+(_tTot>=0?'+':'')+'R$ '+fmtN(Math.abs(_tTot))+'</span>';
+    } else {
+      _sTotEl.style.display='none';
+    }
+  }
 
   // Add produções to "Todos"
   let prodRows=[];
