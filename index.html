@@ -12048,96 +12048,127 @@ function renderEquipamentos(){
   const eqs=getEquipamentos();
   const hoje=todayISO();
 
-  const alertas=eqs.filter(e=>{
-    const garOk=!e.garFim||(new Date(e.garFim)-new Date(hoje))/(86400000)>0;
-    const segOk=!e.segFim||(new Date(e.segFim)-new Date(hoje))/(86400000)>0;
-    const proxManut=e.manutencoes&&e.manutencoes.length&&e.manutencoes[e.manutencoes.length-1].prox;
-    const manutOk=!proxManut||proxManut>=hoje;
-    return !garOk||!segOk||!manutOk;
-  }).length;
-
   const totalValor=eqs.reduce((s,e)=>s+(e.valorAq||0),0);
   const totalDeprec=eqs.reduce((s,e)=>{
     if(!e.valorAq||!e.vidaUtil||!e.dataAq)return s;
-    const meses=Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30));
+    const meses=Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30.44));
     const dm=(e.valorAq-(e.valResid||0))/e.vidaUtil;
     return s+Math.min(e.valorAq-(e.valResid||0),dm*meses);
   },0);
   const valorAtual=totalValor-totalDeprec;
+  const totalManutCusto=eqs.reduce((s,e)=>s+(e.manutencoes||[]).reduce((ss,m)=>ss+(m.custo||0),0),0);
+
+  const colunas=[
+    {key:'ativo',label:'Ativo',cor:'#22C55E',bg:'#F0FDF4',bor:'#BBF7D0',ico:'✅'},
+    {key:'manutencao',label:'Em Manutenção',cor:'#F59E0B',bg:'#FFFBEB',bor:'#FDE68A',ico:'🔧'},
+    {key:'inativo',label:'Inativo',cor:'#94A3B8',bg:'#F8FAFC',bor:'#E2E8F0',ico:'⏸️'},
+    {key:'vendido',label:'Vendido',cor:'#6366F1',bg:'#EEF2FF',bor:'#C7D2FE',ico:'💰'},
+  ];
+
+  function eqCard(e){
+    const dm=e.valorAq&&e.vidaUtil?(e.valorAq-(e.valResid||0))/e.vidaUtil:0;
+    const meses=e.dataAq?Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30.44)):0;
+    const deprecAcum=Math.min((e.valorAq||0)-(e.valResid||0),dm*meses);
+    const valAtualEq=Math.max(e.valResid||0,(e.valorAq||0)-deprecAcum);
+    const pctVida=e.vidaUtil?Math.min(100,meses/e.vidaUtil*100):0;
+    const garAlert=e.garFim&&(new Date(e.garFim)-new Date(hoje))/(86400000)<30;
+    const segAlert=e.segFim&&(new Date(e.segFim)-new Date(hoje))/(86400000)<30;
+    const catIcons={'Forno':'🔥','Batedeira':'🌀','Freezer':'🧊','Balança':'⚖️','Móvel':'🪑','Tecnologia':'📱','Câmara Fria':'❄️'};
+    const ico=catIcons[e.cat]||'⚙️';
+    const pctCor=pctVida<50?'#22C55E':pctVida<75?'#F59E0B':'#EF4444';
+    const custManut=(e.manutencoes||[]).reduce((s,m)=>s+(m.custo||0),0);
+    return `<div onclick="openEq('${e.id}')" style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .18s;margin-bottom:10px"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.09)';this.style.borderColor='#94A3B8'"
+      onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='#E2E8F0'">
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:10px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${ico}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:#1E293B;line-height:1.3;margin-bottom:2px">${e.nome}</div>
+          <div style="font-size:10px;color:#94A3B8">${[e.cat,e.cc].filter(Boolean).join(' · ')}</div>
+        </div>
+        ${garAlert||segAlert?`<span style="font-size:14px" title="${garAlert?'Garantia vencendo':''}${segAlert?'Seguro vencendo':''}">⚠️</span>`:''}
+      </div>
+      <!-- Valores -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+        <div style="background:#F8FAFC;border-radius:8px;padding:7px 10px">
+          <div style="font-size:9px;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Aquisição</div>
+          <div style="font-size:13px;font-weight:700;color:#1E293B;margin-top:1px">R$ ${fmtN(e.valorAq||0)}</div>
+        </div>
+        <div style="background:#F0FDF4;border-radius:8px;padding:7px 10px">
+          <div style="font-size:9px;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Valor Atual</div>
+          <div style="font-size:13px;font-weight:700;color:#16A34A;margin-top:1px">R$ ${fmtN(valAtualEq)}</div>
+        </div>
+      </div>
+      <!-- Depreciação bar -->
+      ${e.vidaUtil?`<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:9px;color:#94A3B8;font-weight:600">VIDA ÚTIL</span>
+          <span style="font-size:9px;color:${pctCor};font-weight:700">${pctVida.toFixed(0)}%</span>
+        </div>
+        <div style="background:#F1F5F9;border-radius:4px;height:5px">
+          <div style="height:100%;width:${pctVida.toFixed(0)}%;background:${pctCor};border-radius:4px;transition:width .5s"></div>
+        </div>
+        <div style="font-size:9px;color:#94A3B8;margin-top:2px">${meses}/${e.vidaUtil} meses · -R$ ${fmtN(dm)} /mês</div>
+      </div>`:''}
+      <!-- Footer -->
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F1F5F9;padding-top:8px;margin-top:4px">
+        <div style="font-size:10px;color:#94A3B8">${e.fornecedor||''}</div>
+        <div style="display:flex;gap:8px">
+          ${e.dataAq?`<span style="font-size:10px;color:#94A3B8">${fmtDate(e.dataAq)}</span>`:''}
+          ${custManut>0?`<span style="font-size:10px;color:#EF4444" title="Custo de manutenções">🔧 R$ ${fmtN(custManut)}</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
 
   el.innerHTML=`
-  <div style="padding:20px">
+  <div style="padding:20px 20px 0">
     <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Total Equipamentos</div>
-        <div style="font-size:26px;font-weight:800;color:var(--t)">${eqs.length}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">${eqs.filter(e=>e.status==='ativo').length} ativos</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#94A3B8;letter-spacing:.5px;margin-bottom:6px">Patrimônio Bruto</div>
+        <div style="font-size:22px;font-weight:800;color:#1E293B">R$ ${fmtN(totalValor)}</div>
+        <div style="font-size:10px;color:#94A3B8;margin-top:2px">${eqs.length} equipamentos</div>
       </div>
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Valor de Aquisição</div>
-        <div style="font-size:20px;font-weight:800;color:var(--fox)">R$ ${fmtN(totalValor)}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">patrimônio bruto</div>
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#94A3B8;letter-spacing:.5px;margin-bottom:6px">Valor Atual</div>
+        <div style="font-size:22px;font-weight:800;color:#16A34A">R$ ${fmtN(valorAtual)}</div>
+        <div style="font-size:10px;color:#EF4444;margin-top:2px">-R$ ${fmtN(totalDeprec)} depreciado</div>
       </div>
-      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Valor Atual (depr.)</div>
-        <div style="font-size:20px;font-weight:800;color:var(--green)">R$ ${fmtN(valorAtual)}</div>
-        <div style="font-size:11px;color:var(--red);margin-top:2px">-R$ ${fmtN(totalDeprec)} depreciado</div>
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#94A3B8;letter-spacing:.5px;margin-bottom:6px">Depr. Mensal Total</div>
+        <div style="font-size:22px;font-weight:800;color:#EF4444">R$ ${fmtN(eqs.reduce((s,e)=>s+(e.valorAq&&e.vidaUtil?(e.valorAq-(e.valResid||0))/e.vidaUtil:0),0))}</div>
+        <div style="font-size:10px;color:#94A3B8;margin-top:2px">por mês</div>
       </div>
-      <div style="background:var(--bg);border:1.5px solid ${alertas>0?'#F59E0B':'var(--bor)'};border-radius:14px;padding:16px;${alertas>0?'background:#FFFBEB':''}">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Alertas</div>
-        <div style="font-size:26px;font-weight:800;color:${alertas>0?'#D97706':'var(--green)'}">${alertas}</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">${alertas>0?'atenção necessária':'tudo em dia'}</div>
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 16px">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#94A3B8;letter-spacing:.5px;margin-bottom:6px">Custo Manutenções</div>
+        <div style="font-size:22px;font-weight:800;color:#F59E0B">R$ ${fmtN(totalManutCusto)}</div>
+        <div style="font-size:10px;color:#94A3B8;margin-top:2px">histórico total</div>
       </div>
     </div>
-
-    <!-- HEADER -->
+    <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-size:16px;font-weight:700;color:var(--t)">Equipamentos</div>
-      <button class="btn-p" onclick="openEq(null)">+ Novo Equipamento</button>
+      <div style="font-size:15px;font-weight:800;color:#1E293B">Kanban de Equipamentos</div>
+      <button class="btn-p" onclick="openEq(null)" style="font-size:12px">+ Novo Equipamento</button>
     </div>
-
-    <!-- LIST -->
-    ${eqs.length===0?`
-    <div style="text-align:center;padding:60px 20px;color:var(--t3)">
-      <div style="font-size:48px;margin-bottom:12px">🔧</div>
-      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Nenhum equipamento cadastrado</div>
-      <div style="font-size:12px">Clique em "+ Novo Equipamento" para começar</div>
-    </div>
-    `:eqs.map(e=>{
-      const dm=e.valorAq&&e.vidaUtil?(e.valorAq-(e.valResid||0))/e.vidaUtil:0;
-      const mesesUso=e.dataAq?Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30)):0;
-      const deprecAcum=Math.min((e.valorAq||0)-(e.valResid||0),dm*mesesUso);
-      const valAtualEq=Math.max(e.valResid||0,(e.valorAq||0)-deprecAcum);
-      const pctVida=e.vidaUtil?Math.min(100,mesesUso/e.vidaUtil*100):0;
-      const garAlert=e.garFim&&(new Date(e.garFim)-new Date(hoje))/(86400000)<30;
-      const segAlert=e.segFim&&(new Date(e.segFim)-new Date(hoje))/(86400000)<30;
-      const proxManut=e.manutencoes&&e.manutencoes.length?e.manutencoes[e.manutencoes.length-1].prox:'';
-      const manutAlert=proxManut&&proxManut<hoje;
-      const statusCor={ativo:'var(--green)',manutencao:'var(--amber)',inativo:'var(--t3)',vendido:'var(--blue)'};
-      return`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer" onclick="openEq('${e.id}')">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-size:14px;font-weight:700;color:var(--t)">${e.nome}</span>
-              <span style="font-size:10px;font-weight:700;color:${statusCor[e.status||'ativo']};background:${statusCor[e.status||'ativo']}22;padding:2px 8px;border-radius:20px">${(e.status||'ativo').toUpperCase()}</span>
-              ${garAlert?'<span style="font-size:10px;color:#D97706;font-weight:700">⚠️ GAR.</span>':''}
-              ${segAlert?'<span style="font-size:10px;color:#D97706;font-weight:700">⚠️ SEG.</span>':''}
-              ${manutAlert?'<span style="font-size:10px;color:var(--red);font-weight:700">🔧 MANUT.</span>':''}
-            </div>
-            <div style="font-size:11px;color:var(--t3);margin-top:3px">${[e.cat,e.marca,e.local].filter(Boolean).join(' · ')}</div>
-            ${e.valorAq?`<div style="display:flex;align-items:center;gap:16px;margin-top:8px">
-              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Aquisição</div><div style="font-size:12px;font-weight:600;color:var(--t)">R$ ${fmtN(e.valorAq)}</div></div>
-              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Valor Atual</div><div style="font-size:12px;font-weight:600;color:var(--fox)">R$ ${fmtN(valAtualEq)}</div></div>
-              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Depreciado</div><div style="font-size:12px;font-weight:600;color:var(--red)">R$ ${fmtN(deprecAcum)}</div></div>
-              ${e.vidaUtil?`<div style="flex:1"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px">Vida Útil</div><div style="background:var(--bg2);border-radius:4px;height:6px"><div style="height:100%;width:${pctVida.toFixed(0)}%;background:${pctVida<50?'var(--green)':pctVida<80?'var(--amber)':'var(--red)'};border-radius:4px"></div></div><div style="font-size:9px;color:var(--t3);margin-top:2px">${mesesUso}/${e.vidaUtil} meses</div></div>`:''}
-            </div>`:''}
-          </div>
-          <div style="font-size:11px;color:var(--t3);text-align:right;flex-shrink:0">
-            ${e.cod?`<div>${e.cod}</div>`:''}
-            ${e.dataAq?`<div>${fmtDate(e.dataAq)}</div>`:''}
-          </div>
+  </div>
+  <!-- KANBAN -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0 12px 20px;align-items:start">
+    ${colunas.map(col=>{
+      const items=eqs.filter(e=>(e.status||'ativo')===col.key);
+      return`<div style="padding:0 8px">
+        <!-- Column Header -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:8px 12px;background:${col.bg};border:1px solid ${col.bor};border-radius:10px">
+          <span style="font-size:14px">${col.ico}</span>
+          <span style="font-size:11px;font-weight:700;color:${col.cor}">${col.label}</span>
+          <span style="margin-left:auto;background:${col.cor}22;color:${col.cor};font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px">${items.length}</span>
         </div>
+        <!-- Cards -->
+        ${items.length===0
+          ?`<div style="border:2px dashed ${col.bor};border-radius:12px;padding:20px;text-align:center;color:#CBD5E1;font-size:11px">Nenhum</div>`
+          :items.map(eqCard).join('')
+        }
       </div>`;
     }).join('')}
   </div>`;
