@@ -1106,6 +1106,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
           <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
         </div>
+        <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
       <!-- Pills de situação -->
       <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
@@ -6783,6 +6784,21 @@ function renderLanc(){
   const r=lancGetRange();
   const bankFilter=(document.getElementById('lanc-bank-filter')||{}).value||'';
   const today=todayISO();
+  // Show search total
+  const searchEl2=document.getElementById('lanc-search');
+  const searchTotalEl2=document.getElementById('lanc-search-total');
+  const searchVal2=(searchEl2&&searchEl2.value||'').trim();
+  if(searchTotalEl2){
+    if(searchVal2){
+      const totPos=data.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+      const totNeg=data.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+      const tot=totPos-totNeg;
+      searchTotalEl2.style.display='flex';
+      searchTotalEl2.innerHTML=data.length+' itens &nbsp;·&nbsp; <span style="color:var(--green);margin:0 3px">+R$ '+fmtN(totPos)+'</span> / <span style="color:var(--red);margin:0 3px">-R$ '+fmtN(totNeg)+'</span> &nbsp;=&nbsp; <span style="color:'+(tot>=0?'var(--green)':'var(--red)')+';font-weight:800">'+(tot>=0?'+':'')+' R$ '+fmtN(Math.abs(tot))+'</span>';
+    } else {
+      searchTotalEl2.style.display='none';
+    }
+  }
   const tbody=document.querySelector('#tbl-lanc tbody');
   if(!tbody)return;
 
@@ -9344,8 +9360,25 @@ let ftItems=[]; // current editing items
 
 // Retorna lista do storage correto conforme tipo ('insumo'|'recheio')
 function ftGetList(tipo){
-  if(tipo==='recheio') return getRecheios(); // recheios são entidades próprias
-  return getMP(); // insumos
+  if(tipo==='recheio') return getRecheios();
+  if(tipo==='embalagem') return getMP().filter(function(m){const c=(m.cat||'').toLowerCase();return c.includes('embal')||c.includes('caixa')||c.includes('sacola')||c.includes('bag')||c.includes('fita')||c.includes('tag');});
+  return getMP();
+}
+function ftCustoPorG(item, tipo){
+  if(tipo==='recheio'){
+    // calcula custo/g do recheio pela ficha técnica
+    const r=item;
+    const mp=getMP();
+    const fichaMP=r.fichaMP||[];
+    const custoTotal=fichaMP.reduce(function(s,it){
+      const m=mp.find(function(x){return x.id===it.mpId;});
+      if(!m)return s;
+      return s+(getValorPorG(m)||0)*(it.qtd||0);
+    },0);
+    const rendimento=r.rendimento||1;
+    return rendimento>0?custoTotal/rendimento:0;
+  }
+  return getValorPorG?getValorPorG(item):0;
 }
 // Popula o select de itens conforme tipo selecionado
 function ftPopulateSel(){
@@ -9377,7 +9410,7 @@ function ftRender(){
     items.forEach(it=>{
       const src=ftGetList(it.tipo||'insumo');
       const m=src.find(x=>x.id===it.mpId);
-      const vg=m?getValorPorG(m):0;
+      const vg=m?ftCustoPorG(m,it.tipo||'insumo'):0;
       const custo=vg*it.qtd;
       html+=`<div style="display:grid;grid-template-columns:1fr auto 70px 30px 24px;align-items:center;gap:10px;padding:7px 12px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);margin-bottom:5px">
         <div style="font-size:12px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m?m.nome:'?'}</div>
@@ -9416,7 +9449,7 @@ function ftCalcCusto(){
   ftItems.forEach(it=>{
     const src=ftGetList(it.tipo||'insumo');
     const m=src.find(x=>x.id===it.mpId);
-    if(m)total+=getValorPorG(m)*(it.qtd||0);
+    if(m)total+=ftCustoPorG(m,it.tipo||'insumo')*(it.qtd||0);
   });
   const el=document.getElementById('ft-custo-calc');
   const valEl=document.getElementById('ft-custo-valor');
