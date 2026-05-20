@@ -553,6 +553,9 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <div class="ni ni-plain" onclick="go('centrocusto',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v6M5 5.5h3a1 1 0 010 2H6a1 1 0 000 2h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       Centro de Custos</div>
+    <div class="ni ni-plain" onclick="go('equipamentos',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 3V2M9 3V2M4 11v1M10 11v1M4 7h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Equipamentos</div>
     <div class="ni ni-plain" onclick="go('categorias',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
       Categorias</div>
@@ -1287,6 +1290,13 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div id="cat-body" style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden"></div>
       </div>
     </div>
+    <!-- EQUIPAMENTOS -->
+    <div class="pg" id="pg-equipamentos">
+      <div class="scroll" id="eq-scroll">
+        <div id="eq-content"></div>
+      </div>
+    </div>
+
     <!-- PRECIFICAÇÃO -->
     <div class="pg" id="pg-precificacao">
       <div class="scroll">
@@ -2849,7 +2859,7 @@ function go(page,el){
   document.getElementById('tb-r').innerHTML=PAGE_ACTIONS[page]?PAGE_ACTIONS[page]():'';
   const renders={
     dashboard:renderDashboard,pedidos:renderPedidos,producao:renderProducao,estoque:renderEstoque,
-    financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,
+    financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,equipamentos:renderEquipamentos,
     materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,receita:receitaInit,
     precificacao:renderPrecificacao,
     dre:renderDREPage
@@ -11671,6 +11681,446 @@ async function syncMes(){
   </div>
 </div>
 
+<!-- MODAL EQUIPAMENTO -->
+<div class="overlay" id="modal-eq" onclick="if(event.target===this)closeM('modal-eq')">
+  <div class="modal" style="max-width:680px;height:88vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <input id="eq-nome-input" style="font-size:17px;font-weight:700;color:var(--t);border:none;outline:none;background:transparent;width:100%;font-family:'Poppins',sans-serif" placeholder="Nome do equipamento">
+        <div id="eq-subtitle" style="font-size:11px;color:var(--t3);margin-top:1px"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <select id="eq-status" class="fi" style="width:100px;font-size:11px;padding:4px 8px">
+          <option value="ativo">✅ Ativo</option>
+          <option value="manutencao">🔧 Manutenção</option>
+          <option value="inativo">⛔ Inativo</option>
+          <option value="vendido">💰 Vendido</option>
+        </select>
+        <button class="modal-close" onclick="closeM('modal-eq')">×</button>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--bor);margin:12px 0 0;flex-shrink:0">
+      <div class="eq-tab on" id="eqt-info" onclick="eqTab('info')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--fox);cursor:pointer;border-bottom:2px solid var(--fox);margin-bottom:-1px;flex:1;text-align:center">📋 Dados</div>
+      <div class="eq-tab" id="eqt-deprec" onclick="eqTab('deprec')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;flex:1;text-align:center">📉 Depreciação</div>
+      <div class="eq-tab" id="eqt-manut" onclick="eqTab('manut')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;flex:1;text-align:center">🔧 Manutenção</div>
+      <div class="eq-tab" id="eqt-garantia" onclick="eqTab('garantia')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;flex:1;text-align:center">🛡️ Garantia</div>
+      <div class="eq-tab" id="eqt-seguro" onclick="eqTab('seguro')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;flex:1;text-align:center">🔐 Seguro</div>
+      <div class="eq-tab" id="eqt-hist" onclick="eqTab('hist')" style="padding:7px 10px;font-size:10px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;flex:1;text-align:center">📊 Histórico</div>
+    </div>
+    <div style="overflow-y:auto;flex:1;padding-top:14px">
+
+    <!-- DADOS -->
+    <div id="eqp-info">
+      <div class="fi-row">
+        <div><label class="fl">Categoria</label>
+          <input class="fi" id="eq-cat" list="eq-cats" placeholder="Ex: Forno, Batedeira, Câmara Fria">
+          <datalist id="eq-cats"><option>Forno</option><option>Batedeira</option><option>Câmara Fria</option><option>Geladeira</option><option>Freezer</option><option>Liquidificador</option><option>Balança</option><option>Embaladeira</option></datalist>
+        </div>
+        <div><label class="fl">Código Patrimonial</label><input class="fi" id="eq-cod" placeholder="Ex: EQ-001"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Marca / Modelo</label><input class="fi" id="eq-marca" placeholder="Ex: Tramontina 60L"></div>
+        <div><label class="fl">Número de Série</label><input class="fi" id="eq-serie" placeholder="SN-12345"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Data de Aquisição</label><input class="fi" id="eq-data-aq" type="date"></div>
+        <div><label class="fl">Valor de Aquisição (R$)</label><input class="fi" id="eq-valor-aq" type="number" step="0.01" placeholder="0,00" oninput="eqCalcDepreciac()"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Fornecedor</label><input class="fi" id="eq-fornecedor" placeholder="Nome do fornecedor"></div>
+        <div><label class="fl">Nota Fiscal</label><input class="fi" id="eq-nf" placeholder="Nº da NF"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Localização</label><input class="fi" id="eq-local" placeholder="Ex: Cozinha, Depósito"></div>
+        <div><label class="fl">Centro de Custo</label><input class="fi" id="eq-cc" placeholder="Ex: Produção"></div>
+      </div>
+      <div><label class="fl">Observações</label><textarea class="fi" id="eq-obs" rows="2" style="resize:vertical" placeholder="Notas, características..."></textarea></div>
+    </div>
+
+    <!-- DEPRECIAÇÃO -->
+    <div id="eqp-deprec" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Vida Útil (meses)</label><input class="fi" id="eq-vida-util" type="number" placeholder="Ex: 60" oninput="eqCalcDepreciac()"></div>
+        <div><label class="fl">Valor Residual (R$)</label><input class="fi" id="eq-val-resid" type="number" step="0.01" placeholder="0,00" oninput="eqCalcDepreciac()"></div>
+      </div>
+      <div id="eq-deprec-calc" style="display:none;background:var(--fox-l);border:1px solid var(--fox);border-radius:10px;padding:14px;margin-top:8px;font-size:12px;line-height:2"></div>
+      <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">Linha do Tempo</div>
+      <div id="eq-deprec-linha" style="max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- MANUTENÇÃO -->
+    <div id="eqp-manut" style="display:none">
+      <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:10px">Registrar Manutenção</div>
+      <div class="fi-row">
+        <div><label class="fl">Tipo</label>
+          <select class="fi" id="eq-manut-tipo"><option value="preventiva">Preventiva</option><option value="corretiva">Corretiva</option><option value="calibracao">Calibração</option></select>
+        </div>
+        <div><label class="fl">Data</label><input class="fi" id="eq-manut-data" type="date"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Fornecedor / Técnico</label><input class="fi" id="eq-manut-tec" placeholder="Nome do técnico"></div>
+        <div><label class="fl">Custo (R$)</label><input class="fi" id="eq-manut-custo" type="number" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div><label class="fl">Descrição</label><textarea class="fi" id="eq-manut-desc" rows="2" style="resize:vertical" placeholder="O que foi feito..."></textarea></div>
+      <div class="fi-row">
+        <div><label class="fl">Próxima Manutenção</label><input class="fi" id="eq-manut-prox" type="date"></div>
+      </div>
+      <button class="btn-p" style="width:100%;margin-top:8px;justify-content:center" onclick="eqAddManut()">✅ Registrar</button>
+      <div style="margin-top:14px;font-size:11px;font-weight:700;color:var(--t);margin-bottom:8px">Histórico</div>
+      <div id="eq-manut-hist" style="max-height:220px;overflow-y:auto"></div>
+    </div>
+
+    <!-- GARANTIA -->
+    <div id="eqp-garantia" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Início da Garantia</label><input class="fi" id="eq-gar-ini" type="date"></div>
+        <div><label class="fl">Fim da Garantia</label><input class="fi" id="eq-gar-fim" type="date" oninput="eqCheckGar()"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Empresa / Fabricante</label><input class="fi" id="eq-gar-empresa" placeholder="Nome da empresa"></div>
+        <div><label class="fl">Contato / Telefone</label><input class="fi" id="eq-gar-tel" placeholder="(11) 99999-9999"></div>
+      </div>
+      <div><label class="fl">Condições da Garantia</label><textarea class="fi" id="eq-gar-cond" rows="2" style="resize:vertical" placeholder="Coberturas, exclusões..."></textarea></div>
+      <div id="eq-gar-status" style="display:none;margin-top:10px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600"></div>
+    </div>
+
+    <!-- SEGURO -->
+    <div id="eqp-seguro" style="display:none">
+      <div class="fi-row">
+        <div><label class="fl">Seguradora</label><input class="fi" id="eq-seg-empresa" placeholder="Nome da seguradora"></div>
+        <div><label class="fl">Nº da Apólice</label><input class="fi" id="eq-seg-apolice" placeholder="Ex: AP-2024-001"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Vigência Início</label><input class="fi" id="eq-seg-ini" type="date"></div>
+        <div><label class="fl">Vigência Fim</label><input class="fi" id="eq-seg-fim" type="date" oninput="eqCheckSeg()"></div>
+      </div>
+      <div class="fi-row">
+        <div><label class="fl">Valor Segurado (R$)</label><input class="fi" id="eq-seg-valor" type="number" step="0.01" placeholder="0,00"></div>
+        <div><label class="fl">Prêmio Anual (R$)</label><input class="fi" id="eq-seg-premio" type="number" step="0.01" placeholder="0,00"></div>
+      </div>
+      <div id="eq-seg-status" style="display:none;margin-top:10px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600"></div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="eqp-hist" style="display:none">
+      <div id="eq-hist-lista" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    </div><!-- scroll -->
+    <div class="modal-actions" style="margin-top:12px;flex-shrink:0">
+      <button class="btn-danger modal-del" id="eq-del" onclick="eqDelete()" style="display:none">Excluir</button>
+      <button class="btn-o" onclick="closeM('modal-eq')">Cancelar</button>
+      <button class="btn-p" onclick="eqSave()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── EQUIPAMENTOS ──
+const getEquipamentos=()=>S.get('equipamentos')||[];
+let editEqId=null;
+
+function eqTab(tab){
+  ['info','deprec','manut','garantia','seguro','hist'].forEach(t=>{
+    const p=document.getElementById('eqp-'+t);
+    const tb=document.getElementById('eqt-'+t);
+    if(p)p.style.display=t===tab?'block':'none';
+    if(tb){tb.style.color=t===tab?'var(--fox)':'var(--t3)';tb.style.borderBottomColor=t===tab?'var(--fox)':'transparent';}
+  });
+  if(tab==='deprec')eqCalcDepreciac();
+  if(tab==='manut')eqRenderManut();
+  if(tab==='hist')eqRenderHist();
+  if(tab==='garantia')eqCheckGar();
+  if(tab==='seguro')eqCheckSeg();
+}
+
+function eqCalcDepreciac(){
+  const val=parseFloat(document.getElementById('eq-valor-aq').value)||0;
+  const vida=parseFloat(document.getElementById('eq-vida-util').value)||0;
+  const resid=parseFloat(document.getElementById('eq-val-resid').value)||0;
+  const el=document.getElementById('eq-deprec-calc');
+  if(!el)return;
+  if(val>0&&vida>0){
+    const deprecMensal=(val-resid)/vida;
+    const deprecAnual=deprecMensal*12;
+    el.style.display='block';
+    el.innerHTML=`📉 Depreciação mensal: <b style="color:var(--fox)">R$ ${fmtN(deprecMensal)}</b><br>📅 Depreciação anual: <b style="color:var(--fox)">R$ ${fmtN(deprecAnual)}</b><br>💰 Valor residual: <b>R$ ${fmtN(resid)}</b><br>⏱️ Vida útil: <b>${vida} meses (${(vida/12).toFixed(1)} anos)</b>`;
+    // Render timeline
+    const dataAqEl=document.getElementById('eq-data-aq');
+    const dataAq=dataAqEl&&dataAqEl.value?new Date(dataAqEl.value+'T12:00:00'):new Date();
+    const linha=document.getElementById('eq-deprec-linha');
+    if(linha){
+      let rows='';
+      let valAtual=val;
+      for(let m=0;m<=Math.min(vida,120);m+=m===0?1:12){
+        valAtual=Math.max(resid,val-deprecMensal*m);
+        const pct=(valAtual/val*100).toFixed(0);
+        const d=new Date(dataAq);d.setMonth(d.getMonth()+m);
+        const mes=d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+        rows+=`<div style="display:grid;grid-template-columns:100px 1fr 80px;gap:8px;align-items:center;padding:4px 0;font-size:11px">
+          <span style="color:var(--t3)">${mes}</span>
+          <div style="background:var(--bg2);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${parseFloat(pct)>50?'var(--fox)':parseFloat(pct)>20?'var(--amber)':'var(--red)'};border-radius:4px"></div></div>
+          <span style="font-weight:600;color:var(--t)">R$ ${fmtN(valAtual)}</span>
+        </div>`;
+      }
+      linha.innerHTML=rows;
+    }
+  } else el.style.display='none';
+}
+
+function eqCheckGar(){
+  const fim=document.getElementById('eq-gar-fim').value;
+  const el=document.getElementById('eq-gar-status');
+  if(!el||!fim)return;
+  const hoje=todayISO();
+  const diasRest=Math.round((new Date(fim)-new Date(hoje))/(86400000));
+  el.style.display='block';
+  if(diasRest<0){el.style.background='#FEF2F2';el.style.color='#DC2626';el.textContent='⚠️ Garantia VENCIDA há '+Math.abs(diasRest)+' dias';}
+  else if(diasRest<=30){el.style.background='#FFFBEB';el.style.color='#D97706';el.textContent='⏰ Garantia vence em '+diasRest+' dias';}
+  else{el.style.background='#F0FDF4';el.style.color='#16A34A';el.textContent='✅ Garantia válida por mais '+diasRest+' dias';}
+}
+
+function eqCheckSeg(){
+  const fim=document.getElementById('eq-seg-fim').value;
+  const el=document.getElementById('eq-seg-status');
+  if(!el||!fim)return;
+  const hoje=todayISO();
+  const diasRest=Math.round((new Date(fim)-new Date(hoje))/(86400000));
+  el.style.display='block';
+  if(diasRest<0){el.style.background='#FEF2F2';el.style.color='#DC2626';el.textContent='⚠️ Seguro VENCIDO há '+Math.abs(diasRest)+' dias';}
+  else if(diasRest<=30){el.style.background='#FFFBEB';el.style.color='#D97706';el.textContent='⏰ Seguro vence em '+diasRest+' dias';}
+  else{el.style.background='#F0FDF4';el.style.color='#16A34A';el.textContent='✅ Seguro válido por mais '+diasRest+' dias';}
+}
+
+function eqAddManut(){
+  if(!editEqId){alert('Salve o equipamento primeiro.');return;}
+  const tipo=document.getElementById('eq-manut-tipo').value;
+  const data=document.getElementById('eq-manut-data').value||todayISO();
+  const tec=document.getElementById('eq-manut-tec').value;
+  const custo=parseFloat(document.getElementById('eq-manut-custo').value)||0;
+  const desc=document.getElementById('eq-manut-desc').value;
+  const prox=document.getElementById('eq-manut-prox').value;
+  const eqs=getEquipamentos();
+  const eq=eqs.find(e=>e.id===editEqId);
+  if(!eq)return;
+  if(!eq.manutencoes)eq.manutencoes=[];
+  eq.manutencoes.push({id:uid(),tipo,data,tec,custo,desc,prox});
+  S.set('equipamentos',eqs);
+  ['eq-manut-tec','eq-manut-custo','eq-manut-desc','eq-manut-prox'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  eqRenderManut();
+}
+
+function eqRenderManut(){
+  const el=document.getElementById('eq-manut-hist');
+  if(!el||!editEqId)return;
+  const eq=getEquipamentos().find(e=>e.id===editEqId);
+  const ms=(eq&&eq.manutencoes)||[];
+  if(!ms.length){el.innerHTML='<div style="font-size:12px;color:var(--t3)">Nenhuma manutenção registrada.</div>';return;}
+  el.innerHTML=[...ms].reverse().map(m=>`
+    <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700;color:var(--t)">${m.tipo.charAt(0).toUpperCase()+m.tipo.slice(1)}</span>
+        <span style="color:var(--t3)">${fmtDate(m.data)}</span>
+      </div>
+      ${m.desc?`<div style="color:var(--t2);margin-top:3px">${m.desc}</div>`:''}
+      <div style="display:flex;gap:12px;margin-top:4px">
+        ${m.tec?`<span style="color:var(--t3)">👤 ${m.tec}</span>`:''}
+        ${m.custo?`<span style="color:var(--red)">R$ ${fmtN(m.custo)}</span>`:''}
+        ${m.prox?`<span style="color:var(--fox)">Próxima: ${fmtDate(m.prox)}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function eqRenderHist(){
+  const el=document.getElementById('eq-hist-lista');
+  if(!el||!editEqId)return;
+  const eq=getEquipamentos().find(e=>e.id===editEqId);
+  if(!eq){el.innerHTML='';return;}
+  const ms=(eq.manutencoes||[]).map(m=>({...m,_tipo:'manut'}));
+  if(!ms.length){el.innerHTML='<div style="font-size:12px;color:var(--t3)">Sem histórico registrado.</div>';return;}
+  el.innerHTML=ms.sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(m=>`
+    <div style="background:var(--bg2);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:12px">
+      <div><span style="font-weight:600;color:var(--fox)">🔧 ${m.tipo}</span><span style="color:var(--t);margin-left:8px">${m.desc||''}</span></div>
+      <div style="display:flex;gap:10px;color:var(--t3)">
+        ${m.custo?`<span style="color:var(--red)">-R$ ${fmtN(m.custo)}</span>`:''}
+        <span>${fmtDate(m.data)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function openEq(id){
+  editEqId=id||null;
+  eqTab('info');
+  const _sv=(eid,v)=>{const el=document.getElementById(eid);if(el)el.value=v||'';};
+  const eq=id?getEquipamentos().find(e=>e.id===id):null;
+  _sv('eq-nome-input',eq?eq.nome:'');
+  _sv('eq-cat',eq?eq.cat:'');
+  _sv('eq-cod',eq?eq.cod:'');
+  _sv('eq-marca',eq?eq.marca:'');
+  _sv('eq-serie',eq?eq.serie:'');
+  _sv('eq-data-aq',eq?eq.dataAq:'');
+  _sv('eq-valor-aq',eq?eq.valorAq:'');
+  _sv('eq-fornecedor',eq?eq.fornecedor:'');
+  _sv('eq-nf',eq?eq.nf:'');
+  _sv('eq-local',eq?eq.local:'');
+  _sv('eq-cc',eq?eq.cc:'');
+  _sv('eq-obs',eq?eq.obs:'');
+  _sv('eq-vida-util',eq?eq.vidaUtil:'');
+  _sv('eq-val-resid',eq?eq.valResid:'');
+  _sv('eq-gar-ini',eq?eq.garIni:'');
+  _sv('eq-gar-fim',eq?eq.garFim:'');
+  _sv('eq-gar-empresa',eq?eq.garEmpresa:'');
+  _sv('eq-gar-tel',eq?eq.garTel:'');
+  _sv('eq-gar-cond',eq?eq.garCond:'');
+  _sv('eq-seg-empresa',eq?eq.segEmpresa:'');
+  _sv('eq-seg-apolice',eq?eq.segApolice:'');
+  _sv('eq-seg-ini',eq?eq.segIni:'');
+  _sv('eq-seg-fim',eq?eq.segFim:'');
+  _sv('eq-seg-valor',eq?eq.segValor:'');
+  _sv('eq-seg-premio',eq?eq.segPremio:'');
+  const st=document.getElementById('eq-status');if(st)st.value=eq?(eq.status||'ativo'):'ativo';
+  const sub=document.getElementById('eq-subtitle');if(sub)sub.textContent=eq?eq.cat:'';
+  document.getElementById('eq-del').style.display=id?'block':'none';
+  openM('modal-eq');
+}
+
+function eqSave(){
+  const nome=(document.getElementById('eq-nome-input').value||'').trim();
+  if(!nome){alert('Informe o nome do equipamento.');return;}
+  const _gv=i=>{const el=document.getElementById(i);return el?el.value.trim():'';};
+  const _gn=i=>parseFloat(_gv(i))||0;
+  const eqs=getEquipamentos();
+  const existing=editEqId?eqs.find(e=>e.id===editEqId):null;
+  const obj={
+    id:editEqId||uid(), nome, cat:_gv('eq-cat'), cod:_gv('eq-cod'),
+    marca:_gv('eq-marca'), serie:_gv('eq-serie'),
+    dataAq:_gv('eq-data-aq'), valorAq:_gn('eq-valor-aq'),
+    fornecedor:_gv('eq-fornecedor'), nf:_gv('eq-nf'),
+    local:_gv('eq-local'), cc:_gv('eq-cc'), obs:_gv('eq-obs'),
+    vidaUtil:_gn('eq-vida-util'), valResid:_gn('eq-val-resid'),
+    garIni:_gv('eq-gar-ini'), garFim:_gv('eq-gar-fim'),
+    garEmpresa:_gv('eq-gar-empresa'), garTel:_gv('eq-gar-tel'), garCond:_gv('eq-gar-cond'),
+    segEmpresa:_gv('eq-seg-empresa'), segApolice:_gv('eq-seg-apolice'),
+    segIni:_gv('eq-seg-ini'), segFim:_gv('eq-seg-fim'),
+    segValor:_gn('eq-seg-valor'), segPremio:_gn('eq-seg-premio'),
+    status:_gv('eq-status'),
+    manutencoes:existing?existing.manutencoes||[]:[]
+  };
+  if(editEqId) S.set('equipamentos',eqs.map(e=>e.id===editEqId?obj:e));
+  else S.set('equipamentos',[...eqs,obj]);
+  editEqId=obj.id;
+  closeM('modal-eq');
+  renderEquipamentos();
+}
+
+function eqDelete(){
+  if(!editEqId)return;
+  if(!confirm('Excluir este equipamento?'))return;
+  S.set('equipamentos',getEquipamentos().filter(e=>e.id!==editEqId));
+  closeM('modal-eq');renderEquipamentos();
+}
+
+function renderEquipamentos(){
+  const el=document.getElementById('eq-content');
+  if(!el)return;
+  const eqs=getEquipamentos();
+  const hoje=todayISO();
+
+  const alertas=eqs.filter(e=>{
+    const garOk=!e.garFim||(new Date(e.garFim)-new Date(hoje))/(86400000)>0;
+    const segOk=!e.segFim||(new Date(e.segFim)-new Date(hoje))/(86400000)>0;
+    const proxManut=e.manutencoes&&e.manutencoes.length&&e.manutencoes[e.manutencoes.length-1].prox;
+    const manutOk=!proxManut||proxManut>=hoje;
+    return !garOk||!segOk||!manutOk;
+  }).length;
+
+  const totalValor=eqs.reduce((s,e)=>s+(e.valorAq||0),0);
+  const totalDeprec=eqs.reduce((s,e)=>{
+    if(!e.valorAq||!e.vidaUtil||!e.dataAq)return s;
+    const meses=Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30));
+    const dm=(e.valorAq-(e.valResid||0))/e.vidaUtil;
+    return s+Math.min(e.valorAq-(e.valResid||0),dm*meses);
+  },0);
+  const valorAtual=totalValor-totalDeprec;
+
+  el.innerHTML=`
+  <div style="padding:20px">
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
+      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Total Equipamentos</div>
+        <div style="font-size:26px;font-weight:800;color:var(--t)">${eqs.length}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${eqs.filter(e=>e.status==='ativo').length} ativos</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Valor de Aquisição</div>
+        <div style="font-size:20px;font-weight:800;color:var(--fox)">R$ ${fmtN(totalValor)}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">patrimônio bruto</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Valor Atual (depr.)</div>
+        <div style="font-size:20px;font-weight:800;color:var(--green)">R$ ${fmtN(valorAtual)}</div>
+        <div style="font-size:11px;color:var(--red);margin-top:2px">-R$ ${fmtN(totalDeprec)} depreciado</div>
+      </div>
+      <div style="background:var(--bg);border:1.5px solid ${alertas>0?'#F59E0B':'var(--bor)'};border-radius:14px;padding:16px;${alertas>0?'background:#FFFBEB':''}">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">Alertas</div>
+        <div style="font-size:26px;font-weight:800;color:${alertas>0?'#D97706':'var(--green)'}">${alertas}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${alertas>0?'atenção necessária':'tudo em dia'}</div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:var(--t)">Equipamentos</div>
+      <button class="btn-p" onclick="openEq(null)">+ Novo Equipamento</button>
+    </div>
+
+    <!-- LIST -->
+    ${eqs.length===0?`
+    <div style="text-align:center;padding:60px 20px;color:var(--t3)">
+      <div style="font-size:48px;margin-bottom:12px">🔧</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:6px">Nenhum equipamento cadastrado</div>
+      <div style="font-size:12px">Clique em "+ Novo Equipamento" para começar</div>
+    </div>
+    `:eqs.map(e=>{
+      const dm=e.valorAq&&e.vidaUtil?(e.valorAq-(e.valResid||0))/e.vidaUtil:0;
+      const mesesUso=e.dataAq?Math.round((new Date(hoje)-new Date(e.dataAq))/(86400000*30)):0;
+      const deprecAcum=Math.min((e.valorAq||0)-(e.valResid||0),dm*mesesUso);
+      const valAtualEq=Math.max(e.valResid||0,(e.valorAq||0)-deprecAcum);
+      const pctVida=e.vidaUtil?Math.min(100,mesesUso/e.vidaUtil*100):0;
+      const garAlert=e.garFim&&(new Date(e.garFim)-new Date(hoje))/(86400000)<30;
+      const segAlert=e.segFim&&(new Date(e.segFim)-new Date(hoje))/(86400000)<30;
+      const proxManut=e.manutencoes&&e.manutencoes.length?e.manutencoes[e.manutencoes.length-1].prox:'';
+      const manutAlert=proxManut&&proxManut<hoje;
+      const statusCor={ativo:'var(--green)',manutencao:'var(--amber)',inativo:'var(--t3)',vendido:'var(--blue)'};
+      return`<div style="background:var(--bg);border:1px solid var(--bor);border-radius:14px;padding:16px;margin-bottom:12px;cursor:pointer" onclick="openEq('${e.id}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:14px;font-weight:700;color:var(--t)">${e.nome}</span>
+              <span style="font-size:10px;font-weight:700;color:${statusCor[e.status||'ativo']};background:${statusCor[e.status||'ativo']}22;padding:2px 8px;border-radius:20px">${(e.status||'ativo').toUpperCase()}</span>
+              ${garAlert?'<span style="font-size:10px;color:#D97706;font-weight:700">⚠️ GAR.</span>':''}
+              ${segAlert?'<span style="font-size:10px;color:#D97706;font-weight:700">⚠️ SEG.</span>':''}
+              ${manutAlert?'<span style="font-size:10px;color:var(--red);font-weight:700">🔧 MANUT.</span>':''}
+            </div>
+            <div style="font-size:11px;color:var(--t3);margin-top:3px">${[e.cat,e.marca,e.local].filter(Boolean).join(' · ')}</div>
+            ${e.valorAq?`<div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Aquisição</div><div style="font-size:12px;font-weight:600;color:var(--t)">R$ ${fmtN(e.valorAq)}</div></div>
+              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Valor Atual</div><div style="font-size:12px;font-weight:600;color:var(--fox)">R$ ${fmtN(valAtualEq)}</div></div>
+              <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Depreciado</div><div style="font-size:12px;font-weight:600;color:var(--red)">R$ ${fmtN(deprecAcum)}</div></div>
+              ${e.vidaUtil?`<div style="flex:1"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px">Vida Útil</div><div style="background:var(--bg2);border-radius:4px;height:6px"><div style="height:100%;width:${pctVida.toFixed(0)}%;background:${pctVida<50?'var(--green)':pctVida<80?'var(--amber)':'var(--red)'};border-radius:4px"></div></div><div style="font-size:9px;color:var(--t3);margin-top:2px">${mesesUso}/${e.vidaUtil} meses</div></div>`:''}
+            </div>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--t3);text-align:right;flex-shrink:0">
+            ${e.cod?`<div>${e.cod}</div>`:''}
+            ${e.dataAq?`<div>${fmtDate(e.dataAq)}</div>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+</script>
 </body>
 </html>
 <script>
