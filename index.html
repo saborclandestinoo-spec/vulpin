@@ -7174,6 +7174,7 @@ function despTogglePago(){
   if(tog){tog.style.background=despPagoAtivo?'var(--fox)':'#ccc';tog.querySelector('div').style.left=despPagoAtivo?'17px':'3px';}
   if(label)label.textContent=despPagoAtivo?'Pago':'Não pago';
   if(fields)fields.style.display=despPagoAtivo?'block':'none';
+  if(despPagoAtivo){const el=document.getElementById('mdesp-data-pag');if(el&&!el.value)el.value=todayISO();}
 }
 function openDesp(id){
   editLancId=id||null;despPagoAtivo=true;
@@ -7680,6 +7681,8 @@ function recToggleRec(){
   if(tog){tog.style.background=recRecAtivo?'var(--green)':'#ccc';tog.querySelector('div').style.left=recRecAtivo?'17px':'3px';}
   if(label)label.textContent=recRecAtivo?'Recebido':'Não recebido';
   if(fields)fields.style.display=recRecAtivo?'block':'none';
+  // Set today when activating
+  if(recRecAtivo){const el=document.getElementById('mrec-data-rec');if(el&&!el.value)el.value=todayISO();}
 }
 function openRec(id){
   editLancId=id||null;recRecAtivo=true;
