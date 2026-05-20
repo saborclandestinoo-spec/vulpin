@@ -2114,6 +2114,15 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         </div>
         <div class="custom-drop" id="mdesp-cat-drop"></div>
       </div>
+      <!-- Campo equipamento — aparece para imobilizações (4.7) e manutenções (4.3.5) -->
+      <div id="mdesp-eq-row" style="display:none;margin-top:8px">
+        <div class="flt-wrap">
+          <select class="flt-in" id="mdesp-eq-sel" style="padding-top:18px">
+            <option value="">— Nenhum equipamento —</option>
+          </select>
+          <label class="flt-lbl">Equipamento</label>
+        </div>
+      </div>
       <div style="position:relative">
         <div class="flt-custom-wrap" id="mdesp-cc-wrap" onclick="toggleCustomDrop('mdesp-cc-drop','mdesp-cc-lbl')">
           <label class="flt-lbl flt-lbl-sel" id="mdesp-cc-lbl">Centro de custo</label>
@@ -7088,6 +7097,21 @@ function filterCustomDrop(dropId, q) {
   drop.querySelectorAll('.cd-group,.cd-sub').forEach(el => el.style.display = q ? 'none' : '');
 }
 
+function _mdespCheckEqRow(){
+  const catVal=(document.getElementById('mdesp-cat')||{}).value||'';
+  const row=document.getElementById('mdesp-eq-row');
+  const sel=document.getElementById('mdesp-eq-sel');
+  if(!row||!sel)return;
+  const showEq=catVal.startsWith('4.7')||catVal.startsWith('4.3');
+  row.style.display=showEq?'block':'none';
+  if(showEq){
+    const eqs=getEquipamentos();
+    const isManut=catVal.startsWith('4.3');
+    const filtered=isManut?eqs.filter(function(e){return e.status==='ativo'||e.status==='manutencao';}):eqs;
+    sel.innerHTML='<option value="">'+(catVal.startsWith('4.7')?'— Criar novo equipamento automaticamente —':'— Sem vínculo de equipamento —')+'</option>'
+      +filtered.map(function(e){return '<option value="'+e.id+'">'+e.nome+'</option>';}).join('');
+  }
+}
 function selectCustomDrop(dropId, cod, nome, e) {
   if(e) e.stopPropagation();
   const drop = document.getElementById(dropId);
@@ -7104,6 +7128,8 @@ function selectCustomDrop(dropId, cod, nome, e) {
   drop.classList.remove('open');
   const wrap = drop.previousElementSibling;
   if(wrap) wrap.classList.remove('active');
+  // Show/hide equipment field when category changes
+  if(hiddenId==='mdesp-cat') _mdespCheckEqRow();
 }
 
 function toggleCustomDrop(dropId, lblId) {
@@ -8037,36 +8063,36 @@ function saveLancTipo(tipo,andAnother){
 
   closeM('modal-'+(isDesp?'desp':'rec'));
   if(andAnother){editLancId=null;isDesp?openDesp():openRec();}
-  // ── Integração: manutenção → registra em equipamento ──
-  if(isDesp&&obj.catCod&&(obj.catCod.startsWith('4.3.5')||obj.catCod.startsWith('4.3.5'))&&!editLancId){
-    const eqs=getEquipamentos().filter(e=>e.status==='ativo'||e.status==='manutencao');
-    if(eqs.length>0){
-      const opts=eqs.map(function(e,i){return (i+1)+'. '+e.nome;}).join('\n');
-      const idx=parseInt(prompt('Vincular a um equipamento? (0 para pular)\n\n'+opts+'\n\nDigite o numero:'));
-      if(idx>0&&idx<=eqs.length){
-        const eq=eqs[idx-1];
-        const allEqs=getEquipamentos();
-        const eqFull=allEqs.find(e=>e.id===eq.id);
-        if(eqFull){
-          if(!eqFull.manutencoes)eqFull.manutencoes=[];
-          eqFull.manutencoes.push({id:uid(),tipo:'corretiva',data:obj.data||todayISO(),custo:obj.valor,desc:obj.desc,tec:obj.forn||''});
+
+  // ── Integração equipamento ──
+  if(isDesp){
+    const eqSelEl=document.getElementById('mdesp-eq-sel');
+    const eqSelId=eqSelEl?eqSelEl.value:'';
+    if(eqSelId){
+      const allEqs=getEquipamentos();
+      const eq=allEqs.find(function(e){return e.id===eqSelId;});
+      if(eq){
+        const catCodVal=obj.catCod||'';
+        if(catCodVal.startsWith('4.7')){
+          // Imobilização: atualiza valor e data do equipamento
+          eq.valorAq=obj.valor;
+          eq.dataAq=obj.data||obj.venc||todayISO();
+          eq.fornecedor=eq.fornecedor||obj.forn||'';
+          S.set('equipamentos',allEqs);
+        } else if(catCodVal.startsWith('4.3')){
+          // Manutenção: registra na aba de manutenção
+          if(!eq.manutencoes)eq.manutencoes=[];
+          eq.manutencoes.push({id:uid(),tipo:'corretiva',data:obj.data||todayISO(),custo:obj.valor,desc:obj.desc,tec:obj.forn||''});
           S.set('equipamentos',allEqs);
         }
       }
     }
-  }
-  // ── Integração: imobilização → equipamentos ──
-  if(isDesp&&obj.catCod&&obj.catCod.startsWith('4.7')&&!editLancId){
-    const eqs=getEquipamentos();
-    const novoEq={
-      id:uid(), nome:obj.desc, valorAq:obj.valor,
-      dataAq:obj.data||obj.venc||todayISO(),
-      fornecedor:obj.forn||'', vidaUtil:120, valResid:0,
-      status:'ativo', cat:'', cc:'', obs:'Criado automaticamente via lançamento.',
-      manutencoes:[]
-    };
-    S.set('equipamentos',[...eqs,novoEq]);
-    setTimeout(()=>alert('✅ Equipamento "'+obj.desc+'" adicionado automaticamente em Equipamentos!'),300);
+    // Imobilização sem equipamento existente → cria novo
+    const catCodVal2=obj.catCod||'';
+    if(catCodVal2.startsWith('4.7')&&!eqSelId&&!editLancId){
+      const novoEq={id:uid(),nome:obj.desc,valorAq:obj.valor,dataAq:obj.data||obj.venc||todayISO(),fornecedor:obj.forn||'',vidaUtil:120,valResid:0,status:'ativo',cat:'',cc:'',obs:'',manutencoes:[]};
+      S.set('equipamentos',[...getEquipamentos(),novoEq]);
+    }
   }
   renderLanc();
   if(currentPage==='financeiro')renderFluxo();
@@ -12074,6 +12100,8 @@ function eqDelete(){
   closeM('modal-eq');renderEquipamentos();
 }
 
+function eqVincularManut(lancObj){}
+function eqRegManutFromLanc(eqId,overlay){}
 function renderEquipamentos(){
   const el=document.getElementById('eq-content');
   if(!el)return;
