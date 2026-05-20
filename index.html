@@ -11817,7 +11817,29 @@ async function syncMes(){
 
 <script>
 // ── EQUIPAMENTOS ──
-const getEquipamentos=()=>S.get('equipamentos')||[];
+const getEquipamentos=()=>{
+  const stored=S.get('equipamentos')||[];
+  // Migrate old format (cod, valor, vida, data, proxManut) to new format
+  const needsMigration=stored.some(e=>e.valorAq===undefined&&(e.valor!==undefined));
+  if(!needsMigration)return stored;
+  const migrated=stored.map(e=>{
+    if(e.valorAq!==undefined)return e; // already migrated
+    return {
+      id:e.id, nome:e.nome||'', cat:e.cat||'', cod:e.cod||'',
+      marca:e.marca||e.modelo||'', serie:e.serie||'',
+      dataAq:e.data||e.dataAq||'', valorAq:parseFloat(e.valor||e.valorAq||0),
+      fornecedor:e.fornecedor||'', nf:e.nf||'',
+      local:e.local||'', cc:e.cc||'', obs:e.obs||'',
+      vidaUtil:parseFloat(e.vida||e.vidaUtil||0)*12, // anos → meses
+      valResid:parseFloat(e.valResid||0),
+      status:(e.status||'ativo').toLowerCase(),
+      manutencoes:e.manutencoes||[],
+      garFim:e.garantia||e.garFim||'',
+    };
+  });
+  S.set('equipamentos',migrated);
+  return migrated;
+};
 let editEqId=null;
 
 function eqTab(tab){
