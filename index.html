@@ -8037,10 +8037,42 @@ function saveLancTipo(tipo,andAnother){
 
   closeM('modal-'+(isDesp?'desp':'rec'));
   if(andAnother){editLancId=null;isDesp?openDesp():openRec();}
+  // ── Integração: manutenção → registra em equipamento ──
+  if(isDesp&&obj.catCod&&(obj.catCod.startsWith('4.3.5')||obj.catCod.startsWith('4.3.5'))&&!editLancId){
+    const eqs=getEquipamentos().filter(e=>e.status==='ativo'||e.status==='manutencao');
+    if(eqs.length>0){
+      const opts=eqs.map(function(e,i){return (i+1)+'. '+e.nome;}).join('\n');
+      const idx=parseInt(prompt('Vincular a um equipamento? (0 para pular)\n\n'+opts+'\n\nDigite o numero:'));
+      if(idx>0&&idx<=eqs.length){
+        const eq=eqs[idx-1];
+        const allEqs=getEquipamentos();
+        const eqFull=allEqs.find(e=>e.id===eq.id);
+        if(eqFull){
+          if(!eqFull.manutencoes)eqFull.manutencoes=[];
+          eqFull.manutencoes.push({id:uid(),tipo:'corretiva',data:obj.data||todayISO(),custo:obj.valor,desc:obj.desc,tec:obj.forn||''});
+          S.set('equipamentos',allEqs);
+        }
+      }
+    }
+  }
+  // ── Integração: imobilização → equipamentos ──
+  if(isDesp&&obj.catCod&&obj.catCod.startsWith('4.7')&&!editLancId){
+    const eqs=getEquipamentos();
+    const novoEq={
+      id:uid(), nome:obj.desc, valorAq:obj.valor,
+      dataAq:obj.data||obj.venc||todayISO(),
+      fornecedor:obj.forn||'', vidaUtil:120, valResid:0,
+      status:'ativo', cat:'', cc:'', obs:'Criado automaticamente via lançamento.',
+      manutencoes:[]
+    };
+    S.set('equipamentos',[...eqs,novoEq]);
+    setTimeout(()=>alert('✅ Equipamento "'+obj.desc+'" adicionado automaticamente em Equipamentos!'),300);
+  }
   renderLanc();
   if(currentPage==='financeiro')renderFluxo();
   if(currentPage==='dashboard')renderDashboard();
   if(currentPage==='estoque')renderEstoque();
+  if(currentPage==='equipamentos')renderEquipamentos();
   }finally{_salvandoLanc=false;}
 }
 
