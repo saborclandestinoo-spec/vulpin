@@ -12454,19 +12454,30 @@ function renderHistorico(){
   }).join('');
 }
 
-// syncRange — paginação no frontend, 1 request por página
+// syncRange — divide período em janelas de 7 dias para evitar overflow do localStorage
 async function syncRange(){
   const cfg=getCWConfig();if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
   if(!_rp.start){alert('Selecione um período.');return;}
-  const start=new Date(_rp.start),end=new Date(_rp.end||_rp.start);
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
-  const sd=d2sBRT(start)+'T00:00:00-03:00';
-  const ed=d2sBRT(end)+'T23:59:59-03:00';
-  let total=0;
-  const todosPedidos=[];
+
+  // Gera janelas de 7 dias entre start e end
+  const startOrig=new Date(_rp.start);
+  const endOrig=new Date(_rp.end||_rp.start);
+  const janelas=[];
+  let cur=new Date(startOrig);
+  while(cur<=endOrig){
+    const wEnd=new Date(cur);
+    wEnd.setDate(wEnd.getDate()+6);
+    if(wEnd>endOrig)wEnd.setTime(endOrig.getTime());
+    janelas.push({s:new Date(cur),e:new Date(wEnd)});
+    cur.setDate(cur.getDate()+7);
+  }
+
+  let totalGeral=0;
   const seenIds=new Set();
-  async function fetchPaginaRange(page){
+
+  async function fetchPaginaRange(sd,ed,page){
     const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
     for(let t=0;t<3;t++){
       try{
@@ -12486,17 +12497,26 @@ async function syncRange(){
     }
     return{orders:[],hasMore:false};
   }
-  for(let page=1;page<=500;page++){
-    if(st)st.textContent=`Página ${page} — ${todosPedidos.length} ped...`;
-    const {orders,hasMore}=await fetchPaginaRange(page);
-    const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
-    novos.forEach(p=>seenIds.add(p.id));
-    if(novos.length){todosPedidos.push(...novos);mergeNaHistoria(novos);}
-    if(!hasMore)break;
-    await new Promise(r=>setTimeout(r,200));
+
+  for(let wi=0;wi<janelas.length;wi++){
+    const {s,e}=janelas[wi];
+    const sd=d2sBRT(s)+'T00:00:00-03:00';
+    const ed=d2sBRT(e)+'T23:59:59-03:00';
+    const semanaLabel=`Sem ${wi+1}/${janelas.length}`;
+    for(let page=1;page<=500;page++){
+      if(st)st.textContent=`${semanaLabel} — pág ${page} — ${totalGeral} ped...`;
+      const {orders,hasMore}=await fetchPaginaRange(sd,ed,page);
+      const novos=orders.filter(p=>p.id&&!seenIds.has(p.id));
+      novos.forEach(p=>seenIds.add(p.id));
+      if(novos.length){totalGeral+=novos.length;mergeNaHistoria(novos);}
+      if(!hasMore)break;
+      await new Promise(r=>setTimeout(r,200));
+    }
+    // Pequena pausa entre semanas
+    if(wi<janelas.length-1)await new Promise(r=>setTimeout(r,400));
   }
-  total=todosPedidos.length;
-  if(st)st.textContent=`✓ ${total} pedidos`;
+
+  if(st)st.textContent=`✓ ${totalGeral} pedidos`;
   if(btn)btn.disabled=false;
   renderHistorico();
   setTimeout(enriquecerHistorico,1000);
