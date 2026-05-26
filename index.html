@@ -1136,6 +1136,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         </div>
         <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
+      <div id="lanc-body-wrap">
       <!-- Pills de situação -->
       <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
         <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
@@ -1159,7 +1160,6 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
         <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
         <div class="lanc-tab" id="lt-receita" onclick="lancTab('receita',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Receitas</div>
-        <div class="lanc-tab" id="lt-producao" onclick="lancTab('producao',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Produções</div>
         <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
       </div>
       <select id="lanc-month" style="display:none"></select>
@@ -1171,6 +1171,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           </table></div>
         </div>
       </div>
+      </div><!-- /lanc-body-wrap -->
     </div>
 
     <!-- BANCOS -->
@@ -2871,7 +2872,7 @@ const PAGE_ACTIONS={
   producao:()=>`<button class="btn-p" onclick="openProd2()">+ Novo Registro</button>`,
   estoque:()=>``,
   financeiro:()=>``,
-  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="openProd2()">🍪 Produção</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
+  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
   bancos:()=>`<button onclick="reprocessarPagamentosMultiplos()" style="background:var(--amber);color:#fff;border:none;border-radius:8px;padding:0 12px;font-size:11px;font-weight:600;cursor:pointer;height:32px;font-family:Poppins,sans-serif;margin-right:6px">Reprocessar Pagtos</button><button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
   produtos:()=>`<button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="importarCatalogoCW()">⬇ Importar CW</button><button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
@@ -6767,8 +6768,11 @@ function lancMainTab(tab, el){
   const subtabs=document.getElementById('lanc-subtabs');
   if(tab==='ia'){
     if(iaPanel)iaPanel.style.display='flex';
-    if(lancContent)lancContent.style.display='none';
-    if(summaryBar)summaryBar.style.display='none';
+    // Hide all other lanc content
+    ['lanc-summary-bar','lanc-subtabs','lanc-body-wrap'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.style.display='none';
+    });
     // Style active tab
     ['pagar','receber','todos','ia'].forEach(k=>{
       const t=document.getElementById('lt-'+k+(k==='todos'?'-main':k==='ia'?'-main':'-main')||document.getElementById('lt-'+k+(k==='todos'?'-main':'')));
@@ -6781,8 +6785,10 @@ function lancMainTab(tab, el){
     return;
   } else {
     if(iaPanel)iaPanel.style.display='none';
-    if(lancContent)lancContent.style.display='';
-    if(summaryBar)summaryBar.style.display='';
+    ['lanc-summary-bar','lanc-subtabs','lanc-body-wrap'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.style.display='';
+    });
   }
   // Update tab styles
   ['pagar','receber','todos','ia'].forEach(k=>{
