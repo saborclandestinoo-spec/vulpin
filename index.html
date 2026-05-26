@@ -2886,7 +2886,6 @@ const PAGE_ACTIONS={
 };
 var currentPage='dashboard';
 function go(page,el){
-  if(page==='reels'){setTimeout(function(){reelsRender();},50);}
   if(window.innerWidth<=768)sbClose();
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -2900,7 +2899,8 @@ function go(page,el){
     financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,equipamentos:renderEquipamentos,
     materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,receita:receitaInit,
     precificacao:renderPrecificacao,
-    dre:renderDREPage
+    dre:renderDREPage,
+    reels:reelsRender
   };
   if(renders[page])renders[page]();
 }
@@ -11826,7 +11826,7 @@ async function syncMes(){
 </div>
 
 <!-- PAGE: Reels -->
-<div class="pg" id="pg-reels" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+<div class="pg" id="pg-reels" style="flex-direction:column;height:100%;overflow:hidden">
   <div style="padding:20px 24px 0;flex-shrink:0">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
