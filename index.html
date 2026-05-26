@@ -1052,6 +1052,31 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
         <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
         <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
+        <div class="lanc-tab" id="lt-ia-main" onclick="lancMainTab('ia',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">✨ Lançamento Rápido</div>
+      </div>
+      <!-- Painel IA -->
+      <div id="lanc-ia-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:var(--bg2)">
+        <div style="padding:20px 24px 0">
+          <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Lançamento por Linguagem Natural</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Digite como mandaria no WhatsApp. Ex: <em>"Paguei R$150 de gás hoje"</em>, <em>"Recebi R$800 encomenda ontem"</em>, <em>"Conta de luz R$320 vencimento dia 15"</em></div>
+          <!-- Histórico do chat -->
+          <div id="lanc-ia-chat" style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;min-height:220px;max-height:340px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
+          <!-- Input -->
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <textarea id="lanc-ia-input" rows="2" placeholder="Ex: Comprei ingredientes R$280 no mercado hoje..." style="flex:1;border:1px solid var(--bor);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();lancIASend();}"></textarea>
+            <button onclick="lancIASend()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:0 18px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">Enviar</button>
+          </div>
+          <!-- Preview do lançamento -->
+          <div id="lanc-ia-preview" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Confirmar Lançamento</div>
+            <div id="lanc-ia-preview-body" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button onclick="lancIAConfirm()" style="background:var(--green,#22c55e);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">✓ Confirmar e Lançar</button>
+              <button onclick="lancIAEdit()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Editar</button>
+              <button onclick="lancIACancel()" style="background:var(--bg2);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- Filtro inline -->
       <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
@@ -6735,8 +6760,32 @@ let _lancMainTab='pagar'; // pagar | receber | todos
 
 function lancMainTab(tab, el){
   _lancMainTab=tab;
+  // Show/hide IA panel
+  const iaPanel=document.getElementById('lanc-ia-panel');
+  const lancContent=document.getElementById('lanc-content');
+  const summaryBar=document.getElementById('lanc-summary-bar');
+  const subtabs=document.getElementById('lanc-subtabs');
+  if(tab==='ia'){
+    if(iaPanel)iaPanel.style.display='flex';
+    if(lancContent)lancContent.style.display='none';
+    if(summaryBar)summaryBar.style.display='none';
+    // Style active tab
+    ['pagar','receber','todos','ia'].forEach(k=>{
+      const t=document.getElementById('lt-'+k+(k==='todos'?'-main':k==='ia'?'-main':'-main')||document.getElementById('lt-'+k+(k==='todos'?'-main':'')));
+      const el2=document.getElementById('lt-'+k+(k==='todos'||k==='ia'?'-main':''));
+      if(!el2)return;
+      el2.style.color=k===tab?'var(--fox)':'var(--t3)';
+      el2.style.borderBottomColor=k===tab?'var(--fox)':'transparent';
+    });
+    if(subtabs)subtabs.style.display='none';
+    return;
+  } else {
+    if(iaPanel)iaPanel.style.display='none';
+    if(lancContent)lancContent.style.display='';
+    if(summaryBar)summaryBar.style.display='';
+  }
   // Update tab styles
-  ['pagar','receber','todos'].forEach(k=>{
+  ['pagar','receber','todos','ia'].forEach(k=>{
     const t=document.getElementById('lt-'+k+(k==='todos'?'-main':''));
     if(!t)return;
     t.style.color=k===tab?'var(--fox)':'var(--t3)';
@@ -12813,4 +12862,169 @@ function bancShowModal(titulo, lancs, cor, sinal){
 }
 function bancShowARModal(){bancShowModal('A Receber',window._bancARList||[],'var(--green)','+');}
 function bancShowAPModal(){bancShowModal('A Pagar',window._bancAPList||[],'var(--red)','-');}
+
+// ═══════════════════════════════════════════
+// LANÇAMENTO RÁPIDO COM IA
+// ═══════════════════════════════════════════
+var _lancIAPending=null;
+
+function lancIASend(){
+  const inp=document.getElementById('lanc-ia-input');
+  const msg=(inp?inp.value:'').trim();
+  if(!msg)return;
+  inp.value='';
+  lancIAChatAdd('user',msg);
+  lancIAChatAdd('loading','...');
+  lancIAInterpret(msg);
+}
+
+function lancIAChatAdd(role,text){
+  const chat=document.getElementById('lanc-ia-chat');
+  if(!chat)return;
+  // Remove loading if exists
+  const loading=chat.querySelector('.ia-loading');
+  if(loading&&role!=='loading')loading.remove();
+  if(role==='loading'){
+    const d=document.createElement('div');
+    d.className='ia-loading';
+    d.style.cssText='align-self:flex-start;background:var(--bg2);border:1px solid var(--bor);border-radius:10px 10px 10px 2px;padding:8px 14px;font-size:12px;color:var(--t3);max-width:80%';
+    d.innerHTML='<span style="animation:pulse 1s infinite">Interpretando...</span>';
+    chat.appendChild(d);
+  } else {
+    const d=document.createElement('div');
+    const isUser=role==='user';
+    d.style.cssText='align-self:'+(isUser?'flex-end':'flex-start')+';background:'+(isUser?'var(--fox)':'var(--bg2)')+';color:'+(isUser?'#fff':'var(--t)')+';border:1px solid '+(isUser?'transparent':'var(--bor)')+';border-radius:'+(isUser?'10px 10px 2px 10px':'10px 10px 10px 2px')+';padding:8px 14px;font-size:13px;max-width:80%;line-height:1.5';
+    d.innerHTML=text;
+    chat.appendChild(d);
+  }
+  chat.scrollTop=chat.scrollHeight;
+}
+
+async function lancIAInterpret(msg){
+  const plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
+  const cats=plano.filter(c=>c.tipo==='despesa'||c.tipo==='receita').map(c=>c.cod+' '+c.nome).join('\n');
+  const contas=(typeof getBancos==='function'?getBancos():[]).map(b=>b.id+'|'+b.nome).join(', ')||'conta principal';
+  const hoje=new Date().toLocaleDateString('pt-BR');
+
+  const systemPrompt=`Você é um assistente de lançamentos financeiros para uma confeitaria artesanal.
+Interprete a mensagem do usuário e extraia as informações para um lançamento financeiro.
+Responda APENAS com JSON válido, sem explicações, sem markdown, sem blocos de código.
+
+Plano de contas disponível:
+${cats}
+
+Contas bancárias disponíveis: ${contas}
+Data de hoje: ${hoje}
+
+Retorne exatamente este JSON:
+{
+  "tipo": "despesa" ou "receita",
+  "desc": "descrição curta e clara",
+  "valor": número sem R$ (ex: 150.00),
+  "data": "YYYY-MM-DD",
+  "catCod": "código da categoria mais adequada do plano acima",
+  "catNome": "nome da categoria",
+  "bancoId": "id da conta bancária ou null",
+  "pago": true se já foi pago/recebido, false se é futuro,
+  "obs": "observação curta se necessário ou null",
+  "confianca": "alta", "media" ou "baixa"
+}`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:[{role:'user',content:msg}]
+      })
+    });
+    const data=await resp.json();
+    const raw=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    _lancIAPending=parsed;
+    lancIAShowPreview(parsed);
+    const conf={'alta':'✅ Entendi bem','media':'⚠️ Quase certo','baixa':'❓ Não tenho certeza'}[parsed.confianca]||'';
+    lancIAChatAdd('ia',conf+' — Veja o lançamento abaixo para confirmar.');
+  }catch(e){
+    lancIAChatAdd('ia','❌ Não consegui interpretar. Tente ser mais específico: <em>"Paguei R$150 de gás hoje"</em>');
+    console.error('lancIA error',e);
+  }
+}
+
+function lancIAShowPreview(p){
+  const preview=document.getElementById('lanc-ia-preview');
+  const body=document.getElementById('lanc-ia-preview-body');
+  if(!preview||!body)return;
+  const isDesp=p.tipo==='despesa';
+  const cor=isDesp?'var(--red,#ef4444)':'var(--green,#22c55e)';
+  const dataFmt=p.data?new Date(p.data+'T12:00:00').toLocaleDateString('pt-BR'):'hoje';
+  body.innerHTML=[
+    ['Tipo', '<span style="color:'+cor+';font-weight:700">'+(isDesp?'💸 Despesa':'💰 Receita')+'</span>'],
+    ['Descrição', p.desc||'—'],
+    ['Valor', '<span style="color:'+cor+';font-weight:700">R$ '+fmtN(p.valor||0)+'</span>'],
+    ['Data', dataFmt],
+    ['Categoria', '<span style="font-size:11px;color:var(--t3)">'+p.catCod+'</span> '+p.catNome],
+    p.obs?['Observação', p.obs]:null,
+    ['Status', p.pago?'✅ Já pago/recebido':'🕐 A pagar/receber'],
+  ].filter(Boolean).map(([k,v])=>
+    '<div style="display:flex;gap:8px;align-items:baseline"><span style="font-size:11px;color:var(--t3);min-width:80px;flex-shrink:0">'+k+'</span><span style="font-size:13px;color:var(--t)">'+v+'</span></div>'
+  ).join('');
+  preview.style.display='block';
+}
+
+function lancIAConfirm(){
+  if(!_lancIAPending)return;
+  const p=_lancIAPending;
+  // Build lancamento object
+  const id='ia_'+Date.now();
+  const bancos=typeof getBancos==='function'?getBancos():[];
+  const banco=p.bancoId?bancos.find(b=>b.id===p.bancoId):bancos[0];
+  const lanc={
+    id,
+    tipo:p.tipo,
+    desc:p.desc,
+    valor:Math.abs(p.valor||0),
+    data:p.data||new Date().toLocaleDateString('sv-SE'),
+    venc:p.data||new Date().toLocaleDateString('sv-SE'),
+    catCod:p.catCod||'',
+    catNome:p.catNome||'',
+    bancoId:banco?banco.id:null,
+    bancoNome:banco?banco.nome:'',
+    pago:!!p.pago,
+    obs:p.obs||'',
+    origem:'ia'
+  };
+  // Save
+  try{
+    const all=typeof getLanc==='function'?getLanc():[];
+    all.push(lanc);
+    if(typeof S!=='undefined')S.set('lancamentos',all);
+    else localStorage.setItem('verp_lancamentos',JSON.stringify(all));
+    _lancIAPending=null;
+    document.getElementById('lanc-ia-preview').style.display='none';
+    lancIAChatAdd('ia','✅ Lançado com sucesso! <strong>'+p.desc+'</strong> — R$ '+fmtN(p.valor||0));
+    if(typeof renderLanc==='function')renderLanc();
+  }catch(e){
+    lancIAChatAdd('ia','❌ Erro ao salvar: '+e.message);
+  }
+}
+
+function lancIAEdit(){
+  document.getElementById('lanc-ia-preview').style.display='none';
+  if(_lancIAPending){
+    const inp=document.getElementById('lanc-ia-input');
+    if(inp)inp.value=_lancIAPending.desc+' R$'+_lancIAPending.valor;
+    _lancIAPending=null;
+  }
+}
+
+function lancIACancel(){
+  _lancIAPending=null;
+  document.getElementById('lanc-ia-preview').style.display='none';
+}
+
 </script>
