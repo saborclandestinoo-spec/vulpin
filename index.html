@@ -1136,9 +1136,8 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         </div>
         <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
-      <div id="lanc-body-wrap">
       <!-- Pills de situação -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+      <div id="lanc-pills-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
         <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
           <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
         </div>
@@ -1163,7 +1162,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
       </div>
       <select id="lanc-month" style="display:none"></select>
-      <div class="scroll">
+      <div class="scroll" id="lanc-scroll">
         <div class="card">
           <div class="tbl-wrap"><table class="tbl" id="tbl-lanc">
             <thead><tr><th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th><th>Vencimento</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th style="display:none"></th><th>Situação</th><th>Valor</th><th></th></tr></thead>
@@ -1171,7 +1170,6 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           </table></div>
         </div>
       </div>
-      </div><!-- /lanc-body-wrap -->
     </div>
 
     <!-- BANCOS -->
@@ -6769,7 +6767,7 @@ function lancMainTab(tab, el){
   if(tab==='ia'){
     if(iaPanel)iaPanel.style.display='flex';
     // Hide all other lanc content
-    ['lanc-summary-bar','lanc-subtabs','lanc-body-wrap'].forEach(function(id){
+    ['lanc-summary-bar','lanc-pills-bar','lanc-subtabs','lanc-scroll'].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.style.display='none';
     });
@@ -6785,7 +6783,7 @@ function lancMainTab(tab, el){
     return;
   } else {
     if(iaPanel)iaPanel.style.display='none';
-    ['lanc-summary-bar','lanc-subtabs','lanc-body-wrap'].forEach(function(id){
+    ['lanc-summary-bar','lanc-pills-bar','lanc-subtabs','lanc-scroll'].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.style.display='';
     });
