@@ -4604,21 +4604,26 @@ function renderDREPage(){
     var cods=m2[lid]||[];
     var plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
     if(!cods.length) return '';
-    // expand: only add parents that are shared by 2+ mapped cods (group headers)
-    var leafCods=new Set(cods);
-    var parentCount={};
+    // Expand: for each mapped cod, also include all children from PLANO_CONTAS
+    var expandedSet=new Set(cods);
     cods.forEach(function(cod){
-      var parts=cod.split('.');
-      // add all ancestors except root (depth 0)
-      for(var i=2;i<parts.length;i++){
-        var anc=parts.slice(0,i).join('.');
-        parentCount[anc]=(parentCount[anc]||0)+1;
+      plano.forEach(function(item){
+        if(item.cod!==cod && item.cod.startsWith(cod+'.')){
+          expandedSet.add(item.cod);
+        }
+      });
+    });
+    // Also add intermediate group entries from PLANO_CONTAS
+    var allCods=Array.from(expandedSet);
+    // Add any parent entries that exist in plano and are ancestors of our cods
+    plano.forEach(function(item){
+      if(!expandedSet.has(item.cod)){
+        var isParent=allCods.some(function(c){return c.startsWith(item.cod+'.');});
+        if(isParent) expandedSet.add(item.cod);
       }
     });
-    var allCods=cods.slice();
-    Object.keys(parentCount).forEach(function(anc){
-      if(parentCount[anc]>1&&allCods.indexOf(anc)<0) allCods.push(anc);
-    });
+    var allCods=Array.from(expandedSet);
+    var leafCods=new Set(cods);
     allCods.sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});});
     var minD=Math.min.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
     var maxD=Math.max.apply(null,allCods.map(function(c){return c.split('.').length-1;}));
