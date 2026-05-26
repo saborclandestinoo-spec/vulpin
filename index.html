@@ -4643,6 +4643,7 @@ function renderDREPage(){
       var codc=_dCc(depth2);
       var dotSz=_dDot(depth2);
       var val2=_sumCod(cod);
+      if(val2===0) return '';
       var valFmt2=val2>0?'R$ '+fmtN(val2):'—';
       var valColor2=val2>0?(cod.charAt(0)==='3'?'#16A34A':'#DC2626'):'#94A3B8';
       var pct2=recBruta>0&&val2>0?(val2/recBruta*100).toFixed(1)+'%':'';
