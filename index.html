@@ -6490,23 +6490,28 @@ const PLANO_CONTAS=[
 
   // 1.1 Circulante
   // 1.1.1 Caixa e Equivalentes
+  {cod:'1.1.1',nome:"Caixa e Equivalentes de Caixa",tipo:'ativo'},
   {cod:'1.1.1.01',nome:"Caixa Geral",tipo:'ativo'},
   {cod:'1.1.1.02',nome:"Caixa — Fundo Fixo",tipo:'ativo'},
   // 1.1.2 Bancos Conta Movimento
+  {cod:'1.1.2',nome:"Bancos Conta Movimento",tipo:'ativo'},
   {cod:'1.1.2.01',nome:"Banco — Conta Corrente Principal",tipo:'ativo'},
   {cod:'1.1.2.02',nome:"Banco — Conta Corrente Secundária",tipo:'ativo'},
   {cod:'1.1.2.03',nome:"Banco — Conta Digital (Inter, Nubank, etc.)",tipo:'ativo'},
   {cod:'1.1.2.04',nome:"Banco — Poupança / Reserva",tipo:'ativo'},
   // 1.1.3 Contas a Receber
+  {cod:'1.1.3',nome:"Contas a Receber",tipo:'ativo'},
   {cod:'1.1.3.01',nome:"Clientes — Cartão de Crédito a Receber",tipo:'ativo'},
   {cod:'1.1.3.02',nome:"Clientes — iFood / Plataformas a Receber",tipo:'ativo'},
   {cod:'1.1.3.03',nome:"Clientes — Encomendas a Receber",tipo:'ativo'},
   {cod:'1.1.3.04',nome:"Adiantamentos de Clientes",tipo:'ativo'},
   // 1.1.4 Estoques
+  {cod:'1.1.4',nome:"Estoques",tipo:'ativo'},
   {cod:'1.1.4.01',nome:"Estoque — Matérias-Primas e Ingredientes",tipo:'ativo'},
   {cod:'1.1.4.02',nome:"Estoque — Embalagens",tipo:'ativo'},
   {cod:'1.1.4.03',nome:"Estoque — Produtos Acabados",tipo:'ativo'},
   // 1.1.5 Outros Ativos Circulantes
+  {cod:'1.1.5',nome:"Outros Ativos Circulantes",tipo:'ativo'},
   {cod:'1.1.5.01',nome:"Aplicações Financeiras — Curto Prazo",tipo:'ativo'},
   {cod:'1.1.5.02',nome:"Adiantamentos a Fornecedores",tipo:'ativo'},
   {cod:'1.1.5.03',nome:"Despesas Pagas Antecipadamente",tipo:'ativo'},
@@ -6514,9 +6519,11 @@ const PLANO_CONTAS=[
 
   // 1.2 Não Circulante
   // 1.2.1 Realizável a Longo Prazo
+  {cod:'1.2.1',nome:"Realizável a Longo Prazo",tipo:'ativo'},
   {cod:'1.2.1.01',nome:"Depósitos Caução (Aluguel)",tipo:'ativo'},
   {cod:'1.2.1.02',nome:"Aplicações Financeiras — Longo Prazo",tipo:'ativo'},
   // 1.2.2 Imobilizado
+  {cod:'1.2.2',nome:"Imobilizado",tipo:'ativo'},
   {cod:'1.2.2.01',nome:"Máquinas e Equipamentos de Produção",tipo:'ativo'},
   {cod:'1.2.2.02',nome:"(-) Depreciação Acumulada — Equipamentos",tipo:'ativo'},
   {cod:'1.2.2.03',nome:"Móveis e Utensílios",tipo:'ativo'},
@@ -6528,6 +6535,7 @@ const PLANO_CONTAS=[
   {cod:'1.2.2.09',nome:"Equipamentos de Informática",tipo:'ativo'},
   {cod:'1.2.2.10',nome:"(-) Depreciação Acumulada — Informática",tipo:'ativo'},
   // 1.2.3 Intangível
+  {cod:'1.2.3',nome:"Intangível",tipo:'ativo'},
   {cod:'1.2.3.01',nome:"Marca Registrada (INPI)",tipo:'ativo'},
   {cod:'1.2.3.02',nome:"Softwares e Sistemas Adquiridos",tipo:'ativo'},
   {cod:'1.2.3.03',nome:"(-) Amortização Acumulada — Intangíveis",tipo:'ativo'},
@@ -6538,11 +6546,13 @@ const PLANO_CONTAS=[
 
   // 2.1 Circulante
   // 2.1.1 Impostos e Contribuições a Recolher
+  {cod:'2.1.1',nome:"Impostos e Contribuições a Recolher",tipo:'passivo'},
   {cod:'2.1.1.01',nome:"Simples Nacional a Recolher (DAS)",tipo:'passivo'},
   {cod:'2.1.1.02',nome:"INSS a Recolher (Empregado + Patronal)",tipo:'passivo'},
   {cod:'2.1.1.03',nome:"FGTS a Recolher",tipo:'passivo'},
   {cod:'2.1.1.04',nome:"ISS a Recolher",tipo:'passivo'},
   // 2.1.2 Contas a Pagar
+  {cod:'2.1.2',nome:"Contas a Pagar",tipo:'passivo'},
   {cod:'2.1.2.01',nome:"Fornecedores — Ingredientes e Matérias-Primas",tipo:'passivo'},
   {cod:'2.1.2.02',nome:"Fornecedores — Embalagens",tipo:'passivo'},
   {cod:'2.1.2.03',nome:"Fornecedores — Serviços",tipo:'passivo'},
@@ -6553,24 +6563,29 @@ const PLANO_CONTAS=[
   {cod:'2.1.2.08',nome:"Aluguéis a Pagar",tipo:'passivo'},
   {cod:'2.1.2.09',nome:"Contas a Pagar Diversas",tipo:'passivo'},
   // 2.1.3 Empréstimos Bancários
+  {cod:'2.1.3',nome:"Empréstimos Bancários",tipo:'passivo'},
   {cod:'2.1.3.01',nome:"Empréstimos Bancários — Curto Prazo",tipo:'passivo'},
   {cod:'2.1.3.02',nome:"Financiamentos — Parcelas Correntes",tipo:'passivo'},
 
   // 2.2 Não Circulante
   // 2.2.1 Empréstimos Bancários — Longo Prazo
+  {cod:'2.2.1',nome:"Empréstimos Bancários — Longo Prazo",tipo:'passivo'},
   {cod:'2.2.1.01',nome:"Empréstimos Bancários — Longo Prazo",tipo:'passivo'},
   {cod:'2.2.1.02',nome:"Financiamentos — Longo Prazo",tipo:'passivo'},
   {cod:'2.2.1.03',nome:"Empréstimos de Sócios — Longo Prazo",tipo:'passivo'},
 
   // 2.3 Patrimônio Líquido
   // 2.3.1 Capital Social
+  {cod:'2.3.1',nome:"Capital Social",tipo:'passivo'},
   {cod:'2.3.1.01',nome:"Capital Social Integralizado",tipo:'pl'},
   {cod:'2.3.1.02',nome:"Capital Social a Integralizar",tipo:'pl'},
   // 2.3.2 Reservas
+  {cod:'2.3.2',nome:"Reservas",tipo:'passivo'},
   {cod:'2.3.2.01',nome:"Reserva Legal",tipo:'pl'},
   {cod:'2.3.2.02',nome:"Reserva de Capital",tipo:'pl'},
   {cod:'2.3.2.03',nome:"Reserva para Contingências",tipo:'pl'},
   // 2.3.3 Lucros ou Prejuízos Acumulados
+  {cod:'2.3.3',nome:"Lucros ou Prejuízos Acumulados",tipo:'passivo'},
   {cod:'2.3.3.01',nome:"Lucros Acumulados",tipo:'pl'},
   {cod:'2.3.3.02',nome:"Prejuízos Acumulados",tipo:'pl'},
   {cod:'2.3.3.03',nome:"Resultado do Exercício",tipo:'pl'},
@@ -6582,6 +6597,7 @@ const PLANO_CONTAS=[
 
   // 3.1 Receita Líquida
   // 3.1.1 Receita Bruta de Vendas
+  {cod:'3.1.1',nome:"Receita Bruta de Vendas",tipo:'despesa'},
   {cod:'3.1.1.01',nome:"Vendas — iFood",tipo:'receita'},
   {cod:'3.1.1.02',nome:"Vendas — Rappi / Uber Eats",tipo:'receita'},
   {cod:'3.1.1.03',nome:"Vendas — Site / Cardápio Web",tipo:'receita'},
@@ -6592,9 +6608,11 @@ const PLANO_CONTAS=[
   {cod:'3.1.1.08',nome:"Receita de Personalização / Kit Presente",tipo:'receita'},
   {cod:'3.1.1.09',nome:"Receita de Aulas e Workshops",tipo:'receita'},
   // 3.1.2 Deduções da Receita Bruta
+  {cod:'3.1.2',nome:"Deduções da Receita Bruta",tipo:'despesa'},
   {cod:'3.1.2.01',nome:"(-) Devoluções e Cancelamentos",tipo:'despesa'},
   {cod:'3.1.2.02',nome:"(-) Descontos e Cupons Concedidos",tipo:'despesa'},
   // 3.1.3 Impostos sobre Vendas
+  {cod:'3.1.3',nome:"Impostos e Taxas sobre Vendas",tipo:'despesa'},
   {cod:'3.1.3.01',nome:"(-) Simples Nacional — DAS",tipo:'despesa'},
   {cod:'3.1.3.02',nome:"(-) ISS sobre Serviços",tipo:'despesa'},
   {cod:'3.1.3.03',nome:"(-) Comissão iFood",tipo:'despesa'},
@@ -6606,6 +6624,7 @@ const PLANO_CONTAS=[
 
   // 3.2 Custos
   // 3.2.1 Custo dos Produtos Vendidos — CPV
+  {cod:'3.2.1',nome:"Custo dos Produtos Vendidos — CPV",tipo:'despesa'},
   {cod:'3.2.1.01',nome:"Ingredientes — Chocolates e Coberturas",tipo:'despesa'},
   {cod:'3.2.1.02',nome:"Ingredientes — Farinhas e Açúcares",tipo:'despesa'},
   {cod:'3.2.1.03',nome:"Ingredientes — Manteiga, Ovos e Laticínios",tipo:'despesa'},
@@ -6616,6 +6635,7 @@ const PLANO_CONTAS=[
   {cod:'3.2.1.08',nome:"Mão de Obra Direta — Salários Produção",tipo:'despesa'},
   {cod:'3.2.1.09',nome:"Mão de Obra Direta — Encargos Produção",tipo:'despesa'},
   // 3.2.2 Custos Indiretos de Fabricação — CIF
+  {cod:'3.2.2',nome:"Custos Indiretos de Fabricação — CIF",tipo:'despesa'},
   {cod:'3.2.2.01',nome:"Gás de Cozinha (GLP)",tipo:'despesa'},
   {cod:'3.2.2.02',nome:"Energia Elétrica — Produção",tipo:'despesa'},
   {cod:'3.2.2.03',nome:"Água — Produção",tipo:'despesa'},
@@ -6628,6 +6648,7 @@ const PLANO_CONTAS=[
 
   // 3.3 Despesas
   // 3.3.1 Despesas Comerciais
+  {cod:'3.3.1',nome:"Despesas Comerciais",tipo:'despesa'},
   {cod:'3.3.1.01',nome:"Salários — Vendas",tipo:'despesa'},
   {cod:'3.3.1.02',nome:"Encargos — Vendas (INSS, FGTS, 13º, Férias)",tipo:'despesa'},
   {cod:'3.3.1.03',nome:"Pró-labore dos Sócios",tipo:'despesa'},
@@ -6644,6 +6665,7 @@ const PLANO_CONTAS=[
   {cod:'3.3.1.14',nome:"Influenciadores / Parcerias",tipo:'despesa'},
   {cod:'3.3.1.15',nome:"Feiras, Eventos e Degustações",tipo:'despesa'},
   // 3.3.2 Despesas Administrativas
+  {cod:'3.3.2',nome:"Despesas Administrativas",tipo:'despesa'},
   {cod:'3.3.2.01',nome:"Salários — Administrativo",tipo:'despesa'},
   {cod:'3.3.2.02',nome:"Encargos — Administrativo (INSS, FGTS, 13º, Férias)",tipo:'despesa'},
   {cod:'3.3.2.03',nome:"Vale-Transporte",tipo:'despesa'},
@@ -6668,6 +6690,7 @@ const PLANO_CONTAS=[
   {cod:'3.3.2.22',nome:"Amortização — Softwares e Marca",tipo:'despesa'},
   {cod:'3.3.2.23',nome:"Despesas Diversas",tipo:'despesa'},
   // 3.3.3 Receitas e Despesas Financeiras
+  {cod:'3.3.3',nome:"Receitas e Despesas Financeiras",tipo:'despesa'},
   {cod:'3.3.3.01',nome:"Rendimentos CDI / CDB / Poupança",tipo:'receita'},
   {cod:'3.3.3.02',nome:"Descontos Obtidos de Fornecedores",tipo:'receita'},
   {cod:'3.3.3.03',nome:"Juros sobre Empréstimos e Financiamentos",tipo:'despesa'},
