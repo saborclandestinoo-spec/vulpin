@@ -6784,7 +6784,7 @@ function lancMainTab(tab, el){
   } else {
     if(iaPanel)iaPanel.style.display='none';
     // Restore elements
-    [['lanc-summary-bar','flex'],['lanc-pills-bar','flex'],['lanc-scroll','flex']].forEach(function(e){
+    [['lanc-summary-bar','flex'],['lanc-pills-bar','flex'],['lanc-scroll','']].forEach(function(e){
       var el=document.getElementById(e[0]);
       if(el)el.style.display=e[1];
     });
