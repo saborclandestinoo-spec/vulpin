@@ -6783,9 +6783,10 @@ function lancMainTab(tab, el){
     return;
   } else {
     if(iaPanel)iaPanel.style.display='none';
-    ['lanc-summary-bar','lanc-pills-bar','lanc-subtabs','lanc-scroll'].forEach(function(id){
+    var lancRestoreDisplay={'lanc-summary-bar':'','lanc-pills-bar':'flex','lanc-subtabs':'flex','lanc-scroll':'flex'};
+    Object.keys(lancRestoreDisplay).forEach(function(id){
       var el=document.getElementById(id);
-      if(el)el.style.display='';
+      if(el)el.style.display=lancRestoreDisplay[id];
     });
   }
   // Update tab styles
@@ -6963,6 +6964,11 @@ function renderLancSummary(){
 }
 
 function renderLanc(){
+  // Ensure scroll is visible if IA tab not active
+  if(typeof _lancMainTab==='undefined'||_lancMainTab!=='ia'){
+    var s=document.getElementById('lanc-scroll');
+    if(s&&s.style.display==='none')s.style.display='';
+  }
   // period handled by lancGetRange()
   const bs=document.getElementById('lanc-bank-filter');
   if(bs){const bv=bs.value;bs.innerHTML='<option value="">Todas as contas</option>'+getBancos().map(b=>`<option value="${b.id}">${b.nome}</option>`).join('');bs.value=bv;}
