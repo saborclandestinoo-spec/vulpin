@@ -12987,7 +12987,25 @@ function lancIAParseLocal(msg, plano, contasStr, hoje){
   // Banco
   const bancos=(typeof getBancos==='function'?getBancos():[]);
   const banco=bancos[0]||null;
-  return{tipo,desc:desc||catNome,valor,data,catCod,catNome,bancoId:banco?banco.id:null,pago,obs:null,confianca:bestScore>0?'media':'baixa'};
+  // Forma de pagamento
+  let forma='';
+  if(m.includes('pix'))forma='Pix';
+  else if(m.includes('dinheiro')||m.includes('especie')||m.includes('espécie'))forma='Dinheiro';
+  else if(m.includes('débito')||m.includes('debito'))forma='Cartão Débito';
+  else if(m.includes('crédito')||m.includes('credito'))forma='Cartão Crédito';
+  // Centro de custo
+  const ccs=typeof getCC==='function'?getCC():[];
+  let ccId=null,ccNome='';
+  if(ccs.length){
+    let bestCC=0;
+    ccs.forEach(c=>{
+      const cn=(c.nome||'').toLowerCase();
+      let sc=0;
+      words.forEach(w=>{if(w.length>3&&cn.includes(w))sc+=w.length;});
+      if(sc>bestCC){bestCC=sc;ccId=c.id;ccNome=c.nome;}
+    });
+  }
+  return{tipo,desc:desc||catNome,valor,data,catCod,catNome,bancoId:banco?banco.id:null,pago,forma,ccId,ccNome,obs:null,confianca:bestScore>0?'media':'baixa'};
 }
 
 function lancIAShowPreview(p){
@@ -13005,6 +13023,8 @@ function lancIAShowPreview(p){
     ['Categoria', '<span style="font-size:11px;color:var(--t3)">'+p.catCod+'</span> '+p.catNome],
     p.obs?['Observação', p.obs]:null,
     ['Status', p.pago?'✅ Já pago/recebido':'🕐 A pagar/receber'],
+    p.forma?['Forma Pgto', p.forma]:null,
+    p.ccNome?['Centro Custo', p.ccNome]:null,
   ].filter(Boolean).map(([k,v])=>
     '<div style="display:flex;gap:8px;align-items:baseline"><span style="font-size:11px;color:var(--t3);min-width:80px;flex-shrink:0">'+k+'</span><span style="font-size:13px;color:var(--t)">'+v+'</span></div>'
   ).join('');
@@ -13030,6 +13050,9 @@ function lancIAConfirm(){
     bancoId:banco?banco.id:null,
     bancoNome:banco?banco.nome:'',
     pago:!!p.pago,
+    forma:p.forma||'',
+    ccId:p.ccId||null,
+    ccNome:p.ccNome||'',
     obs:p.obs||'',
     origem:'ia'
   };
