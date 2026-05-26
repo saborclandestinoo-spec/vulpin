@@ -12908,57 +12908,88 @@ function lancIAChatAdd(role,text){
 
 async function lancIAInterpret(msg){
   const plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
-  const cats=plano.filter(c=>c.tipo==='despesa'||c.tipo==='receita').map(c=>c.cod+' '+c.nome).join('\n');
-  const contas=(typeof getBancos==='function'?getBancos():[]).map(b=>b.id+'|'+b.nome).join(', ')||'conta principal';
-  const hoje=new Date().toLocaleDateString('pt-BR');
+  const cats=plano.filter(c=>c.tipo==='despesa'||c.tipo==='receita').map(c=>c.cod+'|'+c.nome).join('\n');
+  const contas=(typeof getBancos==='function'?getBancos():[]).map(b=>b.id+'|'+b.nome).join('\n')||'';
+  const hoje=new Date().toLocaleDateString('sv-SE',{timeZone:'America/Sao_Paulo'});
 
-  const systemPrompt=`Você é um assistente de lançamentos financeiros para uma confeitaria artesanal.
-Interprete a mensagem do usuário e extraia as informações para um lançamento financeiro.
-Responda APENAS com JSON válido, sem explicações, sem markdown, sem blocos de código.
-
-Plano de contas disponível:
-${cats}
-
-Contas bancárias disponíveis: ${contas}
-Data de hoje: ${hoje}
-
-Retorne exatamente este JSON:
-{
-  "tipo": "despesa" ou "receita",
-  "desc": "descrição curta e clara",
-  "valor": número sem R$ (ex: 150.00),
-  "data": "YYYY-MM-DD",
-  "catCod": "código da categoria mais adequada do plano acima",
-  "catNome": "nome da categoria",
-  "bancoId": "id da conta bancária ou null",
-  "pago": true se já foi pago/recebido, false se é futuro,
-  "obs": "observação curta se necessário ou null",
-  "confianca": "alta", "media" ou "baixa"
-}`;
+  const systemPrompt='Você é um assistente de lançamentos financeiros para uma confeitaria.\nInterprete a mensagem e retorne APENAS JSON válido, sem markdown nem explicações.\n\nPlano de contas (cod|nome):\n'+cats+'\n\nContas bancárias (id|nome):\n'+contas+'\n\nData de hoje: '+hoje+'\n\nJSON esperado:\n{"tipo":"despesa ou receita","desc":"descrição","valor":0.00,"data":"YYYY-MM-DD","catCod":"cod","catNome":"nome","bancoId":null,"pago":true,"obs":null,"confianca":"alta"}\n\nRegras:\n- tipo=receita se envolve recebimento/venda; despesa se é gasto/pagamento\n- valor sempre positivo\n- data: hoje se não informado, calcule datas relativas (ontem, semana passada etc)\n- catCod: escolha a categoria mais adequada do plano acima\n- pago=true se já ocorreu, false se é futuro\n- confianca: alta se entendeu tudo, media se deduziu algo, baixa se inseguro';
 
   try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system:systemPrompt,
-        messages:[{role:'user',content:msg}]
-      })
-    });
-    const data=await resp.json();
-    const raw=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('');
-    const clean=raw.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
+    // Tenta proxy local do backend Vulpin primeiro
+    let resp=null;
+    try{
+      resp=await fetch('/api/ai',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt:systemPrompt+'\n\nMensagem: '+msg})
+      });
+      if(!resp.ok)resp=null;
+    }catch(e2){resp=null;}
+
+    let parsed=null;
+
+    if(resp){
+      const data=await resp.json();
+      const raw=(data.text||data.content||data.result||'');
+      const clean=raw.replace(/```json|```/g,'').trim();
+      parsed=JSON.parse(clean);
+    } else {
+      // Fallback: interpretação local por regras
+      parsed=lancIAParseLocal(msg,plano,contas,hoje);
+    }
+
+    if(!parsed||!parsed.valor){
+      lancIAChatAdd('ia','❌ Não consegui extrair o valor. Tente: <em>"Paguei R$150 de gás hoje"</em>');
+      return;
+    }
     _lancIAPending=parsed;
     lancIAShowPreview(parsed);
-    const conf={'alta':'✅ Entendi bem','media':'⚠️ Quase certo','baixa':'❓ Não tenho certeza'}[parsed.confianca]||'';
-    lancIAChatAdd('ia',conf+' — Veja o lançamento abaixo para confirmar.');
+    const conf={'alta':'✅ Entendi','media':'⚠️ Confira os detalhes','baixa':'❓ Verifique — não tenho certeza'}[parsed.confianca]||'';
+    lancIAChatAdd('ia',conf+' — confirme o lançamento abaixo.');
   }catch(e){
-    lancIAChatAdd('ia','❌ Não consegui interpretar. Tente ser mais específico: <em>"Paguei R$150 de gás hoje"</em>');
+    lancIAChatAdd('ia','❌ Erro ao interpretar: '+e.message);
     console.error('lancIA error',e);
   }
+}
+
+function lancIAParseLocal(msg, plano, contasStr, hoje){
+  const m=msg.toLowerCase();
+  // Tipo
+  const recWords=['recebi','receita','venda','vendei','entrou','entrada','recebimento','faturei'];
+  const tipo=recWords.some(w=>m.includes(w))?'receita':'despesa';
+  // Valor
+  const vMatch=msg.match(/r\$?\s*([\d.,]+)|([\d.,]+)\s*r\$|\b([\d]+(?:[.,]\d{2})?)\b/i);
+  let valor=0;
+  if(vMatch){
+    const raw=(vMatch[1]||vMatch[2]||vMatch[3]||'0').replace(/\./g,'').replace(',','.');
+    valor=parseFloat(raw)||0;
+  }
+  // Data
+  let data=hoje;
+  if(m.includes('ontem')){const d=new Date(hoje);d.setDate(d.getDate()-1);data=d.toLocaleDateString('sv-SE');}
+  else if(m.includes('semana passada')){const d=new Date(hoje);d.setDate(d.getDate()-7);data=d.toLocaleDateString('sv-SE');}
+  else if(m.includes('mês passado')||m.includes('mes passado')){const d=new Date(hoje);d.setMonth(d.getMonth()-1);data=d.toLocaleDateString('sv-SE');}
+  else{const dm=msg.match(/dia\s+(\d{1,2})/i);if(dm){const d=new Date(hoje);d.setDate(parseInt(dm[1]));data=d.toLocaleDateString('sv-SE');}}
+  // Pago
+  const futWords=['vencimento','vence','prazo','a pagar','a receber','vai'];
+  const pago=!futWords.some(w=>m.includes(w));
+  // Categoria — busca por palavras-chave no nome
+  let catCod='',catNome='';
+  const cats=plano.filter(c=>c.tipo===tipo);
+  const words=m.split(/\s+/);
+  let bestScore=0;
+  cats.forEach(c=>{
+    const cn=c.nome.toLowerCase();
+    let score=0;
+    words.forEach(w=>{if(w.length>3&&cn.includes(w))score+=w.length;});
+    if(score>bestScore){bestScore=score;catCod=c.cod;catNome=c.nome;}
+  });
+  // Descrição — remove valor e palavras-chave
+  const desc=msg.replace(/r\$\s*[\d.,]+/gi,'').replace(/[\d.,]+\s*r\$/gi,'').replace(/paguei|recebi|comprei|gastei/gi,'').trim().replace(/\s+/g,' ')||catNome;
+  // Banco
+  const bancos=(typeof getBancos==='function'?getBancos():[]);
+  const banco=bancos[0]||null;
+  return{tipo,desc:desc||catNome,valor,data,catCod,catNome,bancoId:banco?banco.id:null,pago,obs:null,confianca:bestScore>0?'media':'baixa'};
 }
 
 function lancIAShowPreview(p){
