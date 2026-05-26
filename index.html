@@ -7073,13 +7073,13 @@ function getPC_TREE(){
         return;
       }
       // Leaf (4+)
-      if(!groups[gCod].subgroups[sgCod])groups[gCod].subgroups[sgCod]={cod:sgCod,label:sgCod,children:[]};
+      if(!groups[gCod].subgroups[sgCod])groups[gCod].subgroups[sgCod]={cod:sgCod,label:(typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[sgCod])||sgCod,children:[]};
       groups[gCod].subgroups[sgCod].children.push(item.cod);
     });
     Object.keys(groups).sort(function(a,b){return a.localeCompare(b,undefined,{numeric:true});}).forEach(function(gk){
       const g=groups[gk];
       const sgs=Object.values(g.subgroups).sort(function(a,b){return a.cod.localeCompare(b.cod,undefined,{numeric:true});});
-      result[tipo].push({cod:g.cod,label:g.label||g.cod,children:sgs});
+      result[tipo].push({cod:g.cod,label:g.label||(typeof PLANO_CONTAS_NOMES!=='undefined'&&PLANO_CONTAS_NOMES[g.cod])||g.cod,children:sgs});
     });
   });
   return result;
@@ -7088,44 +7088,7 @@ function getPC_TREE(){
 const PC_TREE=new Proxy({},{get:function(t,p){return getPC_TREE()[p];}});
 
 // Add 3.9 items to PLANO_CONTAS for completeness
-const PC_EXTRA=[
-  {cod:'3.2.1.2',nome:'Rendimentos Poupança',tipo:'receita'},
-  {cod:'3.2.1.3',nome:'Rendimentos Fundos de Investimento',tipo:'receita'},
-  {cod:'3.2.2.2',nome:'Multas Recebidas',tipo:'receita'},
-  {cod:'3.3.1.1',nome:'Venda de Máquinas e Equipamentos',tipo:'receita'},
-  {cod:'3.3.1.2',nome:'Venda de Veículos',tipo:'receita'},
-  {cod:'3.3.1.3',nome:'Venda de Imóveis',tipo:'receita'},
-  {cod:'3.3.2.2',nome:'Sobra de Caixa',tipo:'receita'},
-  {cod:'3.3.2.3',nome:'Receita Não Identificada',tipo:'receita'},
-  {cod:'4.3.5.2',nome:'Sistema de Segurança',tipo:'despesa'},
-  {cod:'4.3.5.4',nome:'Suprimentos Copa e Cozinha Adm.',tipo:'despesa'},
-  {cod:'4.3.5.5',nome:'Confraternizações e Eventos Internos',tipo:'despesa'},
-  {cod:'4.3.6.3',nome:'Apple iCloud / Google Drive',tipo:'despesa'},
-  {cod:'4.3.6.4',nome:'Impressora e Suprimentos',tipo:'despesa'},
-  {cod:'4.3.7.1',nome:'Emolumentos e Taxas Cartoriais',tipo:'despesa'},
-  {cod:'4.4.1.4',nome:'Multas Fiscais Pagas',tipo:'despesa'},
-  {cod:'4.4.1.5',nome:'Variação Cambial Negativa',tipo:'despesa'},
-  {cod:'4.5.1.2',nome:'Perda na Alienação de Imobilizado',tipo:'despesa'},
-  {cod:'4.5.1.3',nome:'Perda com Devedores Duvidosos (PDD)',tipo:'despesa'},
-  {cod:'4.6.1.1',nome:'Depreciação — Máquinas e Equipamentos',tipo:'despesa'},
-  {cod:'4.6.1.2',nome:'Depreciação — Veículos',tipo:'despesa'},
-  {cod:'4.6.1.3',nome:'Depreciação — Móveis e Utensílios',tipo:'despesa'},
-  {cod:'4.6.1.4',nome:'Depreciação — Instalações',tipo:'despesa'},
-  {cod:'4.6.2.1',nome:'Amortização — Softwares e Sistemas',tipo:'despesa'},
-  {cod:'4.6.2.2',nome:'Amortização — Marca / Intangíveis',tipo:'despesa'},
-  {cod:'4.7.1.2',nome:'Aquisição de Veículos',tipo:'despesa'},
-  {cod:'3.9.1.1',nome:'(-) Simples Nacional sobre Vendas (DAS)',tipo:'despesa'},
-  {cod:'3.9.1.2',nome:'(-) ICMS sobre Vendas',tipo:'despesa'},
-  {cod:'3.9.1.3',nome:'(-) ISS sobre Serviços',tipo:'despesa'},
-  {cod:'3.9.2.1',nome:'(-) Devoluções de Vendas',tipo:'despesa'},
-  {cod:'3.9.2.2',nome:'(-) Cancelamentos de Pedidos',tipo:'despesa'},
-  {cod:'3.9.2.3',nome:'(-) Descontos Incondicionais Concedidos',tipo:'despesa'},
-  {cod:'3.9.3.1',nome:'(-) Taxas iFood',tipo:'despesa'},
-  {cod:'3.9.3.2',nome:'(-) Taxas de Cartão — Débito',tipo:'despesa'},
-  {cod:'3.9.3.3',nome:'(-) Taxas de Cartão — Crédito 1x',tipo:'despesa'},
-  {cod:'3.9.3.4',nome:'(-) Taxas de Cartão — Crédito Parcelado',tipo:'despesa'},
-  {cod:'3.9.3.5',nome:'(-) Antecipação de Recebíveis',tipo:'despesa'},
-];
+const PC_EXTRA=[];
 PC_EXTRA.forEach(e=>{if(!PLANO_CONTAS.find(c=>c.cod===e.cod))PLANO_CONTAS.push(e);});
 
 function buildCustomDrop(dropId, tipo, onSelect) {
