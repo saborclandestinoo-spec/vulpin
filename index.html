@@ -6472,111 +6472,266 @@ function deleteFormaPedido(){
 const PLANO_CONTAS_NOMES={"3.1": "Receita Bruta Operacional", "3.1.1": "Receita de Venda de Produtos", "3.1.2": "Receita de Prestação de Serviços", "3.2": "Receitas Financeiras", "3.2.1": "Rendimentos de Aplicações", "3.2.2": "Juros e Multas Recebidos", "3.3": "Outras Receitas Não Operacionais", "3.3.1": "Alienação de Ativos", "3.3.2": "Entradas Diversas", "3.9": "Deduções da Receita Bruta", "3.9.1": "Impostos sobre Vendas", "3.9.2": "Devoluções e Cancelamentos", "3.9.3": "Taxas de Marketplace e Maquininhas", "4.1": "CPV — Custo dos Produtos Vendidos", "4.1.1": "Matérias-Primas e Ingredientes", "4.1.2": "Mão de Obra Direta", "4.1.3": "Custos Indiretos de Fabricação", "4.2": "Despesas com Vendas", "4.2.1": "Logística e Entrega", "4.2.2": "Marketing e Comunicação", "4.2.3": "Canais de Venda", "4.3": "Despesas Administrativas", "4.3.1": "Ocupação", "4.3.2": "Utilidades", "4.3.3": "Serviços Profissionais", "4.3.4": "Pessoal Administrativo", "4.3.5": "Manutenção Geral", "4.3.6": "Tecnologia e Sistemas", "4.3.7": "Tributário e Legal", "4.4": "Despesas Financeiras", "4.4.1": "Encargos Financeiros", "4.5": "Outras Despesas Não Operacionais", "4.5.1": "Perdas e Baixas de Ativos", "4.6": "Depreciação e Amortização", "4.6.1": "Depreciação", "4.6.2": "Amortização", "4.7": "Investimentos Ativados", "4.7.1": "Imobilizações", "4.7.2": "Intangíveis", "5.1": "Transferências a Crédito", "5.1.1": "Movimentações Bancárias — Crédito", "5.2": "Transferências a Débito", "5.2.1": "Movimentações Bancárias — Débito"};
 const PLANO_CONTAS=[
 
-  // ── 3. RECEITAS ───────────────────────────────────────────
+  // ════════════════════════════════════════════
+  // 1. ATIVO
+  // ════════════════════════════════════════════
+  // 1.1 Ativo Circulante
+  // 1.1.1 Caixa e Equivalentes de Caixa
+  {cod:'1.1.1.01',nome:"Caixa Geral",tipo:'ativo'},
+  {cod:'1.1.1.02',nome:"Caixa — Fundo Fixo",tipo:'ativo'},
+  {cod:'1.1.1.03',nome:"Banco — Conta Corrente Principal",tipo:'ativo'},
+  {cod:'1.1.1.04',nome:"Banco — Conta Corrente Secundária",tipo:'ativo'},
+  {cod:'1.1.1.05',nome:"Banco — Poupança / Reserva",tipo:'ativo'},
+  {cod:'1.1.1.06',nome:"Banco — Conta Digital (Inter, Nubank, etc.)",tipo:'ativo'},
+  // 1.1.2 Aplicações Financeiras
+  {cod:'1.1.2.01',nome:"CDB / CDI — Curto Prazo",tipo:'ativo'},
+  {cod:'1.1.2.02',nome:"Fundo de Investimento — Curto Prazo",tipo:'ativo'},
+  // 1.1.3 Contas a Receber
+  {cod:'1.1.3.01',nome:"Clientes a Receber — Cartão de Crédito",tipo:'ativo'},
+  {cod:'1.1.3.02',nome:"Clientes a Receber — iFood / Plataformas",tipo:'ativo'},
+  {cod:'1.1.3.03',nome:"Clientes a Receber — Encomendas",tipo:'ativo'},
+  {cod:'1.1.3.04',nome:"Adiantamentos de Clientes",tipo:'ativo'},
+  // 1.1.4 Estoques
+  {cod:'1.1.4.01',nome:"Estoque — Matérias-Primas e Ingredientes",tipo:'ativo'},
+  {cod:'1.1.4.02',nome:"Estoque — Embalagens",tipo:'ativo'},
+  {cod:'1.1.4.03',nome:"Estoque — Produtos Acabados",tipo:'ativo'},
+  // 1.1.5 Outros Ativos Circulantes
+  {cod:'1.1.5.01',nome:"Impostos a Recuperar (Simples Nacional)",tipo:'ativo'},
+  {cod:'1.1.5.02',nome:"Adiantamentos a Fornecedores",tipo:'ativo'},
+  {cod:'1.1.5.03',nome:"Despesas Pagas Antecipadamente",tipo:'ativo'},
 
-  // 3.1 Vendas
-  {cod:'3.1.1',nome:"Vendas — iFood",tipo:'receita'},
-  {cod:'3.1.2',nome:"Vendas — WhatsApp / Encomenda",tipo:'receita'},
-  {cod:'3.1.3',nome:"Vendas — Site / Cardápio Web",tipo:'receita'},
-  {cod:'3.1.4',nome:"Vendas — Rappi / Uber Eats",tipo:'receita'},
-  {cod:'3.1.5',nome:"Vendas — Loja Física / Balcão",tipo:'receita'},
-  {cod:'3.1.6',nome:"Vendas — Feiras e Eventos",tipo:'receita'},
-  {cod:'3.1.7',nome:"Vendas — Frete / Taxa de Entrega",tipo:'receita'},
+  // 1.2 Ativo Não Circulante
+  // 1.2.1 Realizável a Longo Prazo
+  {cod:'1.2.1.01',nome:"Depósitos Caução (Aluguel)",tipo:'ativo'},
+  {cod:'1.2.1.02',nome:"Aplicações Financeiras — Longo Prazo",tipo:'ativo'},
+  // 1.2.2 Imobilizado
+  {cod:'1.2.2.01',nome:"Máquinas e Equipamentos de Produção",tipo:'ativo'},
+  {cod:'1.2.2.02',nome:"(-) Depreciação Acumulada — Equipamentos",tipo:'ativo'},
+  {cod:'1.2.2.03',nome:"Móveis e Utensílios",tipo:'ativo'},
+  {cod:'1.2.2.04',nome:"(-) Depreciação Acumulada — Móveis",tipo:'ativo'},
+  {cod:'1.2.2.05',nome:"Veículos",tipo:'ativo'},
+  {cod:'1.2.2.06',nome:"(-) Depreciação Acumulada — Veículos",tipo:'ativo'},
+  {cod:'1.2.2.07',nome:"Instalações e Benfeitorias",tipo:'ativo'},
+  {cod:'1.2.2.08',nome:"(-) Depreciação Acumulada — Instalações",tipo:'ativo'},
+  {cod:'1.2.2.09',nome:"Equipamentos de Informática",tipo:'ativo'},
+  {cod:'1.2.2.10',nome:"(-) Depreciação Acumulada — Informática",tipo:'ativo'},
+  // 1.2.3 Intangível
+  {cod:'1.2.3.01',nome:"Marca Registrada (INPI)",tipo:'ativo'},
+  {cod:'1.2.3.02',nome:"Softwares e Sistemas Adquiridos",tipo:'ativo'},
+  {cod:'1.2.3.03',nome:"(-) Amortização Acumulada — Intangíveis",tipo:'ativo'},
 
-  // 3.2 Deduções (saem da receita bruta)
-  {cod:'3.2.1',nome:"(-) Simples Nacional — DAS",tipo:'despesa'},
-  {cod:'3.2.2',nome:"(-) Comissão iFood",tipo:'despesa'},
-  {cod:'3.2.3',nome:"(-) Comissão Rappi / Uber Eats",tipo:'despesa'},
-  {cod:'3.2.4',nome:"(-) Taxa Cartão Débito",tipo:'despesa'},
-  {cod:'3.2.5',nome:"(-) Taxa Cartão Crédito",tipo:'despesa'},
-  {cod:'3.2.6',nome:"(-) Taxa Pix / Link de Pagamento",tipo:'despesa'},
-  {cod:'3.2.7',nome:"(-) Devoluções e Cancelamentos",tipo:'despesa'},
-  {cod:'3.2.8',nome:"(-) Cupons e Descontos Concedidos",tipo:'despesa'},
-  {cod:'3.2.9',nome:"(-) Antecipação de Recebíveis",tipo:'despesa'},
+  // ════════════════════════════════════════════
+  // 2. PASSIVO
+  // ════════════════════════════════════════════
+  // 2.1 Passivo Circulante
+  // 2.1.1 Fornecedores
+  {cod:'2.1.1.01',nome:"Fornecedores — Ingredientes e Matérias-Primas",tipo:'passivo'},
+  {cod:'2.1.1.02',nome:"Fornecedores — Embalagens",tipo:'passivo'},
+  {cod:'2.1.1.03',nome:"Fornecedores — Serviços",tipo:'passivo'},
+  // 2.1.2 Obrigações Fiscais
+  {cod:'2.1.2.01',nome:"Simples Nacional a Recolher (DAS)",tipo:'passivo'},
+  {cod:'2.1.2.02',nome:"ICMS a Recolher",tipo:'passivo'},
+  {cod:'2.1.2.03',nome:"ISS a Recolher",tipo:'passivo'},
+  // 2.1.3 Obrigações Trabalhistas
+  {cod:'2.1.3.01',nome:"Salários a Pagar",tipo:'passivo'},
+  {cod:'2.1.3.02',nome:"INSS a Recolher (Empregado + Patronal)",tipo:'passivo'},
+  {cod:'2.1.3.03',nome:"FGTS a Recolher",tipo:'passivo'},
+  {cod:'2.1.3.04',nome:"Férias a Pagar",tipo:'passivo'},
+  {cod:'2.1.3.05',nome:"13º Salário a Pagar",tipo:'passivo'},
+  {cod:'2.1.3.06',nome:"Vale-Transporte a Pagar",tipo:'passivo'},
+  // 2.1.4 Empréstimos e Financiamentos — Curto Prazo
+  {cod:'2.1.4.01',nome:"Empréstimos Bancários — Curto Prazo",tipo:'passivo'},
+  {cod:'2.1.4.02',nome:"Financiamentos — Parcelas Correntes",tipo:'passivo'},
+  {cod:'2.1.4.03',nome:"Adiantamentos de Clientes a Realizar",tipo:'passivo'},
+  // 2.1.5 Outras Obrigações
+  {cod:'2.1.5.01',nome:"Contas a Pagar Diversas",tipo:'passivo'},
+  {cod:'2.1.5.02',nome:"Aluguéis a Pagar",tipo:'passivo'},
 
-  // 3.3 Outras Receitas
-  {cod:'3.3.1',nome:"Rendimentos Financeiros",tipo:'receita'},
-  {cod:'3.3.2',nome:"Aporte de Capital — Sócios",tipo:'receita'},
-  {cod:'3.3.3',nome:"Estorno / Reembolso Recebido",tipo:'receita'},
-  {cod:'3.3.4',nome:"Outras Receitas",tipo:'receita'},
+  // 2.2 Passivo Não Circulante
+  {cod:'2.2.1.01',nome:"Empréstimos Bancários — Longo Prazo",tipo:'passivo'},
+  {cod:'2.2.1.02',nome:"Financiamentos — Longo Prazo",tipo:'passivo'},
+  {cod:'2.2.1.03',nome:"Empréstimos de Sócios — Longo Prazo",tipo:'passivo'},
 
-  // ── 4. CUSTOS E DESPESAS ──────────────────────────────────
+  // ════════════════════════════════════════════
+  // 3. PATRIMÔNIO LÍQUIDO
+  // ════════════════════════════════════════════
+  {cod:'3.1.1.01',nome:"Capital Social Integralizado",tipo:'pl'},
+  {cod:'3.1.1.02',nome:"Capital Social a Integralizar",tipo:'pl'},
+  {cod:'3.2.1.01',nome:"Reserva Legal",tipo:'pl'},
+  {cod:'3.2.2.01',nome:"Reserva de Capital",tipo:'pl'},
+  {cod:'3.2.3.01',nome:"Reserva para Contingências",tipo:'pl'},
+  {cod:'3.3.1.01',nome:"Lucros Acumulados",tipo:'pl'},
+  {cod:'3.3.2.01',nome:"Prejuízos Acumulados",tipo:'pl'},
+  {cod:'3.4.1.01',nome:"Resultado do Exercício",tipo:'pl'},
+  {cod:'3.5.1.01',nome:"Distribuição de Lucros — Retiradas",tipo:'pl'},
 
-  // 4.1 Matérias-Primas (CMV)
-  {cod:'4.1.1',nome:"Ingredientes — Chocolates e Coberturas",tipo:'despesa'},
-  {cod:'4.1.2',nome:"Ingredientes — Farinhas e Açúcares",tipo:'despesa'},
-  {cod:'4.1.3',nome:"Ingredientes — Manteiga, Ovos e Laticínios",tipo:'despesa'},
-  {cod:'4.1.4',nome:"Ingredientes — Recheios e Pastas",tipo:'despesa'},
-  {cod:'4.1.5',nome:"Ingredientes — Outros",tipo:'despesa'},
-  {cod:'4.1.6',nome:"Embalagens de Produto",tipo:'despesa'},
-  {cod:'4.1.7',nome:"Perda e Descarte de Produção",tipo:'despesa'},
+  // ════════════════════════════════════════════
+  // 4. RECEITAS
+  // ════════════════════════════════════════════
+  // 4.1 Receita Operacional Bruta
+  // 4.1.1 Vendas de Produtos
+  {cod:'4.1.1.01',nome:"Vendas — iFood",tipo:'receita'},
+  {cod:'4.1.1.02',nome:"Vendas — Rappi / Uber Eats",tipo:'receita'},
+  {cod:'4.1.1.03',nome:"Vendas — Site / Cardápio Web",tipo:'receita'},
+  {cod:'4.1.1.04',nome:"Vendas — WhatsApp / Encomenda",tipo:'receita'},
+  {cod:'4.1.1.05',nome:"Vendas — Loja Física / Balcão",tipo:'receita'},
+  {cod:'4.1.1.06',nome:"Vendas — Feiras e Eventos",tipo:'receita'},
+  // 4.1.2 Receitas Acessórias
+  {cod:'4.1.2.01',nome:"Receita de Frete / Taxa de Entrega",tipo:'receita'},
+  {cod:'4.1.2.02',nome:"Receita de Personalização / Kit Presente",tipo:'receita'},
+  {cod:'4.1.2.03',nome:"Receita de Aulas e Workshops",tipo:'receita'},
 
-  // 4.2 Custos de Produção
-  {cod:'4.2.1',nome:"Gás de Cozinha",tipo:'despesa'},
-  {cod:'4.2.2',nome:"Energia Elétrica — Produção",tipo:'despesa'},
-  {cod:'4.2.3',nome:"Manutenção de Equipamentos",tipo:'despesa'},
-  {cod:'4.2.4',nome:"Materiais de Higiene e Limpeza — Produção",tipo:'despesa'},
-  {cod:'4.2.5',nome:"EPI e Uniformes",tipo:'despesa'},
-  {cod:'4.2.6',nome:"Vigilância Sanitária / ANVISA",tipo:'despesa'},
+  // 4.2 Deduções da Receita Bruta
+  // 4.2.1 Impostos sobre Vendas
+  {cod:'4.2.1.01',nome:"(-) Simples Nacional — DAS",tipo:'deducao'},
+  {cod:'4.2.1.02',nome:"(-) ISS sobre Serviços",tipo:'deducao'},
+  // 4.2.2 Devoluções e Descontos
+  {cod:'4.2.2.01',nome:"(-) Devoluções e Cancelamentos",tipo:'deducao'},
+  {cod:'4.2.2.02',nome:"(-) Descontos e Cupons Concedidos",tipo:'deducao'},
+  // 4.2.3 Taxas sobre Canais de Venda
+  {cod:'4.2.3.01',nome:"(-) Comissão iFood",tipo:'deducao'},
+  {cod:'4.2.3.02',nome:"(-) Comissão Rappi / Uber Eats",tipo:'deducao'},
+  {cod:'4.2.3.03',nome:"(-) Taxa Cartão Débito",tipo:'deducao'},
+  {cod:'4.2.3.04',nome:"(-) Taxa Cartão Crédito",tipo:'deducao'},
+  {cod:'4.2.3.05',nome:"(-) Taxa Pix / Link de Pagamento",tipo:'deducao'},
+  {cod:'4.2.3.06',nome:"(-) Antecipação de Recebíveis",tipo:'deducao'},
 
-  // 4.3 Pessoal
-  {cod:'4.3.1',nome:"Salários — Produção",tipo:'despesa'},
-  {cod:'4.3.2',nome:"Salários — Administrativo / Vendas",tipo:'despesa'},
-  {cod:'4.3.3',nome:"Pró-labore dos Sócios",tipo:'despesa'},
-  {cod:'4.3.4',nome:"INSS Patronal",tipo:'despesa'},
-  {cod:'4.3.5',nome:"FGTS",tipo:'despesa'},
-  {cod:'4.3.6',nome:"13º Salário",tipo:'despesa'},
-  {cod:'4.3.7',nome:"Férias",tipo:'despesa'},
-  {cod:'4.3.8',nome:"Vale-Transporte",tipo:'despesa'},
-  {cod:'4.3.9',nome:"Vale-Alimentação / Refeição",tipo:'despesa'},
-  {cod:'4.3.10',nome:"Rescisão Trabalhista",tipo:'despesa'},
+  // 4.3 Receitas Financeiras
+  {cod:'4.3.1.01',nome:"Rendimentos CDI / CDB",tipo:'receita'},
+  {cod:'4.3.1.02',nome:"Juros Recebidos de Clientes",tipo:'receita'},
+  {cod:'4.3.1.03',nome:"Descontos Obtidos de Fornecedores",tipo:'receita'},
 
-  // 4.4 Entrega
-  {cod:'4.4.1',nome:"Combustível",tipo:'despesa'},
-  {cod:'4.4.2',nome:"Manutenção do Veículo",tipo:'despesa'},
-  {cod:'4.4.3',nome:"Seguro e IPVA do Veículo",tipo:'despesa'},
-  {cod:'4.4.4',nome:"Motoboy / Entrega Terceirizada",tipo:'despesa'},
-  {cod:'4.4.5',nome:"Embalagem de Transporte",tipo:'despesa'},
+  // 4.4 Outras Receitas
+  {cod:'4.4.1.01',nome:"Aporte de Capital — Sócios",tipo:'receita'},
+  {cod:'4.4.1.02',nome:"Estorno / Reembolso Recebido",tipo:'receita'},
+  {cod:'4.4.1.03',nome:"Venda de Ativo Imobilizado",tipo:'receita'},
+  {cod:'4.4.1.04',nome:"Outras Receitas Não Operacionais",tipo:'receita'},
 
-  // 4.5 Marketing
-  {cod:'4.5.1',nome:"Meta Ads (Facebook / Instagram)",tipo:'despesa'},
-  {cod:'4.5.2',nome:"Google Ads",tipo:'despesa'},
-  {cod:'4.5.3',nome:"Gestão de Redes Sociais",tipo:'despesa'},
-  {cod:'4.5.4',nome:"Fotos e Vídeos de Produto",tipo:'despesa'},
-  {cod:'4.5.5',nome:"Material Gráfico e Embalagem Especial",tipo:'despesa'},
-  {cod:'4.5.6',nome:"Influenciadores / Parcerias",tipo:'despesa'},
+  // ════════════════════════════════════════════
+  // 5. CUSTOS E DESPESAS
+  // ════════════════════════════════════════════
 
-  // 4.6 Administrativo
-  {cod:'4.6.1',nome:"Aluguel",tipo:'despesa'},
-  {cod:'4.6.2',nome:"Energia Elétrica — Administrativo",tipo:'despesa'},
-  {cod:'4.6.3',nome:"Água e Esgoto",tipo:'despesa'},
-  {cod:'4.6.4',nome:"Internet e Telefone",tipo:'despesa'},
-  {cod:'4.6.5',nome:"Honorários Contábeis",tipo:'despesa'},
-  {cod:'4.6.6',nome:"Sistemas e Assinaturas (ERP, Site, Apps)",tipo:'despesa'},
-  {cod:'4.6.7',nome:"Materiais de Escritório",tipo:'despesa'},
-  {cod:'4.6.8',nome:"Taxas e Licenças (Alvará, INPI)",tipo:'despesa'},
-  {cod:'4.6.9',nome:"Seguros",tipo:'despesa'},
+  // 5.1 Custo dos Produtos Vendidos (CMV)
+  // 5.1.1 Matérias-Primas Diretas
+  {cod:'5.1.1.01',nome:"Ingredientes — Chocolates e Coberturas",tipo:'despesa'},
+  {cod:'5.1.1.02',nome:"Ingredientes — Farinhas e Açúcares",tipo:'despesa'},
+  {cod:'5.1.1.03',nome:"Ingredientes — Manteiga, Ovos e Laticínios",tipo:'despesa'},
+  {cod:'5.1.1.04',nome:"Ingredientes — Recheios e Pastas",tipo:'despesa'},
+  {cod:'5.1.1.05',nome:"Ingredientes — Outros",tipo:'despesa'},
+  // 5.1.2 Embalagens Primárias
+  {cod:'5.1.2.01',nome:"Embalagens de Produto",tipo:'despesa'},
+  // 5.1.3 Perdas de Produção
+  {cod:'5.1.3.01',nome:"Perda e Descarte de Produção",tipo:'despesa'},
 
-  // 4.7 Financeiro
-  {cod:'4.7.1',nome:"Juros e IOF — Empréstimos",tipo:'despesa'},
-  {cod:'4.7.2',nome:"Tarifas Bancárias",tipo:'despesa'},
-  {cod:'4.7.3',nome:"Multas e Juros de Mora",tipo:'despesa'},
+  // 5.2 Custos Indiretos de Fabricação (CIF)
+  // 5.2.1 Utilidades — Produção
+  {cod:'5.2.1.01',nome:"Gás de Cozinha (GLP)",tipo:'despesa'},
+  {cod:'5.2.1.02',nome:"Energia Elétrica — Produção",tipo:'despesa'},
+  {cod:'5.2.1.03',nome:"Água — Produção",tipo:'despesa'},
+  // 5.2.2 Manutenção e Conservação
+  {cod:'5.2.2.01',nome:"Manutenção de Equipamentos",tipo:'despesa'},
+  {cod:'5.2.2.02',nome:"Peças e Reposição de Equipamentos",tipo:'despesa'},
+  // 5.2.3 Materiais Indiretos
+  {cod:'5.2.3.01',nome:"Materiais de Higiene e Limpeza — Produção",tipo:'despesa'},
+  {cod:'5.2.3.02',nome:"EPI e Uniformes de Produção",tipo:'despesa'},
+  {cod:'5.2.3.03',nome:"Embalagens de Transporte / Secundárias",tipo:'despesa'},
+  // 5.2.4 Qualidade e Regularização
+  {cod:'5.2.4.01',nome:"Vigilância Sanitária / ANVISA",tipo:'despesa'},
+  {cod:'5.2.4.02',nome:"Controle de Pragas (Desinsetização)",tipo:'despesa'},
+  {cod:'5.2.4.03',nome:"Análises Laboratoriais",tipo:'despesa'},
+  // 5.2.5 Depreciação — Produção
+  {cod:'5.2.5.01',nome:"Depreciação — Fornos e Equipamentos",tipo:'despesa'},
+  {cod:'5.2.5.02',nome:"Depreciação — Câmaras Frias e Freezers",tipo:'despesa'},
 
-  // 4.8 Investimentos (CAPEX — não são despesa do período)
-  {cod:'4.8.1',nome:"Compra de Equipamento de Produção",tipo:'despesa'},
-  {cod:'4.8.2',nome:"Compra de Veículo",tipo:'despesa'},
-  {cod:'4.8.3',nome:"Obras e Reformas",tipo:'despesa'},
-  {cod:'4.8.4',nome:"Desenvolvimento de Sistema / Site",tipo:'despesa'},
+  // 5.3 Despesas com Pessoal
+  // 5.3.1 Mão de Obra Direta (Produção)
+  {cod:'5.3.1.01',nome:"Salários — Produção",tipo:'despesa'},
+  {cod:'5.3.1.02',nome:"INSS Patronal — Produção",tipo:'despesa'},
+  {cod:'5.3.1.03',nome:"FGTS — Produção",tipo:'despesa'},
+  {cod:'5.3.1.04',nome:"13º Salário — Produção",tipo:'despesa'},
+  {cod:'5.3.1.05',nome:"Férias + 1/3 — Produção",tipo:'despesa'},
+  {cod:'5.3.1.06',nome:"Vale-Transporte — Produção",tipo:'despesa'},
+  {cod:'5.3.1.07',nome:"Vale-Alimentação — Produção",tipo:'despesa'},
+  // 5.3.2 Pessoal Administrativo e Vendas
+  {cod:'5.3.2.01',nome:"Pró-labore dos Sócios",tipo:'despesa'},
+  {cod:'5.3.2.02',nome:"Salários — Administrativo / Vendas",tipo:'despesa'},
+  {cod:'5.3.2.03',nome:"INSS Patronal — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.04',nome:"FGTS — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.05',nome:"13º Salário — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.06',nome:"Férias + 1/3 — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.07',nome:"Vale-Transporte — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.08',nome:"Vale-Alimentação — Administrativo",tipo:'despesa'},
+  {cod:'5.3.2.09',nome:"Rescisão Trabalhista",tipo:'despesa'},
+  {cod:'5.3.2.10',nome:"Plano de Saúde Empresarial",tipo:'despesa'},
 
-  // ── 5. TRANSFERÊNCIAS ─────────────────────────────────────
-  {cod:'5.1.1',nome:"Transferência Entrada — Entre Contas",tipo:'transferencia'},
-  {cod:'5.1.2',nome:"Resgate de Aplicação Financeira",tipo:'transferencia'},
-  {cod:'5.1.3',nome:"Recebimento de Empréstimo",tipo:'transferencia'},
-  {cod:'5.2.1',nome:"Transferência Saída — Entre Contas",tipo:'transferencia'},
-  {cod:'5.2.2',nome:"Aplicação Financeira",tipo:'transferencia'},
-  {cod:'5.2.3',nome:"Pagamento de Fatura do Cartão",tipo:'transferencia'},
-  {cod:'5.2.4',nome:"Amortização de Empréstimo",tipo:'transferencia'},
-  {cod:'5.2.5',nome:"Distribuição de Lucros",tipo:'transferencia'},
+  // 5.4 Despesas com Vendas (Comerciais)
+  // 5.4.1 Logística e Entrega
+  {cod:'5.4.1.01',nome:"Combustível",tipo:'despesa'},
+  {cod:'5.4.1.02',nome:"Manutenção do Veículo",tipo:'despesa'},
+  {cod:'5.4.1.03',nome:"Seguro e IPVA do Veículo",tipo:'despesa'},
+  {cod:'5.4.1.04',nome:"Motoboy / Entrega Terceirizada",tipo:'despesa'},
+  // 5.4.2 Marketing e Publicidade
+  {cod:'5.4.2.01',nome:"Meta Ads (Facebook / Instagram)",tipo:'despesa'},
+  {cod:'5.4.2.02',nome:"Google Ads",tipo:'despesa'},
+  {cod:'5.4.2.03',nome:"Gestão de Redes Sociais",tipo:'despesa'},
+  {cod:'5.4.2.04',nome:"Fotos e Vídeos de Produto",tipo:'despesa'},
+  {cod:'5.4.2.05',nome:"Material Gráfico e Design",tipo:'despesa'},
+  {cod:'5.4.2.06',nome:"Influenciadores / Parcerias",tipo:'despesa'},
+  {cod:'5.4.2.07',nome:"Feiras, Eventos e Degustações",tipo:'despesa'},
+
+  // 5.5 Despesas Administrativas e Gerais (SG&A)
+  // 5.5.1 Ocupação
+  {cod:'5.5.1.01',nome:"Aluguel — Cozinha / Laboratório",tipo:'despesa'},
+  {cod:'5.5.1.02',nome:"Aluguel — Ponto Comercial",tipo:'despesa'},
+  {cod:'5.5.1.03',nome:"Condomínio e IPTU",tipo:'despesa'},
+  {cod:'5.5.1.04',nome:"Seguro Patrimonial",tipo:'despesa'},
+  // 5.5.2 Utilidades — Administrativo
+  {cod:'5.5.2.01',nome:"Energia Elétrica — Administrativo",tipo:'despesa'},
+  {cod:'5.5.2.02',nome:"Água e Esgoto — Administrativo",tipo:'despesa'},
+  {cod:'5.5.2.03',nome:"Internet e Telefone",tipo:'despesa'},
+  // 5.5.3 Serviços Profissionais
+  {cod:'5.5.3.01',nome:"Honorários Contábeis",tipo:'despesa'},
+  {cod:'5.5.3.02',nome:"Honorários Jurídicos",tipo:'despesa'},
+  {cod:'5.5.3.03',nome:"Consultoria e Mentoria",tipo:'despesa'},
+  {cod:'5.5.3.04',nome:"Nutricionista / Responsável Técnico",tipo:'despesa'},
+  // 5.5.4 Tecnologia
+  {cod:'5.5.4.01',nome:"Sistemas e Assinaturas (ERP, Site, Apps)",tipo:'despesa'},
+  {cod:'5.5.4.02',nome:"Hospedagem e Cloud",tipo:'despesa'},
+  {cod:'5.5.4.03',nome:"Licenças de Software",tipo:'despesa'},
+  // 5.5.5 Taxas e Obrigações Legais
+  {cod:'5.5.5.01',nome:"Alvará de Funcionamento",tipo:'despesa'},
+  {cod:'5.5.5.02',nome:"Registro de Marca (INPI)",tipo:'despesa'},
+  {cod:'5.5.5.03',nome:"Taxas Cartoriais e Emolumentos",tipo:'despesa'},
+  // 5.5.6 Gerais
+  {cod:'5.5.6.01',nome:"Materiais de Escritório e Papelaria",tipo:'despesa'},
+  {cod:'5.5.6.02',nome:"Materiais de Limpeza — Administrativo",tipo:'despesa'},
+  {cod:'5.5.6.03',nome:"Treinamentos e Cursos",tipo:'despesa'},
+  {cod:'5.5.6.04',nome:"Despesas Diversas",tipo:'despesa'},
+
+  // 5.6 Despesas Financeiras
+  {cod:'5.6.1.01',nome:"Juros sobre Empréstimos e Financiamentos",tipo:'despesa'},
+  {cod:'5.6.1.02',nome:"IOF e Tarifas Bancárias",tipo:'despesa'},
+  {cod:'5.6.1.03',nome:"Juros de Mora e Multas Fiscais",tipo:'despesa'},
+
+  // 5.7 Depreciação e Amortização (Administrativa)
+  {cod:'5.7.1.01',nome:"Depreciação — Veículo",tipo:'despesa'},
+  {cod:'5.7.1.02',nome:"Depreciação — Móveis e Utensílios",tipo:'despesa'},
+  {cod:'5.7.1.03',nome:"Depreciação — Equipamentos de Informática",tipo:'despesa'},
+  {cod:'5.7.1.04',nome:"Depreciação — Instalações e Reformas",tipo:'despesa'},
+  {cod:'5.7.2.01',nome:"Amortização — Softwares e Sistemas",tipo:'despesa'},
+  {cod:'5.7.2.02',nome:"Amortização — Marca e Intangíveis",tipo:'despesa'},
+
+  // ════════════════════════════════════════════
+  // 6. TRANSFERÊNCIAS (não afetam resultado)
+  // ════════════════════════════════════════════
+  {cod:'6.1.1.01',nome:"Transferência Entrada — Entre Contas Próprias",tipo:'transferencia'},
+  {cod:'6.1.1.02',nome:"Resgate de Aplicação Financeira",tipo:'transferencia'},
+  {cod:'6.1.1.03',nome:"Recebimento de Empréstimo / Aporte",tipo:'transferencia'},
+  {cod:'6.2.1.01',nome:"Transferência Saída — Entre Contas Próprias",tipo:'transferencia'},
+  {cod:'6.2.1.02',nome:"Aplicação Financeira",tipo:'transferencia'},
+  {cod:'6.2.1.03',nome:"Pagamento de Fatura do Cartão Empresarial",tipo:'transferencia'},
+  {cod:'6.2.1.04',nome:"Amortização de Empréstimo / Financiamento",tipo:'transferencia'},
+  {cod:'6.2.1.05',nome:"Distribuição de Lucros",tipo:'transferencia'},
 ];
 
 // ═══════════════════════════════════════════
