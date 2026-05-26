@@ -565,6 +565,10 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <div class="ni ni-plain" onclick="go('receita',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 4h6M4 7h6M4 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       Calculadora</div>
+    <div class="nav-g">Conteúdo</div>
+    <div class="ni ni-plain" onclick="go('reels',this)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><polygon points="5.5,4.5 10,7 5.5,9.5" fill="currentColor"/></svg>
+      Agenda de Reels</div>
     <div class="nav-g">Sistema</div>
     <div class="ni" onclick="go('config',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A5.5 5.5 0 107 12.5 5.5 5.5 0 007 1.5zm0 0v2m0 7v2M1.5 7h2m7 0h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="7" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -2863,7 +2867,7 @@ _sb.auth.getSession().then(async ({data:{session}}) => {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES={dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação',receita:'Calculadora de Receita'};
+const PAGE_TITLES={reels:'Agenda de Reels',dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação',receita:'Calculadora de Receita'};
 const PAGE_ACTIONS={
   dashboard:()=>``,
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
@@ -2882,6 +2886,7 @@ const PAGE_ACTIONS={
 };
 var currentPage='dashboard';
 function go(page,el){
+  if(page==='reels'){setTimeout(function(){reelsRender();},50);}
   if(window.innerWidth<=768)sbClose();
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -11820,6 +11825,110 @@ async function syncMes(){
   </div>
 </div>
 
+<!-- PAGE: Reels -->
+<div class="pg" id="pg-reels" style="display:none;flex-direction:column;height:100%;overflow:hidden">
+  <div style="padding:20px 24px 0;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t)">🎬 Agenda de Reels</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">Planeje, crie e poste todos os dias</div>
+      </div>
+      <button onclick="reelsNewIdea()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Nova Ideia</button>
+    </div>
+    <!-- Status tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px" id="reels-status-tabs">
+      <button onclick="reelsSetTab('todos',this)" id="rt-todos" style="background:var(--fox);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Todos</button>
+      <button onclick="reelsSetTab('ideia',this)" id="rt-ideia" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">💡 Ideia</button>
+      <button onclick="reelsSetTab('roteiro',this)" id="rt-roteiro" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📝 Roteiro</button>
+      <button onclick="reelsSetTab('gravado',this)" id="rt-gravado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🎥 Gravado</button>
+      <button onclick="reelsSetTab('editado',this)" id="rt-editado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✂️ Editado</button>
+      <button onclick="reelsSetTab('postado',this)" id="rt-postado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✅ Postado</button>
+    </div>
+    <!-- Calendário semanal -->
+    <div id="reels-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px"></div>
+  </div>
+  <!-- Lista de ideias -->
+  <div class="scroll" style="padding:0 24px 24px">
+    <div id="reels-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="reels-empty" style="display:none;text-align:center;padding:40px;color:var(--t3);font-size:13px">Nenhuma ideia ainda.<br>Clique em <strong>+ Nova Ideia</strong> para começar!</div>
+  </div>
+</div>
+
+<!-- Modal: Nova/Editar Ideia de Reel -->
+<div id="modal-reel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
+    <button onclick="reelsCloseModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--t3)">×</button>
+    <div id="modal-reel-title" style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:20px">Nova Ideia</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Título -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Título / Ideia *</label>
+        <input id="reel-titulo" type="text" placeholder="Ex: Como fazer cookie recheado perfeito" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+      </div>
+      <!-- Roteiro/Descrição -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Roteiro / Anotações</label>
+        <textarea id="reel-roteiro" rows="4" placeholder="Escreva o roteiro, pontos principais, o que mostrar..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:vertical;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
+      </div>
+      <!-- Hook -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hook (primeiros 3 segundos)</label>
+        <input id="reel-hook" type="text" placeholder="Ex: Você ainda faz o cookie errado? 🍪" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+      </div>
+      <!-- Linha 3 campos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Status</label>
+          <select id="reel-status" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
+            <option value="ideia">💡 Ideia</option>
+            <option value="roteiro">📝 Roteiro</option>
+            <option value="gravado">🎥 Gravado</option>
+            <option value="editado">✂️ Editado</option>
+            <option value="postado">✅ Postado</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Data prevista</label>
+          <input id="reel-data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Formato</label>
+          <select id="reel-formato" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
+            <option value="receita">🍪 Receita</option>
+            <option value="bastidores">🎬 Bastidores</option>
+            <option value="dica">💡 Dica</option>
+            <option value="trending">🔥 Trend</option>
+            <option value="produto">🛍️ Produto</option>
+            <option value="outro">📱 Outro</option>
+          </select>
+        </div>
+      </div>
+      <!-- Hashtags -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hashtags / Caption</label>
+        <textarea id="reel-hashtags" rows="2" placeholder="#confeitaria #cookies #receitafacil..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
+      </div>
+      <!-- Botões -->
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="reelsSave()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">Salvar</button>
+        <button onclick="reelsCloseModal()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm Delete Reel -->
+<div id="modal-reel-del" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border-radius:14px;padding:24px;width:320px;text-align:center">
+    <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px">Excluir ideia?</div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Essa ação não pode ser desfeita.</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="reelsConfirmDel()" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Excluir</button>
+      <button onclick="document.getElementById('modal-reel-del').style.display='none'" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Forma de Pagamento Financeiro -->
 <div class="overlay" id="modal-forma-pag" onclick="if(event.target===this)closeM('modal-forma-pag')">
   <div class="modal" style="max-width:380px">
@@ -13091,5 +13200,196 @@ function lancIACancel(){
   _lancIAPending=null;
   document.getElementById('lanc-ia-preview').style.display='none';
 }
+
+
+// ═══════════════════════════════════════════
+// AGENDA DE REELS
+// ═══════════════════════════════════════════
+var _reelsTab='todos';
+var _reelsEditId=null;
+var _reelsDelId=null;
+
+const STATUS_CFG={
+  ideia:   {label:'💡 Ideia',    cor:'#f59e0b',bg:'#fef3c7'},
+  roteiro: {label:'📝 Roteiro',  cor:'#3b82f6',bg:'#dbeafe'},
+  gravado: {label:'🎥 Gravado',  cor:'#8b5cf6',bg:'#ede9fe'},
+  editado: {label:'✂️ Editado',  cor:'#ec4899',bg:'#fce7f3'},
+  postado: {label:'✅ Postado',  cor:'#10b981',bg:'#d1fae5'},
+};
+const FORMATO_CFG={
+  receita:'🍪 Receita', bastidores:'🎬 Bastidores', dica:'💡 Dica',
+  trending:'🔥 Trend', produto:'🛍️ Produto', outro:'📱 Outro'
+};
+
+function reelsGetAll(){
+  try{return JSON.parse(localStorage.getItem('vulpin_reels')||'[]');}catch(e){return[];}
+}
+function reelsSaveAll(arr){
+  localStorage.setItem('vulpin_reels',JSON.stringify(arr));
+}
+
+function reelsSetTab(tab,btn){
+  _reelsTab=tab;
+  document.querySelectorAll('#reels-status-tabs button').forEach(b=>{
+    b.style.background='var(--bg2)';b.style.color='var(--t)';b.style.border='1px solid var(--bor)';
+  });
+  if(btn){btn.style.background='var(--fox)';btn.style.color='#fff';btn.style.border='none';}
+  reelsRender();
+}
+
+function reelsRender(){
+  const all=reelsGetAll();
+  const list=document.getElementById('reels-list');
+  const empty=document.getElementById('reels-empty');
+  if(!list)return;
+
+  // Calendário — próximos 7 dias
+  reelsRenderCal(all);
+
+  const filtered=_reelsTab==='todos'?all:all.filter(r=>r.status===_reelsTab);
+  filtered.sort((a,b)=>(a.data||'9999')>(b.data||'9999')?1:-1);
+
+  if(!filtered.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty)empty.style.display='none';
+
+  list.innerHTML=filtered.map(r=>{
+    const s=STATUS_CFG[r.status]||STATUS_CFG.ideia;
+    const dataFmt=r.data?new Date(r.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}):'—';
+    const fmt=FORMATO_CFG[r.formato]||r.formato||'';
+    return `<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 2px 12px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow=''">
+      <!-- Status pill -->
+      <div style="flex-shrink:0;margin-top:2px">
+        <div style="background:${s.bg};color:${s.cor};border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;white-space:nowrap">${s.label}</div>
+      </div>
+      <!-- Conteúdo -->
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.titulo||'Sem título'}</div>
+        ${r.hook?`<div style="font-size:12px;color:var(--fox);margin-bottom:4px;font-style:italic">"${r.hook}"</div>`:''}
+        ${r.roteiro?`<div style="font-size:12px;color:var(--t3);line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${r.roteiro}</div>`:''}
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${fmt?`<span style="font-size:11px;background:var(--bg2);border:1px solid var(--bor);border-radius:6px;padding:2px 8px;color:var(--t3)">${fmt}</span>`:''}
+          <span style="font-size:11px;color:var(--t3)">📅 ${dataFmt}</span>
+          ${r.hashtags?`<span style="font-size:11px;color:#3b82f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${r.hashtags.split('\n')[0]}</span>`:''}
+        </div>
+      </div>
+      <!-- Ações -->
+      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+        <!-- Avançar status -->
+        ${r.status!=='postado'?`<button onclick="reelsAdvance('${r.id}')" title="Avançar status" style="background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:var(--t)">→</button>`:''}
+        <button onclick="reelsEdit('${r.id}')" style="background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:var(--t)">✏️</button>
+        <button onclick="reelsDelete('${r.id}')" style="background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:#ef4444">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function reelsRenderCal(all){
+  const cal=document.getElementById('reels-calendar');
+  if(!cal)return;
+  const hoje=new Date();
+  const days=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  cal.innerHTML=Array.from({length:7},(_,i)=>{
+    const d=new Date(hoje);d.setDate(hoje.getDate()+i);
+    const ds=d.toLocaleDateString('sv-SE');
+    const reelsDia=all.filter(r=>r.data===ds);
+    const isHoje=i===0;
+    return `<div style="background:var(--bg);border:1px solid ${isHoje?'var(--fox)':'var(--bor)'};border-radius:10px;padding:8px 6px;text-align:center;min-height:70px;cursor:pointer" onclick="reelsNewIdea('${ds}')">
+      <div style="font-size:10px;color:${isHoje?'var(--fox)':'var(--t3)'};font-weight:700;margin-bottom:2px">${days[d.getDay()]}</div>
+      <div style="font-size:13px;font-weight:800;color:${isHoje?'var(--fox)':'var(--t)'};margin-bottom:4px">${d.getDate()}</div>
+      ${reelsDia.length?reelsDia.slice(0,2).map(r=>{
+        const s=STATUS_CFG[r.status]||STATUS_CFG.ideia;
+        return `<div style="background:${s.bg};color:${s.cor};border-radius:4px;font-size:9px;font-weight:600;padding:2px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.titulo||'Reel'}</div>`;
+      }).join('')+(reelsDia.length>2?`<div style="font-size:9px;color:var(--t3);margin-top:2px">+${reelsDia.length-2}</div>`:''):'<div style="font-size:10px;color:var(--bor);margin-top:6px">+</div>'}
+    </div>`;
+  }).join('');
+}
+
+function reelsNewIdea(data){
+  _reelsEditId=null;
+  document.getElementById('modal-reel-title').textContent='Nova Ideia';
+  document.getElementById('reel-titulo').value='';
+  document.getElementById('reel-roteiro').value='';
+  document.getElementById('reel-hook').value='';
+  document.getElementById('reel-status').value='ideia';
+  document.getElementById('reel-data').value=data||new Date().toLocaleDateString('sv-SE');
+  document.getElementById('reel-formato').value='receita';
+  document.getElementById('reel-hashtags').value='';
+  document.getElementById('modal-reel').style.display='flex';
+  setTimeout(()=>document.getElementById('reel-titulo').focus(),100);
+}
+
+function reelsEdit(id){
+  const all=reelsGetAll();
+  const r=all.find(x=>x.id===id);
+  if(!r)return;
+  _reelsEditId=id;
+  document.getElementById('modal-reel-title').textContent='Editar Ideia';
+  document.getElementById('reel-titulo').value=r.titulo||'';
+  document.getElementById('reel-roteiro').value=r.roteiro||'';
+  document.getElementById('reel-hook').value=r.hook||'';
+  document.getElementById('reel-status').value=r.status||'ideia';
+  document.getElementById('reel-data').value=r.data||'';
+  document.getElementById('reel-formato').value=r.formato||'receita';
+  document.getElementById('reel-hashtags').value=r.hashtags||'';
+  document.getElementById('modal-reel').style.display='flex';
+}
+
+function reelsSave(){
+  const titulo=document.getElementById('reel-titulo').value.trim();
+  if(!titulo){document.getElementById('reel-titulo').style.borderColor='#ef4444';return;}
+  document.getElementById('reel-titulo').style.borderColor='';
+  const all=reelsGetAll();
+  const obj={
+    id:_reelsEditId||'rl_'+Date.now(),
+    titulo,
+    roteiro:document.getElementById('reel-roteiro').value.trim(),
+    hook:document.getElementById('reel-hook').value.trim(),
+    status:document.getElementById('reel-status').value,
+    data:document.getElementById('reel-data').value,
+    formato:document.getElementById('reel-formato').value,
+    hashtags:document.getElementById('reel-hashtags').value.trim(),
+    criadoEm:_reelsEditId?all.find(x=>x.id===_reelsEditId)?.criadoEm:new Date().toISOString(),
+  };
+  if(_reelsEditId){
+    const idx=all.findIndex(x=>x.id===_reelsEditId);
+    if(idx>=0)all[idx]=obj;
+  } else {
+    all.unshift(obj);
+  }
+  reelsSaveAll(all);
+  document.getElementById('modal-reel').style.display='none';
+  reelsRender();
+}
+
+function reelsAdvance(id){
+  const order=['ideia','roteiro','gravado','editado','postado'];
+  const all=reelsGetAll();
+  const r=all.find(x=>x.id===id);
+  if(!r)return;
+  const idx=order.indexOf(r.status);
+  if(idx<order.length-1)r.status=order[idx+1];
+  reelsSaveAll(all);
+  reelsRender();
+}
+
+function reelsDelete(id){
+  _reelsDelId=id;
+  document.getElementById('modal-reel-del').style.display='flex';
+}
+
+function reelsConfirmDel(){
+  const all=reelsGetAll().filter(x=>x.id!==_reelsDelId);
+  reelsSaveAll(all);
+  document.getElementById('modal-reel-del').style.display='none';
+  reelsRender();
+}
+
+function reelsCloseModal(){
+  document.getElementById('modal-reel').style.display='none';
+  _reelsEditId=null;
+}
+
+// Render when page is shown
+const _origGo=typeof go==='function'?go:null;
 
 </script>
