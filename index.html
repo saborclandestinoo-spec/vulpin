@@ -6783,14 +6783,12 @@ function lancMainTab(tab, el){
     return;
   } else {
     if(iaPanel)iaPanel.style.display='none';
-    // Restore each element to its natural display (remove inline style)
-    ['lanc-summary-bar','lanc-pills-bar','lanc-scroll'].forEach(function(id){
-      var el=document.getElementById(id);
-      if(el)el.style.removeProperty('display');
+    // Restore elements
+    [['lanc-summary-bar','flex'],['lanc-pills-bar','flex'],['lanc-scroll','flex']].forEach(function(e){
+      var el=document.getElementById(e[0]);
+      if(el)el.style.display=e[1];
     });
-    // subtabs: restore to whatever lancTab() last set it to (don't force)
-    var subEl=document.getElementById('lanc-subtabs');
-    if(subEl)subEl.style.removeProperty('display');
+
   }
   // Update tab styles
   ['pagar','receber','todos','ia'].forEach(k=>{
