@@ -10291,7 +10291,7 @@ function catEditModal(cod){
           else if(x.cod.indexOf(cod+'.')===0)x.cod=nc+x.cod.slice(cod.length);
         });
       }
-      _catDraft=data;catRenderBody();
+      _catDraft=data;catSave();catRenderBody();
     }
   });
 }
@@ -10312,7 +10312,7 @@ function catAddGrupo(){
       const nome=vals['cat-m-nome'].trim();
       if(!nome)return;
       data.push({cod:cod,nome:nome,tipo:tipo});
-      _catDraft=data;catRenderBody();
+      _catDraft=data;catSave();catRenderBody();
     }
   });
 }
@@ -10337,7 +10337,7 @@ function catAddChild(parentCod){
       let lastIdx=0;
       data.forEach(function(x,i){if(x.cod===parentCod||x.cod.indexOf(parentCod+'.')===0)lastIdx=i;});
       data.splice(lastIdx+1,0,{cod:cod,nome:nome,tipo:tipo});
-      _catDraft=data;catRenderBody();
+      _catDraft=data;catSave();catRenderBody();
     }
   });
 }
@@ -10395,10 +10395,10 @@ function _catShowModal(opts){
 
 function catDelItem(cod){
   const nome=(catGetData().find(x=>x.cod===cod)||{}).nome||cod;
-  showConfirm('Excluir categoria?','"'+nome+'" e todas as subcategorias serão removidas.',function(){
+  showConfirm('Excluir categoria?','"'+nome+'" e subcategorias serão removidas.','🗑️',function(){
     _catDraft=catGetData().filter(function(x){return x.cod!==cod&&x.cod.indexOf(cod+'.')!==0;});
     catSave();catRenderBody();
-  },'🗑️');
+  });
 }
 
 // ═══════════════════════════════════════════
@@ -13451,6 +13451,19 @@ function catBulkSave(){
   catSave();
   closeM('modal-cat-bulk');
   if(errors>0)alert(errors+' linha(s) ignorada(s) por formato inválido.');
+}
+
+
+function catDelSelected(){
+  const cbs=document.querySelectorAll('.cat-sel-cb:checked');
+  if(!cbs.length){alert('Selecione ao menos uma categoria.');return;}
+  const cods=Array.from(cbs).map(cb=>cb.dataset.cod);
+  showConfirm('Excluir '+cods.length+' categoria(s)?','Todas as subcategorias também serão removidas.','🗑️',function(){
+    _catDraft=catGetData().filter(function(x){
+      return !cods.some(function(cod){return x.cod===cod||x.cod.indexOf(cod+'.')===0;});
+    });
+    catSave();catRenderBody();
+  });
 }
 
 </script>
