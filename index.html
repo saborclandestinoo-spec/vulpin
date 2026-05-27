@@ -7244,7 +7244,7 @@ function lancBulkUpdate(){
   if(bar){bar.style.display=sel.length?'flex':'none';}
   if(cnt)cnt.textContent=sel.length+' selecionado'+(sel.length!==1?'s':'');
 }
-function lancGetSelected(){return Array.from(document.querySelectorAll('.lanc-chk:checked')).map(c=>c.dataset.id);}
+function lancGetSelected(){return Array.from(document.querySelectorAll('.lanc-chk:checked')).map(c=>c.value||c.dataset.id).filter(Boolean);}
 function lancBulkClear(){
   document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=false);
   const ca=document.getElementById('lanc-check-all');if(ca)ca.checked=false;
@@ -13501,8 +13501,12 @@ function catDelSelected(){
 function lancBulkApply(updater){
   const ids=lancGetSelected();
   if(!ids.length)return;
-  const all=getLanc();
-  all.forEach(function(l){if(ids.includes(l.id))updater(l);});
+  // Deep copy to avoid mutation issues
+  const all=JSON.parse(JSON.stringify(getLanc()));
+  ids.forEach(function(id){
+    const l=all.find(function(x){return String(x.id)===String(id);});
+    if(l)updater(l);
+  });
   S.set('lancamentos',all);
   lancBulkClear();
   renderLanc();
