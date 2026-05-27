@@ -1140,6 +1140,18 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         </div>
         <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
+      <!-- Barra de ações em massa -->
+      <div id="lanc-bulk-bar" style="display:none;background:var(--fox);padding:10px 20px;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap">
+        <span id="lanc-bulk-count" style="color:#fff;font-size:13px;font-weight:700;margin-right:4px"></span>
+        <button onclick="lancBulkCat()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📂 Categoria</button>
+        <button onclick="lancBulkConta()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🏦 Conta</button>
+        <button onclick="lancBulkCC()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📊 Centro de Custo</button>
+        <button onclick="lancBulkForma()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">💳 Forma Pgto</button>
+        <button onclick="lancBulkPago(true)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">✅ Marcar Pago</button>
+        <button onclick="lancBulkPago(false)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">⏳ Marcar Pendente</button>
+        <button onclick="lancBulkDel()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🗑 Excluir</button>
+        <button onclick="lancBulkClear()" style="margin-left:auto;background:none;color:rgba(255,255,255,.8);border:none;font-size:20px;cursor:pointer;line-height:1">×</button>
+      </div>
       <!-- Pills de situação -->
       <div id="lanc-pills-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
         <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
@@ -7109,7 +7121,7 @@ function renderLanc(){
       const apr=(p.qtd||0)-(p.perdas||0);
       const custo=pr?(pr.custo*(p.qtd||0)):0;
       return`<tr>
-        <td><input type="checkbox" class="lanc-chk" value="${p.id}"></td>
+        <td><input type="checkbox" class='lanc-chk' data-id='${l.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
         <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
         <td style="font-weight:500;color:var(--t);cursor:pointer" onclick="openProd2('${p.id}')">${pr?pr.nome:'—'}</td>
         <td style="font-weight:700;color:var(--fox)">${p.qtd} un</td>
@@ -7187,7 +7199,7 @@ function renderLanc(){
     const cor=isRec?'var(--green)':isDesp?'var(--red)':'var(--blue)';
     const sinal=isRec?'+':isDesp?'−':'⇄';
     return`<tr style="cursor:pointer" onclick="openLancEdit('${l.id}')">
-      <td onclick="event.stopPropagation()"><input type="checkbox" class="lanc-chk" value="${l.id}"></td>
+      <td onclick="event.stopPropagation()"><input type="checkbox" class='lanc-chk' data-id='${l.id}' onchange='lancBulkUpdate()' value="${l.id}"></td>
       <td style="font-size:11px">
         <div style="font-weight:600;color:var(--t)">${fmtDate(l.venc||l.data)}</div>
         ${l.data&&l.data!==(l.venc||l.data)?`<div style="font-size:10px;color:var(--t3);margin-top:1px">${fmtDate(l.data)}</div>`:''}
@@ -7202,7 +7214,7 @@ function renderLanc(){
   });
 
   const prodHtmlRows=prodRows.map(p=>`<tr style="cursor:pointer" onclick="openProd2('${p.id}')">
-    <td onclick="event.stopPropagation()"><input type="checkbox" class="lanc-chk" value="${p.id}"></td>
+    <td onclick="event.stopPropagation()"><input type="checkbox" class='lanc-chk' data-id='${l.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
     <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
     <td style="font-weight:500;color:var(--t)">${p.desc}</td>
     <td style="color:var(--t3);font-size:11px">—</td>
@@ -7221,7 +7233,23 @@ function renderLanc(){
   tbody.innerHTML=allRows.length?allRows.map(r=>r.html).join(''):`<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento encontrado</td></tr>`;
 }
 
-function lancCheckAll(cb){document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=cb.checked);}
+function lancCheckAll(cb){
+  document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=cb.checked);
+  lancBulkUpdate();
+}
+function lancBulkUpdate(){
+  const sel=document.querySelectorAll('.lanc-chk:checked');
+  const bar=document.getElementById('lanc-bulk-bar');
+  const cnt=document.getElementById('lanc-bulk-count');
+  if(bar){bar.style.display=sel.length?'flex':'none';}
+  if(cnt)cnt.textContent=sel.length+' selecionado'+(sel.length!==1?'s':'');
+}
+function lancGetSelected(){return Array.from(document.querySelectorAll('.lanc-chk:checked')).map(c=>c.dataset.id);}
+function lancBulkClear(){
+  document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=false);
+  const ca=document.getElementById('lanc-check-all');if(ca)ca.checked=false;
+  lancBulkUpdate();
+}
 
 function openLancView(id){
   // Abre modal em modo somente leitura
@@ -13464,6 +13492,129 @@ function catDelSelected(){
     });
     catSave();catRenderBody();
   });
+}
+
+
+// ═══════════════════════════════════════════
+// LANÇAMENTOS — EDIÇÃO EM MASSA
+// ═══════════════════════════════════════════
+function lancBulkApply(updater){
+  const ids=lancGetSelected();
+  if(!ids.length)return;
+  const all=getLanc();
+  all.forEach(function(l){if(ids.includes(l.id))updater(l);});
+  S.set('lancamentos',all);
+  lancBulkClear();
+  renderLanc();
+  if(typeof renderFluxo==='function')renderFluxo();
+}
+
+function lancBulkCat(){
+  const plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
+  const cats=plano.filter(c=>c.tipo==='despesa'||c.tipo==='receita');
+  // Build select options
+  let opts='<option value="">-- Manter atual --</option>';
+  let lastG='';
+  cats.forEach(function(c){
+    const g=c.cod.split('.').slice(0,2).join('.');
+    if(g!==lastG){opts+='<optgroup label="'+g+'">';lastG=g;}
+    opts+='<option value="'+c.cod+'|'+c.nome+'">'+c.cod+' — '+c.nome+'</option>';
+  });
+  lancBulkModal('Alterar Categoria',
+    '<select id="blk-cat" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 10px;font-size:13px;color:var(--t);background:var(--bg)">'+opts+'</select>',
+    function(){
+      const v=document.getElementById('blk-cat').value;
+      if(!v)return;
+      const[cod,nome]=v.split('|');
+      lancBulkApply(function(l){l.catCod=cod;l.catNome=nome;});
+    }
+  );
+}
+
+function lancBulkConta(){
+  const bancos=typeof getBancos==='function'?getBancos():[];
+  let opts='<option value="">-- Manter atual --</option>';
+  bancos.forEach(function(b){opts+='<option value="'+b.id+'|'+b.nome+'">'+b.nome+'</option>';});
+  lancBulkModal('Alterar Conta',
+    '<select id="blk-conta" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 10px;font-size:13px;color:var(--t);background:var(--bg)">'+opts+'</select>',
+    function(){
+      const v=document.getElementById('blk-conta').value;
+      if(!v)return;
+      const[id,nome]=v.split('|');
+      lancBulkApply(function(l){l.bancoId=id;l.bancoNome=nome;});
+    }
+  );
+}
+
+function lancBulkCC(){
+  const ccs=typeof getCC==='function'?getCC():[];
+  let opts='<option value="">-- Manter atual --</option><option value="__clear__">Remover centro de custo</option>';
+  ccs.forEach(function(c){opts+='<option value="'+c.id+'|'+c.nome+'">'+c.nome+'</option>';});
+  lancBulkModal('Alterar Centro de Custo',
+    '<select id="blk-cc" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 10px;font-size:13px;color:var(--t);background:var(--bg)">'+opts+'</select>',
+    function(){
+      const v=document.getElementById('blk-cc').value;
+      if(!v)return;
+      if(v==='__clear__'){lancBulkApply(function(l){l.ccId=null;l.ccNome='';});return;}
+      const[id,nome]=v.split('|');
+      lancBulkApply(function(l){l.ccId=id;l.ccNome=nome;});
+    }
+  );
+}
+
+function lancBulkForma(){
+  const formas=['Dinheiro','Pix','Cartão Débito','Cartão Crédito','Boleto','Transferência','Cheque'];
+  let opts='<option value="">-- Manter atual --</option>';
+  formas.forEach(function(f){opts+='<option value="'+f+'">'+f+'</option>';});
+  lancBulkModal('Alterar Forma de Pagamento',
+    '<select id="blk-forma" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 10px;font-size:13px;color:var(--t);background:var(--bg)">'+opts+'</select>',
+    function(){
+      const v=document.getElementById('blk-forma').value;
+      if(!v)return;
+      lancBulkApply(function(l){l.forma=v;});
+    }
+  );
+}
+
+function lancBulkPago(pago){
+  const ids=lancGetSelected();
+  if(!ids.length)return;
+  const hoje=new Date().toLocaleDateString('sv-SE');
+  lancBulkApply(function(l){
+    l.pago=pago;
+    if(pago&&!l.dataPag)l.dataPag=hoje;
+    if(!pago)l.dataPag=null;
+  });
+}
+
+function lancBulkDel(){
+  const ids=lancGetSelected();
+  if(!ids.length)return;
+  showConfirm('Excluir '+ids.length+' lançamento(s)?','Essa ação não pode ser desfeita.','🗑️',function(){
+    const all=getLanc().filter(function(l){return!ids.includes(l.id);});
+    S.set('lancamentos',all);
+    lancBulkClear();
+    renderLanc();
+    if(typeof renderFluxo==='function')renderFluxo();
+  });
+}
+
+function lancBulkModal(title, bodyHtml, onOk){
+  const old=document.getElementById('lanc-bulk-modal');if(old)old.remove();
+  const d=document.createElement('div');
+  d.id='lanc-bulk-modal';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+  d.innerHTML='<div style="background:var(--bg);border-radius:14px;padding:24px 28px;width:400px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">'
+    +'<div style="font-size:14px;font-weight:800;color:var(--t);margin-bottom:16px">'+title+'</div>'
+    +bodyHtml
+    +'<div style="display:flex;gap:8px;margin-top:16px">'
+    +'<button id="blk-ok" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">Aplicar</button>'
+    +'<button id="blk-cancel" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer">Cancelar</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+  document.getElementById('blk-ok').onclick=function(){d.remove();onOk();};
+  document.getElementById('blk-cancel').onclick=function(){d.remove();};
+  d.onclick=function(e){if(e.target===d)d.remove();};
 }
 
 </script>
