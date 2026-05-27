@@ -3602,6 +3602,7 @@ function renderDashboard(){
   const cs=document.getElementById('dash-chart-subtitle');
   if(cs)cs.textContent=isHoje?'Hoje vs ontem':'Últimos 6 meses';
 
+  if(typeof labels==='undefined')return;
   new Chart(ctx,{type:'bar',data:{labels,datasets:[
     {label:'Receitas',data:recData,backgroundColor:'rgba(39,174,96,.75)',borderRadius:6,order:2},
     {label:'Despesas',data:despData,backgroundColor:'rgba(231,76,60,.65)',borderRadius:6,order:2},
@@ -6025,7 +6026,7 @@ function renderFluxo(){
   const _stCancel=new Set(['canceled','canceling','CANCELLED','CANCELED','cancelled']);
   const hist=getHistorico();
   // Mapa pedidos por data BRT
-  const pedMapaRec={};
+  let pedMapaRec={};
   // Pedidos por data recebimento: D+0 padrão, D+1 útil para cartão
   (function(){
     var feriados=['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
