@@ -1397,6 +1397,112 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 <!-- TEMA TOGGLE -->
 <div class="card" style="margin-bottom:14px">
   <div class="card-t">Aparência</div>
+
+<!-- PAGE: Reels -->
+<div class="pg" id="pg-reels">
+  <div style="padding:20px 24px 0;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t)">🎬 Agenda de Reels</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">Planeje, crie e poste todos os dias</div>
+      </div>
+      <button onclick="reelsNewIdea()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Nova Ideia</button>
+    </div>
+    <!-- Status tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px" id="reels-status-tabs">
+      <button onclick="reelsSetTab('todos',this)" id="rt-todos" style="background:var(--fox);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Todos</button>
+      <button onclick="reelsSetTab('ideia',this)" id="rt-ideia" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">💡 Ideia</button>
+      <button onclick="reelsSetTab('roteiro',this)" id="rt-roteiro" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📝 Roteiro</button>
+      <button onclick="reelsSetTab('gravado',this)" id="rt-gravado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🎥 Gravado</button>
+      <button onclick="reelsSetTab('editado',this)" id="rt-editado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✂️ Editado</button>
+      <button onclick="reelsSetTab('postado',this)" id="rt-postado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✅ Postado</button>
+    </div>
+    <!-- Calendário semanal -->
+    <div id="reels-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px"></div>
+  </div>
+  <!-- Lista de ideias -->
+  <div class="scroll" style="padding:0 24px 24px;flex:1;min-height:0">
+    <div id="reels-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="reels-empty" style="display:none;text-align:center;padding:40px;color:var(--t3);font-size:13px">Nenhuma ideia ainda.<br>Clique em <strong>+ Nova Ideia</strong> para começar!</div>
+  </div>
+</div>
+
+<!-- Modal: Nova/Editar Ideia de Reel -->
+<div id="modal-reel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
+    <button onclick="reelsCloseModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--t3)">×</button>
+    <div id="modal-reel-title" style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:20px">Nova Ideia</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Título -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Título / Ideia *</label>
+        <input id="reel-titulo" type="text" placeholder="Ex: Como fazer cookie recheado perfeito" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+      </div>
+      <!-- Roteiro/Descrição -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Roteiro / Anotações</label>
+        <textarea id="reel-roteiro" rows="4" placeholder="Escreva o roteiro, pontos principais, o que mostrar..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:vertical;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
+      </div>
+      <!-- Hook -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hook (primeiros 3 segundos)</label>
+        <input id="reel-hook" type="text" placeholder="Ex: Você ainda faz o cookie errado? 🍪" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+      </div>
+      <!-- Linha 3 campos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Status</label>
+          <select id="reel-status" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
+            <option value="ideia">💡 Ideia</option>
+            <option value="roteiro">📝 Roteiro</option>
+            <option value="gravado">🎥 Gravado</option>
+            <option value="editado">✂️ Editado</option>
+            <option value="postado">✅ Postado</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Data prevista</label>
+          <input id="reel-data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Formato</label>
+          <select id="reel-formato" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
+            <option value="receita">🍪 Receita</option>
+            <option value="bastidores">🎬 Bastidores</option>
+            <option value="dica">💡 Dica</option>
+            <option value="trending">🔥 Trend</option>
+            <option value="produto">🛍️ Produto</option>
+            <option value="outro">📱 Outro</option>
+          </select>
+        </div>
+      </div>
+      <!-- Hashtags -->
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hashtags / Caption</label>
+        <textarea id="reel-hashtags" rows="2" placeholder="#confeitaria #cookies #receitafacil..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
+      </div>
+      <!-- Botões -->
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="reelsSave()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">Salvar</button>
+        <button onclick="reelsCloseModal()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm Delete Reel -->
+<div id="modal-reel-del" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border-radius:14px;padding:24px;width:320px;text-align:center">
+    <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px">Excluir ideia?</div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Essa ação não pode ser desfeita.</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="reelsConfirmDel()" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Excluir</button>
+      <button onclick="document.getElementById('modal-reel-del').style.display='none'" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+
   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
     <div>
       <div style="font-size:13px;font-weight:600;color:var(--t)">Tema</div>
@@ -11823,110 +11929,6 @@ async function syncMes(){
   </div>
 </div>
 
-<!-- PAGE: Reels -->
-<div class="pg" id="pg-reels">
-  <div style="padding:20px 24px 0;flex-shrink:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--t)">🎬 Agenda de Reels</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">Planeje, crie e poste todos os dias</div>
-      </div>
-      <button onclick="reelsNewIdea()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Nova Ideia</button>
-    </div>
-    <!-- Status tabs -->
-    <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px" id="reels-status-tabs">
-      <button onclick="reelsSetTab('todos',this)" id="rt-todos" style="background:var(--fox);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Todos</button>
-      <button onclick="reelsSetTab('ideia',this)" id="rt-ideia" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">💡 Ideia</button>
-      <button onclick="reelsSetTab('roteiro',this)" id="rt-roteiro" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📝 Roteiro</button>
-      <button onclick="reelsSetTab('gravado',this)" id="rt-gravado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🎥 Gravado</button>
-      <button onclick="reelsSetTab('editado',this)" id="rt-editado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✂️ Editado</button>
-      <button onclick="reelsSetTab('postado',this)" id="rt-postado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✅ Postado</button>
-    </div>
-    <!-- Calendário semanal -->
-    <div id="reels-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px"></div>
-  </div>
-  <!-- Lista de ideias -->
-  <div class="scroll" style="padding:0 24px 24px;flex:1;min-height:0">
-    <div id="reels-list" style="display:flex;flex-direction:column;gap:10px"></div>
-    <div id="reels-empty" style="display:none;text-align:center;padding:40px;color:var(--t3);font-size:13px">Nenhuma ideia ainda.<br>Clique em <strong>+ Nova Ideia</strong> para começar!</div>
-  </div>
-</div>
-
-<!-- Modal: Nova/Editar Ideia de Reel -->
-<div id="modal-reel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
-  <div style="background:var(--bg);border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
-    <button onclick="reelsCloseModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--t3)">×</button>
-    <div id="modal-reel-title" style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:20px">Nova Ideia</div>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <!-- Título -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Título / Ideia *</label>
-        <input id="reel-titulo" type="text" placeholder="Ex: Como fazer cookie recheado perfeito" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-      </div>
-      <!-- Roteiro/Descrição -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Roteiro / Anotações</label>
-        <textarea id="reel-roteiro" rows="4" placeholder="Escreva o roteiro, pontos principais, o que mostrar..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:vertical;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
-      </div>
-      <!-- Hook -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hook (primeiros 3 segundos)</label>
-        <input id="reel-hook" type="text" placeholder="Ex: Você ainda faz o cookie errado? 🍪" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-      </div>
-      <!-- Linha 3 campos -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Status</label>
-          <select id="reel-status" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
-            <option value="ideia">💡 Ideia</option>
-            <option value="roteiro">📝 Roteiro</option>
-            <option value="gravado">🎥 Gravado</option>
-            <option value="editado">✂️ Editado</option>
-            <option value="postado">✅ Postado</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Data prevista</label>
-          <input id="reel-data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Formato</label>
-          <select id="reel-formato" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
-            <option value="receita">🍪 Receita</option>
-            <option value="bastidores">🎬 Bastidores</option>
-            <option value="dica">💡 Dica</option>
-            <option value="trending">🔥 Trend</option>
-            <option value="produto">🛍️ Produto</option>
-            <option value="outro">📱 Outro</option>
-          </select>
-        </div>
-      </div>
-      <!-- Hashtags -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hashtags / Caption</label>
-        <textarea id="reel-hashtags" rows="2" placeholder="#confeitaria #cookies #receitafacil..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
-      </div>
-      <!-- Botões -->
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <button onclick="reelsSave()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">Salvar</button>
-        <button onclick="reelsCloseModal()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Confirm Delete Reel -->
-<div id="modal-reel-del" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:var(--bg);border-radius:14px;padding:24px;width:320px;text-align:center">
-    <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px">Excluir ideia?</div>
-    <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Essa ação não pode ser desfeita.</div>
-    <div style="display:flex;gap:8px;justify-content:center">
-      <button onclick="reelsConfirmDel()" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Excluir</button>
-      <button onclick="document.getElementById('modal-reel-del').style.display='none'" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modal: Forma de Pagamento Financeiro -->
 <div class="overlay" id="modal-forma-pag" onclick="if(event.target===this)closeM('modal-forma-pag')">
   <div class="modal" style="max-width:380px">
@@ -11942,110 +11944,6 @@ async function syncMes(){
       <button class="btn-danger modal-del" id="mfpag-del" onclick="deleteFormaPag()" style="display:none">Excluir</button>
       <button class="btn-o" onclick="closeM('modal-forma-pag')">Cancelar</button>
       <button class="btn-p" onclick="saveFormaPag()">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- PAGE: Reels -->
-<div class="pg" id="pg-reels">
-  <div style="padding:20px 24px 0;flex-shrink:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div>
-        <div style="font-size:18px;font-weight:800;color:var(--t)">🎬 Agenda de Reels</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:2px">Planeje, crie e poste todos os dias</div>
-      </div>
-      <button onclick="reelsNewIdea()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">+ Nova Ideia</button>
-    </div>
-    <!-- Status tabs -->
-    <div style="display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px" id="reels-status-tabs">
-      <button onclick="reelsSetTab('todos',this)" id="rt-todos" style="background:var(--fox);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Todos</button>
-      <button onclick="reelsSetTab('ideia',this)" id="rt-ideia" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">💡 Ideia</button>
-      <button onclick="reelsSetTab('roteiro',this)" id="rt-roteiro" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">📝 Roteiro</button>
-      <button onclick="reelsSetTab('gravado',this)" id="rt-gravado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">🎥 Gravado</button>
-      <button onclick="reelsSetTab('editado',this)" id="rt-editado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✂️ Editado</button>
-      <button onclick="reelsSetTab('postado',this)" id="rt-postado" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">✅ Postado</button>
-    </div>
-    <!-- Calendário semanal -->
-    <div id="reels-calendar" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px"></div>
-  </div>
-  <!-- Lista de ideias -->
-  <div class="scroll" style="padding:0 24px 24px;flex:1;min-height:0">
-    <div id="reels-list" style="display:flex;flex-direction:column;gap:10px"></div>
-    <div id="reels-empty" style="display:none;text-align:center;padding:40px;color:var(--t3);font-size:13px">Nenhuma ideia ainda.<br>Clique em <strong>+ Nova Ideia</strong> para começar!</div>
-  </div>
-</div>
-
-<!-- Modal: Nova/Editar Ideia de Reel -->
-<div id="modal-reel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
-  <div style="background:var(--bg);border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;position:relative">
-    <button onclick="reelsCloseModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--t3)">×</button>
-    <div id="modal-reel-title" style="font-size:16px;font-weight:800;color:var(--t);margin-bottom:20px">Nova Ideia</div>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <!-- Título -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Título / Ideia *</label>
-        <input id="reel-titulo" type="text" placeholder="Ex: Como fazer cookie recheado perfeito" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-      </div>
-      <!-- Roteiro/Descrição -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Roteiro / Anotações</label>
-        <textarea id="reel-roteiro" rows="4" placeholder="Escreva o roteiro, pontos principais, o que mostrar..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:vertical;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
-      </div>
-      <!-- Hook -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hook (primeiros 3 segundos)</label>
-        <input id="reel-hook" type="text" placeholder="Ex: Você ainda faz o cookie errado? 🍪" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-      </div>
-      <!-- Linha 3 campos -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Status</label>
-          <select id="reel-status" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
-            <option value="ideia">💡 Ideia</option>
-            <option value="roteiro">📝 Roteiro</option>
-            <option value="gravado">🎥 Gravado</option>
-            <option value="editado">✂️ Editado</option>
-            <option value="postado">✅ Postado</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Data prevista</label>
-          <input id="reel-data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);box-sizing:border-box;outline:none">
-        </div>
-        <div>
-          <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Formato</label>
-          <select id="reel-formato" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 8px;font-size:12px;color:var(--t);background:var(--bg);outline:none">
-            <option value="receita">🍪 Receita</option>
-            <option value="bastidores">🎬 Bastidores</option>
-            <option value="dica">💡 Dica</option>
-            <option value="trending">🔥 Trend</option>
-            <option value="produto">🛍️ Produto</option>
-            <option value="outro">📱 Outro</option>
-          </select>
-        </div>
-      </div>
-      <!-- Hashtags -->
-      <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Hashtags / Caption</label>
-        <textarea id="reel-hashtags" rows="2" placeholder="#confeitaria #cookies #receitafacil..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;box-sizing:border-box;outline:none"></textarea>
-      </div>
-      <!-- Botões -->
-      <div style="display:flex;gap:8px;margin-top:4px">
-        <button onclick="reelsSave()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">Salvar</button>
-        <button onclick="reelsCloseModal()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Confirm Delete Reel -->
-<div id="modal-reel-del" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:var(--bg);border-radius:14px;padding:24px;width:320px;text-align:center">
-    <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:8px">Excluir ideia?</div>
-    <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Essa ação não pode ser desfeita.</div>
-    <div style="display:flex;gap:8px;justify-content:center">
-      <button onclick="reelsConfirmDel()" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Excluir</button>
-      <button onclick="document.getElementById('modal-reel-del').style.display='none'" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer">Cancelar</button>
     </div>
   </div>
 </div>
