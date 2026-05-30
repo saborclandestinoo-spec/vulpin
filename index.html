@@ -541,10 +541,6 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         🍪 Produtos</div>
     </div>
     <div class="nav-g">Financeiro</div>
-    <div class="ni" onclick="window.open('/financeiro','_blank')" style="background:linear-gradient(135deg,var(--fox),#f2895a);color:#fff;margin:2px 8px;border-radius:8px">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 10l3-3 2 2 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <span style="font-weight:700">Módulo Financeiro ✨</span>
-    </div>
     <div class="ni ni-plain" onclick="go('lancamentos',this)">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h10M2 7h7M2 11h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
       Lançamentos</div>
@@ -606,13 +602,90 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 
     <!-- DRE -->
     <div class="pg" id="pg-dre">
-      <div style="padding:14px 22px 0;flex-shrink:0;display:flex;gap:8px;align-items:center">
-        <div style="display:flex;gap:2px;background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:2px">
-          <button onclick="fin_dreTab('simples',this)" id="fin_dre_btn_simples" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg3);color:var(--t);font-family:inherit">Simplificado</button>
-          <button onclick="fin_dreTab('detalhado',this)" id="fin_dre_btn_detalhado" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Detalhado</button>
+      <div class="scroll" style="background:var(--bg2)">
+        <!-- Header moderno -->
+        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0;flex-shrink:0">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">DRE</div>
+            <div style="font-size:13px;font-weight:600;color:var(--t);margin-top:1px" id="dre-pg-periodo">—</div>
+          </div>
+          <!-- Nav + Range Picker -->
+          <div style="display:flex;align-items:center;gap:6px">
+            <button class="fc-month-btn" onclick="dreNavMonth(-1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
+            <div style="position:relative" id="dre-range-wrap">
+              <button onclick="grpToggle('dre')" id="dre-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 18px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:34px;min-width:160px;justify-content:center;white-space:nowrap">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+                <span id="dre-range-label">Este mês</span>
+              </button>
+              <div id="dre-range-drop" class="grp-drop" style="left:auto;right:0">
+                <div style="display:flex">
+                  <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
+                    <div class="rp-preset" onclick="grpPreset('dre','hoje')">Hoje</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','mes')">Este mês</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','mes_passado')">Mês passado</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','m2')">Últimos 2 meses</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','m3')">Últimos 3 meses</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','semana')">Esta semana</div>
+                    <div class="rp-preset" onclick="grpPreset('dre','custom')">Personalizado</div>
+                  </div>
+                  <div style="flex:1;padding:14px 16px">
+                    <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="dre-rp-range-label">—</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <button onclick="grpNav('dre',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
+                          <span id="dre-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <div style="width:28px"></div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m1-days"></div>
+                      </div>
+                      <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                          <div style="width:28px"></div>
+                          <span id="dre-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                          <button onclick="grpNav('dre',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m2-days"></div>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
+                      <button onclick="grpClose('dre')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
+                      <button onclick="grpApply('dre',renderDREPage)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="fc-month-btn" onclick="dreNavMonth(1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">›</button>
+          </div>
+
         </div>
+
+        <!-- KPI Strip -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px" id="dre-pg-kpi"></div>
+
+        <!-- DRE Table -->
+        <div style="margin:0 20px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
+          <div id="dre-pg-body"></div>
+        </div>
+
+
+
+        <!-- CMV por Produto -->
+        <div style="margin:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">CMV por Produto</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Custo dos itens vendidos no período</div>
+            <div id="dre-pg-cmv"></div>
+          </div>
+          <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">Despesas por Categoria</div>
+            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Composição dos custos do período</div>
+            <div id="dre-pg-desp"></div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
       </div>
-      <div class="scroll" style="padding:16px 22px 24px"><div id="fin_dre_body" style="max-width:660px"></div></div>
     </div>
 
     <!-- DASHBOARD -->
@@ -894,71 +967,241 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 
     <!-- FINANCEIRO / FLUXO -->
     <div class="pg" id="pg-financeiro">
-      <div id="fin_fluxo_summary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 22px;flex-shrink:0"></div>
-      <div style="padding:0 22px 10px;flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;gap:2px;background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:2px">
-          <button onclick="fin_fluxoTab('diario',this)" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg3);color:var(--t);font-family:inherit">Diário</button>
-          <button onclick="fin_fluxoTab('mensal',this)" style="padding:5px 13px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Mensal</button>
+      <!-- TOOLBAR -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+        <!-- Tabs -->
+        <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:10px;overflow:hidden">
+          <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">Tabela</button>
+          <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Gráfico</button>
         </div>
-        <select onchange="fin_renderFluxo()" id="fin_fluxo_conta" style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit"><option value="">Todas as contas</option></select>
-        <select onchange="fin_renderFluxo()" id="fin_fluxo_tipo" style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit"><option value="">Entradas e Saídas</option><option value="receita">Entradas</option><option value="despesa">Saídas</option></select>
+        <div style="display:flex;gap:2px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor);flex-shrink:0">
+          <button id="fc-agrup-dia" onclick="window._fluxoAgrup='dia';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Dia</button>
+          <button id="fc-agrup-semana" onclick="window._fluxoAgrup='semana';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Semana</button>
+          <button id="fc-agrup-mes" onclick="window._fluxoAgrup='mes';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Mês</button>
+        </div>
+        <!-- Range picker igual ao de pedidos -->
+        <button class="fc-month-btn" onclick="fcNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
+        <div style="position:relative" id="fc-range-wrap">
+          <button onclick="grpToggle('fc')" id="fc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+            <span id="fc-range-label">Este mês</span>
+          </button>
+          <div id="fc-range-drop" class="grp-drop">
+            <div style="display:flex">
+              <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
+                <div class="rp-preset" onclick="grpPreset('fc','hoje')">Hoje</div>
+                <div class="rp-preset" onclick="grpPreset('fc','ontem')">Ontem</div>
+                <div class="rp-preset" onclick="grpPreset('fc','semana')">Esta semana</div>
+                <div class="rp-preset" onclick="grpPreset('fc','semana_passada')">Semana passada</div>
+                <div class="rp-preset" onclick="grpPreset('fc','mes')">Este mês</div>
+                <div class="rp-preset" onclick="grpPreset('fc','mes_passado')">Mês passado</div>
+                <div class="rp-preset" onclick="grpPreset('fc','m2')">Últimos 2 meses</div>
+                <div class="rp-preset" onclick="grpPreset('fc','m3')">Últimos 3 meses</div>
+              </div>
+              <div style="flex:1;padding:14px 16px">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="fc-rp-range-label">—</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                      <button onclick="grpNav('fc',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
+                      <span id="fc-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                      <div style="width:28px"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="fc-rp-m1-days"></div>
+                  </div>
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                      <div style="width:28px"></div>
+                      <span id="fc-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                      <button onclick="grpNav('fc',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="fc-rp-m2-days"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
+                  <button onclick="grpClose('fc')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
+                  <button onclick="grpApply('fc',renderFluxo)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="fc-month-btn" onclick="fcNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
+        <!-- Conta -->
+        <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:12px;min-width:160px"><option value="">Todas as contas</option></select>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn-o" style="font-size:12px;padding:7px 14px" onclick="fcExportar()">⬇ Exportar</button>
+        </div>
       </div>
-      <div class="scroll" style="padding:0 22px 24px"><div id="fin_fluxo_body"></div></div>
+      <div class="scroll">
+        <!-- KPIs -->
+        <div id="fc-kpis" style="display:none"></div>
+        <!-- Tabela view -->
+        <div id="fc-view-tabela">
+          <div id="fc-table-wrap" style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;width:100%;display:block;background:var(--bg);border-radius:12px;border:1px solid var(--bor)"></div>
+        </div>
+        <!-- Gráfico view -->
+        <div id="fc-view-grafico" style="display:none">
+          <div class="card">
+            <div class="chart-area" style="height:280px"><canvas id="chart-fluxo"></canvas></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- LANÇAMENTOS -->
     <div class="pg" id="pg-lancamentos">
-      <div id="fin_lanc_summary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 22px;flex-shrink:0"></div>
-      <div id="fin_bulk_bar" style="display:none;background:var(--fox);padding:9px 22px;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
-        <span id="fin_bulk_count" style="color:#fff;font-size:13px;font-weight:700"></span>
-        <button onclick="fin_bulkPago(true)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">✅ Pago</button>
-        <button onclick="fin_bulkPago(false)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pendente</button>
-        <button onclick="fin_bulkCat()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📂 Categoria</button>
-        <button onclick="fin_bulkConta()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🏦 Conta</button>
-        <button onclick="fin_bulkCC()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📊 C.Custo</button>
-        <button onclick="fin_bulkDel()" style="background:rgba(255,100,100,.3);color:#ffcdd2;border:1px solid rgba(255,100,100,.4);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🗑 Excluir</button>
-        <button onclick="fin_clearBulk()" style="margin-left:auto;background:none;color:rgba(255,255,255,.8);border:none;font-size:18px;cursor:pointer">×</button>
+      <!-- Tabs principais -->
+      <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
+        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
+        <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
+        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
+        <div class="lanc-tab" id="lt-ia-main" onclick="lancMainTab('ia',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">✨ Lançamento Rápido</div>
       </div>
-      <div style="padding:0 22px 8px;flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;gap:2px;background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:2px" id="fin_lanc_tabs">
-          <button onclick="fin_lancTab('todos',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg3);color:var(--t);font-family:inherit">Todos</button>
-          <button onclick="fin_lancTab('receita',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Entradas</button>
-          <button onclick="fin_lancTab('despesa',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Saídas</button>
-          <button onclick="fin_lancTab('pagar',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">A Pagar</button>
-          <button onclick="fin_lancTab('receber',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">A Receber</button>
-          <button onclick="fin_lancTab('vencido',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Vencidos</button>
-        </div>
-        <select id="fin_lanc_cat_f" onchange="fin_renderLanc()" style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit"><option value="">Todas as categorias</option></select>
-        <select id="fin_lanc_conta_f" onchange="fin_renderLanc()" style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit"><option value="">Todas as contas</option></select>
-        <div style="position:relative;margin-left:auto">
-          <svg style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--t3)" width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 8l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input id="fin_lanc_q" oninput="fin_renderLanc()" placeholder="Pesquisar..." style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px 5px 26px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit;outline:none;width:160px">
+      <!-- Painel IA -->
+      <div id="lanc-ia-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:var(--bg2)">
+        <div style="padding:20px 24px 0">
+          <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Lançamento por Linguagem Natural</div>
+          <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Digite como mandaria no WhatsApp. Ex: <em>"Paguei R$150 de gás hoje"</em>, <em>"Recebi R$800 encomenda ontem"</em>, <em>"Conta de luz R$320 vencimento dia 15"</em></div>
+          <!-- Histórico do chat -->
+          <div id="lanc-ia-chat" style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;min-height:220px;max-height:340px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
+          <!-- Input -->
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <textarea id="lanc-ia-input" rows="2" placeholder="Ex: Comprei ingredientes R$280 no mercado hoje..." style="flex:1;border:1px solid var(--bor);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();lancIASend();}"></textarea>
+            <button onclick="lancIASend()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:0 18px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">Enviar</button>
+          </div>
+          <!-- Preview do lançamento -->
+          <div id="lanc-ia-preview" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Confirmar Lançamento</div>
+            <div id="lanc-ia-preview-body" style="display:flex;flex-direction:column;gap:8px"></div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button onclick="lancIAConfirm()" style="background:var(--green,#22c55e);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">✓ Confirmar e Lançar</button>
+              <button onclick="lancIAEdit()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Editar</button>
+              <button onclick="lancIACancel()" style="background:var(--bg2);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="scroll" style="padding:0 22px 24px">
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:var(--bg3)">
-            <th style="width:28px;padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)"><input type="checkbox" id="fin_chk_all" onchange="fin_checkAll(this)"></th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Vencimento</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Descrição</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Fornecedor</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Categoria</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Conta</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">C.Custo</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Forma</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bor)">Situação</th>
-            <th style="padding:8px 10px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:right;border-bottom:1px solid var(--bor)">Valor</th>
-            <th style="padding:8px 10px;border-bottom:1px solid var(--bor)"></th>
-          </tr></thead>
-          <tbody id="fin_tbody"></tbody>
-        </table>
+      <!-- Filtro inline -->
+      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
+        <!-- Conta -->
+        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:36px"><option value="">Todas as contas</option></select>
+        <!-- Nav ‹ label › -->
+        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
+        <div style="position:relative;flex:0 0 auto" id="lanc-range-wrap">
+          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:36px;white-space:nowrap;min-width:160px;justify-content:center">
+            <span id="lanc-range-label">Este mês</span>
+          </button>
+          <div id="lanc-range-drop" class="grp-drop">
+            <div style="display:flex">
+              <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
+                <div class="rp-preset" onclick="grpPreset('lanc','hoje')">Hoje</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','ontem')">Ontem</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','semana')">Esta semana</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','semana_passada')">Semana passada</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','mes')">Este mês</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','mes_passado')">Mês passado</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','m2')">Últimos 2 meses</div>
+                <div class="rp-preset" onclick="grpPreset('lanc','m3')">Últimos 3 meses</div>
+              </div>
+              <div style="flex:1;padding:14px 16px">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="lanc-rp-range-label">—</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                      <button onclick="grpNav('lanc',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
+                      <span id="lanc-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                      <div style="width:28px"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="lanc-rp-m1-days"></div>
+                  </div>
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                      <div style="width:28px"></div>
+                      <span id="lanc-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
+                      <button onclick="grpNav('lanc',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="lanc-rp-m2-days"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
+                  <button onclick="grpClose('lanc')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
+                  <button onclick="grpApply('lanc',renderLanc)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
+        <!-- Search -->
+        <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
+          <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
+        </div>
+        <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
+      </div>
+      <!-- Barra de ações em massa -->
+      <div id="lanc-bulk-bar" style="display:none;background:var(--fox);padding:10px 20px;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap">
+        <span id="lanc-bulk-count" style="color:#fff;font-size:13px;font-weight:700;margin-right:4px"></span>
+        <button onclick="lancBulkCat()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📂 Categoria</button>
+        <button onclick="lancBulkConta()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🏦 Conta</button>
+        <button onclick="lancBulkCC()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📊 Centro de Custo</button>
+        <button onclick="lancBulkForma()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">💳 Forma Pgto</button>
+        <button onclick="lancBulkPago(true)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">✅ Marcar Pago</button>
+        <button onclick="lancBulkPago(false)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">⏳ Marcar Pendente</button>
+        <button onclick="lancBulkDel()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🗑 Excluir</button>
+        <button onclick="lancBulkClear()" style="margin-left:auto;background:none;color:rgba(255,255,255,.8);border:none;font-size:20px;cursor:pointer;line-height:1">×</button>
+      </div>
+      <!-- Pills de situação -->
+      <div id="lanc-pills-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
+          <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(230,126,34,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
+          <span style="color:var(--amber)">Vencem hoje</span><span id="ph-val" style="color:var(--amber)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(41,128,185,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
+          <span style="color:var(--blue)">A vencer</span><span id="pa-val" style="color:var(--blue)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(39,174,96,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
+          <span style="color:var(--green)">Pagos</span><span id="pp-val" style="color:var(--green)">R$ 0,00</span>
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--bg3);font-size:12px;font-weight:600;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
+          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t)">R$ 0,00</span>
+        </div>
+      </div>
+      <!-- Sub-tabs (ocultas quando main tab = pagar/receber) -->
+      <div id="lanc-subtabs" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;display:none;gap:0;flex-shrink:0">
+        <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
+        <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
+        <div class="lanc-tab" id="lt-receita" onclick="lancTab('receita',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Receitas</div>
+        <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
+      </div>
+      <select id="lanc-month" style="display:none"></select>
+      <div class="scroll" id="lanc-scroll">
+        <div class="card">
+          <div class="tbl-wrap"><table class="tbl" id="tbl-lanc">
+            <thead><tr><th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th><th>Vencimento</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th style="display:none"></th><th>Situação</th><th>Valor</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
       </div>
     </div>
 
     <!-- BANCOS -->
     <div class="pg" id="pg-bancos">
-      <div class="scroll" style="padding:16px 22px 24px">
-        <div id="fin_contas_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
+      <div class="scroll">
+        <div id="bank-totals" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px"></div>
+        <div class="bank-grid" id="bank-grid"></div>
+        <div class="card">
+          <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
+          <div class="tbl-wrap"><table class="tbl" id="tbl-bank">
+            <thead><tr><th>Data Pedido</th><th>Data Recebimento</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo</th></tr></thead>
+            <tbody><tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px">Selecione um banco para ver o extrato</td></tr></tbody>
+          </table>
+        <div id="bank-a-receber" style="display:none"></div>
+        </div>
+        </div>
       </div>
     </div>
 
@@ -1042,27 +1285,49 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
 
     <!-- CENTRO DE CUSTOS -->
     <div class="pg" id="pg-centrocusto">
-      <div class="scroll" style="padding:16px 22px 24px">
-        <div id="fin_cc_list"></div>
+      <div class="scroll">
+        <!-- CENTROS DE CUSTO -->
+        <div class="card" style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="card-t" style="margin-bottom:0">Centros de Custo</div>
+            <button class="btn-p" onclick="openCC()" style="font-size:12px;padding:6px 14px">+ Centro de Custo</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl" id="tbl-cc-all">
+            <thead><tr><th>Cód</th><th>Nome</th><th>Tipo</th><th></th></tr></thead><tbody></tbody>
+          </table></div>
+        </div>
+        <!-- EQUIPAMENTOS -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div class="card-t" style="margin-bottom:0">Controle de Equipamentos</div>
+            <button class="btn-p" onclick="openEquip()" style="font-size:12px;padding:6px 14px">+ Equipamento</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl" id="tbl-equip">
+            <thead><tr>
+              <th>Cód</th><th>Nome</th><th>Centro de Custo</th><th>Nº Série</th><th>Fornecedor</th>
+              <th>Valor Aquisição</th><th>Status</th><th>Data Aquisição</th><th>Próx. Manutenção</th>
+              <th>Vida Útil (anos)</th><th>Deprec. Anual</th><th>Deprec. Mensal</th><th>Obs</th><th></th>
+            </tr></thead><tbody></tbody>
+          </table></div>
+        </div>
       </div>
     </div>
 
 
     <!-- CATEGORIAS (PLANO DE CONTAS) -->
     <div class="pg" id="pg-categorias">
-      <div style="padding:14px 22px 8px;flex-shrink:0;display:flex;gap:8px;align-items:center">
-        <div style="display:flex;gap:2px;background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:2px" id="fin_cat_tipo_tabs">
-          <button onclick="fin_catTipo('todos',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:var(--bg3);color:var(--t);font-family:inherit">Todos</button>
-          <button onclick="fin_catTipo('despesa',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Despesas</button>
-          <button onclick="fin_catTipo('receita',this)" style="padding:5px 11px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t3);font-family:inherit">Receitas</button>
+      <div class="scroll">
+        <!-- Categorias toolbar -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <div style="display:flex;gap:4px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor)">
+            <button onclick="catSetTab('despesa',this)" id="cat-tab-desp" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Despesas</button>
+            <button onclick="catSetTab('receita',this)" id="cat-tab-rec" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Receitas</button>
+          </div>
+          <button onclick="catAddGrupo()" style="padding:5px 14px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--t2)">+ Novo Grupo</button>
+          <button onclick="catSave()" style="padding:5px 14px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Salvar Alterações</button>
+          <span id="cat-save-status" style="font-size:11px;color:var(--green);display:none">Salvo!</span>
         </div>
-        <div style="position:relative;margin-left:auto">
-          <svg style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--t3)" width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 8l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input id="fin_cat_q" oninput="fin_renderCats()" placeholder="Buscar..." style="border:1px solid var(--bor);border-radius:8px;padding:5px 9px 5px 26px;font-size:12px;color:var(--t);background:var(--bg2);font-family:inherit;outline:none;width:150px">
-        </div>
-      </div>
-      <div class="scroll" style="padding:0 22px 24px">
-        <div id="fin_cats_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px"></div>
+        <div id="cat-body" style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden"></div>
       </div>
     </div>
     <!-- EQUIPAMENTOS -->
@@ -7709,103 +7974,6 @@ async function printEtiquetas(){
     </div>
   </div>
 </div>
-
-<!-- FIN MODALS -->
-<div class="overlay" id="fin_m_lanc">
-  <div class="modal" style="width:500px;max-width:95vw;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Novo Lançamento</div>
-      <button onclick="closeM('fin_m_lanc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:flex;gap:5px;margin-bottom:16px">
-      <button id="fml_btn_despesa" onclick="fin_lancModalTipo('despesa',fin_getModal('fin_m_lanc'))" style="flex:1;background:#fee2e2;color:#d93025;border:1.5px solid #d93025;border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">− Despesa</button>
-      <button id="fml_btn_receita" onclick="fin_lancModalTipo('receita',fin_getModal('fin_m_lanc'))" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Receita</button>
-      <button id="fml_btn_transferencia" onclick="fin_lancModalTipo('transferencia',fin_getModal('fin_m_lanc'))" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⇄ Transf.</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição *</label><input id="fml_desc" type="text" placeholder="Ex: Compra de ingredientes" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Valor *</label><input id="fml_valor" type="number" placeholder="0,00" step="0.01" min="0" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Data</label><input id="fml_data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Vencimento</label><input id="fml_venc" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Categoria</label><select id="fml_cat" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Conta</label><select id="fml_conta" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div id="fml_dest_row" style="display:none;grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Conta Destino</label><select id="fml_conta_dest" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Fornecedor / Cliente</label><input id="fml_fornec" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Forma de Pagamento</label><select id="fml_forma" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="">—</option><option>Dinheiro</option><option>Pix</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Boleto</option><option>Transferência</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Centro de Custo</label><select id="fml_cc" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Observação</label><textarea id="fml_obs" rows="2" placeholder="Notas..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--bor);margin-top:12px">
-      <div style="font-size:13px;font-weight:500;color:var(--t)">Já pago / recebido</div>
-      <label style="position:relative;width:38px;height:20px;flex-shrink:0"><input type="checkbox" id="fml_pago" style="opacity:0;width:0;height:0"><span style="position:absolute;inset:0;background:var(--bor);border-radius:20px;cursor:pointer;transition:.2s" id="fml_pago_slider" onclick="this.previousElementSibling.click()"></span></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveLanc()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_lanc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_cat">
-  <div class="modal" style="width:420px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Nova Categoria</div>
-      <button onclick="closeM('fin_m_cat')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmc_nome" type="text" placeholder="Ex: Matéria-prima" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Tipo</label><select id="fmc_tipo" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="despesa">💸 Despesa</option><option value="receita">💰 Receita</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Ícone</label><input id="fmc_icon" type="text" placeholder="🛒" maxlength="4" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:18px;text-align:center;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Código Contábil</label><input id="fmc_cod" type="text" placeholder="Ex: 5.1.1" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Cor</label><div id="fmc_cores" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição</label><textarea id="fmc_desc" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveCat()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_cat')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_cc">
-  <div class="modal" style="width:400px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Novo Centro de Custo</div>
-      <button onclick="closeM('fin_m_cc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmcc_nome" type="text" placeholder="Ex: Produção, Marketing" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Cor</label><input type="color" id="fmcc_cor" value="#E8612A" style="width:100%;height:38px;border:1px solid var(--bor);border-radius:8px;cursor:pointer"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Responsável</label><input id="fmcc_resp" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição</label><textarea id="fmcc_desc" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveCC()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_cc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_conta">
-  <div class="modal" style="width:400px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Nova Conta</div>
-      <button onclick="closeM('fin_m_conta')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmco_nome" type="text" placeholder="Ex: Nubank, Caixa" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Tipo</label><select id="fmco_tipo" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="corrente">Conta Corrente</option><option value="poupanca">Poupança</option><option value="caixa">Caixa</option><option value="digital">Conta Digital</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Saldo Inicial</label><input id="fmco_saldo" type="number" placeholder="0,00" step="0.01" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Banco</label><input id="fmco_banco" type="text" placeholder="Ex: Itaú, Nubank" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Cor</label><input type="color" id="fmco_cor" value="#E8612A" style="width:100%;height:38px;border:1px solid var(--bor);border-radius:8px;cursor:pointer"></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveConta()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_conta')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 </body></html>`);
   win.document.close();
 }
@@ -12378,103 +12546,6 @@ function renderEquipamentos(){
     </div>
   </div>
 </div>
-
-<!-- FIN MODALS -->
-<div class="overlay" id="fin_m_lanc">
-  <div class="modal" style="width:500px;max-width:95vw;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Novo Lançamento</div>
-      <button onclick="closeM('fin_m_lanc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:flex;gap:5px;margin-bottom:16px">
-      <button id="fml_btn_despesa" onclick="fin_lancModalTipo('despesa',fin_getModal('fin_m_lanc'))" style="flex:1;background:#fee2e2;color:#d93025;border:1.5px solid #d93025;border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">− Despesa</button>
-      <button id="fml_btn_receita" onclick="fin_lancModalTipo('receita',fin_getModal('fin_m_lanc'))" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Receita</button>
-      <button id="fml_btn_transferencia" onclick="fin_lancModalTipo('transferencia',fin_getModal('fin_m_lanc'))" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:7px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⇄ Transf.</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição *</label><input id="fml_desc" type="text" placeholder="Ex: Compra de ingredientes" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Valor *</label><input id="fml_valor" type="number" placeholder="0,00" step="0.01" min="0" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Data</label><input id="fml_data" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Vencimento</label><input id="fml_venc" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Categoria</label><select id="fml_cat" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Conta</label><select id="fml_conta" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div id="fml_dest_row" style="display:none;grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Conta Destino</label><select id="fml_conta_dest" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Fornecedor / Cliente</label><input id="fml_fornec" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Forma de Pagamento</label><select id="fml_forma" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="">—</option><option>Dinheiro</option><option>Pix</option><option>Cartão Débito</option><option>Cartão Crédito</option><option>Boleto</option><option>Transferência</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Centro de Custo</label><select id="fml_cc" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Observação</label><textarea id="fml_obs" rows="2" placeholder="Notas..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--bor);margin-top:12px">
-      <div style="font-size:13px;font-weight:500;color:var(--t)">Já pago / recebido</div>
-      <label style="position:relative;width:38px;height:20px;flex-shrink:0"><input type="checkbox" id="fml_pago" style="opacity:0;width:0;height:0"><span style="position:absolute;inset:0;background:var(--bor);border-radius:20px;cursor:pointer;transition:.2s" id="fml_pago_slider" onclick="this.previousElementSibling.click()"></span></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveLanc()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_lanc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_cat">
-  <div class="modal" style="width:420px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Nova Categoria</div>
-      <button onclick="closeM('fin_m_cat')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmc_nome" type="text" placeholder="Ex: Matéria-prima" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Tipo</label><select id="fmc_tipo" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="despesa">💸 Despesa</option><option value="receita">💰 Receita</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Ícone</label><input id="fmc_icon" type="text" placeholder="🛒" maxlength="4" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:18px;text-align:center;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Código Contábil</label><input id="fmc_cod" type="text" placeholder="Ex: 5.1.1" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Cor</label><div id="fmc_cores" style="display:flex;gap:7px;flex-wrap:wrap"></div></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição</label><textarea id="fmc_desc" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveCat()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_cat')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_cc">
-  <div class="modal" style="width:400px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Novo Centro de Custo</div>
-      <button onclick="closeM('fin_m_cc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmcc_nome" type="text" placeholder="Ex: Produção, Marketing" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Cor</label><input type="color" id="fmcc_cor" value="#E8612A" style="width:100%;height:38px;border:1px solid var(--bor);border-radius:8px;cursor:pointer"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Responsável</label><input id="fmcc_resp" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Descrição</label><textarea id="fmcc_desc" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveCC()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_cc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="fin_m_conta">
-  <div class="modal" style="width:400px;max-width:95vw">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="fin-m-title" style="font-size:15px;font-weight:800;color:var(--t)">Nova Conta</div>
-      <button onclick="closeM('fin_m_conta')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
-      <div style="grid-column:1/-1"><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Nome *</label><input id="fmco_nome" type="text" placeholder="Ex: Nubank, Caixa" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Tipo</label><select id="fmco_tipo" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"><option value="corrente">Conta Corrente</option><option value="poupanca">Poupança</option><option value="caixa">Caixa</option><option value="digital">Conta Digital</option></select></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Saldo Inicial</label><input id="fmco_saldo" type="number" placeholder="0,00" step="0.01" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Banco</label><input id="fmco_banco" type="text" placeholder="Ex: Itaú, Nubank" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none;box-sizing:border-box"></div>
-      <div><label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">Cor</label><input type="color" id="fmco_cor" value="#E8612A" style="width:100%;height:38px;border:1px solid var(--bor);border-radius:8px;cursor:pointer"></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button onclick="fin_saveConta()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
-      <button onclick="closeM('fin_m_conta')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
 <script>
