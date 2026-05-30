@@ -458,6 +458,81 @@ html.light .topbar{background:var(--bg)!important}
 html.light .btn-o{background:var(--bg)!important;color:var(--t2)!important}
 html.light .search-in,html.light .filter-sel,html.light .fi{background:var(--bg3)!important}
 html.light .scroll,html.light .content{background:var(--bg2)!important}
+
+/* ── FINANCEIRO MODULE CSS ────────────────── */
+.fin-tabs{display:flex;gap:2px;background:var(--bg2);border-radius:10px;padding:3px;border:1px solid var(--bor)}
+.fin-tab{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--t3);transition:all .15s;white-space:nowrap}
+.fin-tab.active{background:var(--bg3);color:var(--t);font-weight:600}
+.fin-tab:hover:not(.active){color:var(--t2)}
+.fin-sum-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 22px;flex-shrink:0}
+@media(max-width:1200px){.fin-sum-bar{grid-template-columns:repeat(3,1fr)}}
+.fin-sum-card{background:var(--bg2);border:1px solid var(--bor);border-radius:14px;padding:13px 15px;transition:all .2s}
+.fin-sum-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.fin-sum-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.fin-sum-val{font-size:18px;font-weight:800;line-height:1;color:var(--t)}
+.fin-sum-val.green{color:var(--green,#1e9e6b)}
+.fin-sum-val.red{color:var(--red,#d93025)}
+.fin-sum-val.amber{color:#d97706}
+.fin-sum-val.fox{color:var(--fox)}
+.fin-sum-sub{font-size:10px;color:var(--t3);margin-top:4px}
+.fin-filter-bar{display:flex;align-items:center;gap:8px;padding:0 22px 10px;flex-shrink:0;flex-wrap:wrap}
+.fin-select{background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--t);font-family:inherit;cursor:pointer;outline:none}
+.fin-select:focus{border-color:var(--fox)}
+.fin-search{background:var(--bg2);border:1px solid var(--bor);border-radius:8px;padding:6px 10px 6px 30px;font-size:12px;color:var(--t);font-family:inherit;outline:none;width:170px}
+.fin-search:focus{border-color:var(--fox)}
+.fin-search-wrap{position:relative}
+.fin-search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+#fin-bulk-bar{display:none;background:var(--fox);padding:9px 22px;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+#fin-bulk-bar.show{display:flex}
+.fin-bulk-count{color:#fff;font-size:13px;font-weight:700}
+.fin-bulk-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.fin-bulk-btn:hover{background:rgba(255,255,255,.35)}
+.fin-bulk-btn.danger{border-color:rgba(255,100,100,.5);color:#ffcdd2}
+.fin-bulk-btn.danger:hover{background:#d93025;border-color:#d93025;color:#fff}
+.fin-tbl{width:100%;border-collapse:collapse}
+.fin-tbl thead th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:9px 10px;text-align:left;background:var(--bg3);border-bottom:1px solid var(--bor);white-space:nowrap;position:sticky;top:0;z-index:1}
+.fin-tbl tbody tr{transition:background .1s;cursor:pointer;border-bottom:1px solid var(--bor)}
+.fin-tbl tbody tr:hover{background:var(--bg3)}
+.fin-tbl td{padding:10px 10px;font-size:12px;color:var(--t2);vertical-align:middle}
+.fin-pill{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:3px 8px;font-size:10px;font-weight:700;white-space:nowrap}
+.fin-pill-pago{background:#d1fae5;color:#065f46}
+.fin-pill-pendente{background:#fef3c7;color:#92400e}
+.fin-pill-vencido{background:#fee2e2;color:#991b1b}
+.fin-pill-receita{background:#d1fae5;color:#065f46}
+.fin-pill-despesa{background:#fee2e2;color:#991b1b}
+.fin-pill-transf{background:#dbeafe;color:#1e40af}
+.fin-pill-cat{background:var(--bg3);color:var(--t2);border:1px solid var(--bor)}
+.fin-dre-group{display:flex;align-items:center;padding:9px 14px;background:var(--bg3);border-radius:8px;margin:6px 0 2px;font-weight:600;font-size:13px;color:var(--t)}
+.fin-dre-row{display:flex;align-items:center;padding:8px 14px;font-size:13px;color:var(--t2);border-radius:6px;transition:background .1s}
+.fin-dre-row:hover{background:var(--bg3)}
+.fin-dre-indent{margin-left:18px}
+.fin-dre-total{display:flex;align-items:center;padding:11px 14px;border-radius:10px;margin:8px 0;font-weight:700;font-size:14px}
+.fin-dre-total.positive{background:var(--green,#1e9e6b);color:#fff}
+.fin-dre-total.negative{background:var(--red,#d93025);color:#fff}
+.fin-dre-total.neutral{background:var(--fox);color:#fff}
+.fin-dre-total.dark{background:var(--t);color:#fff}
+.fin-dre-name{flex:1}
+.fin-dre-val{font-size:13px;font-weight:700;min-width:110px;text-align:right}
+.fin-dre-pct{font-size:10px;color:var(--t3);min-width:46px;text-align:right;margin-left:6px}
+.fin-dre-total .fin-dre-pct{color:rgba(255,255,255,.65)}
+.fin-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:14px 22px}
+.fin-cat-card{background:var(--bg2);border:1.5px solid var(--bor);border-radius:14px;padding:14px;cursor:pointer;transition:all .2s;position:relative}
+.fin-cat-card:hover{border-color:var(--fox);box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.fin-cat-card .fin-cat-actions{position:absolute;top:8px;right:8px;display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.fin-cat-card:hover .fin-cat-actions{opacity:1}
+.fin-cat-action{background:var(--bg);border:1px solid var(--bor);border-radius:6px;padding:3px 6px;font-size:11px;cursor:pointer}
+.fin-cat-action:hover{background:var(--bg3)}
+.fin-cc-row{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--bor);border-radius:12px;padding:13px 15px;transition:all .15s;margin-bottom:8px}
+.fin-cc-row:hover{border-color:var(--t4)}
+.fin-conta-card{background:var(--bg2);border:1px solid var(--bor);border-radius:14px;padding:18px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden}
+.fin-conta-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.fin-toggle{position:relative;width:38px;height:20px;flex-shrink:0}
+.fin-toggle input{opacity:0;width:0;height:0}
+.fin-toggle-slider{position:absolute;inset:0;background:var(--bor);border-radius:20px;cursor:pointer;transition:.2s}
+.fin-toggle-slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.fin-toggle input:checked+.fin-toggle-slider{background:var(--fox)}
+.fin-toggle input:checked+.fin-toggle-slider:before{transform:translateX(18px)}
+
 </style>
 </head>
 <body>
@@ -600,737 +675,118 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
   </div>
   <div class="content">
 
-    <!-- DRE -->
-    <div class="pg" id="pg-dre">
-      <div class="scroll" style="background:var(--bg2)">
-        <!-- Header moderno -->
-        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0;flex-shrink:0">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">DRE</div>
-            <div style="font-size:13px;font-weight:600;color:var(--t);margin-top:1px" id="dre-pg-periodo">—</div>
-          </div>
-          <!-- Nav + Range Picker -->
-          <div style="display:flex;align-items:center;gap:6px">
-            <button class="fc-month-btn" onclick="dreNavMonth(-1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">‹</button>
-            <div style="position:relative" id="dre-range-wrap">
-              <button onclick="grpToggle('dre')" id="dre-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 18px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:34px;min-width:160px;justify-content:center;white-space:nowrap">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-                <span id="dre-range-label">Este mês</span>
-              </button>
-              <div id="dre-range-drop" class="grp-drop" style="left:auto;right:0">
-                <div style="display:flex">
-                  <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
-                    <div class="rp-preset" onclick="grpPreset('dre','hoje')">Hoje</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','mes')">Este mês</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','mes_passado')">Mês passado</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','m2')">Últimos 2 meses</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','m3')">Últimos 3 meses</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','semana')">Esta semana</div>
-                    <div class="rp-preset" onclick="grpPreset('dre','custom')">Personalizado</div>
-                  </div>
-                  <div style="flex:1;padding:14px 16px">
-                    <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="dre-rp-range-label">—</div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-                      <div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                          <button onclick="grpNav('dre',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
-                          <span id="dre-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                          <div style="width:28px"></div>
-                        </div>
-                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m1-days"></div>
-                      </div>
-                      <div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                          <div style="width:28px"></div>
-                          <span id="dre-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                          <button onclick="grpNav('dre',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
-                        </div>
-                        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="dre-rp-m2-days"></div>
-                      </div>
-                    </div>
-                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
-                      <button onclick="grpClose('dre')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
-                      <button onclick="grpApply('dre',renderDREPage)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <button class="fc-month-btn" onclick="dreNavMonth(1)" style="width:32px;height:34px;display:flex;align-items:center;justify-content:center;font-size:18px">›</button>
-          </div>
+    <!-- ═══ MÓDULO FINANCEIRO ═══ -->
 
-        </div>
-
-        <!-- KPI Strip -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px" id="dre-pg-kpi"></div>
-
-        <!-- DRE Table -->
-        <div style="margin:0 20px 20px;background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden">
-          <div id="dre-pg-body"></div>
-        </div>
-
-
-
-        <!-- CMV por Produto -->
-        <div style="margin:14px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">CMV por Produto</div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Custo dos itens vendidos no período</div>
-            <div id="dre-pg-cmv"></div>
-          </div>
-          <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-            <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px">Despesas por Categoria</div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Composição dos custos do período</div>
-            <div id="dre-pg-desp"></div>
-          </div>
-        </div>
-        <div style="height:20px"></div>
-      </div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="pg on" id="pg-dashboard">
-      <div class="scroll" style="background:var(--bg2);padding:0">
-
-        <!-- HEADER -->
-        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <div id="dash-header-title" style="font-size:15px;font-weight:700;color:var(--t);flex:1;min-width:180px">Carregando...</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <!-- Seletor de dia (visível só no modo Hoje) -->
-            <div id="dash-dia-picker" style="display:none;align-items:center;gap:6px;position:relative">
-              <button onclick="toggleDiaPicker()" id="dash-dia-btn" style="background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:500;color:var(--t);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;white-space:nowrap">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 1v2M10 1v2M1 5h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                <span id="dash-dia-label">Hoje</span>
-              </button>
-              <!-- Picker dropdown -->
-              <div id="dash-dia-drop" style="display:none;position:absolute;top:36px;right:0;background:var(--bg);border:1px solid var(--bor);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:999;flex-direction:row;min-width:480px">
-                <!-- Atalhos -->
-                <div style="width:160px;padding:10px 8px;border-right:1px solid var(--bor2);flex-shrink:0">
-                  <div id="dp-shortcuts" style="display:flex;flex-direction:column;gap:1px"></div>
-                </div>
-                <!-- Calendário -->
-                <div style="padding:14px 16px;flex:1">
-                  <div style="text-align:center;font-size:13px;font-weight:600;color:var(--t);margin-bottom:12px" id="dp-cal-title"></div>
-                  <div id="dp-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
-                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:10px;border-top:1px solid var(--bor2)">
-                    <button onclick="closeDiaPicker()" style="background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:6px 16px;font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--t2)">Cancelar</button>
-                    <button onclick="applyDiaPicker()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:6px 18px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit">OK</button>
-                  </div>
-                </div>
-              </div>
-              <input type="hidden" id="dash-dia-input">
-            </div>
-            <div style="display:flex;gap:4px;background:var(--bg3);border-radius:20px;padding:3px">
-              <button onclick="dashSetPeriod('hoje')" id="dbtn-hoje" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--t3)">Hoje</button>
-              <button onclick="dashSetPeriod('mes')" id="dbtn-mes" style="background:#FF6B35;color:#fff;border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">Este Mês</button>
-              <button onclick="dashSetPeriod('custom')" id="dbtn-custom" style="border:none;border-radius:16px;padding:5px 14px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--t3)">Período</button>
-            </div>
-            <div id="dash-custom-range" style="display:none;align-items:center;gap:6px">
-              <input type="month" id="dash-range-start" style="border:1px solid var(--bor);border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
-              <span style="font-size:11px;color:var(--t3)">até</span>
-              <input type="month" id="dash-range-end" style="border:1px solid var(--bor);border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit" onchange="dashApplyCustom()">
-            </div>
-          </div>
-        </div>
-
-        <!-- KPI STRIP -->
-        <div id="dash-kpi-strip" style="display:grid;gap:0;background:var(--bg);border-bottom:1px solid var(--bor)"></div>
-
-        <!-- MES/PERIODO CONTENT -->
-        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:14px" id="dash-mes-content">
-
-          <!-- Gráfico faturamento: mês atual vs mês anterior -->
-          <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-            <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap">
-              <div id="dash-fat-kpi-atual" style="min-width:160px">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Faturamento</div>
-                <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-val" style="font-size:22px;font-weight:800;color:var(--t)">R$ 0,00</span>
-                  <span id="dash-fat-var" style="font-size:12px;font-weight:600"></span>
-                </div>
-              </div>
-              <div id="dash-fat-kpi-ped" style="min-width:100px">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Pedidos</div>
-                <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-ped" style="font-size:22px;font-weight:800;color:var(--t)">0</span>
-                  <span id="dash-fat-ped-var" style="font-size:12px;font-weight:600"></span>
-                </div>
-              </div>
-              <div id="dash-fat-kpi-ticket" style="min-width:130px">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Ticket médio</div>
-                <div style="display:flex;align-items:baseline;gap:8px">
-                  <span id="dash-fat-ticket" style="font-size:22px;font-weight:800;color:var(--t)">R$ 0,00</span>
-                  <span id="dash-fat-ticket-var" style="font-size:12px;font-weight:600"></span>
-                </div>
-              </div>
-              <div style="margin-left:auto">
-                <select id="dash-fat-group" class="filter-sel" style="font-size:11px" onchange="renderDashFatChart()">
-                  <option value="dia">Agrupar por dia</option>
-                  <option value="semana">Agrupar por semana</option>
-                </select>
-              </div>
-            </div>
-            <div style="height:220px"><canvas id="chart-dash-fat"></canvas></div>
-            <div id="dash-fat-legend" style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--t3)"></div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
-            <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🏆 Top Produtos</div><div style="font-size:11px;color:var(--t3);margin-bottom:10px">Volume vendido no período</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total cookies</span><span id="dash-top-sub" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
-              <div id="dash-ranking" style="display:flex;flex-direction:column;gap:8px"></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">📦 Estoque em Valor</div><div style="font-size:11px;color:var(--t3);margin-bottom:12px">Valor atual no estoque</div>
-              <div id="dash-estoque-valor"></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">💸 Lançamentos</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-lanc-header" style="font-size:12px;font-weight:700"></span></div>
-              <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-lanc"><thead><tr><th>Data</th><th>Desc.</th><th>Valor</th></tr></thead><tbody></tbody></table></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);min-width:0">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:2px">🍪 Produções</div><div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--bor);margin-bottom:10px"><span style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Total</span><span id="dash-prods-header" style="font-size:13px;font-weight:700;color:var(--fox)"></span></div>
-              <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="tbl" id="dash-prods"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th>Perdas</th></tr></thead><tbody></tbody></table></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- HOJE CONTENT -->
-        <div style="display:none;padding:16px 20px;flex-direction:column;gap:14px" id="dash-hoje-content">
-          <!-- ROW 1: Pedidos + Despesas -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-            <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">Pedidos</div>
-              <div id="hoje-pedidos-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-                <div style="font-size:14px;font-weight:700;color:var(--t)">💸 Despesas</div>
-                <button onclick="openDesp()" style="background:#E74C3C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">+ Despesa</button>
-              </div>
-              <div id="hoje-desp-lista" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto"></div>
-            </div>
-          </div>
-          <!-- ROW 2: Resumo produtos + Despesas + Pagamentos -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
-            <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">🏆 Produtos Vendidos</div>
-              <div id="hoje-top-prods" style="display:flex;flex-direction:column;gap:8px"></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:#E74C3C;margin-bottom:14px">❌ Cancelados</div>
-              <div id="hoje-cancelados-lista" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto"></div>
-            </div>
-            <div style="background:var(--bg);border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-              <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">💳 Por Pagamento</div>
-              <div id="hoje-pagamentos" style="display:flex;flex-direction:column;gap:8px"></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-    <!-- PEDIDOS -->
-    <div class="pg" id="pg-pedidos">
-      <!-- Toolbar único -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-        <!-- Badge total -->
-        <div id="hist-total-badge" style="display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--fox-l);border:1px solid var(--fox-m);font-size:11px;font-weight:600;color:var(--fox)">
-          Total: R$ 0,00 · 0 pedidos
-        </div>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <!-- Range picker -->
-          <div style="position:relative" id="hist-range-wrap">
-            <button onclick="toggleRangePicker()" id="hist-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-              <span id="hist-range-label">Hoje</span>
-            </button>
-            <div id="hist-range-drop" style="display:none;position:absolute;top:38px;right:0;z-index:9999;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.14);font-family:'Poppins',sans-serif;width:560px;overflow:hidden">
-              <div style="display:flex">
-                <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
-                  <div class="rp-preset" onclick="rpPreset('hoje')">Hoje</div>
-                  <div class="rp-preset" onclick="rpPreset('ontem')">Ontem</div>
-                  <div class="rp-preset" onclick="rpPreset('semana')">Esta semana</div>
-                  <div class="rp-preset" onclick="rpPreset('semana_passada')">Semana passada</div>
-                  <div class="rp-preset" onclick="rpPreset('mes')">Este mês</div>
-                  <div class="rp-preset" onclick="rpPreset('mes_passado')">Mês passado</div>
-                  <div class="rp-preset" onclick="rpPreset('m2')">Últimos 2 meses</div>
-                  <div class="rp-preset" onclick="rpPreset('m3')">Últimos 3 meses</div>
-                </div>
-                <div style="flex:1;padding:14px 16px">
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="rp-range-label">—</div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-                    <div>
-                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                        <button onclick="rpNav(-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
-                        <span id="rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                        <div style="width:28px"></div>
-                      </div>
-                      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="rp-m1-days"></div>
-                    </div>
-                    <div>
-                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                        <div style="width:28px"></div>
-                        <span id="rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                        <button onclick="rpNav(1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
-                      </div>
-                      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="rp-m2-days"></div>
-                    </div>
-                  </div>
-                  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
-                    <button onclick="closeRangePicker()" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
-                    <button onclick="applyRange()" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Sincronizar -->
-          <button class="btn-p" onclick="syncRange()" id="btn-sync-mes" style="font-size:11px;white-space:nowrap">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Sincronizar
-          </button>
-          <div id="hist-sync-status" style="font-size:10px;color:var(--t3);min-width:80px"></div>
-          <!-- Busca -->
-          <div class="search-wrap" style="max-width:180px">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="hist-search" placeholder="Buscar cliente/nº..." oninput="renderHistorico()">
-          </div>
-          <button class="btn-o" onclick="limparHistorico()" style="font-size:11px;color:var(--red);border-color:rgba(231,76,60,.3)">Limpar</button>
-        </div>
-      </div>
-      <!-- Painel faturamento detalhado -->
-      <div id="ped-fat-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:14px 18px;display:none">
-        <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:10px">Detalhes do faturamento</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px" id="ped-fat-cards"></div>
-      </div>
-      <!-- Tabela única -->
-      <div class="scroll">
-        <div class="card">
-          <div class="tbl-wrap">
-            <table class="tbl" id="tbl-historico">
-              <thead><tr><th>Nº</th><th>Cliente</th><th>Data/Hora</th><th>Itens</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead>
-              <tbody id="tbody-historico">
-                <tr><td colspan="8" style="text-align:center;color:var(--t3);padding:30px">Selecione um período e clique em <b>Sincronizar</b></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <!-- hidden inputs mantidos por compatibilidade -->
-      <input type="hidden" id="hist-sync-month">
-      <input type="hidden" id="hist-mes-filter">
-      <input type="hidden" id="ped-date-filter">
-    </div>
-    <!-- MODAL DETALHE PEDIDO -->
-    <div class="overlay" id="modal-pedido-det" onclick="if(event.target===this)closeM('modal-pedido-det')">
-      <div class="modal" style="max-width:560px">
-        <div class="modal-t">
-          <span id="mpd-title">Pedido #0000</span>
-          <button class="modal-close" onclick="closeM('modal-pedido-det')">×</button>
-        </div>
-        <div id="mpd-body"></div>
-        <div class="modal-actions">
-          <button class="btn-o" onclick="closeM('modal-pedido-det')">Fechar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- PRODUÇÃO -->
-    <div class="pg" id="pg-producao">
-      <div class="prod-header">
-        <div class="prod-stats" id="prod-stats"></div>
-      </div>
-      <div class="scroll">
-        <div class="toolbar">
-          <input type="month" id="prod-filter-month" class="filter-sel" onchange="renderProducao()">
-          <div class="search-wrap">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="prod-search" placeholder="Buscar produto..." oninput="renderProducao()">
-          </div>
-          <div style="margin-left:auto"></div>
-        </div>
-        <div class="card">
-          <div class="tbl-wrap"><table class="tbl" id="tbl-producao">
-            <thead><tr><th>Data</th><th>Produto</th><th>Produzido</th><th>Perdas</th><th>Aproveitado</th><th>Custo MP</th><th>Observação</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ESTOQUE -->
-    <div class="pg" id="pg-estoque">
-      <div class="scroll">
-        <div id="est-content"></div>
-      </div>
-    </div>
-
-    <!-- FINANCEIRO / FLUXO -->
+    <!-- FLUXO DE CAIXA -->
     <div class="pg" id="pg-financeiro">
-      <!-- TOOLBAR -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
-        <!-- Tabs -->
-        <div style="display:flex;gap:0;border:1px solid var(--bor);border-radius:10px;overflow:hidden">
-          <button id="fc-tab-tabela" onclick="fcSetTab('tabela')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--fox);color:#fff;font-family:'Poppins',sans-serif;transition:all .15s">Tabela</button>
-          <button id="fc-tab-grafico" onclick="fcSetTab('grafico')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--bg);color:var(--t2);font-family:'Poppins',sans-serif;transition:all .15s">Gráfico</button>
+      <div id="fin-fluxo-summary" class="fin-sum-bar"></div>
+      <div class="fin-filter-bar">
+        <div class="fin-tabs" id="fin-fluxo-tabs">
+          <div class="fin-tab active" onclick="finFluxoSetView('diario',this)">Diário</div>
+          <div class="fin-tab" onclick="finFluxoSetView('mensal',this)">Mensal</div>
         </div>
-        <div style="display:flex;gap:2px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor);flex-shrink:0">
-          <button id="fc-agrup-dia" onclick="window._fluxoAgrup='dia';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Dia</button>
-          <button id="fc-agrup-semana" onclick="window._fluxoAgrup='semana';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Semana</button>
-          <button id="fc-agrup-mes" onclick="window._fluxoAgrup='mes';renderFluxo()" style="padding:4px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Mês</button>
-        </div>
-        <!-- Range picker igual ao de pedidos -->
-        <button class="fc-month-btn" onclick="fcNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
-        <div style="position:relative" id="fc-range-wrap">
-          <button onclick="grpToggle('fc')" id="fc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:6px 14px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--t2);cursor:pointer;height:34px;white-space:nowrap">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#A0A0B8" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <span id="fc-range-label">Este mês</span>
-          </button>
-          <div id="fc-range-drop" class="grp-drop">
-            <div style="display:flex">
-              <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
-                <div class="rp-preset" onclick="grpPreset('fc','hoje')">Hoje</div>
-                <div class="rp-preset" onclick="grpPreset('fc','ontem')">Ontem</div>
-                <div class="rp-preset" onclick="grpPreset('fc','semana')">Esta semana</div>
-                <div class="rp-preset" onclick="grpPreset('fc','semana_passada')">Semana passada</div>
-                <div class="rp-preset" onclick="grpPreset('fc','mes')">Este mês</div>
-                <div class="rp-preset" onclick="grpPreset('fc','mes_passado')">Mês passado</div>
-                <div class="rp-preset" onclick="grpPreset('fc','m2')">Últimos 2 meses</div>
-                <div class="rp-preset" onclick="grpPreset('fc','m3')">Últimos 3 meses</div>
-              </div>
-              <div style="flex:1;padding:14px 16px">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="fc-rp-range-label">—</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-                  <div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                      <button onclick="grpNav('fc',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
-                      <span id="fc-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                      <div style="width:28px"></div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="fc-rp-m1-days"></div>
-                  </div>
-                  <div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                      <div style="width:28px"></div>
-                      <span id="fc-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                      <button onclick="grpNav('fc',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="fc-rp-m2-days"></div>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
-                  <button onclick="grpClose('fc')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
-                  <button onclick="grpApply('fc',renderFluxo)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="fc-month-btn" onclick="fcNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
-        <!-- Conta -->
-        <select class="filter-sel" id="fc-bank-filter" onchange="renderFluxo()" style="font-size:12px;min-width:160px"><option value="">Todas as contas</option></select>
-        <div style="margin-left:auto;display:flex;gap:8px">
-          <button class="btn-o" style="font-size:12px;padding:7px 14px" onclick="fcExportar()">⬇ Exportar</button>
-        </div>
+        <select class="fin-select" id="fin-fluxo-conta" onchange="finRenderFluxo()">
+          <option value="">Todas as contas</option>
+        </select>
+        <select class="fin-select" id="fin-fluxo-tipo" onchange="finRenderFluxo()">
+          <option value="">Entradas e Saídas</option>
+          <option value="receita">Só Entradas</option>
+          <option value="despesa">Só Saídas</option>
+          <option value="transferencia">Transferências</option>
+        </select>
       </div>
-      <div class="scroll">
-        <!-- KPIs -->
-        <div id="fc-kpis" style="display:none"></div>
-        <!-- Tabela view -->
-        <div id="fc-view-tabela">
-          <div id="fc-table-wrap" style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;width:100%;display:block;background:var(--bg);border-radius:12px;border:1px solid var(--bor)"></div>
-        </div>
-        <!-- Gráfico view -->
-        <div id="fc-view-grafico" style="display:none">
-          <div class="card">
-            <div class="chart-area" style="height:280px"><canvas id="chart-fluxo"></canvas></div>
-          </div>
-        </div>
+      <div class="scroll" style="padding:0 22px 20px">
+        <div id="fin-fluxo-body"></div>
       </div>
     </div>
 
     <!-- LANÇAMENTOS -->
     <div class="pg" id="pg-lancamentos">
-      <!-- Tabs principais -->
-      <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
-        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
-        <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
-        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
-        <div class="lanc-tab" id="lt-ia-main" onclick="lancMainTab('ia',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">✨ Lançamento Rápido</div>
+      <div id="fin-lanc-summary" class="fin-sum-bar"></div>
+      <div id="fin-bulk-bar">
+        <span class="fin-bulk-count" id="fin-bulk-count"></span>
+        <button class="fin-bulk-btn" onclick="finBulkPago(true)">✅ Marcar Pago</button>
+        <button class="fin-bulk-btn" onclick="finBulkPago(false)">⏳ Pendente</button>
+        <button class="fin-bulk-btn" onclick="finBulkCat()">📂 Categoria</button>
+        <button class="fin-bulk-btn" onclick="finBulkConta()">🏦 Conta</button>
+        <button class="fin-bulk-btn" onclick="finBulkCC()">📊 Centro de Custo</button>
+        <button class="fin-bulk-btn danger" onclick="finBulkDel()">🗑 Excluir</button>
+        <button class="fin-bulk-btn" style="margin-left:auto" onclick="finClearBulk()">× Limpar</button>
       </div>
-      <!-- Painel IA -->
-      <div id="lanc-ia-panel" style="display:none;flex:1;overflow:hidden;flex-direction:column;background:var(--bg2)">
-        <div style="padding:20px 24px 0">
-          <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Lançamento por Linguagem Natural</div>
-          <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Digite como mandaria no WhatsApp. Ex: <em>"Paguei R$150 de gás hoje"</em>, <em>"Recebi R$800 encomenda ontem"</em>, <em>"Conta de luz R$320 vencimento dia 15"</em></div>
-          <!-- Histórico do chat -->
-          <div id="lanc-ia-chat" style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;min-height:220px;max-height:340px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
-          <!-- Input -->
-          <div style="display:flex;gap:8px;margin-bottom:16px">
-            <textarea id="lanc-ia-input" rows="2" placeholder="Ex: Comprei ingredientes R$280 no mercado hoje..." style="flex:1;border:1px solid var(--bor);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--t);background:var(--bg);resize:none;font-family:inherit;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();lancIASend();}"></textarea>
-            <button onclick="lancIASend()" style="background:var(--fox);color:#fff;border:none;border-radius:10px;padding:0 18px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">Enviar</button>
-          </div>
-          <!-- Preview do lançamento -->
-          <div id="lanc-ia-preview" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:12px">
-            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Confirmar Lançamento</div>
-            <div id="lanc-ia-preview-body" style="display:flex;flex-direction:column;gap:8px"></div>
-            <div style="display:flex;gap:8px;margin-top:14px">
-              <button onclick="lancIAConfirm()" style="background:var(--green,#22c55e);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">✓ Confirmar e Lançar</button>
-              <button onclick="lancIAEdit()" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Editar</button>
-              <button onclick="lancIACancel()" style="background:var(--bg2);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">Cancelar</button>
-            </div>
-          </div>
+      <div class="fin-filter-bar">
+        <div class="fin-tabs" id="fin-lanc-tabs">
+          <div class="fin-tab active" onclick="finLancSetTab('todos',this)">Todos</div>
+          <div class="fin-tab" onclick="finLancSetTab('receita',this)">Entradas</div>
+          <div class="fin-tab" onclick="finLancSetTab('despesa',this)">Saídas</div>
+          <div class="fin-tab" onclick="finLancSetTab('pagar',this)">A Pagar</div>
+          <div class="fin-tab" onclick="finLancSetTab('receber',this)">A Receber</div>
+          <div class="fin-tab" onclick="finLancSetTab('vencido',this)">Vencidos</div>
+        </div>
+        <select class="fin-select" id="fin-lanc-cat" onchange="finRenderLanc()"><option value="">Todas as categorias</option></select>
+        <select class="fin-select" id="fin-lanc-conta" onchange="finRenderLanc()"><option value="">Todas as contas</option></select>
+        <div class="fin-search-wrap" style="margin-left:auto">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input class="fin-search" placeholder="Pesquisar..." id="fin-lanc-q" oninput="finRenderLanc()">
         </div>
       </div>
-      <!-- Filtro inline -->
-      <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
-        <!-- Conta -->
-        <select class="filter-sel" id="lanc-bank-filter" onchange="renderLanc()" style="font-size:12px;min-width:120px;height:36px"><option value="">Todas as contas</option></select>
-        <!-- Nav ‹ label › -->
-        <button class="fc-month-btn" onclick="lancNavMonth(-1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">‹</button>
-        <div style="position:relative;flex:0 0 auto" id="lanc-range-wrap">
-          <button onclick="grpToggle('lanc')" id="lanc-range-btn" style="display:flex;align-items:center;gap:6px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);padding:0 20px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t);cursor:pointer;height:36px;white-space:nowrap;min-width:160px;justify-content:center">
-            <span id="lanc-range-label">Este mês</span>
-          </button>
-          <div id="lanc-range-drop" class="grp-drop">
-            <div style="display:flex">
-              <div style="width:140px;border-right:1px solid var(--bor);padding:8px 0;flex-shrink:0">
-                <div class="rp-preset" onclick="grpPreset('lanc','hoje')">Hoje</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','ontem')">Ontem</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','semana')">Esta semana</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','semana_passada')">Semana passada</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','mes')">Este mês</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','mes_passado')">Mês passado</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','m2')">Últimos 2 meses</div>
-                <div class="rp-preset" onclick="grpPreset('lanc','m3')">Últimos 3 meses</div>
-              </div>
-              <div style="flex:1;padding:14px 16px">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:10px;text-align:center" id="lanc-rp-range-label">—</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-                  <div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                      <button onclick="grpNav('lanc',-1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">‹</button>
-                      <span id="lanc-rp-m1-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                      <div style="width:28px"></div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="lanc-rp-m1-days"></div>
-                  </div>
-                  <div>
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                      <div style="width:28px"></div>
-                      <span id="lanc-rp-m2-label" style="font-size:12px;font-weight:600;color:var(--t)"></span>
-                      <button onclick="grpNav('lanc',1)" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--t2);padding:2px 8px">›</button>
-                    </div>
-                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center" id="lanc-rp-m2-days"></div>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--bor);padding-top:10px">
-                  <button onclick="grpClose('lanc')" class="btn-o" style="font-size:11px;padding:5px 14px">Cancelar</button>
-                  <button onclick="grpApply('lanc',renderLanc)" class="btn-p" style="font-size:11px;padding:5px 14px">OK</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="fc-month-btn" onclick="lancNavMonth(1)" style="width:32px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">›</button>
-        <!-- Search -->
-        <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
-          <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
-        </div>
-        <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
-      </div>
-      <!-- Barra de ações em massa -->
-      <div id="lanc-bulk-bar" style="display:none;background:var(--fox);padding:10px 20px;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap">
-        <span id="lanc-bulk-count" style="color:#fff;font-size:13px;font-weight:700;margin-right:4px"></span>
-        <button onclick="lancBulkCat()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📂 Categoria</button>
-        <button onclick="lancBulkConta()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🏦 Conta</button>
-        <button onclick="lancBulkCC()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📊 Centro de Custo</button>
-        <button onclick="lancBulkForma()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">💳 Forma Pgto</button>
-        <button onclick="lancBulkPago(true)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">✅ Marcar Pago</button>
-        <button onclick="lancBulkPago(false)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">⏳ Marcar Pendente</button>
-        <button onclick="lancBulkDel()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🗑 Excluir</button>
-        <button onclick="lancBulkClear()" style="margin-left:auto;background:none;color:rgba(255,255,255,.8);border:none;font-size:20px;cursor:pointer;line-height:1">×</button>
-      </div>
-      <!-- Pills de situação -->
-      <div id="lanc-pills-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(231,76,60,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-vencidos" onclick="lancFilterPill('vencidos')">
-          <span style="color:var(--red)">Vencidos</span><span id="pv-val" style="color:var(--red)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(230,126,34,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-hoje" onclick="lancFilterPill('hoje')">
-          <span style="color:var(--amber)">Vencem hoje</span><span id="ph-val" style="color:var(--amber)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(41,128,185,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-avencer" onclick="lancFilterPill('avencer')">
-          <span style="color:var(--blue)">A vencer</span><span id="pa-val" style="color:var(--blue)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(39,174,96,.1);font-size:12px;font-weight:600;cursor:pointer" id="pill-pagos" onclick="lancFilterPill('pagos')">
-          <span style="color:var(--green)">Pagos</span><span id="pp-val" style="color:var(--green)">R$ 0,00</span>
-        </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:var(--bg3);font-size:12px;font-weight:600;cursor:pointer" id="pill-total" onclick="lancFilterPill('')">
-          <span style="color:var(--t2)">Total do período</span><span id="pt-val" style="color:var(--t)">R$ 0,00</span>
-        </div>
-      </div>
-      <!-- Sub-tabs (ocultas quando main tab = pagar/receber) -->
-      <div id="lanc-subtabs" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:0 20px;display:none;gap:0;flex-shrink:0">
-        <div class="lanc-tab on" id="lt-todos" onclick="lancTab('todos',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Todos</div>
-        <div class="lanc-tab" id="lt-despesa" onclick="lancTab('despesa',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Despesas</div>
-        <div class="lanc-tab" id="lt-receita" onclick="lancTab('receita',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Receitas</div>
-        <div class="lanc-tab" id="lt-transferencia" onclick="lancTab('transferencia',this)" style="padding:10px 16px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s">Transferências</div>
-      </div>
-      <select id="lanc-month" style="display:none"></select>
-      <div class="scroll" id="lanc-scroll">
-        <div class="card">
-          <div class="tbl-wrap"><table class="tbl" id="tbl-lanc">
-            <thead><tr><th style="width:30px"><input type="checkbox" id="lanc-check-all" onchange="lancCheckAll(this)"></th><th>Vencimento</th><th>Descrição</th><th>Categoria</th><th>Conta</th><th style="display:none"></th><th>Situação</th><th>Valor</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table></div>
-        </div>
+      <div class="scroll" style="padding:0 22px 20px">
+        <table class="fin-tbl">
+          <thead><tr>
+            <th style="width:30px"><input type="checkbox" id="fin-chk-all" onchange="finCheckAll(this)"></th>
+            <th>Vencimento</th><th>Descrição</th><th>Categoria</th>
+            <th>Conta</th><th>C. Custo</th><th>Forma</th><th>Situação</th>
+            <th style="text-align:right">Valor</th><th></th>
+          </tr></thead>
+          <tbody id="fin-tbody-lanc"></tbody>
+        </table>
       </div>
     </div>
 
     <!-- BANCOS -->
     <div class="pg" id="pg-bancos">
-      <div class="scroll">
-        <div id="bank-totals" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px"></div>
-        <div class="bank-grid" id="bank-grid"></div>
-        <div class="card">
-          <div class="card-t">Extrato — <span id="bank-sel-name">Selecione um banco</span></div>
-          <div class="tbl-wrap"><table class="tbl" id="tbl-bank">
-            <thead><tr><th>Data Pedido</th><th>Data Recebimento</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo</th></tr></thead>
-            <tbody><tr><td colspan="5" style="text-align:center;color:var(--t3);padding:20px">Selecione um banco para ver o extrato</td></tr></tbody>
-          </table>
-        <div id="bank-a-receber" style="display:none"></div>
-        </div>
-        </div>
+      <div class="scroll" style="padding:16px 22px 22px">
+        <div id="fin-contas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:16px"></div>
       </div>
     </div>
 
-    <!-- MATÉRIAS-PRIMAS -->
-    <div class="pg" id="pg-materia">
-      <div class="scroll">
-        <div class="toolbar">
-          <div class="search-wrap">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="mp-search" placeholder="Buscar matéria-prima..." oninput="renderMP()">
-          </div>
-          <select class="filter-sel" id="mp-cat" onchange="renderMP()"><option value="">Todas categorias</option></select>
-        </div>
-        <div class="card">
-          <div class="tbl-wrap"><table class="tbl" id="tbl-mp">
-            <thead><tr><th>Insumo</th><th>Categoria</th><th>Un.</th><th>Qtd Embalagem</th><th>Valor NF (R$)</th><th>Valor/g (R$)</th><th>Estoque Mín</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PRODUTOS -->
-    <div class="pg" id="pg-produtos">
-      <div class="scroll">
-        <div class="toolbar">
-          <div class="search-wrap">
-            <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-            <input class="search-in" id="prod-s" placeholder="Buscar produto..." oninput="renderProdutos()">
-          </div>
-          <select class="filter-sel" id="prod-cat-f" onchange="renderProdutos()"><option value="">Todas categorias</option></select>
-        </div>
-        <div class="card">
-          <div class="tbl-wrap"><table class="tbl" id="tbl-produtos">
-            <thead><tr><th>Produto</th><th>Categoria</th><th>Cód. PDV</th><th>Custo Unit (R$)</th><th>Preço Venda (R$)</th><th>Lucro (R$)</th><th>Margem</th><th>Status</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CALCULADORA DE RECEITA -->
-    <div class="pg" id="pg-receita">
-      <div class="scroll" style="background:var(--bg2)">
-        <!-- Hero header -->
-        <div style="background:linear-gradient(135deg,var(--fox) 0%,var(--fox-d) 100%);padding:28px 28px 24px;margin-bottom:0;flex-shrink:0">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
-            <div>
-              <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px">Vulpin ERP</div>
-              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-.5px">Calculadora de Receita</div>
-              <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px">Escale ingredientes por quantidade de cookies</div>
-            </div>
-            <button onclick="window.print()" style="background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:10px;padding:9px 20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;backdrop-filter:blur(4px);transition:all .15s" onmouseenter="this.style.background='rgba(255,255,255,.25)'" onmouseleave="this.style.background='rgba(255,255,255,.15)'">🖨️ Imprimir</button>
-          </div>
-        </div>
-
-        <!-- Controles -->
-        <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0">
-          <!-- Produto pills -->
-          <div style="flex:1;min-width:220px">
-            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Produto / Receita</div>
-            <select id="rec-prod-sel" class="filter-sel" onchange="receitaRender()" style="width:100%;font-size:13px;height:40px;border-radius:10px">
-              <option value="">— Selecione um produto —</option>
-            </select>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Peso unit. (g)</div>
-              <input type="number" id="rec-peso" value="70" min="1" class="fi" onchange="receitaRender()" style="width:90px;height:40px;font-size:14px;font-weight:700;text-align:center;border-radius:10px">
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px">Quantidades</div>
-              <input type="text" id="rec-qtds" value="30,60,120" class="fi" onchange="receitaRender()" style="width:180px;height:40px;font-size:13px;border-radius:10px" placeholder="ex: 30,60,120">
-            </div>
-            <button onclick="receitaRender()" style="height:40px;padding:0 20px;background:var(--fox);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Calcular</button>
-          </div>
-        </div>
-        <div id="rec-table-wrap" style="margin:0 20px 20px"></div>
-      </div>
-    </div>
-
-    <!-- CENTRO DE CUSTOS -->
+    <!-- CENTRO DE CUSTO -->
     <div class="pg" id="pg-centrocusto">
-      <div class="scroll">
-        <!-- CENTROS DE CUSTO -->
-        <div class="card" style="margin-bottom:18px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div class="card-t" style="margin-bottom:0">Centros de Custo</div>
-            <button class="btn-p" onclick="openCC()" style="font-size:12px;padding:6px 14px">+ Centro de Custo</button>
-          </div>
-          <div class="tbl-wrap"><table class="tbl" id="tbl-cc-all">
-            <thead><tr><th>Cód</th><th>Nome</th><th>Tipo</th><th></th></tr></thead><tbody></tbody>
-          </table></div>
-        </div>
-        <!-- EQUIPAMENTOS -->
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div class="card-t" style="margin-bottom:0">Controle de Equipamentos</div>
-            <button class="btn-p" onclick="openEquip()" style="font-size:12px;padding:6px 14px">+ Equipamento</button>
-          </div>
-          <div class="tbl-wrap"><table class="tbl" id="tbl-equip">
-            <thead><tr>
-              <th>Cód</th><th>Nome</th><th>Centro de Custo</th><th>Nº Série</th><th>Fornecedor</th>
-              <th>Valor Aquisição</th><th>Status</th><th>Data Aquisição</th><th>Próx. Manutenção</th>
-              <th>Vida Útil (anos)</th><th>Deprec. Anual</th><th>Deprec. Mensal</th><th>Obs</th><th></th>
-            </tr></thead><tbody></tbody>
-          </table></div>
-        </div>
+      <div class="scroll" style="padding:16px 22px 22px">
+        <div id="fin-cc-list"></div>
       </div>
     </div>
 
-
-    <!-- CATEGORIAS (PLANO DE CONTAS) -->
+    <!-- CATEGORIAS -->
     <div class="pg" id="pg-categorias">
-      <div class="scroll">
-        <!-- Categorias toolbar -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-          <div style="display:flex;gap:4px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor)">
-            <button onclick="catSetTab('despesa',this)" id="cat-tab-desp" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Despesas</button>
-            <button onclick="catSetTab('receita',this)" id="cat-tab-rec" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Receitas</button>
-          </div>
-          <button onclick="catAddGrupo()" style="padding:5px 14px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--t2)">+ Novo Grupo</button>
-          <button onclick="catSave()" style="padding:5px 14px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Salvar Alterações</button>
-          <span id="cat-save-status" style="font-size:11px;color:var(--green);display:none">Salvo!</span>
+      <div class="fin-filter-bar" style="padding-top:14px">
+        <div class="fin-tabs">
+          <div class="fin-tab active" onclick="finCatSetTipo('todos',this)">Todos</div>
+          <div class="fin-tab" onclick="finCatSetTipo('despesa',this)">Despesas</div>
+          <div class="fin-tab" onclick="finCatSetTipo('receita',this)">Receitas</div>
         </div>
-        <div id="cat-body" style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden"></div>
+        <div class="fin-search-wrap" style="margin-left:auto">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input class="fin-search" placeholder="Buscar..." id="fin-cat-q" oninput="finRenderCats()">
+        </div>
+      </div>
+      <div class="scroll" style="padding:0 22px 22px">
+        <div id="fin-cats-grid" class="fin-cat-grid"></div>
       </div>
     </div>
-    <!-- EQUIPAMENTOS -->
+
+    <!-- DRE -->
+    <div class="pg" id="pg-dre">
+      <div class="fin-filter-bar" style="padding-top:14px">
+        <div class="fin-tabs">
+          <div class="fin-tab active" onclick="finDreSetView('simplificado',this)">Simplificado</div>
+          <div class="fin-tab" onclick="finDreSetView('detalhado',this)">Detalhado</div>
+        </div>
+      </div>
+      <div class="scroll" style="padding:0 22px 22px">
+        <div id="fin-dre-body" style="max-width:680px"></div>
+      </div>
+    </div>
+
     <div class="pg" id="pg-equipamentos">
       <div class="scroll" id="eq-scroll">
         <div id="eq-content"></div>
@@ -2986,7 +2442,7 @@ _sb.auth.getSession().then(async ({data:{session}}) => {
 // ═══════════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════════
-const PAGE_TITLES={reels:'Agenda de Reels',dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação',receita:'Calculadora de Receita'};
+const PAGE_TITLES={reels:'Agenda de Reels',financeiro:'Fluxo de Caixa',dashboard:'Dashboard',dre:'DRE',pedidos:'Pedidos',producao:'Produção',estoque:'Estoque',financeiro:'Fluxo de Caixa',lancamentos:'Lançamentos',bancos:'Bancos & Caixas',materia:'Insumos',produtos:'Produtos',centrocusto:'Centro de Custos',categorias:'Categorias',config:'Configurações',precificacao:'Precificação',receita:'Calculadora de Receita'};
 const PAGE_ACTIONS={
   dashboard:()=>``,
   pedidos:()=>`<button class="btn-o" onclick="syncPedidos()" style="font-size:11px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:3px"><path d="M10 6A4 4 0 112 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 3v3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Sincronizar</button>`,
@@ -3018,7 +2474,12 @@ function go(page,el){
     financeiro:renderFluxo,lancamentos:renderLanc,bancos:renderBancos,equipamentos:renderEquipamentos,
     materia:renderMP,produtos:renderProdutos,centrocusto:renderCC,categorias:renderCat,config:renderConfig,receita:receitaInit,
     precificacao:renderPrecificacao,
-    dre:renderDREPage,
+    dre:finRenderDRE,
+    financeiro:finRenderFluxo,
+    lancamentos:finRenderLanc,
+    bancos:finRenderContas,
+    centrocusto:finRenderCCs,
+    categorias:finRenderCats,
     reels:reelsRender
   };
   if(renders[page])renders[page]();
@@ -7974,6 +7435,202 @@ async function printEtiquetas(){
     </div>
   </div>
 </div>
+
+<!-- ═══════════ MÓDULO FINANCEIRO — MODAIS ═══════════ -->
+
+<!-- Modal: Lançamento Financeiro -->
+<div class="overlay" id="fin-modal-lanc">
+  <div class="modal" style="width:520px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-lanc-title">Nova Despesa</div>
+      <button onclick="closeM('fin-modal-lanc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <!-- Tipo -->
+    <div style="display:flex;gap:6px;margin-bottom:18px">
+      <button id="fin-tipo-btn-despesa" onclick="finModalSetTipo('despesa')" style="flex:1;background:#fee2e2;color:#d93025;border:1.5px solid #d93025;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">− Despesa</button>
+      <button id="fin-tipo-btn-receita" onclick="finModalSetTipo('receita')" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Receita</button>
+      <button id="fin-tipo-btn-transferencia" onclick="finModalSetTipo('transferencia')" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⇄ Transf.</button>
+    </div>
+    <!-- Fields -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição *</label>
+        <input id="fin-lanc-desc-m" type="text" placeholder="Ex: Compra de ingredientes" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Valor *</label>
+        <input id="fin-lanc-valor-m" type="number" placeholder="0,00" step="0.01" min="0" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Data</label>
+        <input id="fin-lanc-data-m" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Vencimento</label>
+        <input id="fin-lanc-venc-m" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Categoria</label>
+        <select id="fin-lanc-cat-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Conta *</label>
+        <select id="fin-lanc-conta-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div id="fin-field-dest" style="display:none;grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Conta Destino</label>
+        <select id="fin-lanc-conta-dest-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Fornecedor / Cliente</label>
+        <input id="fin-lanc-fornec-m" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Forma de Pagamento</label>
+        <select id="fin-lanc-forma-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="">—</option><option>Dinheiro</option><option>Pix</option>
+          <option>Cartão Débito</option><option>Cartão Crédito</option>
+          <option>Boleto</option><option>Transferência</option><option>Cheque</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Centro de Custo</label>
+        <select id="fin-lanc-cc-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Observação</label>
+        <textarea id="fin-lanc-obs-m" rows="2" placeholder="Notas opcionais..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <!-- Pago toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--bor);margin-top:14px">
+      <div style="font-size:13px;font-weight:500;color:var(--t)">Já foi pago / recebido</div>
+      <label class="fin-toggle"><input type="checkbox" id="fin-lanc-pago-m"><span class="fin-toggle-slider"></span></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveLanc()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-lanc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Categoria Financeira -->
+<div class="overlay" id="fin-modal-cat">
+  <div class="modal" style="width:440px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-cat-title">Nova Categoria</div>
+      <button onclick="closeM('fin-modal-cat')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome *</label>
+        <input id="fin-cat-nome-m" type="text" placeholder="Ex: Matéria-prima" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Tipo *</label>
+        <select id="fin-cat-tipo-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="despesa">💸 Despesa</option>
+          <option value="receita">💰 Receita</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Ícone</label>
+        <input id="fin-cat-icon-m" type="text" placeholder="🛒" maxlength="4" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:18px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Código Contábil</label>
+        <input id="fin-cat-cod-m" type="text" placeholder="Ex: 5.1.1" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Cor</label>
+        <div id="fin-cat-cores-m" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição</label>
+        <textarea id="fin-cat-desc-m" rows="2" placeholder="Descrição opcional..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveCat()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-cat')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Centro de Custo -->
+<div class="overlay" id="fin-modal-cc">
+  <div class="modal" style="width:420px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-cc-title">Novo Centro de Custo</div>
+      <button onclick="closeM('fin-modal-cc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome *</label>
+        <input id="fin-cc-nome-m" type="text" placeholder="Ex: Produção, Marketing" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Cor</label>
+        <input type="color" id="fin-cc-cor-m" value="#E8612A" style="width:100%;height:40px;border:1px solid var(--bor);border-radius:8px;cursor:pointer">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Responsável</label>
+        <input id="fin-cc-resp-m" type="text" placeholder="Nome do responsável" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição</label>
+        <textarea id="fin-cc-desc-m" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveCC()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-cc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Conta Bancária -->
+<div class="overlay" id="fin-modal-conta">
+  <div class="modal" style="width:420px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-conta-title">Nova Conta</div>
+      <button onclick="closeM('fin-modal-conta')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome da Conta *</label>
+        <input id="fin-conta-nome-m" type="text" placeholder="Ex: Nubank, Caixa, BB" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Tipo</label>
+        <select id="fin-conta-tipo-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="corrente">Conta Corrente</option>
+          <option value="poupanca">Poupança</option>
+          <option value="caixa">Caixa (Dinheiro)</option>
+          <option value="digital">Conta Digital</option>
+          <option value="investimento">Investimento</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Saldo Inicial</label>
+        <input id="fin-conta-saldo-m" type="number" placeholder="0,00" step="0.01" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Banco</label>
+        <input id="fin-conta-banco-m" type="text" placeholder="Ex: Nubank, Itaú" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Cor</label>
+        <input type="color" id="fin-conta-cor-m" value="#E8612A" style="width:100%;height:40px;border:1px solid var(--bor);border-radius:8px;cursor:pointer">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveConta()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-conta')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body></html>`);
   win.document.close();
 }
@@ -12546,6 +12203,202 @@ function renderEquipamentos(){
     </div>
   </div>
 </div>
+
+<!-- ═══════════ MÓDULO FINANCEIRO — MODAIS ═══════════ -->
+
+<!-- Modal: Lançamento Financeiro -->
+<div class="overlay" id="fin-modal-lanc">
+  <div class="modal" style="width:520px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-lanc-title">Nova Despesa</div>
+      <button onclick="closeM('fin-modal-lanc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <!-- Tipo -->
+    <div style="display:flex;gap:6px;margin-bottom:18px">
+      <button id="fin-tipo-btn-despesa" onclick="finModalSetTipo('despesa')" style="flex:1;background:#fee2e2;color:#d93025;border:1.5px solid #d93025;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">− Despesa</button>
+      <button id="fin-tipo-btn-receita" onclick="finModalSetTipo('receita')" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Receita</button>
+      <button id="fin-tipo-btn-transferencia" onclick="finModalSetTipo('transferencia')" style="flex:1;background:var(--bg);color:var(--t3);border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">⇄ Transf.</button>
+    </div>
+    <!-- Fields -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição *</label>
+        <input id="fin-lanc-desc-m" type="text" placeholder="Ex: Compra de ingredientes" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Valor *</label>
+        <input id="fin-lanc-valor-m" type="number" placeholder="0,00" step="0.01" min="0" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Data</label>
+        <input id="fin-lanc-data-m" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Vencimento</label>
+        <input id="fin-lanc-venc-m" type="date" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Categoria</label>
+        <select id="fin-lanc-cat-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Conta *</label>
+        <select id="fin-lanc-conta-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div id="fin-field-dest" style="display:none;grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Conta Destino</label>
+        <select id="fin-lanc-conta-dest-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Fornecedor / Cliente</label>
+        <input id="fin-lanc-fornec-m" type="text" placeholder="Nome" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Forma de Pagamento</label>
+        <select id="fin-lanc-forma-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="">—</option><option>Dinheiro</option><option>Pix</option>
+          <option>Cartão Débito</option><option>Cartão Crédito</option>
+          <option>Boleto</option><option>Transferência</option><option>Cheque</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Centro de Custo</label>
+        <select id="fin-lanc-cc-modal" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none"></select>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Observação</label>
+        <textarea id="fin-lanc-obs-m" rows="2" placeholder="Notas opcionais..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <!-- Pago toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--bor);margin-top:14px">
+      <div style="font-size:13px;font-weight:500;color:var(--t)">Já foi pago / recebido</div>
+      <label class="fin-toggle"><input type="checkbox" id="fin-lanc-pago-m"><span class="fin-toggle-slider"></span></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveLanc()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-lanc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Categoria Financeira -->
+<div class="overlay" id="fin-modal-cat">
+  <div class="modal" style="width:440px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-cat-title">Nova Categoria</div>
+      <button onclick="closeM('fin-modal-cat')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome *</label>
+        <input id="fin-cat-nome-m" type="text" placeholder="Ex: Matéria-prima" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Tipo *</label>
+        <select id="fin-cat-tipo-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="despesa">💸 Despesa</option>
+          <option value="receita">💰 Receita</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Ícone</label>
+        <input id="fin-cat-icon-m" type="text" placeholder="🛒" maxlength="4" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:18px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Código Contábil</label>
+        <input id="fin-cat-cod-m" type="text" placeholder="Ex: 5.1.1" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Cor</label>
+        <div id="fin-cat-cores-m" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição</label>
+        <textarea id="fin-cat-desc-m" rows="2" placeholder="Descrição opcional..." style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveCat()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-cat')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Centro de Custo -->
+<div class="overlay" id="fin-modal-cc">
+  <div class="modal" style="width:420px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-cc-title">Novo Centro de Custo</div>
+      <button onclick="closeM('fin-modal-cc')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome *</label>
+        <input id="fin-cc-nome-m" type="text" placeholder="Ex: Produção, Marketing" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Cor</label>
+        <input type="color" id="fin-cc-cor-m" value="#E8612A" style="width:100%;height:40px;border:1px solid var(--bor);border-radius:8px;cursor:pointer">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Responsável</label>
+        <input id="fin-cc-resp-m" type="text" placeholder="Nome do responsável" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Descrição</label>
+        <textarea id="fin-cc-desc-m" rows="2" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;resize:none;outline:none"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveCC()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-cc')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Conta Bancária -->
+<div class="overlay" id="fin-modal-conta">
+  <div class="modal" style="width:420px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:15px;font-weight:800;color:var(--t)" id="fin-modal-conta-title">Nova Conta</div>
+      <button onclick="closeM('fin-modal-conta')" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="grid-column:1/-1">
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Nome da Conta *</label>
+        <input id="fin-conta-nome-m" type="text" placeholder="Ex: Nubank, Caixa, BB" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Tipo</label>
+        <select id="fin-conta-tipo-m" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:12px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+          <option value="corrente">Conta Corrente</option>
+          <option value="poupanca">Poupança</option>
+          <option value="caixa">Caixa (Dinheiro)</option>
+          <option value="digital">Conta Digital</option>
+          <option value="investimento">Investimento</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Saldo Inicial</label>
+        <input id="fin-conta-saldo-m" type="number" placeholder="0,00" step="0.01" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Banco</label>
+        <input id="fin-conta-banco-m" type="text" placeholder="Ex: Nubank, Itaú" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 11px;font-size:13px;color:var(--t);background:var(--bg);font-family:inherit;outline:none">
+      </div>
+      <div>
+        <label style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Cor</label>
+        <input type="color" id="fin-conta-cor-m" value="#E8612A" style="width:100%;height:40px;border:1px solid var(--bor);border-radius:8px;cursor:pointer">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="finSaveConta()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+      <button onclick="closeM('fin-modal-conta')" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:9px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 <script>
@@ -13620,5 +13473,860 @@ function lancBulkModal(title, bodyHtml, onOk){
   document.getElementById('blk-cancel').onclick=function(){d.remove();};
   d.onclick=function(e){if(e.target===d)d.remove();};
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO FINANCEIRO — VULPIN
+// ═══════════════════════════════════════════════════════════════
+
+// ── DATA ──
+const finGetCats   = () => {
+  // Try new fin_cats first, fall back to verp_plano_contas
+  const c = S.get('fin_cats');
+  if(c && c.length) return c;
+  // Convert from plano_contas if exists
+  const plano = typeof catGetData==='function' ? catGetData() : (PLANO_CONTAS||[]);
+  if(plano.length){
+    const cats = plano.filter(p=>p.tipo==='despesa'||p.tipo==='receita').map(p=>({
+      id: 'cat_'+p.cod.replace(/\./g,'_'),
+      nome: p.nome, tipo: p.tipo, icon: '📂', cor: '#E8612A', cod: p.cod
+    }));
+    S.set('fin_cats', cats);
+    return cats;
+  }
+  return finDefaultCats();
+};
+const finSetCats   = v => S.set('fin_cats', v);
+const finGetCCs    = () => getCC ? getCC() : (S.get('centrocustos')||[]);
+const finSetCCs    = v => S.set('centrocustos', v);
+const finGetContas = () => getBancos ? getBancos() : (S.get('bancos')||[]);
+const finSetContas = v => S.set('bancos', v);
+const finGetLancs  = () => getLanc ? getLanc() : (S.get('lancamentos')||[]);
+const finSetLancs  = v => S.set('lancamentos', v);
+
+function finDefaultCats(){
+  return [
+    {id:'fc_1',nome:'Matéria-prima',tipo:'despesa',icon:'🌾',cor:'#E8612A',cod:'5.1.1'},
+    {id:'fc_2',nome:'Embalagens',tipo:'despesa',icon:'📦',cor:'#D97706',cod:'5.1.2'},
+    {id:'fc_3',nome:'Marketing',tipo:'despesa',icon:'📣',cor:'#7C3AED',cod:'5.4.2'},
+    {id:'fc_4',nome:'Salários',tipo:'despesa',icon:'👥',cor:'#2563EB',cod:'5.3'},
+    {id:'fc_5',nome:'Aluguel',tipo:'despesa',icon:'🏠',cor:'#0891B2',cod:'5.5.1'},
+    {id:'fc_6',nome:'Energia',tipo:'despesa',icon:'⚡',cor:'#F59E0B',cod:'5.2.1'},
+    {id:'fc_7',nome:'Internet',tipo:'despesa',icon:'📡',cor:'#10B981',cod:'5.5.2'},
+    {id:'fc_8',nome:'Gás',tipo:'despesa',icon:'🔥',cor:'#EF4444',cod:'5.2.1'},
+    {id:'fc_9',nome:'Vendas iFood',tipo:'receita',icon:'🛵',cor:'#EA580C',cod:'4.1.1'},
+    {id:'fc_10',nome:'Vendas WhatsApp',tipo:'receita',icon:'💬',cor:'#16A34A',cod:'4.1.1'},
+    {id:'fc_11',nome:'Vendas Balcão',tipo:'receita',icon:'🍪',cor:'#CA8A04',cod:'4.1.1'},
+    {id:'fc_12',nome:'Comissões',tipo:'despesa',icon:'💳',cor:'#DC2626',cod:'3.2.3'},
+  ];
+}
+
+// ── HELPERS ──
+const finFmt   = n => Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const finToday = () => new Date().toISOString().slice(0,10);
+const finUid   = () => 'fl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+const finFmtDate = d => { if(!d)return'—'; const[y,m,di]=(d+'').slice(0,10).split('-'); return `${di}/${m}/${y}`; };
+
+function finGetMes(){
+  // Use same period as main system
+  const el=document.getElementById('period-label');
+  if(el&&el.textContent){
+    // parse "Mai 2026" format
+    const months={Jan:'01',Fev:'02',Mar:'03',Abr:'04',Mai:'05',Jun:'06',Jul:'07',Ago:'08',Set:'09',Out:'10',Nov:'11',Dez:'12'};
+    const parts=el.textContent.trim().split(' ');
+    if(parts.length===2&&months[parts[0]])return parts[1]+'-'+months[parts[0]];
+  }
+  return new Date().toISOString().slice(0,7);
+}
+
+function finGetLancsByMes(tipo){
+  const mes=finGetMes();
+  return finGetLancs().filter(l=>{
+    const d=(l.venc||l.data||'').slice(0,7);
+    if(d!==mes)return false;
+    if(tipo&&l.tipo!==tipo)return false;
+    return true;
+  });
+}
+
+function finCatById(id){ return finGetCats().find(c=>c.id===id||c.cod===id); }
+function finContaById(id){ return finGetContas().find(c=>c.id===id); }
+function finCCById(id){ return finGetCCs().find(c=>c.id===id); }
+
+function finStatus(l){
+  const hoje=finToday();
+  if(l.tipo==='transferencia')return'transferencia';
+  const isRec=l.tipo==='receita';
+  if(isRec?(l.pago||l.recebido):l.pago)return isRec?'recebido':'pago';
+  const v=l.venc||l.data||'';
+  if(v<hoje)return'vencido';
+  if(v===hoje)return'hoje';
+  return'pendente';
+}
+
+function finPill(s){
+  const m={pago:'<span class="fin-pill fin-pill-pago">✓ Pago</span>',recebido:'<span class="fin-pill fin-pill-pago">✓ Recebido</span>',pendente:'<span class="fin-pill fin-pill-pendente">⏳ Pendente</span>',vencido:'<span class="fin-pill fin-pill-vencido">⚠ Vencido</span>',hoje:'<span class="fin-pill fin-pill-pendente">📅 Hoje</span>',transferencia:'<span class="fin-pill fin-pill-transf">⇄</span>'};
+  return m[s]||'';
+}
+
+function finRowActions(l){
+  const isRec=l.tipo==='receita';
+  const pago=l.pago||l.recebido;
+  return `<div style="display:flex;gap:4px;justify-content:flex-end">
+    ${!pago&&l.tipo!=='transferencia'?`<button onclick="event.stopPropagation();finQuickPay('${l.id}')" style="background:var(--green,#1e9e6b);color:#fff;border:none;border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">${isRec?'Receber':'Pagar'}</button>`:''}
+    <button onclick="event.stopPropagation();finEditLanc('${l.id}')" style="background:var(--bg2);border:1px solid var(--bor);border-radius:6px;padding:3px 6px;font-size:11px;cursor:pointer">✏</button>
+    <button onclick="event.stopPropagation();finDelLanc('${l.id}')" style="background:var(--red2,#fee2e2);color:var(--red,#d93025);border:none;border-radius:6px;padding:3px 6px;font-size:11px;cursor:pointer">✕</button>
+  </div>`;
+}
+
+function finSumCard(label, val, cls, sub){
+  return `<div class="fin-sum-card"><div class="fin-sum-label">${label}</div><div class="fin-sum-val ${cls||''}">R$ ${finFmt(val)}</div>${sub?`<div class="fin-sum-sub">${sub}</div>`:''}</div>`;
+}
+
+function finEmpty(icon, title, sub){
+  return `<div style="text-align:center;padding:50px 20px"><div style="font-size:36px;margin-bottom:10px">${icon}</div><div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:5px">${title}</div><div style="font-size:12px;color:var(--t3)">${sub}</div></div>`;
+}
+
+// ── POPULATE SELECTS ──
+function finPopulateSelects(){
+  const cats=finGetCats();
+  const contas=finGetContas();
+  const ccs=finGetCCs();
+
+  ['fin-lanc-cat-modal','fin-lanc-cat'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const prefix=id.includes('modal')?'<option value="">Sem categoria</option>':'<option value="">Todas as categorias</option>';
+    el.innerHTML=prefix+cats.map(c=>`<option value="${c.id}">${c.icon||'📂'} ${c.nome}</option>`).join('');
+  });
+  ['fin-lanc-conta-modal','fin-lanc-conta','fin-fluxo-conta'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const prefix=id.includes('modal')?'<option value="">Selecionar conta</option>':'<option value="">Todas as contas</option>';
+    el.innerHTML=prefix+contas.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  });
+  const ccEl=document.getElementById('fin-lanc-cc-modal');
+  if(ccEl)ccEl.innerHTML='<option value="">Sem centro de custo</option>'+ccs.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const destEl=document.getElementById('fin-lanc-conta-dest-modal');
+  if(destEl)destEl.innerHTML='<option value="">Selecionar destino</option>'+contas.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLUXO DE CAIXA
+// ═══════════════════════════════════════════════════════════════
+let _finFluxoView='diario';
+function finFluxoSetView(v, el){
+  _finFluxoView=v;
+  document.querySelectorAll('#fin-fluxo-tabs .fin-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  finRenderFluxo();
+}
+
+function finRenderFluxo(){
+  const contaF=document.getElementById('fin-fluxo-conta')?.value||'';
+  const tipoF=document.getElementById('fin-fluxo-tipo')?.value||'';
+  let lancs=finGetLancsByMes();
+  if(contaF)lancs=lancs.filter(l=>l.bancoId===contaF);
+  if(tipoF)lancs=lancs.filter(l=>l.tipo===tipoF);
+
+  const ent=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const sai=lancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+  const saldo=ent-sai;
+  const hoje=finToday();
+  const pendP=finGetLancsByMes('despesa').filter(l=>!l.pago).reduce((s,l)=>s+(l.valor||0),0);
+  const pendR=finGetLancsByMes('receita').filter(l=>!l.pago&&!l.recebido).reduce((s,l)=>s+(l.valor||0),0);
+
+  const sumEl=document.getElementById('fin-fluxo-summary');
+  if(sumEl)sumEl.innerHTML=
+    finSumCard('Entradas',ent,'green',lancs.filter(l=>l.tipo==='receita').length+' lançamentos')+
+    finSumCard('Saídas',sai,'red',lancs.filter(l=>l.tipo==='despesa').length+' lançamentos')+
+    finSumCard('Saldo do Mês',saldo,saldo>=0?'green':'red',saldo>=0?'Positivo':'Negativo')+
+    finSumCard('A Pagar',pendP,'amber','pendente')+
+    finSumCard('A Receber',pendR,'fox','pendente');
+
+  const body=document.getElementById('fin-fluxo-body');
+  if(!body)return;
+  if(!lancs.length){body.innerHTML=finEmpty('📭','Nenhum lançamento','Adicione receitas e despesas pelo menu Lançamentos.');return;}
+
+  // Group by date
+  const byDate={};
+  lancs.sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||'')).forEach(l=>{
+    const d=l.venc||l.data||''; if(!byDate[d])byDate[d]=[]; byDate[d].push(l);
+  });
+
+  body.innerHTML=Object.entries(byDate).map(([d,ls])=>{
+    const rec=ls.filter(x=>x.tipo==='receita').reduce((s,x)=>s+(x.valor||0),0);
+    const des=ls.filter(x=>x.tipo==='despesa').reduce((s,x)=>s+(x.valor||0),0);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:2px solid var(--bor);margin-bottom:3px">
+        <div style="font-size:11px;font-weight:700;color:var(--t3)">${finFmtDate(d)}</div>
+        <div style="display:flex;gap:10px;font-size:11px">
+          ${rec?`<span style="color:var(--green,#1e9e6b);font-weight:700">+R$ ${finFmt(rec)}</span>`:''}
+          ${des?`<span style="color:var(--red,#d93025);font-weight:700">−R$ ${finFmt(des)}</span>`:''}
+        </div>
+      </div>
+      ${ls.map(l=>{
+        const cat=finCatById(l.catId||l.catCod);
+        const conta=finContaById(l.bancoId);
+        const isRec=l.tipo==='receita';
+        const isTransf=l.tipo==='transferencia';
+        const cor=isTransf?'var(--blue,#2563eb)':isRec?'var(--green,#1e9e6b)':'var(--red,#d93025)';
+        const sinal=isTransf?'⇄':isRec?'+':'−';
+        return `<div onclick="finEditLanc('${l.id}')" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:background .1s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          <div style="width:34px;height:34px;border-radius:9px;background:${cat?.cor||'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${cat?.icon||'💰'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc||'—'}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:1px">${cat?.nome||'—'} · ${conta?.nome||'—'}${l.fornec?' · '+l.fornec:''}</div>
+          </div>
+          ${finPill(finStatus(l))}
+          <div style="font-size:14px;font-weight:800;color:${cor};min-width:90px;text-align:right">${sinal}R$ ${finFmt(l.valor)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LANÇAMENTOS
+// ═══════════════════════════════════════════════════════════════
+let _finLancTab='todos';
+let _finLancEdit=null;
+let _finLancTipo='despesa';
+
+function finLancSetTab(t,el){
+  _finLancTab=t;
+  document.querySelectorAll('#fin-lanc-tabs .fin-tab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  finRenderLanc();
+}
+
+function finRenderLanc(){
+  const hoje=finToday();
+  let lancs=finGetLancsByMes();
+  if(_finLancTab==='receita') lancs=lancs.filter(l=>l.tipo==='receita');
+  else if(_finLancTab==='despesa') lancs=lancs.filter(l=>l.tipo==='despesa');
+  else if(_finLancTab==='pagar') lancs=lancs.filter(l=>l.tipo==='despesa'&&!l.pago);
+  else if(_finLancTab==='receber') lancs=lancs.filter(l=>l.tipo==='receita'&&!l.pago&&!l.recebido);
+  else if(_finLancTab==='vencido') lancs=lancs.filter(l=>!l.pago&&!l.recebido&&(l.venc||l.data||'')<hoje);
+
+  const catF=document.getElementById('fin-lanc-cat')?.value;
+  const contaF=document.getElementById('fin-lanc-conta')?.value;
+  const q=(document.getElementById('fin-lanc-q')?.value||'').toLowerCase();
+  if(catF)lancs=lancs.filter(l=>l.catId===catF||l.catCod===catF);
+  if(contaF)lancs=lancs.filter(l=>l.bancoId===contaF);
+  if(q)lancs=lancs.filter(l=>(l.desc||'').toLowerCase().includes(q)||(l.fornec||'').toLowerCase().includes(q));
+  lancs.sort((a,b)=>(b.venc||b.data||'').localeCompare(a.venc||a.data||''));
+
+  // Summary
+  const ent=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const sai=lancs.filter(l=>l.tipo==='despesa').reduce((s,l)=>s+(l.valor||0),0);
+  const pago=lancs.filter(l=>l.pago||l.recebido).reduce((s,l)=>s+(l.valor||0),0);
+  const pend=lancs.filter(l=>!l.pago&&!l.recebido).reduce((s,l)=>s+(l.valor||0),0);
+  const venc=lancs.filter(l=>!l.pago&&!l.recebido&&(l.venc||l.data||'')<finToday()).reduce((s,l)=>s+(l.valor||0),0);
+
+  const sumEl=document.getElementById('fin-lanc-summary');
+  if(sumEl)sumEl.innerHTML=
+    finSumCard('Entradas',ent,'green')+
+    finSumCard('Saídas',sai,'red')+
+    finSumCard('Liquidados',pago,'green')+
+    finSumCard('Pendentes',pend,'amber')+
+    finSumCard('Vencidos',venc,'red');
+
+  const tbody=document.getElementById('fin-tbody-lanc');
+  if(!tbody)return;
+  if(!lancs.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div style="text-align:center;padding:40px;color:var(--t3)">Nenhum lançamento encontrado</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML=lancs.map(l=>{
+    const cat=finCatById(l.catId||l.catCod);
+    const conta=finContaById(l.bancoId);
+    const cc=finCCById(l.ccId);
+    const s=finStatus(l);
+    const isRec=l.tipo==='receita';
+    const isTransf=l.tipo==='transferencia';
+    const cor=isTransf?'var(--blue,#2563eb)':isRec?'var(--green,#1e9e6b)':'var(--red,#d93025)';
+    const sinal=isTransf?'⇄':isRec?'+':'−';
+    return `<tr onclick="finEditLanc('${l.id}')">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="fin-chk" value="${l.id}" onchange="finOnBulkChk()"></td>
+      <td><div style="font-weight:600;color:var(--t);font-size:12px">${finFmtDate(l.venc||l.data)}</div>${l.dataPag?`<div style="font-size:10px;color:var(--green,#1e9e6b)">✓ ${finFmtDate(l.dataPag)}</div>`:''}</td>
+      <td style="font-weight:500;color:var(--t);max-width:180px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.desc||'—'}</div>${l.fornec?`<div style="font-size:10px;color:var(--t3)">${l.fornec}</div>`:''}</td>
+      <td>${cat?`<span class="fin-pill fin-pill-cat" style="border-left:3px solid ${cat.cor||'var(--fox)'}">${cat.icon||'📂'} ${cat.nome}</span>`:'—'}</td>
+      <td style="font-size:12px">${conta?.nome||'—'}</td>
+      <td style="font-size:12px">${cc?`<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px"><span style="width:7px;height:7px;border-radius:50%;background:${cc.cor||'var(--fox)'}"></span>${cc.nome}</span>`:'—'}</td>
+      <td style="font-size:11px;color:var(--t3)">${l.forma||'—'}</td>
+      <td>${finPill(s)}</td>
+      <td style="text-align:right;font-weight:800;color:${cor};white-space:nowrap">${sinal}R$ ${finFmt(l.valor)}</td>
+      <td>${finRowActions(l)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── LANC MODAL ──
+function finOpenNewLanc(tipo){
+  _finLancEdit=null;
+  _finLancTipo=tipo||'despesa';
+  finPopulateSelects();
+  // Reset form
+  ['fin-lanc-desc-m','fin-lanc-fornec-m','fin-lanc-obs-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const vEl=document.getElementById('fin-lanc-valor-m');if(vEl)vEl.value='';
+  const dEl=document.getElementById('fin-lanc-data-m');if(dEl)dEl.value=finToday();
+  const vcEl=document.getElementById('fin-lanc-venc-m');if(vcEl)vcEl.value=finToday();
+  const pagoEl=document.getElementById('fin-lanc-pago-m');if(pagoEl)pagoEl.checked=false;
+  const titleEl=document.getElementById('fin-modal-lanc-title');if(titleEl)titleEl.textContent={despesa:'Nova Despesa',receita:'Nova Receita',transferencia:'Nova Transferência'}[tipo]||'Novo Lançamento';
+  finModalSetTipo(tipo);
+  openM('fin-modal-lanc');
+  setTimeout(()=>document.getElementById('fin-lanc-desc-m')?.focus(),100);
+}
+
+function finEditLanc(id){
+  const l=finGetLancs().find(x=>x.id===id);
+  if(!l)return;
+  _finLancEdit=id;
+  _finLancTipo=l.tipo||'despesa';
+  finPopulateSelects();
+  const set=(elId,val)=>{const el=document.getElementById(elId);if(el)el.value=val||'';};
+  set('fin-lanc-desc-m',l.desc);
+  set('fin-lanc-valor-m',l.valor);
+  set('fin-lanc-data-m',l.data||finToday());
+  set('fin-lanc-venc-m',l.venc||l.data||finToday());
+  set('fin-lanc-fornec-m',l.fornec);
+  set('fin-lanc-forma-m',l.forma);
+  set('fin-lanc-obs-m',l.obs);
+  set('fin-lanc-cat-modal',l.catId||l.catCod||'');
+  set('fin-lanc-conta-modal',l.bancoId||'');
+  set('fin-lanc-cc-modal',l.ccId||'');
+  const pEl=document.getElementById('fin-lanc-pago-m');if(pEl)pEl.checked=!!(l.pago||l.recebido);
+  const tEl2=document.getElementById('fin-modal-lanc-title');if(tEl2)tEl2.textContent='Editar Lançamento';
+  finModalSetTipo(l.tipo||'despesa');
+  openM('fin-modal-lanc');
+}
+
+function finModalSetTipo(tipo){
+  _finLancTipo=tipo;
+  const cores={despesa:['#fee2e2','#d93025'],receita:['#d1fae5','#065f46'],transferencia:['#dbeafe','#1e40af']};
+  ['despesa','receita','transferencia'].forEach(t=>{
+    const el=document.getElementById('fin-tipo-btn-'+t);
+    if(!el)return;
+    if(t===tipo){el.style.background=cores[t][0];el.style.color=cores[t][1];el.style.borderColor=cores[t][1];}
+    else{el.style.background='var(--bg)';el.style.color='var(--t3)';el.style.borderColor='var(--bor)';}
+  });
+  const destEl=document.getElementById('fin-field-dest');
+  if(destEl)destEl.style.display=tipo==='transferencia'?'block':'none';
+  const titleMap={despesa:'Nova Despesa',receita:'Nova Receita',transferencia:'Nova Transferência'};
+  if(!_finLancEdit){const tEl=document.getElementById('fin-modal-lanc-title');if(tEl)tEl.textContent=titleMap[tipo]||'Novo Lançamento';}
+}
+
+function finSaveLanc(){
+  const desc=(document.getElementById('fin-lanc-desc-m')?.value||'').trim();
+  const valor=parseFloat(document.getElementById('fin-lanc-valor-m')?.value||0);
+  if(!desc||!valor){alert('Preencha descrição e valor.');return;}
+  const pago=document.getElementById('fin-lanc-pago-m')?.checked||false;
+  const catId=document.getElementById('fin-lanc-cat-modal')?.value||'';
+  const cat=finGetCats().find(c=>c.id===catId);
+  const contaId=document.getElementById('fin-lanc-conta-modal')?.value||'';
+  const conta=finGetContas().find(c=>c.id===contaId);
+  const ccId=document.getElementById('fin-lanc-cc-modal')?.value||'';
+  const cc=finGetCCs().find(c=>c.id===ccId);
+  const data=document.getElementById('fin-lanc-data-m')?.value||finToday();
+  const venc=document.getElementById('fin-lanc-venc-m')?.value||data;
+
+  const obj={
+    id:_finLancEdit||finUid(),
+    tipo:_finLancTipo,
+    desc,valor,data,venc,
+    fornec:document.getElementById('fin-lanc-fornec-m')?.value.trim()||'',
+    forma:document.getElementById('fin-lanc-forma-m')?.value||'',
+    obs:document.getElementById('fin-lanc-obs-m')?.value.trim()||'',
+    pago,recebido:_finLancTipo==='receita'?pago:false,
+    dataPag:pago?finToday():null,
+    catId:catId||null,catCod:cat?.cod||null,catNome:cat?.nome||null,
+    bancoId:contaId||null,bancoNome:conta?.nome||null,
+    ccId:ccId||null,ccNome:cc?.nome||null,
+  };
+  if(_finLancTipo==='transferencia'){
+    obj.bancoOrigemId=contaId||null;
+    obj.bancoDestinoId=document.getElementById('fin-lanc-conta-dest-modal')?.value||null;
+  }
+
+  const all=finGetLancs();
+  if(_finLancEdit){const i=all.findIndex(x=>x.id===_finLancEdit);if(i>=0)all[i]=obj;}
+  else all.push(obj);
+  finSetLancs(all);
+  closeM('fin-modal-lanc');
+  finRenderCurrentPage();
+  finUpdateBadges();
+}
+
+function finQuickPay(id){
+  const all=JSON.parse(JSON.stringify(finGetLancs()));
+  const l=all.find(x=>x.id===id);
+  if(!l)return;
+  l.pago=true;l.recebido=true;l.dataPag=finToday();
+  finSetLancs(all);
+  finRenderCurrentPage();
+  finUpdateBadges();
+}
+
+function finDelLanc(id){
+  if(!confirm('Excluir este lançamento?'))return;
+  finSetLancs(finGetLancs().filter(x=>x.id!==id));
+  finRenderCurrentPage();
+  finUpdateBadges();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRE
+// ═══════════════════════════════════════════════════════════════
+let _finDreView='simplificado';
+function finDreSetView(v,el){
+  _finDreView=v;
+  document.querySelectorAll('#pg-dre .fin-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  finRenderDRE();
+}
+
+function finRenderDRE(){
+  const lancs=finGetLancsByMes();
+  const cats=finGetCats();
+  const recBruta=lancs.filter(l=>l.tipo==='receita').reduce((s,l)=>s+(l.valor||0),0);
+  const deducoes=lancs.filter(l=>l.tipo==='despesa'&&cats.find(c=>(c.id===l.catId||c.cod===l.catCod)&&(c.nome||'').match(/comiss|taxa|deduc/i))).reduce((s,l)=>s+(l.valor||0),0);
+  const recLiq=recBruta-deducoes;
+  const cmvCatIds=cats.filter(c=>c.tipo==='despesa'&&(c.nome||'').match(/mat[eé]ria|embalagem|ingrediente|insumo|cpv|custo.*prod|gás|energia.*prod|gas/i)).map(c=>c.id);
+  const cmv=lancs.filter(l=>l.tipo==='despesa'&&cmvCatIds.includes(l.catId)).reduce((s,l)=>s+(l.valor||0),0);
+  const lucroBruto=recLiq-cmv;
+  const despTotal=lancs.filter(l=>l.tipo==='despesa'&&!cmvCatIds.includes(l.catId)).reduce((s,l)=>s+(l.valor||0),0);
+  const lucroOp=lucroBruto-despTotal;
+  const pct=(v,b)=>b?((v/b)*100).toFixed(1)+'%':'—';
+  const mes=finGetMes();
+  const months={Jan:'01',Fev:'02',Mar:'03',Abr:'04',Mai:'05',Jun:'06',Jul:'07',Ago:'08',Set:'09',Out:'10',Nov:'11',Dez:'12'};
+  const mesLabel=Object.entries(months).find(([k,v])=>mes.endsWith(v))?.[0]+' '+mes.split('-')[0]||mes;
+
+  const body=document.getElementById('fin-dre-body');
+  if(!body)return;
+
+  const dRow=(name,val,neg,indent)=>`<div class="fin-dre-row${indent?' fin-dre-indent':''}">
+    <div class="fin-dre-name">${name}</div>
+    <div class="fin-dre-val" style="color:${neg?'var(--red,#d93025)':val>=0?'var(--t)':'var(--red,#d93025)'}">${neg?'−':''}R$ ${finFmt(Math.abs(val))}</div>
+    <div class="fin-dre-pct">${pct(Math.abs(val),recBruta)}</div>
+  </div>`;
+  const dTotal=(name,val,cls)=>`<div class="fin-dre-total ${cls}">
+    <div class="fin-dre-name">${name}</div>
+    <div class="fin-dre-val">R$ ${finFmt(val)}</div>
+    <div class="fin-dre-pct">${pct(val,recBruta)}</div>
+  </div>`;
+  const dGroup=(name,val,neg)=>`<div class="fin-dre-group">
+    <div class="fin-dre-name">${name}</div>
+    <div class="fin-dre-val" style="color:${neg?'var(--red,#d93025)':'var(--t)'}">${neg?'−':''}R$ ${finFmt(Math.abs(val))}</div>
+    <div class="fin-dre-pct">${pct(Math.abs(val),recBruta)}</div>
+  </div>`;
+
+  if(_finDreView==='simplificado'){
+    body.innerHTML=`
+      <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">${mesLabel}</div>
+      ${dGroup('Receita Bruta de Vendas',recBruta)}
+      ${deducoes?dRow('(−) Deduções e Comissões',deducoes,true,true):''}
+      ${dTotal('(=) Receita Líquida',recLiq,recLiq>=0?'positive':'negative')}
+      ${dGroup('(−) Custo dos Produtos (CMV)',cmv,true)}
+      ${dTotal('(=) Lucro Bruto',lucroBruto,lucroBruto>=0?'positive':'negative')}
+      ${dGroup('(−) Despesas Operacionais',despTotal,true)}
+      ${dTotal('(=) Lucro Operacional',lucroOp,lucroOp>=0?'positive':'negative')}
+      <div style="margin-top:12px;padding:14px 16px;background:var(--bg3);border-radius:10px;border-left:4px solid var(--fox)">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">Margem Líquida</div>
+        <div style="font-size:28px;font-weight:800;color:${lucroOp>=0?'var(--green,#1e9e6b)':'var(--red,#d93025)'};margin-top:4px">${recBruta?((lucroOp/recBruta)*100).toFixed(1)+'%':'—'}</div>
+      </div>
+    `;
+  } else {
+    // Detailed by category
+    const despByCat={};
+    lancs.filter(l=>l.tipo==='despesa').forEach(l=>{
+      const k=l.catId||'__sem__';
+      despByCat[k]=(despByCat[k]||0)+(l.valor||0);
+    });
+    const catRows=Object.entries(despByCat).sort((a,b)=>b[1]-a[1]).map(([catId,v])=>{
+      const cat=cats.find(c=>c.id===catId);
+      return `<div class="fin-dre-row fin-dre-indent">
+        <div class="fin-dre-name">${cat?cat.icon+' '+cat.nome:'Sem categoria'}</div>
+        <div class="fin-dre-val" style="color:var(--red,#d93025)">R$ ${finFmt(v)}</div>
+        <div class="fin-dre-pct">${pct(v,recBruta)}</div>
+      </div>`;
+    }).join('');
+
+    body.innerHTML=`
+      <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">${mesLabel} — Detalhado</div>
+      ${dGroup('Receita Bruta',recBruta)}
+      ${dTotal('(=) Receita Líquida',recLiq,recLiq>=0?'positive':'negative')}
+      <div class="fin-dre-group"><div class="fin-dre-name">Custos e Despesas por Categoria</div><div class="fin-dre-val" style="color:var(--red,#d93025)">R$ ${finFmt(cmv+despTotal)}</div><div class="fin-dre-pct">${pct(cmv+despTotal,recBruta)}</div></div>
+      ${catRows}
+      ${dTotal('(=) Lucro Operacional',lucroOp,lucroOp>=0?'positive':'negative')}
+    `;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CATEGORIAS
+// ═══════════════════════════════════════════════════════════════
+let _finCatTipo='todos';
+let _finCatEdit=null;
+const FIN_CAT_CORES=['#E8612A','#D97706','#16A34A','#2563EB','#7C3AED','#DC2626','#0891B2','#CA8A04','#DB2777','#059669'];
+
+function finCatSetTipo(t,el){
+  _finCatTipo=t;
+  document.querySelectorAll('#pg-categorias .fin-tab').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  finRenderCats();
+}
+
+function finRenderCats(){
+  const q=(document.getElementById('fin-cat-q')?.value||'').toLowerCase();
+  let cats=finGetCats();
+  if(_finCatTipo!=='todos')cats=cats.filter(c=>c.tipo===_finCatTipo);
+  if(q)cats=cats.filter(c=>(c.nome||'').toLowerCase().includes(q));
+  const lancs=finGetLancs();
+  const grid=document.getElementById('fin-cats-grid');
+  if(!grid)return;
+  grid.innerHTML=cats.map(c=>{
+    const count=lancs.filter(l=>l.catId===c.id||l.catCod===c.cod).length;
+    return `<div class="fin-cat-card" onclick="finEditCat('${c.id}')">
+      <div style="font-size:22px;margin-bottom:6px">${c.icon||'📂'}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:3px">${c.nome}</div>
+      <div style="font-size:11px;color:var(--t3);display:flex;align-items:center;gap:4px">
+        <span style="width:7px;height:7px;border-radius:50%;background:${c.cor||'var(--fox)'};display:inline-block"></span>
+        ${c.tipo==='receita'?'Receita':'Despesa'}
+      </div>
+      ${c.cod?`<div style="font-size:10px;color:var(--t3);margin-top:2px">${c.cod}</div>`:''}
+      <div style="font-size:11px;font-weight:600;color:var(--fox);margin-top:6px">${count} lançamento${count!==1?'s':''}</div>
+      <div class="fin-cat-actions">
+        <button class="fin-cat-action" onclick="event.stopPropagation();finEditCat('${c.id}')">✏</button>
+        <button class="fin-cat-action" onclick="event.stopPropagation();finDelCat('${c.id}')" style="color:var(--red,#d93025)">✕</button>
+      </div>
+    </div>`;
+  }).join('')+`<div class="fin-cat-card" onclick="finOpenNewCat()" style="border-style:dashed;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;color:var(--t3);cursor:pointer" onmouseover="this.style.borderColor='var(--fox)';this.style.color='var(--fox)'" onmouseout="this.style.borderColor='var(--bor)';this.style.color='var(--t3)'">
+    <div style="font-size:26px">+</div>
+    <div style="font-size:12px;font-weight:600;margin-top:4px">Nova Categoria</div>
+  </div>`;
+}
+
+function finOpenNewCat(){
+  _finCatEdit=null;
+  ['fin-cat-nome-m','fin-cat-icon-m','fin-cat-cod-m','fin-cat-desc-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  {const _e=document.getElementById('fin-cat-tipo-m');if(_e)_e.value='despesa';}
+  finRenderCatCores();
+  {const _e=document.getElementById('fin-modal-cat-title');if(_e)_e.textContent='Nova Categoria';}
+  openM('fin-modal-cat');
+  setTimeout(()=>document.getElementById('fin-cat-nome-m')?.focus(),100);
+}
+
+function finEditCat(id){
+  const c=finGetCats().find(x=>x.id===id);
+  if(!c)return;
+  _finCatEdit=id;
+  {const _e=document.getElementById('fin-cat-nome-m');if(_e)_e.value=c.nome||'';}
+  {const _e=document.getElementById('fin-cat-tipo-m');if(_e)_e.value=c.tipo||'despesa';}
+  {const _e=document.getElementById('fin-cat-icon-m');if(_e)_e.value=c.icon||'';}
+  {const _e=document.getElementById('fin-cat-cod-m');if(_e)_e.value=c.cod||'';}
+  {const _e=document.getElementById('fin-cat-desc-m');if(_e)_e.value=c.desc||'';}
+  finRenderCatCores(c.cor);
+  {const _e=document.getElementById('fin-modal-cat-title');if(_e)_e.textContent='Editar Categoria';}
+  openM('fin-modal-cat');
+}
+
+function finRenderCatCores(sel){
+  const el=document.getElementById('fin-cat-cores-m');
+  if(!el)return;
+  el.innerHTML=FIN_CAT_CORES.map(c=>
+    `<div onclick="finSelectCor('${c}')" data-cor="${c}" style="width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:2.5px solid ${c===(sel||FIN_CAT_CORES[0])?'var(--t)':'transparent'};transition:border-color .15s"></div>`
+  ).join('');
+}
+function finSelectCor(cor){
+  document.querySelectorAll('#fin-cat-cores-m div').forEach(d=>{d.style.borderColor=d.dataset.cor===cor?'var(--t)':'transparent';});
+}
+function finGetSelectedCor(){
+  const sel=document.querySelector('#fin-cat-cores-m div[style*="var(--t)"]');
+  return sel?sel.dataset.cor:FIN_CAT_CORES[0];
+}
+
+function finSaveCat(){
+  const nome=(document.getElementById('fin-cat-nome-m')?.value||'').trim();
+  if(!nome){alert('Informe o nome da categoria.');return;}
+  const cats=finGetCats();
+  const obj={id:_finCatEdit||finUid(),nome,tipo:document.getElementById('fin-cat-tipo-m')?.value||'despesa',icon:document.getElementById('fin-cat-icon-m')?.value.trim()||'📂',cod:document.getElementById('fin-cat-cod-m')?.value.trim()||'',desc:document.getElementById('fin-cat-desc-m')?.value.trim()||'',cor:finGetSelectedCor()};
+  if(_finCatEdit){const i=cats.findIndex(c=>c.id===_finCatEdit);if(i>=0)cats[i]=obj;}else{cats.push(obj);}
+  finSetCats(cats);
+  closeM('fin-modal-cat');
+  finRenderCats();
+  finPopulateSelects();
+}
+
+function finDelCat(id){
+  const c=finGetCats().find(x=>x.id===id);
+  if(!confirm(`Excluir categoria "${c?.nome}"?`))return;
+  finSetCats(finGetCats().filter(x=>x.id!==id));
+  finRenderCats();
+  finPopulateSelects();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CENTROS DE CUSTO
+// ═══════════════════════════════════════════════════════════════
+let _finCCEdit=null;
+
+function finRenderCCs(){
+  const ccs=finGetCCs();
+  const lancs=finGetLancsByMes();
+  const list=document.getElementById('fin-cc-list');
+  if(!list)return;
+  list.innerHTML=ccs.map(c=>{
+    const total=lancs.filter(l=>l.ccId===c.id).reduce((s,l)=>s+(l.valor||0),0);
+    return `<div class="fin-cc-row">
+      <div style="width:10px;height:10px;border-radius:50%;background:${c.cor||'var(--fox)'};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--t)">${c.nome}</div>
+        ${c.resp?`<div style="font-size:11px;color:var(--t3)">Resp: ${c.resp}</div>`:''}
+      </div>
+      <div style="font-size:14px;font-weight:800;color:var(--red,#d93025)">R$ ${finFmt(total)}</div>
+      <button onclick="finEditCC('${c.id}')" style="background:var(--bg3);border:1px solid var(--bor);border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer">✏ Editar</button>
+      <button onclick="finDelCC('${c.id}')" style="background:var(--red2,#fee2e2);color:var(--red,#d93025);border:none;border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer">✕</button>
+    </div>`;
+  }).join('')+`<div class="fin-cc-row" onclick="finOpenNewCC()" style="cursor:pointer;border-style:dashed;justify-content:center;color:var(--t3)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+    <div style="font-size:18px;margin-right:6px">+</div><div style="font-size:13px;font-weight:600">Novo Centro de Custo</div>
+  </div>`;
+}
+
+function finOpenNewCC(){
+  _finCCEdit=null;
+  ['fin-cc-nome-m','fin-cc-resp-m','fin-cc-desc-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  {const _e=document.getElementById('fin-cc-cor-m');if(_e)_e.value='#E8612A';}
+  {const _e=document.getElementById('fin-modal-cc-title');if(_e)_e.textContent='Novo Centro de Custo';}
+  openM('fin-modal-cc');
+}
+function finEditCC(id){
+  const c=finGetCCs().find(x=>x.id===id);
+  if(!c)return;
+  _finCCEdit=id;
+  {const _e=document.getElementById('fin-cc-nome-m');if(_e)_e.value=c.nome||'';}
+  {const _e=document.getElementById('fin-cc-cor-m');if(_e)_e.value=c.cor||'#E8612A';}
+  {const _e=document.getElementById('fin-cc-resp-m');if(_e)_e.value=c.resp||'';}
+  {const _e=document.getElementById('fin-cc-desc-m');if(_e)_e.value=c.desc||'';}
+  {const _e=document.getElementById('fin-modal-cc-title');if(_e)_e.textContent='Editar Centro de Custo';}
+  openM('fin-modal-cc');
+}
+function finSaveCC(){
+  const nome=(document.getElementById('fin-cc-nome-m')?.value||'').trim();
+  if(!nome)return;
+  const ccs=finGetCCs();
+  const obj={id:_finCCEdit||finUid(),nome,cor:document.getElementById('fin-cc-cor-m')?.value,resp:document.getElementById('fin-cc-resp-m')?.value.trim(),desc:document.getElementById('fin-cc-desc-m')?.value.trim()};
+  if(_finCCEdit){const i=ccs.findIndex(c=>c.id===_finCCEdit);if(i>=0)ccs[i]=obj;}else{ccs.push(obj);}
+  finSetCCs(ccs);
+  closeM('fin-modal-cc');
+  finRenderCCs();
+  finPopulateSelects();
+}
+function finDelCC(id){
+  const c=finGetCCs().find(x=>x.id===id);
+  if(!confirm(`Excluir "${c?.nome}"?`))return;
+  finSetCCs(finGetCCs().filter(x=>x.id!==id));
+  finRenderCCs();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONTAS BANCÁRIAS
+// ═══════════════════════════════════════════════════════════════
+let _finContaEdit=null;
+
+function finRenderContas(){
+  const contas=finGetContas();
+  const lancs=finGetLancsByMes();
+  const grid=document.getElementById('fin-contas-grid');
+  if(!grid)return;
+  grid.innerHTML=contas.map(c=>{
+    const ent=lancs.filter(l=>l.tipo==='receita'&&l.bancoId===c.id).reduce((s,l)=>s+(l.valor||0),0);
+    const sai=lancs.filter(l=>l.tipo==='despesa'&&l.bancoId===c.id).reduce((s,l)=>s+(l.valor||0),0);
+    const saldo=(c.saldoInicial||0)+ent-sai;
+    return `<div class="fin-conta-card" onclick="finEditConta('${c.id}')" style="position:relative;overflow:hidden" onmouseover="this.querySelector('.fin-conta-actions').style.opacity='1'" onmouseout="this.querySelector('.fin-conta-actions').style.opacity='0'">
+      <div style="position:absolute;top:0;left:0;bottom:0;width:4px;background:${c.cor||'var(--fox)'}"></div>
+      <div style="margin-left:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px">${c.tipo||'corrente'}</div>
+            <div style="font-size:14px;font-weight:700;color:var(--t)">${c.nome}</div>
+            ${c.banco?`<div style="font-size:11px;color:var(--t3)">${c.banco}</div>`:''}
+          </div>
+          <div class="fin-conta-actions" style="opacity:0;transition:opacity .15s;display:flex;gap:5px">
+            <button onclick="event.stopPropagation();finEditConta('${c.id}')" style="background:var(--bg3);border:1px solid var(--bor);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✏</button>
+            <button onclick="event.stopPropagation();finDelConta('${c.id}')" style="background:var(--red2,#fee2e2);color:var(--red,#d93025);border:none;border-radius:6px;padding:4px 7px;font-size:11px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:20px;font-weight:800;color:${saldo>=0?'var(--t)':'var(--red,#d93025)'}">${saldo>=0?'':'−'}R$ ${finFmt(Math.abs(saldo))}</div>
+          <div style="display:flex;gap:12px;margin-top:6px;font-size:11px">
+            <span style="color:var(--green,#1e9e6b)">↑ R$ ${finFmt(ent)}</span>
+            <span style="color:var(--red,#d93025)">↓ R$ ${finFmt(sai)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('')+`<div onclick="finOpenNewConta()" style="background:transparent;border:2px dashed var(--bor);border-radius:14px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:130px;cursor:pointer;color:var(--t3);gap:5px;transition:all .15s" onmouseover="this.style.borderColor='var(--fox)';this.style.color='var(--fox)'" onmouseout="this.style.borderColor='var(--bor)';this.style.color='var(--t3)'">
+    <div style="font-size:26px">+</div><div style="font-size:12px;font-weight:600">Nova Conta</div>
+  </div>`;
+}
+
+function finOpenNewConta(){
+  _finContaEdit=null;
+  ['fin-conta-nome-m','fin-conta-banco-m'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  {const _e=document.getElementById('fin-conta-tipo-m');if(_e)_e.value='corrente';}
+  {const _e=document.getElementById('fin-conta-saldo-m');if(_e)_e.value='';}
+  {const _e=document.getElementById('fin-conta-cor-m');if(_e)_e.value='#E8612A';}
+  {const _e=document.getElementById('fin-modal-conta-title');if(_e)_e.textContent='Nova Conta';}
+  openM('fin-modal-conta');
+}
+function finEditConta(id){
+  const c=finGetContas().find(x=>x.id===id);
+  if(!c)return;
+  _finContaEdit=id;
+  {const _e=document.getElementById('fin-conta-nome-m');if(_e)_e.value=c.nome||'';}
+  {const _e=document.getElementById('fin-conta-tipo-m');if(_e)_e.value=c.tipo||'corrente';}
+  {const _e=document.getElementById('fin-conta-saldo-m');if(_e)_e.value=c.saldoInicial||0;}
+  {const _e=document.getElementById('fin-conta-banco-m');if(_e)_e.value=c.banco||'';}
+  {const _e=document.getElementById('fin-conta-cor-m');if(_e)_e.value=c.cor||'#E8612A';}
+  {const _e=document.getElementById('fin-modal-conta-title');if(_e)_e.textContent='Editar Conta';}
+  openM('fin-modal-conta');
+}
+function finSaveConta(){
+  const nome=(document.getElementById('fin-conta-nome-m')?.value||'').trim();
+  if(!nome)return;
+  const contas=finGetContas();
+  const obj={id:_finContaEdit||finUid(),nome,tipo:document.getElementById('fin-conta-tipo-m')?.value,saldoInicial:parseFloat(document.getElementById('fin-conta-saldo-m')?.value)||0,banco:document.getElementById('fin-conta-banco-m')?.value.trim(),cor:document.getElementById('fin-conta-cor-m')?.value};
+  if(_finContaEdit){const i=contas.findIndex(c=>c.id===_finContaEdit);if(i>=0)contas[i]=obj;}else{contas.push(obj);}
+  finSetContas(contas);
+  closeM('fin-modal-conta');
+  finRenderContas();
+  finPopulateSelects();
+}
+function finDelConta(id){
+  const c=finGetContas().find(x=>x.id===id);
+  if(!confirm(`Excluir conta "${c?.nome}"?`))return;
+  finSetContas(finGetContas().filter(x=>x.id!==id));
+  finRenderContas();
+  finPopulateSelects();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BULK ACTIONS
+// ═══════════════════════════════════════════════════════════════
+function finOnBulkChk(){
+  const sel=document.querySelectorAll('.fin-chk:checked');
+  const bar=document.getElementById('fin-bulk-bar');
+  bar?.classList.toggle('show',sel.length>0);
+  const cnt=document.getElementById('fin-bulk-count');
+  if(cnt)cnt.textContent=sel.length+' selecionado'+(sel.length!==1?'s':'');
+}
+function finClearBulk(){
+  document.querySelectorAll('.fin-chk').forEach(c=>c.checked=false);
+  const ca=document.getElementById('fin-chk-all');if(ca)ca.checked=false;
+  document.getElementById('fin-bulk-bar')?.classList.remove('show');
+}
+function finCheckAll(cb){
+  document.querySelectorAll('.fin-chk').forEach(c=>c.checked=cb.checked);
+  finOnBulkChk();
+}
+function finGetBulkIds(){ return Array.from(document.querySelectorAll('.fin-chk:checked')).map(c=>c.value); }
+function finBulkApply(updater){
+  const ids=finGetBulkIds();if(!ids.length)return;
+  const all=JSON.parse(JSON.stringify(finGetLancs()));
+  ids.forEach(id=>{const l=all.find(x=>x.id===id);if(l)updater(l);});
+  finSetLancs(all);finClearBulk();finRenderLanc();
+}
+function finBulkPago(pago){ finBulkApply(l=>{l.pago=pago;l.recebido=pago;l.dataPag=pago?finToday():null;}); }
+function finBulkCat(){
+  const opts=finGetCats().map(c=>`<option value="${c.id}">${c.icon} ${c.nome}</option>`).join('');
+  finShowBulkModal('Alterar Categoria',`<select id="blk-fin-v" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:13px;color:var(--t);background:var(--bg)"><option value="">Manter atual</option>${opts}</select>`,
+    ()=>{const v=document.getElementById('blk-fin-v')?.value;if(v){const c=finGetCats().find(x=>x.id===v);finBulkApply(l=>{l.catId=v;l.catNome=c?.nome;l.catCod=c?.cod;});}});
+}
+function finBulkConta(){
+  const opts=finGetContas().map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  finShowBulkModal('Alterar Conta',`<select id="blk-fin-v" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:13px;color:var(--t);background:var(--bg)"><option value="">Manter atual</option>${opts}</select>`,
+    ()=>{const v=document.getElementById('blk-fin-v')?.value;if(v){const c=finGetContas().find(x=>x.id===v);finBulkApply(l=>{l.bancoId=v;l.bancoNome=c?.nome;});}});
+}
+function finBulkCC(){
+  const opts=finGetCCs().map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  finShowBulkModal('Alterar Centro de Custo',`<select id="blk-fin-v" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:13px;color:var(--t);background:var(--bg)"><option value="">Manter atual</option><option value="__clear__">Remover</option>${opts}</select>`,
+    ()=>{const v=document.getElementById('blk-fin-v')?.value;if(v){if(v==='__clear__')finBulkApply(l=>{l.ccId=null;l.ccNome=null;});else{const c=finGetCCs().find(x=>x.id===v);finBulkApply(l=>{l.ccId=v;l.ccNome=c?.nome;});}}});
+}
+function finBulkDel(){
+  const ids=finGetBulkIds();if(!ids.length)return;
+  if(!confirm(`Excluir ${ids.length} lançamento(s)?`))return;
+  finSetLancs(finGetLancs().filter(l=>!ids.includes(l.id)));
+  finClearBulk();finRenderLanc();finUpdateBadges();
+}
+function finShowBulkModal(title,body,onOk){
+  const old=document.getElementById('fin-bulk-modal-tmp');if(old)old.remove();
+  const d=document.createElement('div');
+  d.id='fin-bulk-modal-tmp';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9999;display:flex;align-items:center;justify-content:center';
+  d.innerHTML=`<div style="background:var(--bg2);border-radius:14px;padding:24px;width:380px;box-shadow:0 8px 32px rgba(0,0,0,.15)">
+    <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">${title}</div>
+    ${body}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button id="blk-fin-ok" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer">Aplicar</button>
+      <button id="blk-fin-cancel" style="background:var(--bg3);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:9px 14px;font-size:13px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+  document.getElementById('blk-fin-ok').onclick=()=>{d.remove();onOk();};
+  document.getElementById('blk-fin-cancel').onclick=()=>d.remove();
+  d.onclick=e=>{if(e.target===d)d.remove();};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BADGES & UTILS
+// ═══════════════════════════════════════════════════════════════
+function finUpdateBadges(){
+  const hoje=finToday();
+  const lancs=finGetLancsByMes();
+  const p=lancs.filter(l=>l.tipo==='despesa'&&!l.pago).length;
+  const r=lancs.filter(l=>l.tipo==='receita'&&!l.pago&&!l.recebido).length;
+  // Update original badges if they exist
+  const bp=document.getElementById('badge-pagar');
+  const br=document.getElementById('badge-receber');
+  if(bp){bp.textContent=p;bp.style.display=p?'':'none';}
+  if(br){br.textContent=r;br.style.display=r?'':'none';}
+}
+
+function finRenderCurrentPage(){
+  const page=document.querySelector('.pg.on, .pg[style*="flex"]')?.id?.replace('pg-','');
+  const map={financeiro:finRenderFluxo,lancamentos:finRenderLanc,bancos:finRenderContas,centrocusto:finRenderCCs,categorias:finRenderCats,dre:finRenderDRE};
+  if(page&&map[page])map[page]();
+}
+
+// ── PAGE ACTIONS for new pages ──
+// Patch PAGE_ACTIONS to include fin pages
+if(typeof PAGE_ACTIONS!=='undefined'){
+  PAGE_ACTIONS.financeiro=()=>`<button class="btn-p" onclick="finOpenNewLanc('receita')">+ Receita</button><button class="btn-p" style="background:var(--red,#d93025)" onclick="finOpenNewLanc('despesa')">− Despesa</button>`;
+  PAGE_ACTIONS.lancamentos=()=>`<button class="btn-p" onclick="finOpenNewLanc('receita')">+ Receita</button><button class="btn-p" style="background:var(--red,#d93025)" onclick="finOpenNewLanc('despesa')">− Despesa</button><button class="btn-o" onclick="finOpenNewLanc('transferencia')">⇄ Transf.</button>`;
+  PAGE_ACTIONS.bancos=()=>`<button class="btn-p" onclick="finOpenNewConta()">+ Nova Conta</button>`;
+  PAGE_ACTIONS.centrocusto=()=>`<button class="btn-p" onclick="finOpenNewCC()">+ Novo Centro de Custo</button>`;
+  PAGE_ACTIONS.categorias=()=>`<button class="btn-p" onclick="finOpenNewCat()">+ Nova Categoria</button>`;
+  PAGE_ACTIONS.dre=()=>'';
+}
+
+// Override renders in renders map
+if(typeof renders!=='undefined'){
+  renders.financeiro=finRenderFluxo;
+  renders.lancamentos=finRenderLanc;
+  renders.bancos=finRenderContas;
+  renders.centrocusto=finRenderCCs;
+  renders.categorias=finRenderCats;
+  renders.dre=finRenderDRE;
+}
+
+// ── INIT ──
+function finInit(){
+  try{finPopulateSelects();}catch(e){}
+  try{finUpdateBadges();}catch(e){}
+}
+// Run after main app boots — defer to avoid race condition
+setTimeout(finInit, 500);
 
 </script>
