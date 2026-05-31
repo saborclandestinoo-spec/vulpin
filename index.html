@@ -13679,7 +13679,7 @@ function lancBulkModal(title, bodyHtml, onOk){
     +'<button id="blk-cancel" style="background:var(--bg2);color:var(--t);border:1px solid var(--bor);border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer">Cancelar</button>'
     +'</div></div>';
   document.body.appendChild(d);
-  document.getElementById('blk-ok').onclick=function(){d.remove();onOk();};
+  document.getElementById('blk-ok').onclick=function(){onOk();d.remove();};
   document.getElementById('blk-cancel').onclick=function(){d.remove();};
   d.onclick=function(e){if(e.target===d)d.remove();};
 }
