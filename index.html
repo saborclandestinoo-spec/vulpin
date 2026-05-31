@@ -13514,25 +13514,88 @@ function lancBulkApply(updater){
 }
 
 function lancBulkCat(){
-  const plano=typeof catGetData==='function'?catGetData():PLANO_CONTAS;
-  const cats=plano.filter(c=>c.tipo==='despesa'||c.tipo==='receita');
-  // Build select options
-  let opts='<option value="">-- Manter atual --</option>';
-  let lastG='';
-  cats.forEach(function(c){
-    const g=c.cod.split('.').slice(0,2).join('.');
-    if(g!==lastG){opts+='<optgroup label="'+g+'">';lastG=g;}
-    opts+='<option value="'+c.cod+'|'+c.nome+'">'+c.cod+' — '+c.nome+'</option>';
+  const bodyHtml=`
+    <input type="hidden" id="blk-cat-val">
+    <div style="position:relative">
+      <div class="flt-custom-wrap" id="blk-cat-wrap" onclick="(function(){
+        var drop=document.getElementById('blk-cat-drop');
+        var isOpen=drop.classList.contains('open');
+        document.querySelectorAll('.custom-drop').forEach(function(d){d.classList.remove('open');});
+        document.querySelectorAll('.flt-custom-wrap').forEach(function(w){w.classList.remove('active');});
+        if(!isOpen){
+          drop.classList.add('open');
+          document.getElementById('blk-cat-wrap').classList.add('active');
+          var si=drop.querySelector('.cd-search-in');
+          if(si){si.value='';filterCustomDrop('blk-cat-drop','');setTimeout(function(){si.focus();},50);}
+        }
+      })()" style="min-height:46px;border-radius:10px">
+        <div class="flt-custom-in" id="blk-cat-display" style="color:var(--t3);min-height:46px;padding:12px 36px 12px 14px;font-size:13px">— Manter atual —</div>
+        <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="custom-drop" id="blk-cat-drop" style="position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10001;max-height:260px"></div>
+    </div>`;
+  lancBulkModal('Alterar Categoria', bodyHtml, function(){
+    var cod=document.getElementById('blk-cat-val').value;
+    if(!cod)return;
+    var display=document.getElementById('blk-cat-display');
+    var nome=display?display.textContent.trim():'';
+    // Extract just name part after " — "
+    var parts=nome.split(' — ');
+    var nomeClean=parts.length>1?parts.slice(1).join(' — '):nome;
+    lancBulkApply(function(l){l.catCod=cod;l.catNome=nomeClean;});
   });
-  lancBulkModal('Alterar Categoria',
-    '<select id="blk-cat" style="width:100%;border:1px solid var(--bor);border-radius:8px;padding:9px 10px;font-size:13px;color:var(--t);background:var(--bg)">'+opts+'</select>',
-    function(){
-      const v=document.getElementById('blk-cat').value;
-      if(!v)return;
-      const[cod,nome]=v.split('|');
-      lancBulkApply(function(l){l.catCod=cod;l.catNome=nome;});
+  setTimeout(function(){
+    var ids=lancGetSelected();
+    var lancs=getLanc();
+    var tipos=new Set(ids.map(function(id){
+      var l=lancs.find(function(x){return String(x.id)===String(id);});
+      return l?l.tipo:null;
+    }).filter(Boolean));
+    var tipo=tipos.has('despesa')&&!tipos.has('receita')?'despesa':
+              tipos.has('receita')&&!tipos.has('despesa')?'receita':null;
+    var drop=document.getElementById('blk-cat-drop');
+    if(!drop)return;
+    // Build items helper
+    function buildItems(treeKey){
+      var tree=PC_TREE[treeKey]||[];
+      var html='';
+      tree.forEach(function(group){
+        var gc=treeKey==='receita'?'#27AE60':'#E74C3C';
+        html+='<div class="cd-group"><div class="cd-group-dot" style="background:'+gc+'"></div>'+group.label+'</div>';
+        (group.children||[]).forEach(function(sub){
+          if(typeof sub==='string'){
+            var pc=PLANO_CONTAS.find(function(c){return c.cod===sub;});
+            if(pc)html+='<div class="cd-item cd-item-l1" data-cod="'+pc.cod+'">'+pc.cod+' — '+pc.nome+'</div>';
+          } else {
+            html+='<div class="cd-sub">\u21b3 '+sub.label+'</div>';
+            (sub.children||[]).forEach(function(cod){
+              var pc=PLANO_CONTAS.find(function(c){return c.cod===cod;});
+              if(pc)html+='<div class="cd-item" data-cod="'+pc.cod+'">'+pc.cod+' — '+pc.nome+'</div>';
+            });
+          }
+        });
+      });
+      return html;
     }
-  );
+    var searchHtml='<div class="cd-search"><input class="cd-search-in" placeholder="Buscar categoria..." oninput="filterCustomDrop(\'blk-cat-drop\',this.value)"></div>';
+    if(tipo){
+      drop.innerHTML=searchHtml+buildItems(tipo);
+    } else {
+      drop.innerHTML=searchHtml+buildItems('despesa')+buildItems('receita');
+    }
+    drop.querySelectorAll('.cd-item').forEach(function(el){
+      el.onclick=function(e){
+        e.stopPropagation();
+        drop.querySelectorAll('.cd-item').forEach(function(x){x.classList.remove('selected');});
+        el.classList.add('selected');
+        document.getElementById('blk-cat-val').value=el.dataset.cod;
+        var disp=document.getElementById('blk-cat-display');
+        if(disp){disp.textContent=el.textContent.trim();disp.style.color='var(--t)';}
+        drop.classList.remove('open');
+        document.getElementById('blk-cat-wrap').classList.remove('active');
+      };
+    });
+  },50);
 }
 
 function lancBulkConta(){
