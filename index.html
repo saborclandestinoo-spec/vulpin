@@ -7121,7 +7121,7 @@ function renderLanc(){
       const apr=(p.qtd||0)-(p.perdas||0);
       const custo=pr?(pr.custo*(p.qtd||0)):0;
       return`<tr>
-        <td><input type="checkbox" class='lanc-chk' data-id='${l.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
+        <td><input type="checkbox" class='lanc-chk' data-id='${p.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
         <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
         <td style="font-weight:500;color:var(--t);cursor:pointer" onclick="openProd2('${p.id}')">${pr?pr.nome:'—'}</td>
         <td style="font-weight:700;color:var(--fox)">${p.qtd} un</td>
@@ -7214,7 +7214,7 @@ function renderLanc(){
   });
 
   const prodHtmlRows=prodRows.map(p=>`<tr style="cursor:pointer" onclick="openProd2('${p.id}')">
-    <td onclick="event.stopPropagation()"><input type="checkbox" class='lanc-chk' data-id='${l.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
+    <td onclick="event.stopPropagation()"><input type="checkbox" class='lanc-chk' data-id='${p.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
     <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
     <td style="font-weight:500;color:var(--t)">${p.desc}</td>
     <td style="color:var(--t3);font-size:11px">—</td>
