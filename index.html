@@ -7178,21 +7178,8 @@ function renderLanc(){
     }
   }
 
-  // Add produções to "Todos"
+  // prodRows removed (produção tab removed)
   let prodRows=[];
-  if(lancTab_current==='todos'){
-    const prods=getProdutos();
-    let producoes=getProducao();
-    if(r.start)producoes=producoes.filter(p=>{const d=p.data||'';return d>=r.start&&d<=r.end;});
-    if(search)producoes=producoes.filter(p=>{
-      const pr=prods.find(x=>x.id===p.produtoId);
-      return pr&&pr.nome.toLowerCase().includes(search);
-    });
-    prodRows=producoes.map(p=>{
-      const pr=prods.find(x=>x.id===p.produtoId);
-      return{_isProd:true,id:p.id,prodId:p.produtoId,data:p.data,desc:(pr?pr.nome:'—')+' (produção)',qtd:p.qtd,perdas:p.perdas||0,custo:pr?(pr.custo*(p.qtd||0)):0};
-    });
-  }
 
   const bancos=getBancos();
 
@@ -7223,24 +7210,11 @@ function renderLanc(){
     </tr>`;
   });
 
-  const prodHtmlRows=prodRows.map(p=>`<tr style="cursor:pointer" onclick="openProd2('${p.id}')">
-    <td onclick="event.stopPropagation()"><input type="checkbox" class='lanc-chk' data-id='${p.id}' onchange='lancBulkUpdate()' value="${p.id}"></td>
-    <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
-    <td style="font-weight:500;color:var(--t)">${p.desc}</td>
-    <td style="color:var(--t3);font-size:11px">—</td>
-    <td style="color:var(--t3)">—</td>
-    <td style="color:var(--t3);font-size:11px">${fmtDate(p.data)}</td>
-    <td><span class="pill" style="background:var(--fox-l);color:var(--fox)">Produção</span></td>
-    <td style="font-weight:700;color:var(--fox)">${p.qtd} un</td>
-    <td onclick="event.stopPropagation()"><button class="btn-o" style="padding:3px 8px;font-size:10px" onclick="openEtiqueta({produtoId:'${p.prodId}',qtd:${p.qtd},perdas:${p.perdas},data:'${p.data}'})">🏷️</button></td>
-  </tr>`);
-
-  // Merge and sort by date
-  const allRows=[...lancRows.map((r,i)=>({html:r,date:data[i]?.data||data[i]?.venc||''})),
-                 ...prodHtmlRows.map((r,i)=>({html:r,date:prodRows[i]?.data||''}))];
+  // Sort by date desc
+  const allRows=lancRows.map((r,i)=>({html:r,date:data[i]?.data||data[i]?.venc||''}));
   allRows.sort((a,b)=>b.date.localeCompare(a.date));
 
-  tbody.innerHTML=allRows.length?allRows.map(r=>r.html).join(''):`<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento encontrado</td></tr>`;
+  tbody.innerHTML=allRows.length?allRows.map(r=>r.html).join(''):`<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento encontrado</td></tr>`;
 }
 
 function lancCheckAll(cb){
