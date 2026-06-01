@@ -2947,6 +2947,7 @@ async function doLogout(){
   document.getElementById('login-screen').style.display='flex';
 }
 function bootApp(){
+  try{
   initTheme();
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
@@ -2956,7 +2957,7 @@ function bootApp(){
   document.getElementById('sb-sname').textContent=nome;
   document.getElementById('sb-uname').textContent=u.email;
   document.getElementById('sb-av').textContent=u.email[0].toUpperCase();
-  updateAlertBadge();
+  try{updateAlertBadge();}catch(e){console.warn('badge',e);}
   // Garante nav correto no boot
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.getElementById('pg-dashboard').classList.add('on');
@@ -2965,7 +2966,8 @@ function bootApp(){
   if(navDash)navDash.classList.add('on');
   document.getElementById('tb-title').textContent='Dashboard';
   currentPage='dashboard';
-  renderDashboard();
+  try{renderDashboard();}catch(e){console.error('renderDashboard error',e);}
+  }catch(e){console.error('bootApp error',e);}
 }
 // Supabase: checa sessão ativa
 _sb.auth.getSession().then(async ({data:{session}}) => {
