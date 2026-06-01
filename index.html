@@ -1053,10 +1053,9 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <div class="pg" id="pg-lancamentos">
       <!-- Tabs principais -->
       <div style="background:var(--bg);border-bottom:2px solid var(--bor);padding:0 20px;display:flex;gap:0;flex-shrink:0">
-        <div class="lanc-tab on" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
+        <div class="lanc-tab on" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
+        <div class="lanc-tab" id="lt-pagar" onclick="lancMainTab('pagar',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Pagar</div>
         <div class="lanc-tab" id="lt-receber" onclick="lancMainTab('receber',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Contas a Receber</div>
-        <div class="lanc-tab" id="lt-todos-main" onclick="lancMainTab('todos',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">Todos os Lançamentos</div>
-        <div class="lanc-tab" id="lt-ia-main" onclick="lancMainTab('ia',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">📄 Nota Fiscal XML</div>
       </div>
       <!-- Painel XML NF-e -->
       <div id="lanc-ia-panel" style="display:none;flex:1;min-height:0;overflow-y:scroll;flex-direction:column;background:var(--bg2);padding:20px 24px;gap:14px">
@@ -3114,7 +3113,7 @@ const PAGE_ACTIONS={
   producao:()=>`<button class="btn-p" onclick="openProd2()">+ Novo Registro</button>`,
   estoque:()=>``,
   financeiro:()=>``,
-  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button>`,
+  lancamentos:()=>`<button class="btn-o" style="border-color:var(--red);color:var(--red)" onclick="openDesp()">— Despesa</button><button class="btn-o" style="border-color:var(--green);color:var(--green)" onclick="openRec()">+ Receita</button><button class="btn-o" style="border-color:var(--blue);color:var(--blue)" onclick="openTransf()">⇄ Transferência</button><button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="lancMainTab('ia',document.getElementById('lt-ia-main'))">📄 XML</button>`,
   bancos:()=>`<button onclick="reprocessarPagamentosMultiplos()" style="background:var(--amber);color:#fff;border:none;border-radius:8px;padding:0 12px;font-size:11px;font-weight:600;cursor:pointer;height:32px;font-family:Poppins,sans-serif;margin-right:6px">Reprocessar Pagtos</button><button class="btn-p" onclick="openBanco()">+ Novo Banco</button>`,
   materia:()=>`<button class="btn-p" onclick="openMP()">+ Nova MP</button>`,
   produtos:()=>`<button class="btn-o" style="border-color:var(--fox);color:var(--fox)" onclick="importarCatalogoCW()">⬇ Importar CW</button><button class="btn-p" onclick="openProd()">+ Novo Produto</button>`,
@@ -6891,7 +6890,7 @@ function lancTab(tab,el){
 
 function lancFilterPill(p){lancPillFilter=lancPillFilter===p?'':p;renderLanc();}
 
-let _lancMainTab='pagar'; // pagar | receber | todos
+let _lancMainTab='todos'; // pagar | receber | todos
 
 function lancMainTab(tab, el){
   _lancMainTab=tab;
@@ -7051,7 +7050,7 @@ setTimeout(()=>{
   grpInit('lanc');grpPreset('lanc','mes');grpApply('lanc',null);
   grpInit('fc');grpPreset('fc','mes');grpApply('fc',null);
   grpInit('dre');grpPreset('dre','mes');grpApply('dre',null);
-  lancMainTab('pagar',null);
+  lancMainTab('todos',null);
   if(typeof currentPage!=='undefined'&&currentPage==='financeiro')renderFluxo();
 },300);
 // Fix startup: corrige venc de lancamentos de cartao para dias corridos
