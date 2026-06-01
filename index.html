@@ -1059,32 +1059,97 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div class="lanc-tab" id="lt-ia-main" onclick="lancMainTab('ia',this)" style="padding:13px 18px;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap">📄 Nota Fiscal XML</div>
       </div>
       <!-- Painel XML NF-e -->
-      <div id="lanc-ia-panel" style="display:none;flex:1;overflow-y:auto;flex-direction:column;background:var(--bg2);padding:20px 24px">
-        <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Importar Nota Fiscal (XML)</div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:16px">Selecione o arquivo XML da NF-e para criar o lançamento automaticamente.</div>
+      <div id="lanc-ia-panel" style="display:none;flex:1;overflow-y:auto;flex-direction:column;background:var(--bg2);padding:20px 24px;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--t)">Importar Notas Fiscais (XML)</div>
+            <div style="font-size:11px;color:var(--t3)">Selecione um ou vários arquivos XML para criar lançamentos automaticamente.</div>
+          </div>
+          <button onclick="document.getElementById('xml-file-input').click()" style="margin-left:auto;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">+ Adicionar XMLs</button>
+        </div>
         <!-- Drop zone -->
         <div id="xml-dropzone" onclick="document.getElementById('xml-file-input').click()"
-          ondragover="event.preventDefault();this.style.borderColor='var(--fox)'"
-          ondragleave="this.style.borderColor='var(--bor)'"
-          ondrop="event.preventDefault();this.style.borderColor='var(--bor)';xmlHandleFile(event.dataTransfer.files[0])"
-          style="border:2px dashed var(--bor);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--bg);transition:border-color .2s;margin-bottom:16px">
-          <div style="font-size:28px;margin-bottom:8px">📄</div>
-          <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste o arquivo XML aqui</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:4px">Suporte: NF-e padrão SEFAZ (.xml)</div>
+          ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,43,.04)'"
+          ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg)'"
+          ondrop="event.preventDefault();this.style.borderColor='var(--bor)';this.style.background='var(--bg)';xmlHandleFiles(event.dataTransfer.files)"
+          style="border:2px dashed var(--bor);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s">
+          <div style="font-size:24px;margin-bottom:6px">📄</div>
+          <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste arquivos XML aqui</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:3px">Múltiplos arquivos suportados • NF-e padrão SEFAZ</div>
         </div>
-        <input type="file" id="xml-file-input" accept=".xml" style="display:none" onchange="xmlHandleFile(this.files[0])">
-        <!-- Preview -->
-        <div id="xml-preview" style="display:none">
-          <div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:16px;margin-bottom:12px">
-            <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Dados Extraídos</div>
-            <div id="xml-preview-body" style="display:flex;flex-direction:column;gap:8px"></div>
+        <input type="file" id="xml-file-input" accept=".xml" multiple style="display:none" onchange="xmlHandleFiles(this.files);this.value=''">
+        <!-- Lista de notas -->
+        <div id="xml-lista" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+      <!-- Modal edição XML -->
+      <div id="xml-edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center">
+        <div style="background:var(--bg);border-radius:16px;width:480px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.22);padding:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+            <span style="font-size:15px;font-weight:800;color:var(--t)">Revisar Lançamento</span>
+            <button onclick="xmlCloseModal()" style="border:none;background:none;font-size:20px;color:var(--t3);cursor:pointer;line-height:1">×</button>
           </div>
-          <div style="display:flex;gap:8px">
-            <button onclick="xmlConfirmar()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">✓ Criar Lançamento</button>
-            <button onclick="xmlCancelar()" style="background:var(--bg2);color:var(--t2);border:1px solid var(--bor);border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer">Cancelar</button>
+          <!-- campos -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="flt-wrap"><input class="flt-in" id="xml-m-desc" type="text" placeholder=" "><label class="flt-lbl">Descrição *</label></div>
+            <div class="flt-wrap"><input class="flt-in" id="xml-m-forn" type="text" placeholder=" "><label class="flt-lbl">Fornecedor</label></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="flt-wrap"><input class="flt-in" id="xml-m-valor" type="number" step="0.01" placeholder=" "><label class="flt-lbl">Valor *</label></div>
+              <div class="flt-wrap"><input class="flt-in" id="xml-m-venc" type="date" placeholder=" "><label class="flt-lbl">Vencimento</label></div>
+            </div>
+            <!-- Conta -->
+            <div style="position:relative">
+              <div class="flt-custom-wrap" id="xml-m-banco-wrap" onclick="toggleCustomDrop('xml-m-banco-drop','xml-m-banco-lbl')">
+                <label class="flt-lbl flt-lbl-sel" id="xml-m-banco-lbl">Conta</label>
+                <div class="flt-custom-in" id="xml-m-banco-display" style="color:var(--t3)">—</div>
+                <input type="hidden" id="xml-m-banco">
+                <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="custom-drop" id="xml-m-banco-drop"></div>
+            </div>
+            <!-- Categoria -->
+            <div style="position:relative">
+              <div class="flt-custom-wrap" id="xml-m-cat-wrap" onclick="toggleCustomDrop('xml-m-cat-drop','xml-m-cat-lbl')">
+                <label class="flt-lbl flt-lbl-sel" id="xml-m-cat-lbl">Categoria</label>
+                <div class="flt-custom-in" id="xml-m-cat-display" style="color:var(--t3)">Selecione uma categoria</div>
+                <input type="hidden" id="xml-m-cat">
+                <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="custom-drop" id="xml-m-cat-drop"></div>
+            </div>
+            <!-- Centro de custo -->
+            <div style="position:relative">
+              <div class="flt-custom-wrap" id="xml-m-cc-wrap" onclick="toggleCustomDrop('xml-m-cc-drop','xml-m-cc-lbl')">
+                <label class="flt-lbl flt-lbl-sel" id="xml-m-cc-lbl">Centro de Custo</label>
+                <div class="flt-custom-in" id="xml-m-cc-display" style="color:var(--t3)">—</div>
+                <input type="hidden" id="xml-m-cc">
+                <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="custom-drop" id="xml-m-cc-drop"></div>
+            </div>
+            <!-- Forma pgto -->
+            <div style="position:relative">
+              <div class="flt-custom-wrap" id="xml-m-forma-wrap" onclick="toggleCustomDrop('xml-m-forma-drop','xml-m-forma-lbl')">
+                <label class="flt-lbl flt-lbl-sel" id="xml-m-forma-lbl">Forma de Pagamento</label>
+                <div class="flt-custom-in" id="xml-m-forma-display" style="color:var(--t3)">—</div>
+                <input type="hidden" id="xml-m-forma">
+                <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="custom-drop" id="xml-m-forma-drop"></div>
+            </div>
+            <!-- Pago toggle -->
+            <div style="display:flex;align-items:center;gap:10px;padding:4px 0">
+              <div id="xml-m-pago-tog" onclick="xmlTogglePago()" style="width:44px;height:24px;border-radius:12px;background:var(--bor2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0">
+                <div id="xml-m-pago-ball" style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:left .2s"></div>
+              </div>
+              <span style="font-size:13px;font-weight:600;color:var(--t)" id="xml-m-pago-lbl">Não pago</span>
+            </div>
+            <div class="flt-wrap"><textarea class="flt-in" id="xml-m-obs" rows="2" placeholder=" " style="padding-top:18px;resize:none"></textarea><label class="flt-lbl">Observação</label></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:20px">
+            <button onclick="xmlSalvarModal()" style="flex:1;background:var(--fox);color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer">✓ Criar Lançamento</button>
+            <button onclick="xmlCloseModal()" style="background:var(--bg2);color:var(--t2);border:1px solid var(--bor);border-radius:8px;padding:11px 18px;font-size:13px;cursor:pointer">Cancelar</button>
           </div>
         </div>
-        <div id="xml-erro" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>
       </div>
       <!-- Filtro inline -->
       <div style="background:var(--bg);border-bottom:1px solid var(--bor);padding:12px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0" id="lanc-summary-bar">
@@ -12898,23 +12963,26 @@ function bancShowAPModal(){bancShowModal('A Pagar',window._bancAPList||[],'var(-
 // ═══════════════════════════════════════════
 // LANÇAMENTO RÁPIDO COM IA
 // ═══════════════════════════════════════════
-var _xmlParsed=null;
+var _xmlNotas=[]; // lista de notas parseadas
+var _xmlEditIdx=null; // índice da nota sendo editada
+var _xmlPagoAtivo=false;
 
-function xmlHandleFile(file){
-  if(!file)return;
+function xmlHandleFiles(files){
+  Array.from(files).forEach(function(f){xmlReadFile(f);});
+}
+
+function xmlReadFile(file){
   const reader=new FileReader();
   reader.onload=function(e){
     try{
       const parser=new DOMParser();
       const doc=parser.parseFromString(e.target.result,'text/xml');
-      const err=doc.querySelector('parsererror');
-      if(err){xmlSetErro('XML inválido ou corrompido.');return;}
-      xmlParseNFe(doc);
-    }catch(ex){xmlSetErro('Erro ao ler arquivo: '+ex.message);}
+      if(doc.querySelector('parsererror')){console.warn('XML inválido:',file.name);return;}
+      const p=xmlParseNFeDoc(doc,file.name);
+      if(p){_xmlNotas.push(p);xmlRenderLista();}
+    }catch(ex){console.error('Erro XML',ex);}
   };
   reader.readAsText(file,'UTF-8');
-  // reset input so same file can be re-selected
-  document.getElementById('xml-file-input').value='';
 }
 
 function xmlGetTag(doc,tag){
@@ -12922,104 +12990,171 @@ function xmlGetTag(doc,tag){
   return el?el.textContent.trim():'';
 }
 
-function xmlParseNFe(doc){
-  const erroEl=document.getElementById('xml-erro');
-  const preview=document.getElementById('xml-preview');
-  if(erroEl)erroEl.style.display='none';
-  if(preview)preview.style.display='none';
-
-  // Emitente
-  const emitNome = xmlGetTag(doc,'xNome') || xmlGetTag(doc,'xFant') || 'Fornecedor desconhecido';
-  // Data emissão
-  const dhEmi   = xmlGetTag(doc,'dhEmi') || xmlGetTag(doc,'dEmi') || '';
-  const data    = dhEmi ? dhEmi.slice(0,10) : new Date().toISOString().slice(0,10);
-  // Valor total
-  const vNF     = xmlGetTag(doc,'vNF') || xmlGetTag(doc,'vTotTrib') || '0';
-  const valor   = parseFloat(vNF.replace(',','.')) || 0;
-  // Número NF
-  const nNF     = xmlGetTag(doc,'nNF') || '';
-  // CNPJ emitente
-  const cnpj    = xmlGetTag(doc,'CNPJ') || '';
-  // Descrição dos produtos (primeiros 3)
-  const prods   = Array.from(doc.querySelectorAll('prod')||doc.getElementsByTagName('prod'));
-  const descProd= prods.slice(0,3).map(function(p){
-    const xprod=p.querySelector('xProd')||p.getElementsByTagName('xProd')[0];
-    return xprod?xprod.textContent.trim():'';
+function xmlParseNFeDoc(doc, fileName){
+  const emitNome = xmlGetTag(doc,'xNome')||xmlGetTag(doc,'xFant')||fileName||'Fornecedor';
+  const dhEmi    = xmlGetTag(doc,'dhEmi')||xmlGetTag(doc,'dEmi')||'';
+  const data     = dhEmi?dhEmi.slice(0,10):new Date().toISOString().slice(0,10);
+  const vNF      = xmlGetTag(doc,'vNF')||'0';
+  const valor    = parseFloat(vNF.replace(',','.'))||0;
+  const nNF      = xmlGetTag(doc,'nNF')||'';
+  const cnpj     = xmlGetTag(doc,'CNPJ')||'';
+  const prods    = Array.from(doc.querySelectorAll('prod')||doc.getElementsByTagName('prod'));
+  const descProd = prods.slice(0,3).map(function(p){
+    const x=p.querySelector('xProd')||p.getElementsByTagName('xProd')[0];
+    return x?x.textContent.trim():'';
   }).filter(Boolean).join(', ');
-
-  if(!valor){xmlSetErro('Não foi possível extrair o valor total da NF-e.');return;}
-
-  _xmlParsed={
-    desc: descProd || emitNome,
-    fornecedor: emitNome,
-    data: data,
-    valor: valor,
-    nNF: nNF,
-    cnpj: cnpj,
+  return {
+    fileName:fileName,
+    desc:descProd||emitNome,
+    forn:emitNome,
+    data:data,
+    venc:data,
+    valor:valor,
+    nNF:nNF,
+    cnpj:cnpj,
+    catCod:'',catNome:'',
+    bancoId:'',
+    ccId:'',
+    forma:'',
+    pago:false,
+    obs:'NF-e nº '+nNF+(cnpj?' | CNPJ '+cnpj:''),
+    salvo:false,
   };
-
-  // Build preview rows
-  const rows=[
-    {l:'Fornecedor', v:emitNome},
-    {l:'CNPJ', v:cnpj||'—'},
-    {l:'Nº NF', v:nNF||'—'},
-    {l:'Data', v:data},
-    {l:'Valor Total', v:'R$ '+valor.toLocaleString('pt-BR',{minimumFractionDigits:2})},
-    {l:'Produtos', v:descProd||'—'},
-  ];
-  const body=document.getElementById('xml-preview-body');
-  if(body){
-    body.innerHTML=rows.map(function(r){
-      return '<div style="display:flex;gap:8px;font-size:12px">'
-        +'<span style="min-width:90px;color:var(--t3);font-weight:600">'+r.l+'</span>'
-        +'<span style="color:var(--t);flex:1">'+r.v+'</span>'
-        +'</div>';
-    }).join('');
-  }
-  if(preview)preview.style.display='block';
 }
 
-function xmlSetErro(msg){
-  const el=document.getElementById('xml-erro');
-  if(el){el.textContent=msg;el.style.display='block';}
+function xmlRenderLista(){
+  const lista=document.getElementById('xml-lista');
+  if(!lista)return;
+  if(!_xmlNotas.length){lista.innerHTML='';return;}
+  lista.innerHTML=_xmlNotas.map(function(n,i){
+    const cor=n.salvo?'var(--green)':'var(--fox)';
+    const badge=n.salvo
+      ?'<span style="font-size:10px;font-weight:700;color:var(--green);background:rgba(16,185,129,.1);border-radius:20px;padding:2px 8px">✓ Salvo</span>'
+      :'<span style="font-size:10px;font-weight:700;color:var(--fox);background:rgba(255,107,43,.1);border-radius:20px;padding:2px 8px">Pendente</span>';
+    return '<div style="background:var(--bg);border:1px solid var(--bor);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px">'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+          +'<span style="font-size:12px;font-weight:700;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+n.forn+'</span>'
+          +badge
+        +'</div>'
+        +'<div style="display:flex;gap:14px;font-size:11px;color:var(--t3)">'
+          +'<span>📅 '+n.data+'</span>'
+          +'<span style="color:var(--fox);font-weight:700">R$ '+(n.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>'
+          +(n.nNF?'<span>NF '+n.nNF+'</span>':'')
+          +(n.catNome?'<span style="color:var(--t2)">📂 '+n.catNome+'</span>':'')
+        +'</div>'
+      +'</div>'
+      +(n.salvo?'':'<button onclick="xmlOpenModal('+i+')" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Revisar</button>')
+      +'<button onclick="xmlRemover('+i+')" style="background:none;border:1px solid #FECACA;border-radius:8px;padding:7px 10px;font-size:13px;color:#EF4444;cursor:pointer;flex-shrink:0">×</button>'
+      +'</div>';
+  }).join('');
 }
 
-function xmlConfirmar(){
-  if(!_xmlParsed)return;
-  const p=_xmlParsed;
-  const id='lanc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+function xmlRemover(idx){
+  _xmlNotas.splice(idx,1);
+  xmlRenderLista();
+}
+
+function xmlOpenModal(idx){
+  _xmlEditIdx=idx;
+  const n=_xmlNotas[idx];
+  _xmlPagoAtivo=n.pago||false;
+
+  // Populate drops
+  populateBancoDrop('xml-m-banco-drop');
+  populateCatSelect('xml-m-cat','despesa');
+  populateCCDrop('xml-m-cc-drop');
+  populateFormaDrop('xml-m-forma-drop',(typeof getFormasPedido==='function'?getFormasPedido().filter(function(f){return f.status==='ativa';}).map(function(f){return f.nome;}):[]) );
+
+  // Fill fields
+  document.getElementById('xml-m-desc').value=n.desc||'';
+  document.getElementById('xml-m-forn').value=n.forn||'';
+  document.getElementById('xml-m-valor').value=n.valor||'';
+  document.getElementById('xml-m-venc').value=n.venc||n.data||'';
+  document.getElementById('xml-m-obs').value=n.obs||'';
+
+  // Drops
+  if(n.bancoId){const b=getBancos().find(function(x){return x.id===n.bancoId;});if(b)selectCustomDrop('xml-m-banco-drop',n.bancoId,b.nome,null);else resetCustomDrop('xml-m-banco-display','xml-m-banco','—');}
+  else resetCustomDrop('xml-m-banco-display','xml-m-banco','—');
+  if(n.catCod){const pc=PLANO_CONTAS.find(function(x){return x.cod===n.catCod;});selectCustomDrop('xml-m-cat-drop',n.catCod,n.catCod+(pc?' — '+pc.nome:''),null);}
+  else resetCustomDrop('xml-m-cat-display','xml-m-cat','Selecione uma categoria');
+  if(n.ccId){const cc=getCC().find(function(x){return x.id===n.ccId;});if(cc)selectCustomDrop('xml-m-cc-drop',n.ccId,cc.nome,null);else resetCustomDrop('xml-m-cc-display','xml-m-cc','—');}
+  else resetCustomDrop('xml-m-cc-display','xml-m-cc','—');
+  if(n.forma)selectCustomDrop('xml-m-forma-drop',n.forma,n.forma,null);
+  else resetCustomDrop('xml-m-forma-display','xml-m-forma','—');
+
+  xmlUpdatePagoUI();
+  const modal=document.getElementById('xml-edit-modal');
+  if(modal)modal.style.display='flex';
+}
+
+function xmlTogglePago(){
+  _xmlPagoAtivo=!_xmlPagoAtivo;
+  xmlUpdatePagoUI();
+}
+function xmlUpdatePagoUI(){
+  const tog=document.getElementById('xml-m-pago-tog');
+  const ball=document.getElementById('xml-m-pago-ball');
+  const lbl=document.getElementById('xml-m-pago-lbl');
+  if(tog)tog.style.background=_xmlPagoAtivo?'var(--fox)':'var(--bor2)';
+  if(ball)ball.style.left=_xmlPagoAtivo?'23px':'3px';
+  if(lbl)lbl.textContent=_xmlPagoAtivo?'Pago':'Não pago';
+}
+
+function xmlCloseModal(){
+  document.getElementById('xml-edit-modal').style.display='none';
+  _xmlEditIdx=null;
+}
+
+function xmlSalvarModal(){
+  if(_xmlEditIdx===null)return;
+  const n=_xmlNotas[_xmlEditIdx];
+  const desc=document.getElementById('xml-m-desc').value.trim();
+  const valor=parseFloat(document.getElementById('xml-m-valor').value)||0;
+  if(!desc||!valor){alert('Preencha descrição e valor.');return;}
+  // Read fields back
+  n.desc=desc;
+  n.forn=document.getElementById('xml-m-forn').value.trim();
+  n.valor=valor;
+  n.venc=document.getElementById('xml-m-venc').value;
+  n.data=n.venc;
+  n.obs=document.getElementById('xml-m-obs').value;
+  n.bancoId=document.getElementById('xml-m-banco').value;
+  n.catCod=document.getElementById('xml-m-cat').value;
+  n.forma=document.getElementById('xml-m-forma').value;
+  n.ccId=document.getElementById('xml-m-cc').value;
+  n.pago=_xmlPagoAtivo;
+  // Get catNome for display
+  const pc=PLANO_CONTAS.find(function(x){return x.cod===n.catCod;});
+  n.catNome=pc?pc.nome:'';
+
+  // Save lançamento
   const lancs=getLanc();
   lancs.push({
-    id:id,
+    id:uid(),
     tipo:'despesa',
-    desc:p.desc,
-    fornecedor:p.fornecedor,
-    data:p.data,
-    valor:p.valor,
-    pago:false,
-    catCod:'',catNome:'',
-    obs:'NF-e nº '+p.nNF+' | CNPJ '+p.cnpj,
-    parcelas:1,parcelaAtual:1,
+    desc:n.desc,
+    forn:n.forn,
+    fornecedor:n.forn,
+    valor:n.valor,
+    venc:n.venc,
+    data:n.data,
+    dataPag:n.pago?n.venc:'',
+    pago:n.pago,
+    bancoId:n.bancoId,
+    catCod:n.catCod,
+    catNome:n.catNome,
+    ccId:n.ccId,
+    forma:n.forma,
+    obs:n.obs,
   });
   S.set('lancamentos',lancs);
-  _xmlParsed=null;
-  document.getElementById('xml-preview').style.display='none';
-  document.getElementById('xml-dropzone').style.borderColor='var(--bor)';
-  // Feedback
-  const dz=document.getElementById('xml-dropzone');
-  if(dz){
-    dz.innerHTML='<div style="font-size:28px">✅</div><div style="font-size:13px;font-weight:600;color:var(--green);margin-top:8px">Lançamento criado com sucesso!</div>';
-    setTimeout(function(){
-      dz.innerHTML='<div style="font-size:28px;margin-bottom:8px">📄</div><div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste o arquivo XML aqui</div><div style="font-size:11px;color:var(--t3);margin-top:4px">Suporte: NF-e padrão SEFAZ (.xml)</div>';
-    },2500);
-  }
+  n.salvo=true;
+  xmlCloseModal();
+  xmlRenderLista();
   if(typeof renderLanc==='function')renderLanc();
 }
 
-function xmlCancelar(){
-  _xmlParsed=null;
-  document.getElementById('xml-preview').style.display='none';
-}
 
 
 
