@@ -1080,22 +1080,14 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div style="font-size:11px;color:var(--t3);margin-top:3px">Múltiplos arquivos • NF-e padrão SEFAZ</div>
         </label>
         <!-- Tabela de itens -->
-        <div id="xml-tabela-wrap" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px">
-          <!-- cabeçalho fixo -->
-          <div style="display:grid;grid-template-columns:1fr 90px 160px 140px 36px;gap:0;background:var(--bg2);border-bottom:1px solid var(--bor);padding:8px 12px;font-size:11px;font-weight:700;color:var(--t3)">
-            <span>DESCRIÇÃO / FORNECEDOR</span>
-            <span style="text-align:right">VALOR</span>
-            <span style="padding-left:8px">CATEGORIA</span>
-            <span style="padding-left:8px">CONTA</span>
-            <span></span>
-          </div>
-          <div id="xml-itens-body"></div>
-          <!-- footer com botão confirmar todos -->
-          <div id="xml-footer" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-top:1px solid var(--bor);background:var(--bg2)">
+        <!-- Cards das NFs -->
+        <div id="xml-tabela-wrap" style="display:none">
+          <div id="xml-itens-body" style="display:flex;flex-direction:column;gap:12px"></div>
+          <div id="xml-footer" style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-top:4px">
             <span id="xml-footer-count" style="font-size:12px;color:var(--t3)"></span>
             <div style="display:flex;gap:8px">
-              <button onclick="xmlLimpar()" style="background:none;border:1px solid var(--bor);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--t3);cursor:pointer">Limpar</button>
-              <button onclick="xmlConfirmarTodos()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">✓ Criar Lançamentos</button>
+              <button onclick="xmlLimpar()" style="background:none;border:1px solid var(--bor);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--t3);cursor:pointer">Limpar tudo</button>
+              <button onclick="xmlConfirmarTodos()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">✓ Criar todos</button>
             </div>
           </div>
         </div>
