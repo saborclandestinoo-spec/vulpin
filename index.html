@@ -1317,16 +1317,11 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
     <!-- CATEGORIAS (PLANO DE CONTAS) -->
     <div class="pg" id="pg-categorias">
       <div class="scroll">
-        <!-- Categorias toolbar -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-          <div style="display:flex;gap:4px;background:var(--bg2);border-radius:8px;padding:3px;border:1px solid var(--bor)">
-            <button onclick="catSetTab('despesa',this)" id="cat-tab-desp" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:var(--fox);color:#fff">Despesas</button>
-            <button onclick="catSetTab('receita',this)" id="cat-tab-rec" style="padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;background:transparent;color:var(--t3)">Receitas</button>
-          </div>
-          <button onclick="catAddGrupo()" style="padding:5px 14px;border:1px solid var(--bor);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--t2)">+ Novo Grupo</button>
-          <button onclick="catImportarPlanoVulpin()" style="padding:5px 14px;border:1px solid var(--fox);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--fox)">📥 Importar Plano</button>
-          <button onclick="catSave()" style="padding:5px 14px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Salvar Alterações</button>
-          <span id="cat-save-status" style="font-size:11px;color:var(--green);display:none">Salvo!</span>
+          <span style="font-size:14px;font-weight:800;color:var(--t);flex:1">Plano de Contas</span>
+          <button onclick="catImportarPlanoVulpin()" style="padding:6px 16px;border:1px solid var(--fox);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--fox)">📥 Importar Plano</button>
+          <button onclick="catSave()" style="padding:6px 16px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Salvar Alterações</button>
+          <span id="cat-save-status" style="font-size:11px;color:var(--green);display:none">✓ Salvo!</span>
         </div>
         <div id="cat-body" style="background:var(--bg);border-radius:12px;border:1px solid var(--bor);overflow:hidden"></div>
       </div>
@@ -6647,219 +6642,109 @@ const PLANO_CONTAS_NOMES={
     "3.3":"Despesas","3.3.1":"Despesas Comerciais","3.3.2":"Despesas Administrativas","3.3.3":"Receitas e Despesas Financeiras"
 };
 const PLANO_CONTAS=[
-
-  // ══════════════════════════════════════
-  // 1. ATIVO
-  // ══════════════════════════════════════
-
-  // 1.1 Circulante
-  // 1.1.1 Caixa e Equivalentes
-  {cod:'1.1.1',nome:"Caixa e Equivalentes de Caixa",tipo:'ativo'},
-  {cod:'1.1.1.01',nome:"Caixa Geral",tipo:'ativo'},
-  {cod:'1.1.1.02',nome:"Caixa — Fundo Fixo",tipo:'ativo'},
-  // 1.1.2 Bancos Conta Movimento
-  {cod:'1.1.2',nome:"Bancos Conta Movimento",tipo:'ativo'},
-  {cod:'1.1.2.01',nome:"Banco — Conta Corrente Principal",tipo:'ativo'},
-  {cod:'1.1.2.02',nome:"Banco — Conta Corrente Secundária",tipo:'ativo'},
-  {cod:'1.1.2.03',nome:"Banco — Conta Digital (Inter, Nubank, etc.)",tipo:'ativo'},
-  {cod:'1.1.2.04',nome:"Banco — Poupança / Reserva",tipo:'ativo'},
-  // 1.1.3 Contas a Receber
-  {cod:'1.1.3',nome:"Contas a Receber",tipo:'ativo'},
-  {cod:'1.1.3.01',nome:"Clientes — Cartão de Crédito a Receber",tipo:'ativo'},
-  {cod:'1.1.3.02',nome:"Clientes — iFood / Plataformas a Receber",tipo:'ativo'},
-  {cod:'1.1.3.03',nome:"Clientes — Encomendas a Receber",tipo:'ativo'},
-  {cod:'1.1.3.04',nome:"Adiantamentos de Clientes",tipo:'ativo'},
-  // 1.1.4 Estoques
-  {cod:'1.1.4',nome:"Estoques",tipo:'ativo'},
-  {cod:'1.1.4.01',nome:"Estoque — Matérias-Primas e Ingredientes",tipo:'ativo'},
-  {cod:'1.1.4.02',nome:"Estoque — Embalagens",tipo:'ativo'},
-  {cod:'1.1.4.03',nome:"Estoque — Produtos Acabados",tipo:'ativo'},
-  // 1.1.5 Outros Ativos Circulantes
-  {cod:'1.1.5',nome:"Outros Ativos Circulantes",tipo:'ativo'},
-  {cod:'1.1.5.01',nome:"Aplicações Financeiras — Curto Prazo",tipo:'ativo'},
-  {cod:'1.1.5.02',nome:"Adiantamentos a Fornecedores",tipo:'ativo'},
-  {cod:'1.1.5.03',nome:"Despesas Pagas Antecipadamente",tipo:'ativo'},
-  {cod:'1.1.5.04',nome:"Impostos a Recuperar",tipo:'ativo'},
-
-  // 1.2 Não Circulante
-  // 1.2.1 Realizável a Longo Prazo
-  {cod:'1.2.1',nome:"Realizável a Longo Prazo",tipo:'ativo'},
-  {cod:'1.2.1.01',nome:"Depósitos Caução (Aluguel)",tipo:'ativo'},
-  {cod:'1.2.1.02',nome:"Aplicações Financeiras — Longo Prazo",tipo:'ativo'},
-  // 1.2.2 Imobilizado
-  {cod:'1.2.2',nome:"Imobilizado",tipo:'ativo'},
-  {cod:'1.2.2.01',nome:"Máquinas e Equipamentos de Produção",tipo:'ativo'},
-  {cod:'1.2.2.02',nome:"(-) Depreciação Acumulada — Equipamentos",tipo:'ativo'},
-  {cod:'1.2.2.03',nome:"Móveis e Utensílios",tipo:'ativo'},
-  {cod:'1.2.2.04',nome:"(-) Depreciação Acumulada — Móveis",tipo:'ativo'},
-  {cod:'1.2.2.05',nome:"Veículos",tipo:'ativo'},
-  {cod:'1.2.2.06',nome:"(-) Depreciação Acumulada — Veículos",tipo:'ativo'},
-  {cod:'1.2.2.07',nome:"Instalações e Benfeitorias",tipo:'ativo'},
-  {cod:'1.2.2.08',nome:"(-) Depreciação Acumulada — Instalações",tipo:'ativo'},
-  {cod:'1.2.2.09',nome:"Equipamentos de Informática",tipo:'ativo'},
-  {cod:'1.2.2.10',nome:"(-) Depreciação Acumulada — Informática",tipo:'ativo'},
-  // 1.2.3 Intangível
-  {cod:'1.2.3',nome:"Intangível",tipo:'ativo'},
-  {cod:'1.2.3.01',nome:"Marca Registrada (INPI)",tipo:'ativo'},
-  {cod:'1.2.3.02',nome:"Softwares e Sistemas Adquiridos",tipo:'ativo'},
-  {cod:'1.2.3.03',nome:"(-) Amortização Acumulada — Intangíveis",tipo:'ativo'},
-
-  // ══════════════════════════════════════
-  // 2. PASSIVO
-  // ══════════════════════════════════════
-
-  // 2.1 Circulante
-  // 2.1.1 Impostos e Contribuições a Recolher
-  {cod:'2.1.1',nome:"Impostos e Contribuições a Recolher",tipo:'passivo'},
-  {cod:'2.1.1.01',nome:"Simples Nacional a Recolher (DAS)",tipo:'passivo'},
-  {cod:'2.1.1.02',nome:"INSS a Recolher (Empregado + Patronal)",tipo:'passivo'},
-  {cod:'2.1.1.03',nome:"FGTS a Recolher",tipo:'passivo'},
-  {cod:'2.1.1.04',nome:"ISS a Recolher",tipo:'passivo'},
-  // 2.1.2 Contas a Pagar
-  {cod:'2.1.2',nome:"Contas a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.01',nome:"Fornecedores — Ingredientes e Matérias-Primas",tipo:'passivo'},
-  {cod:'2.1.2.02',nome:"Fornecedores — Embalagens",tipo:'passivo'},
-  {cod:'2.1.2.03',nome:"Fornecedores — Serviços",tipo:'passivo'},
-  {cod:'2.1.2.04',nome:"Salários a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.05',nome:"Férias a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.06',nome:"13º Salário a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.07',nome:"Vale-Transporte a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.08',nome:"Aluguéis a Pagar",tipo:'passivo'},
-  {cod:'2.1.2.09',nome:"Contas a Pagar Diversas",tipo:'passivo'},
-  // 2.1.3 Empréstimos Bancários
-  {cod:'2.1.3',nome:"Empréstimos Bancários",tipo:'passivo'},
-  {cod:'2.1.3.01',nome:"Empréstimos Bancários — Curto Prazo",tipo:'passivo'},
-  {cod:'2.1.3.02',nome:"Financiamentos — Parcelas Correntes",tipo:'passivo'},
-
-  // 2.2 Não Circulante
-  // 2.2.1 Empréstimos Bancários — Longo Prazo
-  {cod:'2.2.1',nome:"Empréstimos Bancários — Longo Prazo",tipo:'passivo'},
-  {cod:'2.2.1.01',nome:"Empréstimos Bancários — Longo Prazo",tipo:'passivo'},
-  {cod:'2.2.1.02',nome:"Financiamentos — Longo Prazo",tipo:'passivo'},
-  {cod:'2.2.1.03',nome:"Empréstimos de Sócios — Longo Prazo",tipo:'passivo'},
-
-  // 2.3 Patrimônio Líquido
-  // 2.3.1 Capital Social
-  {cod:'2.3.1',nome:"Capital Social",tipo:'passivo'},
-  {cod:'2.3.1.01',nome:"Capital Social Integralizado",tipo:'pl'},
-  {cod:'2.3.1.02',nome:"Capital Social a Integralizar",tipo:'pl'},
-  // 2.3.2 Reservas
-  {cod:'2.3.2',nome:"Reservas",tipo:'passivo'},
-  {cod:'2.3.2.01',nome:"Reserva Legal",tipo:'pl'},
-  {cod:'2.3.2.02',nome:"Reserva de Capital",tipo:'pl'},
-  {cod:'2.3.2.03',nome:"Reserva para Contingências",tipo:'pl'},
-  // 2.3.3 Lucros ou Prejuízos Acumulados
-  {cod:'2.3.3',nome:"Lucros ou Prejuízos Acumulados",tipo:'passivo'},
-  {cod:'2.3.3.01',nome:"Lucros Acumulados",tipo:'pl'},
-  {cod:'2.3.3.02',nome:"Prejuízos Acumulados",tipo:'pl'},
-  {cod:'2.3.3.03',nome:"Resultado do Exercício",tipo:'pl'},
-  {cod:'2.3.3.04',nome:"Distribuição de Lucros — Retiradas dos Sócios",tipo:'pl'},
-
-  // ══════════════════════════════════════
-  // 3. RESULTADO DO EXERCÍCIO
-  // ══════════════════════════════════════
-
-  // 3.1 Receita Líquida
-  // 3.1.1 Receita Bruta de Vendas
-  {cod:'3.1.1',nome:"Receita Bruta de Vendas",tipo:'despesa'},
-  {cod:'3.1.1.01',nome:"Vendas — iFood",tipo:'receita'},
-  {cod:'3.1.1.02',nome:"Vendas — Rappi / Uber Eats",tipo:'receita'},
-  {cod:'3.1.1.03',nome:"Vendas — Site / Cardápio Web",tipo:'receita'},
-  {cod:'3.1.1.04',nome:"Vendas — WhatsApp / Encomenda",tipo:'receita'},
-  {cod:'3.1.1.05',nome:"Vendas — Loja Física / Balcão",tipo:'receita'},
-  {cod:'3.1.1.06',nome:"Vendas — Feiras e Eventos",tipo:'receita'},
-  {cod:'3.1.1.07',nome:"Receita de Frete / Taxa de Entrega",tipo:'receita'},
-  {cod:'3.1.1.08',nome:"Receita de Personalização / Kit Presente",tipo:'receita'},
-  {cod:'3.1.1.09',nome:"Receita de Aulas e Workshops",tipo:'receita'},
-  // 3.1.2 Deduções da Receita Bruta
-  {cod:'3.1.2',nome:"Deduções da Receita Bruta",tipo:'despesa'},
-  {cod:'3.1.2.01',nome:"(-) Devoluções e Cancelamentos",tipo:'despesa'},
-  {cod:'3.1.2.02',nome:"(-) Descontos e Cupons Concedidos",tipo:'despesa'},
-  // 3.1.3 Impostos sobre Vendas
-  {cod:'3.1.3',nome:"Impostos sobre Vendas",tipo:'despesa'},
-  {cod:'3.1.3.01',nome:"(-) Simples Nacional — DAS",tipo:'despesa'},
-  {cod:'3.1.3.02',nome:"(-) ISS sobre Serviços",tipo:'despesa'},
-  {cod:'3.3.1.16',nome:"Comissão iFood",tipo:'despesa'},
-  {cod:'3.3.1.17',nome:"Comissão Rappi / Uber Eats",tipo:'despesa'},
-  {cod:'3.3.1.18',nome:"Taxa Cartão Débito",tipo:'despesa'},
-  {cod:'3.3.1.19',nome:"Taxa Cartão Crédito",tipo:'despesa'},
-  {cod:'3.3.1.20',nome:"Taxa Pix / Link de Pagamento",tipo:'despesa'},
-  {cod:'3.3.1.21',nome:"Antecipação de Recebíveis",tipo:'despesa'},
-
-  // 3.2 Custos
-  // 3.2.1 Custo dos Produtos Vendidos — CPV
-  {cod:'3.2.1',nome:"Custo dos Produtos Vendidos — CPV",tipo:'despesa'},
-  {cod:'3.2.1.01',nome:"Ingredientes — Chocolates e Coberturas",tipo:'despesa'},
-  {cod:'3.2.1.02',nome:"Ingredientes — Farinhas e Açúcares",tipo:'despesa'},
-  {cod:'3.2.1.03',nome:"Ingredientes — Manteiga, Ovos e Laticínios",tipo:'despesa'},
-  {cod:'3.2.1.04',nome:"Ingredientes — Recheios e Pastas",tipo:'despesa'},
-  {cod:'3.2.1.05',nome:"Ingredientes — Outros",tipo:'despesa'},
-  {cod:'3.2.1.06',nome:"Embalagens de Produto",tipo:'despesa'},
-  {cod:'3.2.1.07',nome:"Perda e Descarte de Produção",tipo:'despesa'},
-  {cod:'3.2.1.08',nome:"Mão de Obra Direta — Salários Produção",tipo:'despesa'},
-  {cod:'3.2.1.09',nome:"Mão de Obra Direta — Encargos Produção",tipo:'despesa'},
-  // 3.2.2 Custos Indiretos de Fabricação — CIF
-  {cod:'3.2.2',nome:"Custos Indiretos de Fabricação — CIF",tipo:'despesa'},
-  {cod:'3.2.2.01',nome:"Gás de Cozinha (GLP)",tipo:'despesa'},
-  {cod:'3.2.2.02',nome:"Energia Elétrica — Produção",tipo:'despesa'},
-  {cod:'3.2.2.03',nome:"Água — Produção",tipo:'despesa'},
-  {cod:'3.2.2.04',nome:"Manutenção de Equipamentos",tipo:'despesa'},
-  {cod:'3.2.2.05',nome:"Materiais de Higiene e Limpeza — Produção",tipo:'despesa'},
-  {cod:'3.2.2.06',nome:"EPI e Uniformes de Produção",tipo:'despesa'},
-  {cod:'3.2.2.07',nome:"Vigilância Sanitária / ANVISA",tipo:'despesa'},
-  {cod:'3.2.2.08',nome:"Controle de Pragas (Desinsetização)",tipo:'despesa'},
-  {cod:'3.2.2.09',nome:"Depreciação — Equipamentos de Produção",tipo:'despesa'},
-
-  // 3.3 Despesas
-  // 3.3.1 Despesas Comerciais
-  {cod:'3.3.1',nome:"Despesas Comerciais",tipo:'despesa'},
-  {cod:'3.3.1.01',nome:"Salários — Vendas",tipo:'despesa'},
-  {cod:'3.3.1.02',nome:"Encargos — Vendas (INSS, FGTS, 13º, Férias)",tipo:'despesa'},
-  {cod:'3.3.1.03',nome:"Pró-labore dos Sócios",tipo:'despesa'},
-  {cod:'3.3.1.04',nome:"Combustível",tipo:'despesa'},
-  {cod:'3.3.1.05',nome:"Manutenção do Veículo",tipo:'despesa'},
-  {cod:'3.3.1.06',nome:"Seguro e IPVA do Veículo",tipo:'despesa'},
-  {cod:'3.3.1.07',nome:"Motoboy / Entrega Terceirizada",tipo:'despesa'},
-  {cod:'3.3.1.08',nome:"Embalagens de Transporte",tipo:'despesa'},
-  {cod:'3.3.1.09',nome:"Meta Ads (Facebook / Instagram)",tipo:'despesa'},
-  {cod:'3.3.1.10',nome:"Google Ads",tipo:'despesa'},
-  {cod:'3.3.1.11',nome:"Gestão de Redes Sociais",tipo:'despesa'},
-  {cod:'3.3.1.12',nome:"Fotos e Vídeos de Produto",tipo:'despesa'},
-  {cod:'3.3.1.13',nome:"Material Gráfico e Design",tipo:'despesa'},
-  {cod:'3.3.1.14',nome:"Influenciadores / Parcerias",tipo:'despesa'},
-  {cod:'3.3.1.15',nome:"Feiras, Eventos e Degustações",tipo:'despesa'},
-  // 3.3.2 Despesas Administrativas
-  {cod:'3.3.2',nome:"Despesas Administrativas",tipo:'despesa'},
-  {cod:'3.3.2.01',nome:"Salários — Administrativo",tipo:'despesa'},
-  {cod:'3.3.2.02',nome:"Encargos — Administrativo (INSS, FGTS, 13º, Férias)",tipo:'despesa'},
-  {cod:'3.3.2.03',nome:"Vale-Transporte",tipo:'despesa'},
-  {cod:'3.3.2.04',nome:"Vale-Alimentação / Refeição",tipo:'despesa'},
-  {cod:'3.3.2.05',nome:"Rescisão Trabalhista",tipo:'despesa'},
-  {cod:'3.3.2.06',nome:"Plano de Saúde Empresarial",tipo:'despesa'},
-  {cod:'3.3.2.07',nome:"Aluguel — Cozinha / Laboratório",tipo:'despesa'},
-  {cod:'3.3.2.08',nome:"Aluguel — Ponto Comercial",tipo:'despesa'},
-  {cod:'3.3.2.09',nome:"Condomínio e IPTU",tipo:'despesa'},
-  {cod:'3.3.2.10',nome:"Energia Elétrica — Administrativo",tipo:'despesa'},
-  {cod:'3.3.2.11',nome:"Água e Esgoto — Administrativo",tipo:'despesa'},
-  {cod:'3.3.2.12',nome:"Internet e Telefone",tipo:'despesa'},
-  {cod:'3.3.2.13',nome:"Honorários Contábeis",tipo:'despesa'},
-  {cod:'3.3.2.14',nome:"Honorários Jurídicos",tipo:'despesa'},
-  {cod:'3.3.2.15',nome:"Nutricionista / Responsável Técnico",tipo:'despesa'},
-  {cod:'3.3.2.16',nome:"Sistemas e Assinaturas (ERP, Site, Apps)",tipo:'despesa'},
-  {cod:'3.3.2.17',nome:"Alvará, Licenças e Taxas Legais",tipo:'despesa'},
-  {cod:'3.3.2.18',nome:"Seguros",tipo:'despesa'},
-  {cod:'3.3.2.19',nome:"Materiais de Escritório e Limpeza",tipo:'despesa'},
-  {cod:'3.3.2.20',nome:"Treinamentos e Cursos",tipo:'despesa'},
-  {cod:'3.3.2.21',nome:"Depreciação — Veículo, Móveis e Informática",tipo:'despesa'},
-  {cod:'3.3.2.22',nome:"Amortização — Softwares e Marca",tipo:'despesa'},
-  {cod:'3.3.2.23',nome:"Despesas Diversas",tipo:'despesa'},
-  // 3.3.3 Receitas e Despesas Financeiras
-  {cod:'3.3.3',nome:"Receitas e Despesas Financeiras",tipo:'despesa'},
-  {cod:'3.3.3.01',nome:"Rendimentos CDI / CDB / Poupança",tipo:'receita'},
-  {cod:'3.3.3.02',nome:"Descontos Obtidos de Fornecedores",tipo:'receita'},
-  {cod:'3.3.3.03',nome:"Juros sobre Empréstimos e Financiamentos",tipo:'despesa'},
-  {cod:'3.3.3.04',nome:"IOF e Tarifas Bancárias",tipo:'despesa'},
-  {cod:'3.3.3.05',nome:"Juros de Mora e Multas Fiscais",tipo:'despesa'},
+  // ATIVO
+  {cod:'1',nome:'Ativo',tipo:'ativo'},
+  {cod:'1.1',nome:'Ativo Circulante',tipo:'ativo'},
+  {cod:'1.1.1',nome:'Caixa',tipo:'ativo'},
+  {cod:'1.1.2',nome:'Bancos',tipo:'ativo'},
+  {cod:'1.1.3',nome:'Clientes (Contas a Receber)',tipo:'ativo'},
+  {cod:'1.1.4',nome:'Estoque de Ingredientes',tipo:'ativo'},
+  {cod:'1.1.5',nome:'Estoque de Embalagens',tipo:'ativo'},
+  {cod:'1.2',nome:'Ativo Não Circulante',tipo:'ativo'},
+  {cod:'1.2.1',nome:'Máquinas',tipo:'ativo'},
+  {cod:'1.2.2',nome:'Equipamentos',tipo:'ativo'},
+  {cod:'1.2.3',nome:'Veículos',tipo:'ativo'},
+  {cod:'1.2.4',nome:'Móveis',tipo:'ativo'},
+  {cod:'1.2.5',nome:'Instalações',tipo:'ativo'},
+  {cod:'1.2.6',nome:'(-) Depreciação Acumulada',tipo:'ativo'},
+  // PASSIVO
+  {cod:'2',nome:'Passivo e Patrimônio Líquido',tipo:'passivo'},
+  {cod:'2.1',nome:'Passivo Circulante',tipo:'passivo'},
+  {cod:'2.1.1',nome:'Fornecedores',tipo:'passivo'},
+  {cod:'2.1.2',nome:'Salários e Encargos a Pagar',tipo:'passivo'},
+  {cod:'2.1.3',nome:'Impostos e Taxas a Recolher',tipo:'passivo'},
+  {cod:'2.1.4',nome:'Outras Obrigações de Curto Prazo',tipo:'passivo'},
+  {cod:'2.2',nome:'Passivo Não Circulante',tipo:'passivo'},
+  {cod:'2.2.1',nome:'Empréstimos e Financiamentos de Longo Prazo',tipo:'passivo'},
+  {cod:'2.3',nome:'Patrimônio Líquido',tipo:'passivo'},
+  {cod:'2.3.1',nome:'Capital Social',tipo:'passivo'},
+  {cod:'2.3.2',nome:'Lucros ou Prejuízos Acumulados',tipo:'passivo'},
+  {cod:'2.3.3',nome:'(-) Retiradas da Sócia (Pró-labore)',tipo:'passivo'},
+  // RECEITAS
+  {cod:'3',nome:'Receitas',tipo:'receita'},
+  {cod:'3.1',nome:'Receita Bruta Operacional',tipo:'receita'},
+  {cod:'3.1.1',nome:'Receita de Venda de Produtos',tipo:'receita'},
+  {cod:'3.1.1.1',nome:'Pix',tipo:'receita'},
+  {cod:'3.1.1.2',nome:'Dinheiro',tipo:'receita'},
+  {cod:'3.1.1.3',nome:'Cartão de Crédito',tipo:'receita'},
+  {cod:'3.1.1.4',nome:'Cartão de Débito',tipo:'receita'},
+  {cod:'3.1.1.5',nome:'Ifood',tipo:'receita'},
+  {cod:'3.1.1.6',nome:'Outras Formas de Pagamento',tipo:'receita'},
+  {cod:'3.2',nome:'(-) Deduções da Receita Bruta Operacional',tipo:'receita'},
+  {cod:'3.2.1',nome:'(-) DAS Sobre Vendas',tipo:'receita'},
+  {cod:'3.2.2',nome:'(-) Devoluções e Descontos Concedidos',tipo:'receita'},
+  // DESPESAS
+  {cod:'4',nome:'Custos e Despesas',tipo:'despesa'},
+  {cod:'4.1',nome:'Custos Dos Produtos Vendidos (CMV)',tipo:'despesa'},
+  {cod:'4.1.1',nome:'Matérias Primas e Embalagens Consumidas',tipo:'despesa'},
+  {cod:'4.1.1.1',nome:'Ingredientes Consumidos',tipo:'despesa'},
+  {cod:'4.1.1.2',nome:'Embalagens Consumidas',tipo:'despesa'},
+  {cod:'4.1.2',nome:'Mão de Obra Direta',tipo:'despesa'},
+  {cod:'4.1.2.1',nome:'Mão de Obra Direta de Produção',tipo:'despesa'},
+  {cod:'4.1.2.2',nome:'Encargos Sociais Sobre MOD',tipo:'despesa'},
+  {cod:'4.1.2.3',nome:'Alimentação Equipe de Produção',tipo:'despesa'},
+  {cod:'4.1.2.4',nome:'Bonificações Equipe de Produção',tipo:'despesa'},
+  {cod:'4.1.3',nome:'Custos Indiretos De Fabricação (CIF)',tipo:'despesa'},
+  {cod:'4.1.3.1',nome:'Energia Elétrica de Produção',tipo:'despesa'},
+  {cod:'4.1.3.2',nome:'Manutenção de Equipamentos',tipo:'despesa'},
+  {cod:'4.1.3.3',nome:'Materiais de Limpeza e Higiene',tipo:'despesa'},
+  {cod:'4.2',nome:'Despesas Com Vendas',tipo:'despesa'},
+  {cod:'4.2.1',nome:'Logística e Entrega',tipo:'despesa'},
+  {cod:'4.2.1.1',nome:'Salários de Entregadores',tipo:'despesa'},
+  {cod:'4.2.1.2',nome:'Encargos Sociais de Entregadores',tipo:'despesa'},
+  {cod:'4.2.1.3',nome:'Bonificações Entregadores',tipo:'despesa'},
+  {cod:'4.2.1.4',nome:'Combustível Veículos de Entregas',tipo:'despesa'},
+  {cod:'4.2.1.5',nome:'Manutenção dos Veículos de Entregas',tipo:'despesa'},
+  {cod:'4.2.1.6',nome:'Seguro do Veículo de Entrega',tipo:'despesa'},
+  {cod:'4.2.1.7',nome:'Depreciação do Veículo de Entrega',tipo:'despesa'},
+  {cod:'4.2.1.8',nome:'Motoboy Freelancer',tipo:'despesa'},
+  {cod:'4.2.1.9',nome:'Embalagens Secundárias',tipo:'despesa'},
+  {cod:'4.2.2',nome:'Marketing',tipo:'despesa'},
+  {cod:'4.2.2.1',nome:'Tráfego Pago',tipo:'despesa'},
+  {cod:'4.2.2.2',nome:'Tráfego Orgânico',tipo:'despesa'},
+  {cod:'4.2.2.3',nome:'Assessoria De Marketing',tipo:'despesa'},
+  {cod:'4.2.2.4',nome:'Fotografia e Vídeo De Produtos',tipo:'despesa'},
+  {cod:'4.2.2.5',nome:'Influenciadores e Parcerias',tipo:'despesa'},
+  {cod:'4.2.3',nome:'Canais de Vendas',tipo:'despesa'},
+  {cod:'4.2.3.1',nome:'Sistemas',tipo:'despesa'},
+  {cod:'4.3',nome:'Despesas Administrativas',tipo:'despesa'},
+  {cod:'4.3.1',nome:'Pessoal Administrativo',tipo:'despesa'},
+  {cod:'4.3.1.1',nome:'Salários Administrativos',tipo:'despesa'},
+  {cod:'4.3.1.2',nome:'Encargos Sociais Administrativos',tipo:'despesa'},
+  {cod:'4.3.1.3',nome:'Pró-Labore De Sócios',tipo:'despesa'},
+  {cod:'4.3.1.4',nome:'Alimentação ADM',tipo:'despesa'},
+  {cod:'4.3.1.5',nome:'Combustível ADM',tipo:'despesa'},
+  {cod:'4.3.2',nome:'Ocupação e Instalações',tipo:'despesa'},
+  {cod:'4.3.2.1',nome:'Aluguel',tipo:'despesa'},
+  {cod:'4.3.2.2',nome:'Energia Elétrica',tipo:'despesa'},
+  {cod:'4.3.2.3',nome:'Água',tipo:'despesa'},
+  {cod:'4.3.2.4',nome:'Internet e Telefone',tipo:'despesa'},
+  {cod:'4.3.2.5',nome:'Condomínio e IPTU',tipo:'despesa'},
+  {cod:'4.3.3',nome:'Despesas Gerais',tipo:'despesa'},
+  {cod:'4.3.3.1',nome:'Honorários Contábeis',tipo:'despesa'},
+  {cod:'4.3.3.2',nome:'Software / Sistema / Emissor NF',tipo:'despesa'},
+  {cod:'4.3.3.3',nome:'Material de Escritório',tipo:'despesa'},
+  {cod:'4.3.3.4',nome:'Material de Limpeza (adm)',tipo:'despesa'},
+  {cod:'4.3.3.5',nome:'Manutenções',tipo:'despesa'},
+  {cod:'4.3.3.6',nome:'Seguros',tipo:'despesa'},
+  {cod:'4.3.4',nome:'Impostos e Taxas',tipo:'despesa'},
+  {cod:'4.3.4.1',nome:'Alvará e Taxas Municipais',tipo:'despesa'},
+  {cod:'4.3.4.2',nome:'Outros Tributos',tipo:'despesa'},
+  {cod:'4.4',nome:'Despesas Financeiras',tipo:'despesa'},
+  {cod:'4.4.1',nome:'Juros sobre Empréstimos',tipo:'despesa'},
+  {cod:'4.4.2',nome:'Tarifas Bancárias',tipo:'despesa'},
+  {cod:'4.4.3',nome:'Juros e Multas',tipo:'despesa'},
+  {cod:'4.4.4',nome:'IOF',tipo:'despesa'},
 ];
 
 // ═══════════════════════════════════════════
@@ -10168,10 +10053,9 @@ function toggleDREIncluded(cod){
 }
 
 function renderCat(){
-  catSetTab('despesa',document.getElementById('cat-tab-desp'));
+  catRenderBody();
 }
 
-let _catTab='despesa';
 let _catDraft=null;
 
 function catGetData(){
@@ -10193,101 +10077,58 @@ function catSave(){
   catRenderBody();
 }
 
-function catSetTab(tipo,btn){
-  _catTab=tipo;
-  ['desp','rec'].forEach(function(t){
-    const b=document.getElementById('cat-tab-'+t);
-    const active=(tipo==='despesa'&&t==='desp')||(tipo==='receita'&&t==='rec');
-    if(b){b.style.background=active?'var(--fox)':'transparent';b.style.color=active?'#fff':'var(--t3)';}
-  });
-  catRenderBody();
-}
+function catSetTab(tipo,btn){}
 
 function catRenderBody(){
   const body=document.getElementById('cat-body');
   if(!body)return;
-  const all=catGetData().filter(function(x){return x.tipo===_catTab;});
-  all.sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
-  const isDesp=_catTab==='despesa';
-  const dotC=isDesp?'var(--red)':'var(--green)';
+  const all=catGetData().slice().sort(function(a,b){
+    return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});
+  });
+
+  const tipoMeta={
+    ativo:  {label:'Ativo',         cor:'#3B82F6', bg:'rgba(59,130,246,.08)'},
+    passivo:{label:'Passivo e Patrimônio Líquido', cor:'#8B5CF6', bg:'rgba(139,92,246,.08)'},
+    receita:{label:'Receitas',      cor:'#10B981', bg:'rgba(16,185,129,.08)'},
+    despesa:{label:'Custos e Despesas', cor:'#EF4444', bg:'rgba(239,68,68,.08)'},
+  };
 
   let html='';
-  let lastG='',lastSG='';
+  let lastTipo='', lastL1='', lastL2='', lastL3='';
 
   all.forEach(function(item){
     const parts=item.cod.split('.');
-    const g=parts.slice(0,2).join('.');
-    const sg=parts.slice(0,3).join('.');
-    const isLeaf=parts.length>=3;
+    const depth=parts.length; // 1=top, 2=L1, 3=L2, 4=L3, 5+=leaf
+    const tipo=item.tipo||'despesa';
+    const meta=tipoMeta[tipo]||tipoMeta.despesa;
 
-    // Group header (2-level: e.g. 4.1)
-    if(g!==lastG){
-      // Find group name
-      const gItem=all.find(function(x){return x.cod===g;});
-      const gNome=gItem?gItem.nome:(typeof PLANO_CONTAS_NOMES!=='undefined'?(PLANO_CONTAS_NOMES[g]||''):'');
-      if(!gItem){
-        html+='<div style="display:flex;align-items:center;gap:8px;padding:10px 16px 6px;border-top:1px solid var(--bor);margin-top:4px">'
-          +'<span style="width:8px;height:8px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
-          +'<span style="font-size:12px;font-weight:700;color:var(--t)">'+g+' '+gNome+'</span>'
-          +'</div>';
-      }
-      lastG=g;lastSG='';
-    }
-
-    // Subgroup header (3-level: e.g. 4.1.1)
-    if(parts.length>=3&&sg!==lastSG){
-      const sgItem=all.find(function(x){return x.cod===sg;});
-      const sgNome=sgItem?sgItem.nome:(typeof PLANO_CONTAS_NOMES!=='undefined'?(PLANO_CONTAS_NOMES[sg]||''):'');
-      if(!sgItem){
-        html+='<div style="display:flex;align-items:center;gap:6px;padding:5px 16px 3px 28px">'
-          +'<span style="color:var(--t3);font-size:10px">⋯</span>'
-          +'<span style="font-size:11.5px;color:var(--t2);font-weight:600">'+sg+' '+sgNome+'</span>'
-          +'<button data-act="add" data-cod="'+sg+'" style="margin-left:6px;width:18px;height:18px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:12px;color:var(--t3);line-height:1;padding:0">+</button>'
-          +'<button data-act="del" data-cod="'+sg+'" style="width:18px;height:18px;border:1px solid #FECACA;border-radius:4px;background:#FFF5F5;cursor:pointer;font-size:11px;color:#EF4444;line-height:1;padding:0">×</button>'
-          +'</div>';
-      }
-      lastSG=sg;
-    }
-
-    // Skip pure group/subgroup entries (they appear as headers above)
-    if(parts.length<=2){
-      // Render as group row with edit
-      html+='<div style="display:flex;align-items:center;gap:8px;padding:10px 16px 6px;border-top:1px solid var(--bor);margin-top:4px">'
-        +'<span style="width:8px;height:8px;border-radius:50%;background:'+dotC+';flex-shrink:0"></span>'
-        +'<span style="font-size:12px;font-weight:700;color:var(--t);flex:1">'+item.cod+' '+item.nome+'</span>'
-        +'<button data-act="edit" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--t3)">✏</button>'
-        +'<button data-act="add" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:14px;color:var(--t3)">+</button>'
-        +'<button data-act="del" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid #FECACA;border-radius:4px;background:#FFF5F5;cursor:pointer;font-size:12px;color:#EF4444">×</button>'
+    // Section header (tipo change)
+    if(tipo!==lastTipo){
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:14px 16px 10px;background:'+meta.bg+';border-top:2px solid '+meta.cor+';margin-top:'+(lastTipo?'8':'0')+'px">'
+        +'<span style="width:10px;height:10px;border-radius:50%;background:'+meta.cor+';flex-shrink:0"></span>'
+        +'<span style="font-size:13px;font-weight:800;color:'+meta.cor+'">'+meta.label+'</span>'
         +'</div>';
-      return;
-    }
-    if(parts.length===3){
-      html+='<div style="display:flex;align-items:center;gap:6px;padding:5px 16px 3px 28px">'
-        +'<span style="color:var(--t3);font-size:10px">⋯</span>'
-        +'<span style="font-size:11.5px;color:var(--t2);font-weight:600;flex:1">'+item.cod+' '+item.nome+'</span>'
-        +'<button data-act="edit" data-cod="'+item.cod+'" style="width:20px;height:20px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--t3)">✏</button>'
-        +'<button data-act="add" data-cod="'+item.cod+'" style="width:20px;height:20px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:13px;color:var(--t3)">+</button>'
-        +'<button data-act="del" data-cod="'+item.cod+'" style="width:20px;height:20px;border:1px solid #FECACA;border-radius:4px;background:#FFF5F5;cursor:pointer;font-size:11px;color:#EF4444">×</button>'
-        +'</div>';
-      return;
+      lastTipo=tipo; lastL1=''; lastL2=''; lastL3='';
     }
 
-    // Leaf row (4+ levels)
-    const inDRE=typeof isDREIncluded==='function'?isDREIncluded(item.cod):true;
-    html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 16px 6px 44px;border-bottom:1px solid var(--bor2)">'
-      +'<span style="color:var(--t3);font-size:10px">⋯</span>'
-      +'<span style="font-size:11px;color:var(--t3);min-width:56px;flex-shrink:0">'+item.cod+'</span>'
-      +'<span style="font-size:12px;color:var(--t);flex:1">'+item.nome+'</span>'
-      +'<div data-act="dre" data-cod="'+item.cod+'" style="display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 10px;border-radius:20px;border:1px solid '+(inDRE?'var(--green)':'var(--bor)')+';background:'+(inDRE?'rgba(39,174,96,.08)':'var(--bg2)')+';transition:all .15s;margin-right:4px">'
-      +'<span style="font-size:11px;font-weight:600;color:'+(inDRE?'var(--green)':'var(--t3)')+'">'+( inDRE?'✓ Entra no DRE':'✗ Fora do DRE')+'</span>'
-      +'</div>'
-      +'<button data-act="edit" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--t3)">✏</button>'
-      +'<button data-act="add" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:13px;color:var(--t3)">+</button>'
-      +'<button data-act="del" data-cod="'+item.cod+'" style="width:22px;height:22px;border:1px solid #FECACA;border-radius:4px;background:#FFF5F5;cursor:pointer;font-size:12px;color:#EF4444">×</button>'
+    const indent = depth===1?0 : depth===2?8 : depth===3?20 : depth===4?34 : 48;
+    const fontSize = depth<=2?'13px' : depth===3?'12.5px' : depth===4?'12px' : '11.5px';
+    const fontWeight = depth<=3?'700' : depth===4?'600' : '400';
+    const textColor = depth<=2?meta.cor : depth===3?'var(--t)' : 'var(--t2)';
+    const borderTop = depth<=2?'1px solid var(--bor)':'none';
+    const paddingV = depth<=2?'9px' : '5px';
+
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:'+paddingV+' 12px '+paddingV+' '+(16+indent)+'px;border-top:'+borderTop+'">'
+      +(depth>1?'<span style="font-size:9px;color:var(--bor2);flex-shrink:0">'+('─'.repeat(Math.min(depth-1,3)))+'</span>':'')
+      +'<span style="font-size:11px;color:var(--t3);min-width:52px;flex-shrink:0;font-family:monospace">'+item.cod+'</span>'
+      +'<span style="font-size:'+fontSize+';color:'+textColor+';font-weight:'+fontWeight+';flex:1">'+item.nome+'</span>'
+      +'<button data-act="edit" data-cod="'+item.cod+'" title="Editar" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--t3);flex-shrink:0">✏</button>'
+      +'<button data-act="add" data-cod="'+item.cod+'" title="Adicionar filho" style="width:22px;height:22px;border:1px solid var(--bor);border-radius:4px;background:var(--bg);cursor:pointer;font-size:14px;color:var(--t3);flex-shrink:0;line-height:1">+</button>'
+      +'<button data-act="del" data-cod="'+item.cod+'" title="Excluir" style="width:22px;height:22px;border:1px solid #FECACA;border-radius:4px;background:#FFF5F5;cursor:pointer;font-size:12px;color:#EF4444;flex-shrink:0">×</button>'
       +'</div>';
   });
 
-  body.innerHTML=html||'<div style="color:var(--t3);padding:24px;text-align:center">Nenhuma categoria.</div>';
+  body.innerHTML=html||'<div style="color:var(--t3);padding:24px;text-align:center">Nenhuma conta cadastrada.</div>';
 
   body.addEventListener('click',function(e){
     const btn=e.target.closest('[data-act]');
@@ -13668,109 +13509,10 @@ function lancBulkDel(){
 }
 
 function catImportarPlanoVulpin(){
-  if(!confirm('Isso vai SUBSTITUIR todo o plano de contas atual pelo Plano Vulpin. Continuar?'))return;
-  const novo=[
-    {cod:'1',nome:'Ativo',tipo:'ativo'},
-    {cod:'1.1',nome:'Ativo Circulante',tipo:'ativo'},
-    {cod:'1.1.1',nome:'Caixa',tipo:'ativo'},
-    {cod:'1.1.2',nome:'Bancos',tipo:'ativo'},
-    {cod:'1.1.3',nome:'Clientes (Contas a Receber)',tipo:'ativo'},
-    {cod:'1.1.4',nome:'Estoque de Ingredientes',tipo:'ativo'},
-    {cod:'1.1.5',nome:'Estoque de Embalagens',tipo:'ativo'},
-    {cod:'1.2',nome:'Ativo Não Circulante',tipo:'ativo'},
-    {cod:'1.2.1',nome:'Máquinas',tipo:'ativo'},
-    {cod:'1.2.2',nome:'Equipamentos',tipo:'ativo'},
-    {cod:'1.2.3',nome:'Veículos',tipo:'ativo'},
-    {cod:'1.2.4',nome:'Móveis',tipo:'ativo'},
-    {cod:'1.2.5',nome:'Instalações',tipo:'ativo'},
-    {cod:'1.2.6',nome:'(-) Depreciação Acumulada',tipo:'ativo'},
-    {cod:'2',nome:'Passivo e Patrimônio Líquido',tipo:'passivo'},
-    {cod:'2.1',nome:'Passivo Circulante',tipo:'passivo'},
-    {cod:'2.1.1',nome:'Fornecedores',tipo:'passivo'},
-    {cod:'2.1.2',nome:'Salários e Encargos a Pagar',tipo:'passivo'},
-    {cod:'2.1.3',nome:'Impostos e Taxas a Recolher',tipo:'passivo'},
-    {cod:'2.1.4',nome:'Outras Obrigações de Curto Prazo',tipo:'passivo'},
-    {cod:'2.2',nome:'Passivo Não Circulante',tipo:'passivo'},
-    {cod:'2.2.1',nome:'Empréstimos e Financiamentos de Longo Prazo',tipo:'passivo'},
-    {cod:'2.3',nome:'Patrimônio Líquido',tipo:'passivo'},
-    {cod:'2.3.1',nome:'Capital Social',tipo:'passivo'},
-    {cod:'2.3.2',nome:'Lucros ou Prejuízos Acumulados',tipo:'passivo'},
-    {cod:'2.3.3',nome:'(-) Retiradas da Sócia (Pró-labore)',tipo:'passivo'},
-    {cod:'3',nome:'Receitas',tipo:'receita'},
-    {cod:'3.1',nome:'Receita Bruta Operacional',tipo:'receita'},
-    {cod:'3.1.1',nome:'Receita de Venda de Produtos',tipo:'receita'},
-    {cod:'3.1.1.1',nome:'Pix',tipo:'receita'},
-    {cod:'3.1.1.2',nome:'Dinheiro',tipo:'receita'},
-    {cod:'3.1.1.3',nome:'Cartão de Crédito',tipo:'receita'},
-    {cod:'3.1.1.4',nome:'Cartão de Débito',tipo:'receita'},
-    {cod:'3.1.1.5',nome:'Ifood',tipo:'receita'},
-    {cod:'3.1.1.6',nome:'Outras Formas de Pagamento',tipo:'receita'},
-    {cod:'3.2',nome:'(-) Deduções da Receita Bruta Operacional',tipo:'receita'},
-    {cod:'3.2.1',nome:'(-) DAS Sobre Vendas',tipo:'receita'},
-    {cod:'3.2.2',nome:'(-) Devoluções e Descontos Concedidos',tipo:'receita'},
-    {cod:'4',nome:'Custos e Despesas',tipo:'despesa'},
-    {cod:'4.1',nome:'Custos Dos Produtos Vendidos (CMV)',tipo:'despesa'},
-    {cod:'4.1.1',nome:'Matérias Primas e Embalagens Consumidas',tipo:'despesa'},
-    {cod:'4.1.1.1',nome:'Ingredientes Consumidos',tipo:'despesa'},
-    {cod:'4.1.1.2',nome:'Embalagens Consumidas',tipo:'despesa'},
-    {cod:'4.1.2',nome:'Mão de Obra Direta',tipo:'despesa'},
-    {cod:'4.1.2.1',nome:'Mão de Obra Direta de Produção',tipo:'despesa'},
-    {cod:'4.1.2.2',nome:'Encargos Sociais Sobre MOD',tipo:'despesa'},
-    {cod:'4.1.2.3',nome:'Alimentação Equipe de Produção',tipo:'despesa'},
-    {cod:'4.1.2.4',nome:'Bonificações Equipe de Produção',tipo:'despesa'},
-    {cod:'4.1.3',nome:'Custos Indiretos De Fabricação (CIF)',tipo:'despesa'},
-    {cod:'4.1.3.1',nome:'Energia Elétrica de Produção',tipo:'despesa'},
-    {cod:'4.1.3.2',nome:'Manutenção de Equipamentos',tipo:'despesa'},
-    {cod:'4.1.3.3',nome:'Materiais de Limpeza e Higiene',tipo:'despesa'},
-    {cod:'4.2',nome:'Despesas Com Vendas',tipo:'despesa'},
-    {cod:'4.2.1',nome:'Logística e Entrega',tipo:'despesa'},
-    {cod:'4.2.1.1',nome:'Salários de Entregadores',tipo:'despesa'},
-    {cod:'4.2.1.2',nome:'Encargos Sociais de Entregadores',tipo:'despesa'},
-    {cod:'4.2.1.3',nome:'Bonificações Entregadores',tipo:'despesa'},
-    {cod:'4.2.1.4',nome:'Combustível Veículos de Entregas',tipo:'despesa'},
-    {cod:'4.2.1.5',nome:'Manutenção dos Veículos de Entregas',tipo:'despesa'},
-    {cod:'4.2.1.6',nome:'Seguro do Veículo de Entrega',tipo:'despesa'},
-    {cod:'4.2.1.7',nome:'Depreciação do Veículo de Entrega',tipo:'despesa'},
-    {cod:'4.2.1.8',nome:'Motoboy Freelancer',tipo:'despesa'},
-    {cod:'4.2.1.9',nome:'Embalagens Secundárias',tipo:'despesa'},
-    {cod:'4.2.2',nome:'Marketing',tipo:'despesa'},
-    {cod:'4.2.2.1',nome:'Tráfego Pago',tipo:'despesa'},
-    {cod:'4.2.2.2',nome:'Tráfego Orgânico',tipo:'despesa'},
-    {cod:'4.2.2.3',nome:'Assessoria De Marketing',tipo:'despesa'},
-    {cod:'4.2.2.4',nome:'Fotografia e Vídeo De Produtos',tipo:'despesa'},
-    {cod:'4.2.2.5',nome:'Influenciadores e Parcerias',tipo:'despesa'},
-    {cod:'4.2.3',nome:'Canais de Vendas',tipo:'despesa'},
-    {cod:'4.2.3.1',nome:'Sistemas',tipo:'despesa'},
-    {cod:'4.3',nome:'Despesas Administrativas',tipo:'despesa'},
-    {cod:'4.3.1',nome:'Pessoal Administrativo',tipo:'despesa'},
-    {cod:'4.3.1.1',nome:'Salários Administrativos',tipo:'despesa'},
-    {cod:'4.3.1.2',nome:'Encargos Sociais Administrativos',tipo:'despesa'},
-    {cod:'4.3.1.3',nome:'Pró-Labore De Sócios',tipo:'despesa'},
-    {cod:'4.3.1.4',nome:'Alimentação ADM',tipo:'despesa'},
-    {cod:'4.3.1.5',nome:'Combustível ADM',tipo:'despesa'},
-    {cod:'4.3.2',nome:'Ocupação e Instalações',tipo:'despesa'},
-    {cod:'4.3.2.1',nome:'Aluguel',tipo:'despesa'},
-    {cod:'4.3.2.2',nome:'Energia Elétrica',tipo:'despesa'},
-    {cod:'4.3.2.3',nome:'Água',tipo:'despesa'},
-    {cod:'4.3.2.4',nome:'Internet e Telefone',tipo:'despesa'},
-    {cod:'4.3.2.5',nome:'Condomínio e IPTU',tipo:'despesa'},
-    {cod:'4.3.3',nome:'Despesas Gerais',tipo:'despesa'},
-    {cod:'4.3.3.1',nome:'Honorários Contábeis',tipo:'despesa'},
-    {cod:'4.3.3.2',nome:'Software / Sistema / Emissor NF',tipo:'despesa'},
-    {cod:'4.3.3.3',nome:'Material de Escritório',tipo:'despesa'},
-    {cod:'4.3.3.4',nome:'Material de Limpeza (adm)',tipo:'despesa'},
-    {cod:'4.3.3.5',nome:'Manutenções',tipo:'despesa'},
-    {cod:'4.3.3.6',nome:'Seguros',tipo:'despesa'},
-    {cod:'4.3.4',nome:'Impostos e Taxas',tipo:'despesa'},
-    {cod:'4.3.4.1',nome:'Alvará e Taxas Municipais',tipo:'despesa'},
-    {cod:'4.3.4.2',nome:'Outros Tributos',tipo:'despesa'},
-    {cod:'4.4',nome:'Despesas Financeiras',tipo:'despesa'},
-    {cod:'4.4.1',nome:'Juros sobre Empréstimos',tipo:'despesa'},
-    {cod:'4.4.2',nome:'Tarifas Bancárias',tipo:'despesa'},
-    {cod:'4.4.3',nome:'Juros e Multas',tipo:'despesa'},
-    {cod:'4.4.4',nome:'IOF',tipo:'despesa'},
-  ];
-  _catDraft=novo;
+  if(!confirm('Isso vai SUBSTITUIR o plano de contas pelo Plano Vulpin padrão. Continuar?'))return;
+  localStorage.removeItem('verp_plano_contas');
+  _catDraft=null;
+  catGetData();
   catSave();
 }
 
