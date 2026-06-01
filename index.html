@@ -1069,15 +1069,16 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <button onclick="document.getElementById('xml-file-input').click()" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">+ Adicionar XMLs</button>
         </div>
         <!-- Drop zone (some cuando lista vazia) -->
-        <div id="xml-dropzone" onclick="document.getElementById('xml-file-input').click()"
+        <label id="xml-dropzone" for="xml-file-input"
           ondragover="event.preventDefault();this.style.borderColor='var(--fox)';this.style.background='rgba(255,107,43,.05)'"
           ondragleave="this.style.borderColor='var(--bor)';this.style.background='var(--bg)'"
           ondrop="event.preventDefault();this.style.borderColor='var(--bor)';this.style.background='var(--bg)';xmlHandleFiles(event.dataTransfer.files)"
-          style="border:2px dashed var(--bor);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s">
+          style="border:2px dashed var(--bor);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;background:var(--bg);transition:all .2s;display:block">
+          <input type="file" id="xml-file-input" accept=".xml,text/xml,application/xml" multiple style="display:none" onchange="xmlHandleFiles(this.files);this.value=''">
           <div style="font-size:24px;margin-bottom:6px">📄</div>
           <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste arquivos XML aqui</div>
           <div style="font-size:11px;color:var(--t3);margin-top:3px">Múltiplos arquivos • NF-e padrão SEFAZ</div>
-        </div>
+        </label>
         <!-- Tabela de itens -->
         <div id="xml-tabela-wrap" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px;overflow:hidden">
           <!-- cabeçalho fixo -->
@@ -7921,7 +7922,6 @@ async function printEtiquetas(){
   </div>
 </div>
 
-<input type="file" id="xml-file-input" accept=".xml,text/xml,application/xml" multiple style="display:none" onchange="xmlHandleFiles(this.files);this.value=''">
 </body></html>`);
   win.document.close();
 }
