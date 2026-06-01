@@ -12956,55 +12956,31 @@ function bancShowAPModal(){bancShowModal('A Pagar',window._bancAPList||[],'var(-
 // ═══════════════════════════════════════════
 // LANÇAMENTO RÁPIDO COM IA
 // ═══════════════════════════════════════════
-var _xmlItens=[];       // [{desc,forn,valor,data,catCod,catNome,bancoId,bancoNome,nNF,cnpj,salvo}, ...]
-var _xmlCatTargetIdx=null;
-var _xmlBancoTargetIdx=null;
-
-function xmlHandleFiles(files){
-  Array.from(files).forEach(function(f){xmlReadFile(f);});
-}
-
-function xmlReadFile(file){
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const parser=new DOMParser();
-      const doc=parser.parseFromString(e.target.result,'text/xml');
-      if(doc.querySelector('parsererror')){alert('Arquivo inválido: '+file.name);return;}
-      xmlExtrairItens(doc);
-    }catch(ex){alert('Erro ao ler '+file.name+': '+ex.message);}
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-function xmlGetTag(node,tag){
-  const el=node.querySelector(tag)||node.getElementsByTagName(tag)[0];
-  return el?el.textContent.trim():'';
-}
+var _xmlNotas=[];
+// _xmlNotas = [{nNF, cnpj, emitNome, data, itens:[{desc,valor,catCod,catNome,bancoId,bancoNome,salvo}]}]
 
 function xmlExtrairItens(doc){
-  // Dados gerais da NF
   const emitNome = xmlGetTag(doc,'xNome')||xmlGetTag(doc,'xFant')||'Fornecedor';
   const dhEmi    = xmlGetTag(doc,'dhEmi')||xmlGetTag(doc,'dEmi')||'';
   const dataNF   = dhEmi?dhEmi.slice(0,10):new Date().toISOString().slice(0,10);
   const nNF      = xmlGetTag(doc,'nNF')||'';
   const cnpj     = xmlGetTag(doc,'CNPJ')||'';
 
-  // Produtos
   const dets = Array.from(doc.querySelectorAll('det')||doc.getElementsByTagName('det'));
-  if(dets.length===0){
-    // sem <det>, cria um item com valor total
+  var itens=[];
+  if(!dets.length){
     const vNF=parseFloat((xmlGetTag(doc,'vNF')||'0').replace(',','.'))||0;
-    _xmlItens.push({desc:emitNome,forn:emitNome,valor:vNF,data:dataNF,nNF,cnpj,catCod:'',catNome:'',bancoId:'',bancoNome:'',salvo:false});
+    itens.push({desc:emitNome,valor:vNF,catCod:'',catNome:'',bancoId:'',bancoNome:'',salvo:false});
   } else {
     dets.forEach(function(det){
       const prod=det.querySelector('prod')||det.getElementsByTagName('prod')[0];
       if(!prod)return;
-      const xProd=xmlGetTag(prod,'xProd')||emitNome;
+      const xProd=xmlGetTag(prod,'xProd')||'Produto';
       const vProd=parseFloat((xmlGetTag(prod,'vProd')||'0').replace(',','.'))||0;
-      _xmlItens.push({desc:xProd,forn:emitNome,valor:vProd,data:dataNF,nNF,cnpj,catCod:'',catNome:'',bancoId:'',bancoNome:'',salvo:false});
+      itens.push({desc:xProd,valor:vProd,catCod:'',catNome:'',bancoId:'',bancoNome:'',salvo:false});
     });
   }
+  _xmlNotas.push({nNF,cnpj,emitNome,data:dataNF,itens});
   xmlRenderTabela();
 }
 
@@ -13015,61 +12991,74 @@ function xmlRenderTabela(){
   const count=document.getElementById('xml-footer-count');
   if(!wrap||!body)return;
 
-  const pendentes=_xmlItens.filter(function(x){return !x.salvo;});
-  const salvos=_xmlItens.filter(function(x){return x.salvo;});
+  const totalItens=_xmlNotas.reduce(function(s,n){return s+n.itens.length;},0);
+  const totalSalvos=_xmlNotas.reduce(function(s,n){return s+n.itens.filter(function(x){return x.salvo;}).length;},0);
+  const totalPend=totalItens-totalSalvos;
 
-  if(!_xmlItens.length){
+  if(!_xmlNotas.length){
     wrap.style.display='none';
     if(dz)dz.style.display='block';
     return;
   }
   wrap.style.display='block';
-  if(dz)dz.style.display=pendentes.length?'none':'block';
+  if(dz)dz.style.display='none';
 
-  body.innerHTML=_xmlItens.map(function(it,i){
-    const rowBg=it.salvo?'rgba(16,185,129,.04)':'var(--bg)';
-    const catLabel=it.catNome
-      ?'<span style="font-size:11px;color:var(--fox);font-weight:600;cursor:pointer" onclick="xmlAbrirCatModal('+i+')">'+it.catNome+'</span>'
-      :'<span style="font-size:11px;color:var(--t3);cursor:pointer;border-bottom:1px dashed var(--bor)" onclick="xmlAbrirCatModal('+i+')">+ Categoria</span>';
-    const bancoLabel=it.bancoNome
-      ?'<span style="font-size:11px;color:var(--t2);font-weight:500;cursor:pointer" onclick="xmlAbrirBancoModal('+i+')">'+it.bancoNome+'</span>'
-      :'<span style="font-size:11px;color:var(--t3);cursor:pointer;border-bottom:1px dashed var(--bor)" onclick="xmlAbrirBancoModal('+i+')">+ Conta</span>';
-    const badge=it.salvo?'<span style="font-size:10px;color:var(--green);font-weight:700">✓</span>':'';
-    return '<div style="display:grid;grid-template-columns:1fr 90px 160px 140px 36px;gap:0;padding:10px 12px;border-bottom:1px solid var(--bor2);background:'+rowBg+';align-items:center">'
-      +'<div style="min-width:0">'
-        +'<div style="font-size:12px;font-weight:600;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+it.desc+'">'+it.desc+'</div>'
-        +'<div style="font-size:10px;color:var(--t3);margin-top:1px">'+it.forn+(it.nNF?' • NF '+it.nNF:'')+'</div>'
+  var html='';
+  _xmlNotas.forEach(function(nota,ni){
+    var total=nota.itens.reduce(function(s,x){return s+(x.valor||0);},0);
+    html+='<div style="border-bottom:2px solid var(--bor);background:var(--bg2)">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px">'
+        +'<span style="font-size:13px;font-weight:800;color:var(--t);flex:1">'+nota.emitNome+'</span>'
+        +(nota.nNF?'<span style="font-size:10px;color:var(--t3);background:var(--bg);border:1px solid var(--bor);border-radius:4px;padding:2px 6px">NF '+nota.nNF+'</span>':'')
+        +'<span style="font-size:11px;color:var(--t3)">'+nota.data+'</span>'
+        +'<span style="font-size:12px;font-weight:700;color:var(--fox)">R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>'
+        +'<button onclick="xmlRemoverNota('+ni+')" style="border:none;background:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 6px" title="Remover NF">×</button>'
       +'</div>'
-      +'<div style="text-align:right;font-size:12px;font-weight:700;color:var(--fox)">R$ '+(it.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
-      +'<div style="padding-left:8px">'+catLabel+'</div>'
-      +'<div style="padding-left:8px">'+bancoLabel+'</div>'
-      +'<div style="display:flex;align-items:center;justify-content:center;gap:2px">'
-        +badge
-        +(it.salvo?'':'<button onclick="xmlRemoverItem('+i+')" style="border:none;background:none;color:var(--t3);cursor:pointer;font-size:14px;padding:2px 4px" title="Remover">×</button>')
+      // sub-header colunas
+      +'<div style="display:grid;grid-template-columns:1fr 90px 180px 140px 30px;padding:4px 14px 4px;font-size:10px;font-weight:700;color:var(--t3);border-top:1px solid var(--bor)">'
+        +'<span>PRODUTO</span><span style="text-align:right">VALOR</span><span style="padding-left:8px">CATEGORIA</span><span style="padding-left:8px">CONTA</span><span></span>'
       +'</div>'
       +'</div>';
-  }).join('');
-
-  if(count)count.textContent=pendentes.length+' pendente'+(pendentes.length!==1?'s':'')+' • '+salvos.length+' salvo'+(salvos.length!==1?'s':'');
+    nota.itens.forEach(function(it,ii){
+      var rowBg=it.salvo?'rgba(16,185,129,.04)':'var(--bg)';
+      var catLabel=it.catNome
+        ?'<span style="font-size:11px;color:var(--fox);font-weight:600;cursor:pointer" onclick="xmlAbrirCatModal('+ni+','+ii+')">'+it.catNome+'</span>'
+        :'<span style="font-size:11px;color:var(--t3);cursor:pointer;text-decoration:underline dotted" onclick="xmlAbrirCatModal('+ni+','+ii+')">+ Categoria</span>';
+      var bancoLabel=it.bancoNome
+        ?'<span style="font-size:11px;color:var(--t2);font-weight:500;cursor:pointer" onclick="xmlAbrirBancoModal('+ni+','+ii+')">'+it.bancoNome+'</span>'
+        :'<span style="font-size:11px;color:var(--t3);cursor:pointer;text-decoration:underline dotted" onclick="xmlAbrirBancoModal('+ni+','+ii+')">+ Conta</span>';
+      html+='<div style="display:grid;grid-template-columns:1fr 90px 180px 140px 30px;padding:8px 14px;border-top:1px solid var(--bor2);background:'+rowBg+';align-items:center">'
+        +'<div style="min-width:0">'
+          +'<div style="font-size:12px;color:var(--t);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+it.desc+'">'+it.desc+'</div>'
+        +'</div>'
+        +'<div style="text-align:right;font-size:12px;font-weight:600;color:var(--fox)">R$ '+(it.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
+        +'<div style="padding-left:8px">'+catLabel+'</div>'
+        +'<div style="padding-left:8px">'+bancoLabel+'</div>'
+        +'<div style="text-align:center">'+(it.salvo?'<span style="color:var(--green);font-size:12px;font-weight:700">✓</span>':'')+'</div>'
+        +'</div>';
+    });
+  });
+  body.innerHTML=html;
+  if(count)count.textContent=totalPend+' pendente'+(totalPend!==1?'s':'')+' • '+totalSalvos+' salvo'+(totalSalvos!==1?'s':'');
 }
 
-function xmlRemoverItem(idx){
-  _xmlItens.splice(idx,1);
+function xmlRemoverNota(ni){
+  _xmlNotas.splice(ni,1);
   xmlRenderTabela();
 }
 
 function xmlLimpar(){
-  _xmlItens=[];
+  _xmlNotas=[];
   xmlRenderTabela();
 }
 
+var _xmlCatTarget=null;   // {ni, ii}
+var _xmlBancoTarget=null; // {ni, ii}
+
 // ── Modal de Categoria ──
-function xmlAbrirCatModal(idx){
-  _xmlCatTargetIdx=idx;
-  populateCatSelect('xml-cat-val','despesa');
-  // rebuild drop manually
+function xmlAbrirCatModal(ni,ii){
+  _xmlCatTarget={ni,ii};
   buildCustomDrop('xml-cat-drop','despesa',null);
-  // override onclick to update display
   setTimeout(function(){
     const drop=document.getElementById('xml-cat-drop');
     if(!drop)return;
@@ -13085,12 +13074,11 @@ function xmlAbrirCatModal(idx){
         document.getElementById('xml-cat-wrap').classList.remove('active');
       };
     });
-    // reset display
-    const it=_xmlItens[idx];
+    const it=_xmlNotas[ni]&&_xmlNotas[ni].itens[ii];
     const disp=document.getElementById('xml-cat-display');
     const hid=document.getElementById('xml-cat-val');
     if(it&&it.catCod){
-      if(disp)disp.textContent=(it.catCod+(it.catNome?' — '+it.catNome:''));
+      if(disp){disp.textContent=it.catCod+(it.catNome?' — '+it.catNome:'');disp.style.color='var(--t)';}
       if(hid)hid.value=it.catCod;
     } else {
       if(disp){disp.textContent='Selecione';disp.style.color='var(--t3)';}
@@ -13101,24 +13089,23 @@ function xmlAbrirCatModal(idx){
 }
 function xmlCloseCatModal(){
   document.getElementById('xml-cat-modal').style.display='none';
-  _xmlCatTargetIdx=null;
+  _xmlCatTarget=null;
 }
 function xmlAplicarCat(){
-  if(_xmlCatTargetIdx===null)return;
+  if(!_xmlCatTarget)return;
   const cod=document.getElementById('xml-cat-val').value;
-  const disp=document.getElementById('xml-cat-display').textContent.trim();
-  // extract nome (after " — ")
-  const parts=disp.split(' — ');
-  const nome=parts.length>1?parts.slice(1).join(' — '):disp;
-  const it=_xmlItens[_xmlCatTargetIdx];
+  const dispTxt=document.getElementById('xml-cat-display').textContent.trim();
+  const parts=dispTxt.split(' — ');
+  const nome=parts.length>1?parts.slice(1).join(' — '):dispTxt;
+  const it=_xmlNotas[_xmlCatTarget.ni]&&_xmlNotas[_xmlCatTarget.ni].itens[_xmlCatTarget.ii];
   if(it){it.catCod=cod;it.catNome=nome;}
   xmlCloseCatModal();
   xmlRenderTabela();
 }
 
 // ── Modal de Conta ──
-function xmlAbrirBancoModal(idx){
-  _xmlBancoTargetIdx=idx;
+function xmlAbrirBancoModal(ni,ii){
+  _xmlBancoTarget={ni,ii};
   populateBancoDrop('xml-banco-drop');
   setTimeout(function(){
     const drop=document.getElementById('xml-banco-drop');
@@ -13135,7 +13122,7 @@ function xmlAbrirBancoModal(idx){
         document.getElementById('xml-banco-wrap').classList.remove('active');
       };
     });
-    const it=_xmlItens[idx];
+    const it=_xmlNotas[ni]&&_xmlNotas[ni].itens[ii];
     if(it&&it.bancoId){
       document.getElementById('xml-banco-val').value=it.bancoId;
       const d=document.getElementById('xml-banco-display');
@@ -13150,13 +13137,13 @@ function xmlAbrirBancoModal(idx){
 }
 function xmlCloseBancoModal(){
   document.getElementById('xml-banco-modal').style.display='none';
-  _xmlBancoTargetIdx=null;
+  _xmlBancoTarget=null;
 }
 function xmlAplicarBanco(){
-  if(_xmlBancoTargetIdx===null)return;
+  if(!_xmlBancoTarget)return;
   const id=document.getElementById('xml-banco-val').value;
   const nome=document.getElementById('xml-banco-display').textContent.trim();
-  const it=_xmlItens[_xmlBancoTargetIdx];
+  const it=_xmlNotas[_xmlBancoTarget.ni]&&_xmlNotas[_xmlBancoTarget.ni].itens[_xmlBancoTarget.ii];
   if(it){it.bancoId=id;it.bancoNome=nome;}
   xmlCloseBancoModal();
   xmlRenderTabela();
@@ -13164,28 +13151,23 @@ function xmlAplicarBanco(){
 
 // ── Confirmar todos ──
 function xmlConfirmarTodos(){
-  const pendentes=_xmlItens.filter(function(x){return !x.salvo;});
-  if(!pendentes.length){alert('Nenhum item pendente.');return;}
-  const lancs=getLanc();
-  pendentes.forEach(function(it){
-    lancs.push({
-      id:uid(),
-      tipo:'despesa',
-      desc:it.desc,
-      forn:it.forn,
-      fornecedor:it.forn,
-      valor:it.valor,
-      venc:it.data,
-      data:it.data,
-      dataPag:'',
-      pago:false,
-      bancoId:it.bancoId||'',
-      catCod:it.catCod||'',
-      catNome:it.catNome||'',
-      obs:'NF-e nº '+it.nNF+(it.cnpj?' | CNPJ '+it.cnpj:''),
+  var lancs=getLanc();
+  var count=0;
+  _xmlNotas.forEach(function(nota){
+    nota.itens.forEach(function(it){
+      if(it.salvo)return;
+      lancs.push({
+        id:uid(),tipo:'despesa',
+        desc:it.desc,forn:nota.emitNome,fornecedor:nota.emitNome,
+        valor:it.valor,venc:nota.data,data:nota.data,dataPag:'',pago:false,
+        bancoId:it.bancoId||'',catCod:it.catCod||'',catNome:it.catNome||'',
+        obs:'NF-e nº '+nota.nNF+(nota.cnpj?' | CNPJ '+nota.cnpj:''),
+      });
+      it.salvo=true;
+      count++;
     });
-    it.salvo=true;
   });
+  if(!count){alert('Nenhum item pendente.');return;}
   S.set('lancamentos',lancs);
   xmlRenderTabela();
   if(typeof renderLanc==='function')renderLanc();
