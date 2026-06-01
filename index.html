@@ -1078,7 +1078,6 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div style="font-size:13px;font-weight:600;color:var(--t2)">Clique ou arraste arquivos XML aqui</div>
           <div style="font-size:11px;color:var(--t3);margin-top:3px">Múltiplos arquivos • NF-e padrão SEFAZ</div>
         </div>
-        <input type="file" id="xml-file-input" accept=".xml" multiple style="display:none" onchange="xmlHandleFiles(this.files);this.value=''">
         <!-- Tabela de itens -->
         <div id="xml-tabela-wrap" style="display:none;background:var(--bg);border:1px solid var(--bor);border-radius:12px;overflow:hidden">
           <!-- cabeçalho fixo -->
@@ -7921,6 +7920,8 @@ async function printEtiquetas(){
     </div>
   </div>
 </div>
+
+<input type="file" id="xml-file-input" accept=".xml,text/xml,application/xml" multiple style="display:none" onchange="xmlHandleFiles(this.files);this.value=''">
 </body></html>`);
   win.document.close();
 }
