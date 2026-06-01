@@ -12960,6 +12960,30 @@ function bancShowAPModal(){bancShowModal('A Pagar',window._bancAPList||[],'var(-
 var _xmlNotas=[];
 // _xmlNotas = [{nNF, cnpj, emitNome, data, itens:[{desc,valor,catCod,catNome,bancoId,bancoNome,salvo}]}]
 
+function xmlHandleFiles(files){
+  Array.from(files).forEach(function(f){xmlReadFile(f);});
+}
+
+function xmlReadFile(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      // Strip namespace to allow querySelector to work
+      var txt=e.target.result.replace(/xmlns="[^"]*"/g,'').replace(/xmlns:[^=]+="[^"]*"/g,'');
+      const parser=new DOMParser();
+      const doc=parser.parseFromString(txt,'text/xml');
+      if(doc.querySelector('parsererror')){alert('XML inválido: '+file.name);return;}
+      xmlExtrairItens(doc);
+    }catch(ex){alert('Erro ao ler '+file.name+': '+ex.message);}
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function xmlGetTag(node,tag){
+  const el=node.querySelector(tag);
+  return el?el.textContent.trim():'';
+}
+
 function xmlExtrairItens(doc){
   const emitNome = xmlGetTag(doc,'xNome')||xmlGetTag(doc,'xFant')||'Fornecedor';
   const dhEmi    = xmlGetTag(doc,'dhEmi')||xmlGetTag(doc,'dEmi')||'';
