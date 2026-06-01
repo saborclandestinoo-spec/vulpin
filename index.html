@@ -7340,23 +7340,25 @@ PC_EXTRA.forEach(e=>{if(!PLANO_CONTAS.find(c=>c.cod===e.cod))PLANO_CONTAS.push(e
 function buildCustomDrop(dropId, tipo, onSelect) {
   const drop = document.getElementById(dropId);
   if(!drop) return;
-  const tree = PC_TREE[tipo] || [];
+  const data = (typeof _catDraft!=='undefined'&&_catDraft?_catDraft:PLANO_CONTAS)
+    .filter(function(x){return x.tipo===tipo;})
+    .slice().sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
+  const gc = tipo==='receita'?'#27AE60':'#E74C3C';
   let html = `<div class="cd-search"><input class="cd-search-in" placeholder="Buscar categoria..." oninput="filterCustomDrop('${dropId}',this.value)"></div>`;
-  tree.forEach(group => {
-    const gc = group.cod.startsWith('3.9') ? '#E74C3C' : group.cod.startsWith('3') ? '#27AE60' : '#E67E22';
-    html += `<div class="cd-group"><div class="cd-group-dot" style="background:${gc}"></div>${group.label}</div>`;
-    (group.children||[]).forEach(sub => {
-      if(typeof sub === 'string') {
-        const pc = PLANO_CONTAS.find(c=>c.cod===sub);
-        if(pc) html += `<div class="cd-item cd-item-l1" data-cod="${pc.cod}" onclick="selectCustomDrop('${dropId}','${pc.cod}','${pc.nome.replace(/'/g,"\\'")}',event)">${pc.cod} — ${pc.nome}</div>`;
-      } else {
-        html += `<div class="cd-sub">↳ ${sub.label}</div>`;
-        (sub.children||[]).forEach(cod => {
-          const pc = PLANO_CONTAS.find(c=>c.cod===cod);
-          if(pc) html += `<div class="cd-item" data-cod="${pc.cod}" onclick="selectCustomDrop('${dropId}','${pc.cod}','${pc.nome.replace(/'/g,"\\'")}',event)">${pc.cod} — ${pc.nome}</div>`;
-        });
-      }
-    });
+  data.forEach(function(pc){
+    const parts=pc.cod.split('.');
+    const depth=parts.length;
+    const safeName=pc.nome.replace(/'/g,"\'");
+    if(depth<=2){
+      html+=`<div class="cd-group"><div class="cd-group-dot" style="background:${gc}"></div>${pc.cod} — ${pc.nome}</div>`;
+      return;
+    }
+    if(depth===3){
+      html+=`<div class="cd-sub" style="padding-left:16px;font-weight:600;color:var(--t2)">↳ ${pc.cod} — ${pc.nome}</div>`;
+      return;
+    }
+    const indent=depth===4?32:depth===5?44:20;
+    html+=`<div class="cd-item" style="padding-left:${indent}px" data-cod="${pc.cod}" onclick="selectCustomDrop('${dropId}','${pc.cod}','${safeName}',event)">${pc.cod} — ${pc.nome}</div>`;
   });
   drop.innerHTML = html;
 }
