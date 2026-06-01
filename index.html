@@ -13129,6 +13129,7 @@ function xmlRenderTabela(){
           +'<div style="font-size:14px;font-weight:800;color:'+(todosLancados?'var(--green)':'var(--fox)')+'">R$ '+total.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'
           +'<div style="font-size:10px;color:var(--t3)">'+nota.itens.length+' item'+(nota.itens.length!==1?'s':'')+'</div>'
         +'</div>'
+        +(todosLancados?'':'<button onclick="xmlLancarNFInteira('+ni+')" style="background:var(--fox);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Lançar NF</button>')
         +'<button onclick="xmlRemoverNota('+ni+')" style="border:none;background:none;color:var(--t3);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;flex-shrink:0" title="Remover">×</button>'
       +'</div>'
       // Itens
@@ -13226,6 +13227,27 @@ function xmlUpdatePagoUI(){
   if(tog)tog.style.background=_xmlPagoAtivo?'var(--fox)':'var(--bor2)';
   if(ball)ball.style.left=_xmlPagoAtivo?'23px':'3px';
   if(lbl)lbl.textContent=_xmlPagoAtivo?'Pago':'Não pago';
+}
+
+function xmlLancarNFInteira(ni){
+  var nota=_xmlNotas[ni];
+  if(!nota)return;
+  var pendentes=nota.itens.filter(function(x){return !x.salvo;});
+  if(!pendentes.length){alert('Todos os itens desta NF já foram lançados.');return;}
+  var lancs=getLanc();
+  pendentes.forEach(function(it){
+    lancs.push({
+      id:uid(),tipo:'despesa',
+      desc:it.desc,forn:nota.emitNome,fornecedor:nota.emitNome,
+      valor:it.valor,venc:nota.data,data:nota.data,dataPag:'',pago:false,
+      bancoId:it.bancoId||'',catCod:it.catCod||'',catNome:it.catNome||'',
+      obs:'NF-e nº '+nota.nNF+(nota.cnpj?' | CNPJ '+nota.cnpj:''),
+    });
+    it.salvo=true;
+  });
+  S.set('lancamentos',lancs);
+  xmlRenderTabela();
+  if(typeof renderLanc==='function')renderLanc();
 }
 
 function xmlConfirmarTodos(){
