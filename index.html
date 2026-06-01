@@ -2374,15 +2374,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         </div>
         <div class="custom-drop" id="mdesp-cat-drop"></div>
       </div>
-      <!-- Campo equipamento — aparece para imobilizações (4.7) e manutenções (4.3.5) -->
-      <div id="mdesp-eq-row" style="display:none;margin-top:8px">
-        <div class="flt-wrap">
-          <select class="flt-in" id="mdesp-eq-sel" style="padding-top:18px">
-            <option value="">— Nenhum equipamento —</option>
-          </select>
-          <label class="flt-lbl">Equipamento</label>
-        </div>
-      </div>
+
       <div style="position:relative">
         <div class="flt-custom-wrap" id="mdesp-cc-wrap" onclick="toggleCustomDrop('mdesp-cc-drop','mdesp-cc-lbl')">
           <label class="flt-lbl flt-lbl-sel" id="mdesp-cc-lbl">Centro de custo</label>
@@ -2472,6 +2464,22 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
           <div class="flt-wrap"><input class="flt-in" id="mdesp-est-qtd" type="number" step="0.01" min="0" placeholder=" "><label class="flt-lbl">Quantidade recebida</label></div>
         </div>
         <div style="font-size:11px;color:var(--t3);margin-top:6px">Ao salvar, o estoque deste insumo será aumentado pela quantidade informada.</div>
+      </div>
+    </div>
+    <!-- Seção: Vincular Equipamento -->
+    <div id="mdesp-eq-section" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <input type="checkbox" id="mdesp-eq-chk" onchange="toggleDespEqSection()" style="width:16px;height:16px;accent-color:var(--fox);cursor:pointer">
+        <span style="font-size:13px;font-weight:600;color:var(--t)">🔧 Vincular Equipamento</span>
+      </div>
+      <div id="mdesp-eq-fields" style="display:none">
+        <div class="flt-wrap">
+          <select class="flt-in" id="mdesp-eq-sel" style="padding-top:18px">
+            <option value="">— Sem vínculo de equipamento —</option>
+          </select>
+          <label class="flt-lbl">Equipamento</label>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">Para manutenções e imobilizações, o lançamento será vinculado ao equipamento selecionado.</div>
       </div>
     </div>
     <!-- Seção: Dar cookies a funcionário -->
@@ -7382,19 +7390,18 @@ function filterCustomDrop(dropId, q) {
   drop.querySelectorAll('.cd-group,.cd-sub').forEach(el => el.style.display = q ? 'none' : '');
 }
 
-function _mdespCheckEqRow(){
-  const catVal=(document.getElementById('mdesp-cat')||{}).value||'';
-  const row=document.getElementById('mdesp-eq-row');
+function _mdespCheckEqRow(){} // desativado — agora usa checkbox manual
+
+function toggleDespEqSection(){
+  const chk=document.getElementById('mdesp-eq-chk');
+  const fields=document.getElementById('mdesp-eq-fields');
   const sel=document.getElementById('mdesp-eq-sel');
-  if(!row||!sel)return;
-  const showEq=catVal.startsWith('4.7')||catVal.startsWith('4.3');
-  row.style.display=showEq?'block':'none';
-  if(showEq){
+  if(!chk||!fields)return;
+  fields.style.display=chk.checked?'block':'none';
+  if(chk.checked&&sel){
     const eqs=getEquipamentos();
-    const isManut=catVal.startsWith('4.3');
-    const filtered=isManut?eqs.filter(function(e){return e.status==='ativo'||e.status==='manutencao';}):eqs;
-    sel.innerHTML='<option value="">'+(catVal.startsWith('4.7')?'— Criar novo equipamento automaticamente —':'— Sem vínculo de equipamento —')+'</option>'
-      +filtered.map(function(e){return '<option value="'+e.id+'">'+e.nome+'</option>';}).join('');
+    sel.innerHTML='<option value="">— Sem vínculo de equipamento —</option>'
+      +eqs.map(function(e){return '<option value="'+e.id+'">'+e.nome+'</option>';}).join('');
   }
 }
 function selectCustomDrop(dropId, cod, nome, e) {
@@ -7565,6 +7572,9 @@ function openDesp(id){
     const prodQtd=document.getElementById('mdesp-prod-qtd');if(prodQtd)prodQtd.value='';
     const prodDisp=document.getElementById('mdesp-prod-display');if(prodDisp){prodDisp.textContent='Selecione o produto';prodDisp.style.color='var(--t3)';}
     const prodInfo=document.getElementById('mdesp-prod-custo-info');if(prodInfo)prodInfo.style.display='none';
+    // Reset eq section
+    const eqChk=document.getElementById('mdesp-eq-chk');
+    if(eqChk){eqChk.checked=false;const eqF=document.getElementById('mdesp-eq-fields');if(eqF)eqF.style.display='none';}
   }
   const tog=document.getElementById('mdesp-pago-tog'),fields=document.getElementById('mdesp-pago-fields');
   if(tog){tog.style.background=despPagoAtivo?'var(--fox)':'#ccc';tog.querySelector('div').style.left=despPagoAtivo?'21px':'3px';}
