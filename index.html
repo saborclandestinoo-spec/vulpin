@@ -7340,17 +7340,24 @@ PC_EXTRA.forEach(e=>{if(!PLANO_CONTAS.find(c=>c.cod===e.cod))PLANO_CONTAS.push(e
 function buildCustomDrop(dropId, tipo, onSelect) {
   const drop = document.getElementById(dropId);
   if(!drop) return;
-  const data = (typeof _catDraft!=='undefined'&&_catDraft?_catDraft:PLANO_CONTAS)
-    .filter(function(x){return x.tipo===tipo;})
+  const allData = (typeof _catDraft!=='undefined'&&_catDraft?_catDraft:PLANO_CONTAS)
     .slice().sort(function(a,b){return (a.cod||'').localeCompare(b.cod||'',undefined,{numeric:true});});
-  const gc = tipo==='receita'?'#27AE60':'#E74C3C';
+  const data = tipo==='all' ? allData : allData.filter(function(x){return x.tipo===tipo;});
+  const tipoColor = {'ativo':'#3B82F6','passivo':'#8B5CF6','receita':'#27AE60','despesa':'#E74C3C'};
   let html = `<div class="cd-search"><input class="cd-search-in" placeholder="Buscar categoria..." oninput="filterCustomDrop('${dropId}',this.value)"></div>`;
+  let lastTipo='';
   data.forEach(function(pc){
     const parts=pc.cod.split('.');
     const depth=parts.length;
     const safeName=pc.nome.replace(/'/g,"\'");
+    const gc=tipoColor[pc.tipo]||'#E74C3C';
+    if(pc.tipo!==lastTipo){
+      const labels={'ativo':'Ativo','passivo':'Passivo','receita':'Receitas','despesa':'Custos e Despesas'};
+      html+=`<div class="cd-group" style="border-top:2px solid ${gc};margin-top:4px"><div class="cd-group-dot" style="background:${gc}"></div><span style="color:${gc};font-weight:800">${labels[pc.tipo]||pc.tipo}</span></div>`;
+      lastTipo=pc.tipo;
+    }
     if(depth<=2){
-      html+=`<div class="cd-group"><div class="cd-group-dot" style="background:${gc}"></div>${pc.cod} — ${pc.nome}</div>`;
+      html+=`<div class="cd-group" style="border-top:none;margin-top:0"><div class="cd-group-dot" style="background:${gc}"></div>${pc.cod} — ${pc.nome}</div>`;
       return;
     }
     if(depth===3){
@@ -7446,11 +7453,11 @@ document.addEventListener('click', e => {
 function populateCatSelect(selId, tipo) {
   const dropId = selId.replace('-cat','-cat-drop');
   const drop = document.getElementById(dropId);
-  if(drop) { buildCustomDrop(dropId, tipo, null); return; }
+  if(drop) { buildCustomDrop(dropId, 'all', null); return; }
   const sel = document.getElementById(selId);
   if(!sel) return;
   sel.innerHTML = '<option value="">Selecione a categoria...</option>' +
-    PLANO_CONTAS.filter(c=>c.tipo===tipo).map(c=>`<option value="${c.cod}">${c.cod} — ${c.nome}</option>`).join('');
+    PLANO_CONTAS.map(c=>`<option value="${c.cod}">${c.cod} — ${c.nome}</option>`).join('');
 }
 
 function populateCCDrop(dropId) {
