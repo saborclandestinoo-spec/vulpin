@@ -1319,7 +1319,6 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
       <div class="scroll">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
           <span style="font-size:14px;font-weight:800;color:var(--t);flex:1">Plano de Contas</span>
-          <button onclick="catImportarPlanoVulpin()" style="padding:6px 16px;border:1px solid var(--fox);border-radius:8px;background:var(--bg);font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;color:var(--fox)">📥 Importar Plano</button>
           <button onclick="catSave()" style="padding:6px 16px;border:none;border-radius:8px;background:var(--fox);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif">Salvar Alterações</button>
           <span id="cat-save-status" style="font-size:11px;color:var(--green);display:none">✓ Salvo!</span>
         </div>
@@ -10188,7 +10187,9 @@ function catAddGrupo(){
 }
 
 function catAddChild(parentCod){
-  const tipo=_catTab,data=catGetData();
+  const data=catGetData();
+  const parent=data.find(function(x){return x.cod===parentCod;});
+  const tipo=parent?parent.tipo:'despesa';
   const lvl=parentCod.split('.').length;
   const direct=data.filter(function(x){return x.cod.indexOf(parentCod+'.')===0&&x.cod.split('.').length===lvl+1;});
   const nums=direct.map(function(x){return parseInt(x.cod.split('.').pop())||0;});
