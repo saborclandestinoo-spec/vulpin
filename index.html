@@ -7352,12 +7352,9 @@ function buildCustomDrop(dropId, tipo, onSelect) {
       html+=`<div class="cd-group" style="border-top:none;margin-top:0"><div class="cd-group-dot" style="background:${gc}"></div>${pc.cod} — ${pc.nome}</div>`;
       return;
     }
-    if(depth===3){
-      html+=`<div class="cd-sub" style="padding-left:16px;font-weight:600;color:var(--t2)">↳ ${pc.cod} — ${pc.nome}</div>`;
-      return;
-    }
-    const indent=depth===4?32:depth===5?44:20;
-    html+=`<div class="cd-item" style="padding-left:${indent}px" data-cod="${pc.cod}" onclick="selectCustomDrop('${dropId}','${pc.cod}','${safeName}',event)">${pc.cod} — ${pc.nome}</div>`;
+    const indent=depth===3?16:depth===4?28:depth===5?40:16;
+    const weight=depth===3?'600':'400';
+    html+=`<div class="cd-item" style="padding-left:${indent}px;font-weight:${weight}" data-cod="${pc.cod}" onclick="selectCustomDrop('${dropId}','${pc.cod}','${safeName}',event)">${pc.cod} — ${pc.nome}</div>`;
   });
   drop.innerHTML = html;
 }
