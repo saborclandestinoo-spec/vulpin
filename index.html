@@ -12943,7 +12943,13 @@ function renderHistorico(){
 // syncRange — divide período em janelas de 7 dias para evitar overflow do localStorage
 async function syncRange(){
   const cfg=getCWConfig();if(!cfg.token){alert('Configure o Cardápio Web primeiro.');return;}
-  if(!_rp.start){alert('Selecione um período.');return;}
+  if(!_rp.start){
+    // Auto-seleciona o mês atual se não tiver período
+    const t=new Date();
+    _rp.start=new Date(t.getFullYear(),t.getMonth(),1);
+    _rp.end=new Date(t.getFullYear(),t.getMonth()+1,0);
+    renderRpCalendars();
+  }
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
 
