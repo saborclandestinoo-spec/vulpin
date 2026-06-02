@@ -8048,7 +8048,14 @@ setTimeout(() => qzConnect(), 1500);
 
 
 
+var _deleteModal=null;
+
+function _closeDeleteModal(){
+  if(_deleteModal){_deleteModal.remove();_deleteModal=null;}
+}
+
 function _doDeleteLanc(ids){
+  _closeDeleteModal();
   const idSet=new Set(ids);
   const _est=getEstMP();
   let _mudou=false;
@@ -8064,6 +8071,26 @@ function _doDeleteLanc(ids){
   if(currentPage==='dashboard')renderDashboard();
 }
 
+function _showDeleteModal(totalParcelas, idSoEste, idsTodos){
+  _closeDeleteModal();
+  const d=document.createElement('div');
+  d.id='delete-parc-modal';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center';
+  d.innerHTML='<div style="background:var(--bg);border-radius:16px;padding:28px;width:360px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2)">'
+    +'<div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">Excluir lançamento parcelado</div>'
+    +'<div style="font-size:13px;color:var(--t3);margin-bottom:20px">Este lançamento faz parte de um grupo de <b>'+totalParcelas+' parcelas</b>. O que deseja excluir?</div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<button id="del-so-este" style="padding:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;cursor:pointer;color:var(--t);text-align:left">Excluir somente este lançamento</button>'
+    +'<button id="del-todos" style="padding:12px;border:1px solid var(--red);border-radius:10px;background:#fff5f5;font-size:13px;font-weight:600;cursor:pointer;color:var(--red);text-align:left">Excluir todas as '+totalParcelas+' parcelas</button>'
+    +'<button id="del-cancel" style="padding:10px;border:none;background:none;font-size:13px;cursor:pointer;color:var(--t3)">Cancelar</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+  _deleteModal=d;
+  d.querySelector('#del-so-este').onclick=function(){_doDeleteLanc([idSoEste]);};
+  d.querySelector('#del-todos').onclick=function(){_doDeleteLanc(idsTodos);};
+  d.querySelector('#del-cancel').onclick=_closeDeleteModal;
+}
+
 function deleteDesp(){
   if(!editLancId)return;
   const lanc=getLanc().find(x=>x.id===editLancId);
@@ -8071,18 +8098,7 @@ function deleteDesp(){
   const grupo=grupoId?getLanc().filter(x=>x.grupoId===grupoId):[];
   if(grupo.length>1){
     // Show custom modal for parcelado
-    const d=document.createElement('div');
-    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
-    d.innerHTML=`<div style="background:var(--bg);border-radius:16px;padding:28px;width:360px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18)">
-      <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">Excluir lançamento parcelado</div>
-      <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Este lançamento faz parte de um grupo de <b>${grupo.length} parcelas</b>. O que deseja excluir?</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <button onclick="this.closest('[style*=fixed]').remove();_doDeleteLanc(['${editLancId}'])" style="padding:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;cursor:pointer;color:var(--t);text-align:left">Excluir somente este lançamento</button>
-        <button onclick="this.closest('[style*=fixed]').remove();_doDeleteLanc(${JSON.stringify(grupo.map(x=>x.id))})" style="padding:12px;border:1px solid var(--red);border-radius:10px;background:#fff5f5;font-size:13px;font-weight:600;cursor:pointer;color:var(--red);text-align:left">Excluir todas as ${grupo.length} parcelas</button>
-        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px;border:none;background:none;font-size:13px;cursor:pointer;color:var(--t3)">Cancelar</button>
-      </div>
-    </div>`;
-    document.body.appendChild(d);
+    _showDeleteModal(grupo.length, editLancId, grupo.map(x=>x.id));
   } else {
     showConfirm('Excluir despesa','Tem certeza que deseja excluir este lançamento?','🗑️',()=>{
       _doDeleteLanc([editLancId]);
@@ -8166,18 +8182,7 @@ function deleteRec(){
   const grupoId=lanc&&lanc.grupoId;
   const grupo=grupoId?getLanc().filter(x=>x.grupoId===grupoId):[];
   if(grupo.length>1){
-    const d=document.createElement('div');
-    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
-    d.innerHTML=`<div style="background:var(--bg);border-radius:16px;padding:28px;width:360px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.18)">
-      <div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">Excluir lançamento parcelado</div>
-      <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Este lançamento faz parte de um grupo de <b>${grupo.length} parcelas</b>. O que deseja excluir?</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <button onclick="this.closest('[style*=fixed]').remove();_doDeleteLanc(['${editLancId}'])" style="padding:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;cursor:pointer;color:var(--t);text-align:left">Excluir somente este lançamento</button>
-        <button onclick="this.closest('[style*=fixed]').remove();_doDeleteLanc(${JSON.stringify(grupo.map(x=>x.id))})" style="padding:12px;border:1px solid var(--red);border-radius:10px;background:#fff5f5;font-size:13px;font-weight:600;cursor:pointer;color:var(--red);text-align:left">Excluir todas as ${grupo.length} parcelas</button>
-        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px;border:none;background:none;font-size:13px;cursor:pointer;color:var(--t3)">Cancelar</button>
-      </div>
-    </div>`;
-    document.body.appendChild(d);
+    _showDeleteModal(grupo.length, editLancId, grupo.map(x=>x.id));
   } else {
     showConfirm('Excluir receita','Tem certeza que deseja excluir este lançamento?','🗑️',()=>{
       _doDeleteLanc([editLancId]);
@@ -13725,13 +13730,37 @@ function lancBulkPago(pago){
 function lancBulkDel(){
   const ids=lancGetSelected();
   if(!ids.length)return;
-  showConfirm('Excluir '+ids.length+' lançamento(s)?','Essa ação não pode ser desfeita.','🗑️',function(){
-    const all=getLanc().filter(function(l){return!ids.includes(l.id);});
-    S.set('lancamentos',all);
-    lancBulkClear();
-    renderLanc();
-    if(typeof renderFluxo==='function')renderFluxo();
-  });
+  const lancs=getLanc();
+  // Collect all grupoIds from selected
+  const grupoIds=new Set(ids.map(function(id){const l=lancs.find(function(x){return x.id===id;});return l&&l.grupoId?l.grupoId:null;}).filter(Boolean));
+  // Find extra parcelas not selected but in same grupo
+  const extraIds=lancs.filter(function(l){return l.grupoId&&grupoIds.has(l.grupoId)&&!ids.includes(l.id);}).map(function(l){return l.id;});
+  if(extraIds.length>0){
+    // Some selected items have other parcelas not selected
+    const totalAfetados=ids.length+extraIds.length;
+    _closeDeleteModal();
+    const d=document.createElement('div');
+    d.id='delete-parc-modal';
+    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center';
+    d.innerHTML='<div style="background:var(--bg);border-radius:16px;padding:28px;width:380px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2)">'
+      +'<div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">Lançamentos parcelados selecionados</div>'
+      +'<div style="font-size:13px;color:var(--t3);margin-bottom:20px">Alguns dos '+ids.length+' selecionados fazem parte de grupos parcelados com mais <b>'+extraIds.length+' parcelas</b> não selecionadas.</div>'
+      +'<div style="display:flex;flex-direction:column;gap:10px">'
+      +'<button id="bdel-sel" style="padding:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;cursor:pointer;color:var(--t);text-align:left">Excluir somente os '+ids.length+' selecionados</button>'
+      +'<button id="bdel-todos" style="padding:12px;border:1px solid var(--red);border-radius:10px;background:#fff5f5;font-size:13px;font-weight:600;cursor:pointer;color:var(--red);text-align:left">Excluir todos (incluindo '+extraIds.length+' não selecionados)</button>'
+      +'<button id="bdel-cancel" style="padding:10px;border:none;background:none;font-size:13px;cursor:pointer;color:var(--t3)">Cancelar</button>'
+      +'</div></div>';
+    document.body.appendChild(d);
+    _deleteModal=d;
+    d.querySelector('#bdel-sel').onclick=function(){_closeDeleteModal();_doDeleteLanc(ids);lancBulkClear();};
+    d.querySelector('#bdel-todos').onclick=function(){_closeDeleteModal();_doDeleteLanc(ids.concat(extraIds));lancBulkClear();};
+    d.querySelector('#bdel-cancel').onclick=_closeDeleteModal;
+  } else {
+    showConfirm('Excluir '+ids.length+' lançamento(s)?','Essa ação não pode ser desfeita.','🗑️',function(){
+      _doDeleteLanc(ids);
+      lancBulkClear();
+    });
+  }
 }
 
 function catImportarPlanoVulpin(){
