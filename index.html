@@ -12991,8 +12991,11 @@ async function syncRange(){
 
   for(let wi=0;wi<janelas.length;wi++){
     const {s,e}=janelas[wi];
-    const sd=d2sBRT(s)+'T00:00:00-03:00';
-    const ed=d2sBRT(e)+'T23:59:59-03:00';
+    // Overlap de 3h para cobrir pedidos na virada UTC/BRT
+    const sOver=new Date(s); sOver.setHours(sOver.getHours()-3);
+    const eOver=new Date(e); eOver.setHours(eOver.getHours()+3);
+    const sd=sOver.toISOString().slice(0,19)+'-03:00';
+    const ed=eOver.toISOString().slice(0,19)+'-03:00';
     const semanaLabel=`Sem ${wi+1}/${janelas.length}`;
     for(let page=1;page<=500;page++){
       if(st)st.textContent=`${semanaLabel} — pág ${page} — ${totalGeral} ped...`;
