@@ -11932,7 +11932,7 @@ async function syncMes(){
   const ed=`${y}-${String(m).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}T23:59:59-03:00`;
   async function fetchPagina(page){
     // Usa pedidos.js com start_date/end_date/page — sem precisar de arquivo novo
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
+    const url=`/api/pedidos?storeCode=${encodeURIComponent(cfg.storeCode||'')}&token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}&per_page=100`;
     for(let t=0;t<3;t++){
       try{
         const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
@@ -12969,7 +12969,7 @@ async function syncRange(){
   const seenIds=new Set();
 
   async function fetchPaginaRange(sd,ed,page){
-    const url=`/api/pedidos?token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}`;
+    const url=`/api/pedidos?storeCode=${encodeURIComponent(cfg.storeCode||'')}&token=${encodeURIComponent(cfg.token)}&start_date=${encodeURIComponent(sd)}&end_date=${encodeURIComponent(ed)}&page=${page}&per_page=100`;
     for(let t=0;t<3;t++){
       try{
         const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
