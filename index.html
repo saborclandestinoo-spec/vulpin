@@ -8338,16 +8338,20 @@ function saveLancTipo(tipo,andAnother){
     const valorParc=valor; // cada parcela tem o valor informado
     const grupoId=uid();
     const vencBase=obj.venc||obj.data||new Date().toISOString().slice(0,10);
-    const dataBase=new Date(vencBase);
+    // Parse sem timezone para evitar bug de UTC offset
+    const _vp=vencBase.split('-').map(Number);
     for(let i=0;i<nParc;i++){
-      const d=new Date(dataBase);
-      if(freqParc==='mensal')        d.setMonth(d.getMonth()+i);
-      else if(freqParc==='bimestral')  d.setMonth(d.getMonth()+i*2);
-      else if(freqParc==='trimestral') d.setMonth(d.getMonth()+i*3);
-      else if(freqParc==='quinzenal')  d.setDate(d.getDate()+i*15);
-      else if(freqParc==='semanal')    d.setDate(d.getDate()+i*7);
-      else if(freqParc==='anual')      d.setFullYear(d.getFullYear()+i);
-      const dt=d.toISOString().slice(0,10);
+      let yr=_vp[0],mo=_vp[1]-1,dy=_vp[2];
+      if(freqParc==='mensal'){mo+=i;}
+      else if(freqParc==='bimestral'){mo+=i*2;}
+      else if(freqParc==='trimestral'){mo+=i*3;}
+      else if(freqParc==='anual'){yr+=i;}
+      else if(freqParc==='quinzenal'){const tmp=new Date(yr,mo,dy+i*15);yr=tmp.getFullYear();mo=tmp.getMonth();dy=tmp.getDate();}
+      else if(freqParc==='semanal'){const tmp=new Date(yr,mo,dy+i*7);yr=tmp.getFullYear();mo=tmp.getMonth();dy=tmp.getDate();}
+      // Normalize month overflow
+      const norm=new Date(yr,mo,dy);
+      yr=norm.getFullYear();mo=norm.getMonth();dy=norm.getDate();
+      const dt=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(dy).padStart(2,'0');
       data.push({
         ...obj,
         id:uid(),
