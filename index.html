@@ -11939,7 +11939,7 @@ async function syncMes(){
         if(r.ok){
           const j=await r.json();
           // suporta {orders:[],hasMore:bool} ou array direto
-          if(Array.isArray(j))return{orders:j,hasMore:j.length>=50};
+          if(Array.isArray(j))return{orders:j,hasMore:j.length>=1};
           const ords=j.orders||j.data||[];
           // hasMore: explicit flag OR got a full page (>=50)
           return{orders:ords,hasMore:j.hasMore===true||j.has_more===true||ords.length>=50};
@@ -12955,17 +12955,14 @@ async function syncRange(){
   const btn=document.getElementById('btn-sync-mes'),st=document.getElementById('hist-sync-status');
   if(btn)btn.disabled=true;
 
-  // Janelas de 3 dias para não perder pedidos na virada
+  // Janelas de 1 dia — máxima cobertura para não perder pedidos
   const startOrig=new Date(_rp.start);
   const endOrig=new Date(_rp.end||_rp.start);
   const janelas=[];
   let cur=new Date(startOrig);
   while(cur<=endOrig){
-    const wEnd=new Date(cur);
-    wEnd.setDate(wEnd.getDate()+2);
-    if(wEnd>endOrig)wEnd.setTime(endOrig.getTime());
-    janelas.push({s:new Date(cur),e:new Date(wEnd)});
-    cur.setDate(cur.getDate()+3);
+    janelas.push({s:new Date(cur),e:new Date(cur)});
+    cur.setDate(cur.getDate()+1);
   }
 
   let totalGeral=0;
@@ -12978,8 +12975,8 @@ async function syncRange(){
         const r=await fetch(url,{signal:AbortSignal.timeout(20000),cache:'no-store'});
         if(r.ok){
           const j=await r.json();
-          if(Array.isArray(j))return{orders:j,hasMore:j.length>=50};
-          const _o2=j.orders||j.data||[];return{orders:_o2,hasMore:j.hasMore===true||j.has_more===true||_o2.length>=50};
+          if(Array.isArray(j))return{orders:j,hasMore:j.length>=1};
+          const _o2=j.orders||j.data||[];return{orders:_o2,hasMore:j.hasMore===true||j.has_more===true||_o2.length>=1};
         }
         if(st)st.textContent=`Erro HTTP ${r.status} pg ${page}`;
         if(r.status===429){await new Promise(x=>setTimeout(x,2000));continue;}
