@@ -7244,7 +7244,7 @@ function renderLanc(){
   });
 
   // Sort by date desc
-  const allRows=lancRows.map((r,i)=>({html:r,date:data[i]?.data||data[i]?.venc||''}));
+  const allRows=lancRows.map((r,i)=>({html:r,date:data[i]?.venc||data[i]?.data||''}));
   allRows.sort((a,b)=>b.date.localeCompare(a.date));
 
   tbody.innerHTML=allRows.length?allRows.map(r=>r.html).join(''):`<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:24px">Nenhum lançamento encontrado</td></tr>`;
