@@ -8071,6 +8071,68 @@ function _doDeleteLanc(ids){
   if(currentPage==='dashboard')renderDashboard();
 }
 
+function _showEditParcModal(total, editId, grupo){
+  _closeDeleteModal();
+  const d=document.createElement('div');
+  d.id='delete-parc-modal';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center';
+  d.innerHTML='<div style="background:var(--bg);border-radius:16px;padding:28px;width:380px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.2)">'
+    +'<div style="font-size:15px;font-weight:800;color:var(--t);margin-bottom:8px">Editar lançamento recorrente</div>'
+    +'<div style="font-size:13px;color:var(--t3);margin-bottom:20px">Este lançamento faz parte de um grupo de <b>'+total+' parcelas</b>. O que deseja editar?</div>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<button id="edt-so-este" style="padding:12px;border:1px solid var(--bor);border-radius:10px;background:var(--bg);font-size:13px;font-weight:600;cursor:pointer;color:var(--t);text-align:left">Editar somente este lançamento</button>'
+    +'<button id="edt-todos" style="padding:12px;border:1px solid var(--fox);border-radius:10px;background:rgba(255,107,43,.05);font-size:13px;font-weight:600;cursor:pointer;color:var(--fox);text-align:left">Editar todos os '+total+' lançamentos</button>'
+    +'<button id="edt-cancel" style="padding:10px;border:none;background:none;font-size:13px;cursor:pointer;color:var(--t3)">Cancelar</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+  _deleteModal=d;
+  d.querySelector('#edt-so-este').onclick=function(){
+    _closeDeleteModal();
+    const p=window._editParcObj;
+    if(!p)return;
+    // Edit only this one — preserve grupoId/parcela/recorrente from original
+    const orig=p.data.find(function(x){return x.id===p.editLancId;});
+    p.obj.grupoId=orig?orig.grupoId:p.obj.grupoId;
+    p.obj.parcela=orig?orig.parcela:p.obj.parcela;
+    p.obj.recorrente=orig?orig.recorrente:p.obj.recorrente;
+    const updated=p.data.map(function(x){return x.id===p.editLancId?p.obj:x;});
+    S.set('lancamentos',updated);
+    closeM('modal-desp');closeM('modal-rec');editLancId=null;
+    renderLanc();if(typeof renderFluxo==='function')renderFluxo();
+    if(currentPage==='dashboard')renderDashboard();
+    window._editParcObj=null;
+  };
+  d.querySelector('#edt-todos').onclick=function(){
+    _closeDeleteModal();
+    const p=window._editParcObj;
+    if(!p)return;
+    // Apply same changes to all in grupo — keep each one's venc/data/parcela/comp
+    const updated=p.data.map(function(x){
+      if(x.id===p.editLancId)return p.obj;
+      if(x.grupoId&&x.grupoId===p.obj.grupoId){
+        // Update non-date fields only (desc, valor, catCod, bancoId, forma, obs, etc)
+        return Object.assign({},x,{
+          desc:p.obj.desc,valor:p.obj.valor,
+          catCod:p.obj.catCod,catNome:p.obj.catNome,
+          bancoId:p.obj.bancoId,ccId:p.obj.ccId,
+          forma:p.obj.forma,obs:p.obj.obs,
+          forn:p.obj.forn,cliente:p.obj.cliente,
+        });
+      }
+      return x;
+    });
+    S.set('lancamentos',updated);
+    closeM('modal-desp');closeM('modal-rec');editLancId=null;
+    renderLanc();if(typeof renderFluxo==='function')renderFluxo();
+    if(currentPage==='dashboard')renderDashboard();
+    window._editParcObj=null;
+  };
+  d.querySelector('#edt-cancel').onclick=function(){
+    _closeDeleteModal();
+    window._editParcObj=null;
+  };
+}
+
 function _showDeleteModal(totalParcelas, idSoEste, idsTodos){
   _closeDeleteModal();
   const d=document.createElement('div');
@@ -8395,12 +8457,18 @@ function saveLancTipo(tipo,andAnother){
     S.set('lancamentos',data);
   } else {
     if(editLancId){
-      // Se mudou o vencimento num recorrente/parcelado, desvincula do grupo
       const orig=data.find(x=>x.id===editLancId);
-      if(orig&&orig.grupoId&&orig.venc!==obj.venc){
-        obj.grupoId=undefined;
-        obj.recorrente=undefined;
-        obj.parcela=undefined;
+      const grupoId=orig&&orig.grupoId;
+      const grupo=grupoId?data.filter(x=>x.grupoId===grupoId&&x.id!==editLancId):[];
+      if(grupo.length>0){
+        // Parcelado/recorrente — pergunta o que editar
+        // Store obj for callback
+        window._editParcObj={obj,data,editLancId,grupo,prefixSave:prefix};
+        // Suspend _salvandoLanc so we can call save again
+        _salvandoLanc=false;
+        // Show modal
+        _showEditParcModal(grupo.length+1, editLancId, grupo);
+        return;
       }
       data=data.map(x=>x.id===editLancId?obj:x);
     } else {
