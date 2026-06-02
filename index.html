@@ -8356,7 +8356,7 @@ function saveLancTipo(tipo,andAnother){
         ...obj,
         id:uid(),
         valor:parseFloat(valorParc.toFixed(2)),
-        data:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:obj.comp||dt,
         dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
@@ -8384,7 +8384,7 @@ function saveLancTipo(tipo,andAnother){
       data.push({
         ...obj,
         id:uid(),
-        data:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:obj.comp||dt,
         dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
