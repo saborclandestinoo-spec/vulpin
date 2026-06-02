@@ -7595,6 +7595,19 @@ function openDesp(id){
     if(despChk){despChk.checked=false;document.getElementById('mdesp-est-fields').style.display='none';}
     resetCustomDrop('mdesp-mp-display','mdesp-mp','Selecione o insumo');
     const dQtd=document.getElementById('mdesp-est-qtd');if(dQtd)dQtd.value='';
+    // Reset tipo lançamento
+    setTipoLanc('mdesp','unico','Único',null);
+    const numParcEl=document.getElementById('mdesp-num-parc');if(numParcEl)numParcEl.value='';
+    const freqParcEl=document.getElementById('mdesp-freq-parc');if(freqParcEl)freqParcEl.value='mensal';
+    const parcPrev=document.getElementById('mdesp-parc-preview');if(parcPrev)parcPrev.textContent='—';
+    // Reset tipo lancamento
+    setTipoLanc('mdesp','unico','Único',null);
+    var _npEl=document.getElementById('mdesp-num-parc');if(_npEl)_npEl.value='';
+    var _fpEl=document.getElementById('mdesp-freq-parc');if(_fpEl)_fpEl.value='mensal';
+    var _ppEl=document.getElementById('mdesp-parc-preview');if(_ppEl)_ppEl.textContent='—';
+    // Reset tipo lancamento
+    setTipoLanc('mdesp','unico','Único',null);
+    (function(){var el=document.getElementById('mdesp-num-parc');if(el)el.value='';el=document.getElementById('mdesp-freq-parc');if(el)el.value='mensal';el=document.getElementById('mdesp-parc-preview');if(el)el.textContent='—';})();
     // Reset cookies section
     const prodChk=document.getElementById('mdesp-prod-chk');
     if(prodChk){prodChk.checked=false;}
@@ -8105,6 +8118,10 @@ function openRec(id){
     resetCustomDrop('mrec-forma-display','mrec-forma','—');
     resetCustomDrop('mrec-cat-display','mrec-cat','Selecione uma categoria');
     resetCustomDrop('mrec-cc-display','mrec-cc','—');
+    // Reset tipo lançamento
+    setTipoLanc('mrec','unico','Único',null);
+    const _npe=document.getElementById('mrec-num-parc');if(_npe)_npe.value='';
+    const _fpe=document.getElementById('mrec-freq-parc');if(_fpe)_fpe.value='mensal';
     // reset estoque section
     const recChk=document.getElementById('mrec-est-chk');
     if(recChk){recChk.checked=false;document.getElementById('mrec-est-fields').style.display='none';}
