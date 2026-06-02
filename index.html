@@ -8086,47 +8086,52 @@ function _showEditParcModal(total, editId, grupo){
     +'</div></div>';
   document.body.appendChild(d);
   _deleteModal=d;
+
+  function _finalizaEdit(updated){
+    S.set('lancamentos',updated);
+    closeM('modal-desp');closeM('modal-rec');editLancId=null;
+    renderLanc();if(typeof renderFluxo==='function')renderFluxo();
+    if(currentPage==='dashboard')renderDashboard();
+    window._editParcObj=null;
+  }
+
   d.querySelector('#edt-so-este').onclick=function(){
     _closeDeleteModal();
     const p=window._editParcObj;
     if(!p)return;
-    // Edit only this one — preserve grupoId/parcela/recorrente from original
-    const orig=p.data.find(function(x){return x.id===p.editLancId;});
-    p.obj.grupoId=orig?orig.grupoId:p.obj.grupoId;
-    p.obj.parcela=orig?orig.parcela:p.obj.parcela;
-    p.obj.recorrente=orig?orig.recorrente:p.obj.recorrente;
+    const orig=p.orig;
+    // Preserve group fields from original
+    p.obj.grupoId=orig.grupoId;
+    p.obj.parcela=orig.parcela;
+    p.obj.recorrente=orig.recorrente;
     const updated=p.data.map(function(x){return x.id===p.editLancId?p.obj:x;});
-    S.set('lancamentos',updated);
-    closeM('modal-desp');closeM('modal-rec');editLancId=null;
-    renderLanc();if(typeof renderFluxo==='function')renderFluxo();
-    if(currentPage==='dashboard')renderDashboard();
-    window._editParcObj=null;
+    _finalizaEdit(updated);
   };
+
   d.querySelector('#edt-todos').onclick=function(){
     _closeDeleteModal();
     const p=window._editParcObj;
     if(!p)return;
-    // Apply same changes to all in grupo — keep each one's venc/data/parcela/comp
+    const gid=p.orig.grupoId;
     const updated=p.data.map(function(x){
-      if(x.id===p.editLancId)return p.obj;
-      if(x.grupoId&&x.grupoId===p.obj.grupoId){
-        // Update non-date fields only (desc, valor, catCod, bancoId, forma, obs, etc)
-        return Object.assign({},x,{
-          desc:p.obj.desc,valor:p.obj.valor,
-          catCod:p.obj.catCod,catNome:p.obj.catNome,
-          bancoId:p.obj.bancoId,ccId:p.obj.ccId,
-          forma:p.obj.forma,obs:p.obj.obs,
-          forn:p.obj.forn,cliente:p.obj.cliente,
-        });
-      }
-      return x;
+      if(!x.grupoId||x.grupoId!==gid)return x;
+      // Keep each item's own date/venc/comp/parcela/recorrente/grupoId
+      return Object.assign({},x,{
+        desc:p.obj.desc,
+        valor:p.obj.valor,
+        catCod:p.obj.catCod,
+        catNome:p.obj.catNome,
+        bancoId:p.obj.bancoId,
+        ccId:p.obj.ccId,
+        forma:p.obj.forma,
+        obs:p.obj.obs,
+        forn:p.obj.forn,
+        cliente:p.obj.cliente,
+      });
     });
-    S.set('lancamentos',updated);
-    closeM('modal-desp');closeM('modal-rec');editLancId=null;
-    renderLanc();if(typeof renderFluxo==='function')renderFluxo();
-    if(currentPage==='dashboard')renderDashboard();
-    window._editParcObj=null;
+    _finalizaEdit(updated);
   };
+
   d.querySelector('#edt-cancel').onclick=function(){
     _closeDeleteModal();
     window._editParcObj=null;
@@ -8461,12 +8466,8 @@ function saveLancTipo(tipo,andAnother){
       const grupoId=orig&&orig.grupoId;
       const grupo=grupoId?data.filter(x=>x.grupoId===grupoId&&x.id!==editLancId):[];
       if(grupo.length>0){
-        // Parcelado/recorrente — pergunta o que editar
-        // Store obj for callback
-        window._editParcObj={obj,data,editLancId,grupo,prefixSave:prefix};
-        // Suspend _salvandoLanc so we can call save again
+        window._editParcObj={obj,data,editLancId,orig,grupo};
         _salvandoLanc=false;
-        // Show modal
         _showEditParcModal(grupo.length+1, editLancId, grupo);
         return;
       }
