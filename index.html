@@ -1258,16 +1258,26 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
       <!-- Barra de ações em massa -->
-      <div id="lanc-bulk-bar" style="display:none;background:var(--fox);padding:10px 20px;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap">
-        <span id="lanc-bulk-count" style="color:#fff;font-size:13px;font-weight:700;margin-right:4px"></span>
-        <button onclick="lancBulkCat()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📂 Categoria</button>
-        <button onclick="lancBulkConta()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🏦 Conta</button>
-        <button onclick="lancBulkCC()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">📊 Centro de Custo</button>
-        <button onclick="lancBulkForma()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">💳 Forma Pgto</button>
-        <button onclick="lancBulkPago(true)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">✅ Marcar Pago</button>
-        <button onclick="lancBulkPago(false)" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">⏳ Marcar Pendente</button>
-        <button onclick="lancBulkDel()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer">🗑 Excluir</button>
-        <button onclick="lancBulkClear()" style="margin-left:auto;background:none;color:rgba(255,255,255,.8);border:none;font-size:20px;cursor:pointer;line-height:1">×</button>
+      <!-- Bulk bar — bottom fixed style -->
+      <div id="lanc-bulk-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:2px solid var(--fox);padding:12px 24px;align-items:center;gap:12px;z-index:500;box-shadow:0 -4px 20px rgba(0,0,0,.12)">
+        <span id="lanc-bulk-count" style="font-size:13px;font-weight:700;color:var(--t)"></span>
+        <span style="color:var(--bor2)">|</span>
+        <span id="lanc-bulk-total" style="font-size:13px;font-weight:700;color:var(--fox)"></span>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;position:relative">
+          <button onclick="lancBulkActionsToggle()" style="background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t);display:flex;align-items:center;gap:6px">
+            Ações <span id="lanc-bulk-arrow">▾</span>
+          </button>
+          <div id="lanc-bulk-menu" style="display:none;position:absolute;bottom:calc(100% + 8px);right:0;background:var(--bg);border:1px solid var(--bor);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.14);min-width:200px;overflow:hidden;z-index:600">
+            <button onclick="lancBulkCat();lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--t)">📂 Alterar Categoria</button>
+            <button onclick="lancBulkConta();lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--t)">🏦 Alterar Conta</button>
+            <button onclick="lancBulkCC();lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--t)">📊 Centro de Custo</button>
+            <button onclick="lancBulkForma();lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--t)">💳 Forma de Pagamento</button>
+            <button onclick="lancBulkPago(true);lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--green)">✅ Marcar como Pago</button>
+            <button onclick="lancBulkPago(false);lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;border-bottom:1px solid var(--bor2);font-size:13px;cursor:pointer;color:var(--amber)">⏳ Marcar como Pendente</button>
+            <button onclick="lancBulkDel();lancBulkActionsToggle()" style="width:100%;text-align:left;padding:11px 16px;background:none;border:none;font-size:13px;cursor:pointer;color:var(--red)">🗑 Excluir Selecionados</button>
+          </div>
+          <button onclick="lancBulkClear()" style="background:none;border:1px solid var(--bor);border-radius:8px;padding:8px 12px;font-size:16px;cursor:pointer;color:var(--t3);line-height:1">×</button>
+        </div>
       </div>
       <!-- Pills de situação -->
       <div id="lanc-pills-bar" style="background:var(--bg);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0">
@@ -7225,9 +7235,35 @@ function lancBulkUpdate(){
   const sel=document.querySelectorAll('.lanc-chk:checked');
   const bar=document.getElementById('lanc-bulk-bar');
   const cnt=document.getElementById('lanc-bulk-count');
+  const totEl=document.getElementById('lanc-bulk-total');
   if(bar){bar.style.display=sel.length?'flex':'none';}
   if(cnt)cnt.textContent=sel.length+' selecionado'+(sel.length!==1?'s':'');
+  if(totEl){
+    const ids=Array.from(sel).map(c=>c.value||c.dataset.id);
+    const lancs=getLanc();
+    const total=ids.reduce(function(s,id){const l=lancs.find(function(x){return String(x.id)===String(id);});return s+(l?parseFloat(l.valor)||0:0);},0);
+    totEl.textContent='R$ '+fmtN(total);
+  }
 }
+
+function lancBulkActionsToggle(){
+  const menu=document.getElementById('lanc-bulk-menu');
+  const arrow=document.getElementById('lanc-bulk-arrow');
+  if(!menu)return;
+  const open=menu.style.display==='block';
+  menu.style.display=open?'none':'block';
+  if(arrow)arrow.textContent=open?'▾':'▴';
+}
+
+// Close menu on outside click
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('lanc-bulk-menu');
+  if(menu&&menu.style.display==='block'&&!e.target.closest('#lanc-bulk-bar')){
+    menu.style.display='none';
+    const arrow=document.getElementById('lanc-bulk-arrow');
+    if(arrow)arrow.textContent='▾';
+  }
+});
 function lancGetSelected(){return Array.from(document.querySelectorAll('.lanc-chk:checked')).map(c=>c.value||c.dataset.id).filter(Boolean);}
 function lancBulkClear(){
   document.querySelectorAll('.lanc-chk').forEach(c=>c.checked=false);
@@ -13515,57 +13551,21 @@ function lancBulkCat(){
         <div class="flt-custom-in" id="blk-cat-display" style="color:var(--t3);min-height:46px;padding:12px 36px 12px 14px;font-size:13px">— Manter atual —</div>
         <svg class="flt-custom-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="#A0A0B8" stroke-width="1.5" stroke-linecap="round"/></svg>
       </div>
-      <div class="custom-drop" id="blk-cat-drop" style="position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10001;max-height:260px"></div>
+      <div class="custom-drop" id="blk-cat-drop" style="position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:10001;max-height:300px"></div>
     </div>`;
   lancBulkModal('Alterar Categoria', bodyHtml, function(){
     var cod=document.getElementById('blk-cat-val').value;
     if(!cod)return;
     var display=document.getElementById('blk-cat-display');
     var nome=display?display.textContent.trim():'';
-    // Extract just name part after " — "
     var parts=nome.split(' — ');
     var nomeClean=parts.length>1?parts.slice(1).join(' — '):nome;
     lancBulkApply(function(l){l.catCod=cod;l.catNome=nomeClean;});
   });
   setTimeout(function(){
-    var ids=lancGetSelected();
-    var lancs=getLanc();
-    var tipos=new Set(ids.map(function(id){
-      var l=lancs.find(function(x){return String(x.id)===String(id);});
-      return l?l.tipo:null;
-    }).filter(Boolean));
-    var tipo=tipos.has('despesa')&&!tipos.has('receita')?'despesa':
-              tipos.has('receita')&&!tipos.has('despesa')?'receita':null;
+    buildCustomDrop('blk-cat-drop','all',null);
     var drop=document.getElementById('blk-cat-drop');
     if(!drop)return;
-    // Build items helper
-    function buildItems(treeKey){
-      var tree=PC_TREE[treeKey]||[];
-      var html='';
-      tree.forEach(function(group){
-        var gc=treeKey==='receita'?'#27AE60':'#E74C3C';
-        html+='<div class="cd-group"><div class="cd-group-dot" style="background:'+gc+'"></div>'+group.label+'</div>';
-        (group.children||[]).forEach(function(sub){
-          if(typeof sub==='string'){
-            var pc=PLANO_CONTAS.find(function(c){return c.cod===sub;});
-            if(pc)html+='<div class="cd-item cd-item-l1" data-cod="'+pc.cod+'">'+pc.cod+' — '+pc.nome+'</div>';
-          } else {
-            html+='<div class="cd-sub">\u21b3 '+sub.label+'</div>';
-            (sub.children||[]).forEach(function(cod){
-              var pc=PLANO_CONTAS.find(function(c){return c.cod===cod;});
-              if(pc)html+='<div class="cd-item" data-cod="'+pc.cod+'">'+pc.cod+' — '+pc.nome+'</div>';
-            });
-          }
-        });
-      });
-      return html;
-    }
-    var searchHtml='<div class="cd-search"><input class="cd-search-in" placeholder="Buscar categoria..." oninput="filterCustomDrop(\'blk-cat-drop\',this.value)"></div>';
-    if(tipo){
-      drop.innerHTML=searchHtml+buildItems(tipo);
-    } else {
-      drop.innerHTML=searchHtml+buildItems('despesa')+buildItems('receita');
-    }
     drop.querySelectorAll('.cd-item').forEach(function(el){
       el.onclick=function(e){
         e.stopPropagation();
@@ -13575,11 +13575,13 @@ function lancBulkCat(){
         var disp=document.getElementById('blk-cat-display');
         if(disp){disp.textContent=el.textContent.trim();disp.style.color='var(--t)';}
         drop.classList.remove('open');
-        document.getElementById('blk-cat-wrap').classList.remove('active');
+        var wrap=document.getElementById('blk-cat-wrap');
+        if(wrap)wrap.classList.remove('active');
       };
     });
   },50);
 }
+
 
 function lancBulkConta(){
   const bancos=typeof getBancos==='function'?getBancos():[];
