@@ -8366,23 +8366,26 @@ function saveLancTipo(tipo,andAnother){
     }
     S.set('lancamentos',data);
   } else if(!editLancId && tipoLanc==='fixo'){
-    // Recorrente — gera N repetições
     const freq=document.getElementById(prefix+'-freq')?.value||'mensal';
     const nRep=parseInt(document.getElementById(prefix+'-num-rep')?.value)||12;
     const total=nRep>0?nRep:12;
     const grupoId=uid();
-    const dataBase=new Date(obj.data||new Date().toISOString().slice(0,10));
+    const vencBase=obj.venc||obj.data||new Date().toISOString().slice(0,10);
+    const _vf=vencBase.split('-').map(Number);
     for(let i=0;i<total;i++){
-      const d=new Date(dataBase);
-      if(freq==='mensal') d.setMonth(d.getMonth()+i);
-      else if(freq==='semanal') d.setDate(d.getDate()+i*7);
-      else if(freq==='quinzenal') d.setDate(d.getDate()+i*15);
-      else if(freq==='anual') d.setFullYear(d.getFullYear()+i);
-      const dt=d.toISOString().slice(0,10);
+      let yr=_vf[0],mo=_vf[1]-1,dy=_vf[2];
+      if(freq==='mensal'){mo+=i;}
+      else if(freq==='anual'){yr+=i;}
+      else if(freq==='semanal'){const tmp=new Date(yr,mo,dy+i*7);yr=tmp.getFullYear();mo=tmp.getMonth();dy=tmp.getDate();}
+      else if(freq==='quinzenal'){const tmp=new Date(yr,mo,dy+i*15);yr=tmp.getFullYear();mo=tmp.getMonth();dy=tmp.getDate();}
+      const norm=new Date(yr,mo,dy);
+      yr=norm.getFullYear();mo=norm.getMonth();dy=norm.getDate();
+      const dt=yr+'-'+String(mo+1).padStart(2,'0')+'-'+String(dy).padStart(2,'0');
       data.push({
         ...obj,
         id:uid(),
-        data:dt,dataPag:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:dt,
+        dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
         recorrente:freq,
@@ -8391,8 +8394,18 @@ function saveLancTipo(tipo,andAnother){
     }
     S.set('lancamentos',data);
   } else {
-    if(editLancId)data=data.map(x=>x.id===editLancId?obj:x);
-    else data.push(obj);
+    if(editLancId){
+      // Se mudou o vencimento num recorrente/parcelado, desvincula do grupo
+      const orig=data.find(x=>x.id===editLancId);
+      if(orig&&orig.grupoId&&orig.venc!==obj.venc){
+        obj.grupoId=undefined;
+        obj.recorrente=undefined;
+        obj.parcela=undefined;
+      }
+      data=data.map(x=>x.id===editLancId?obj:x);
+    } else {
+      data.push(obj);
+    }
     S.set('lancamentos',data);
   }
 
