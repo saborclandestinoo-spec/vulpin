@@ -1255,7 +1255,7 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <!-- Search -->
         <div class="search-wrap" style="min-width:200px;flex:1;max-width:280px">
           <svg class="search-ico" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#A0A0B8" stroke-width="1.2"/><path d="M9 9L12 12" stroke="#A0A0B8" stroke-width="1.2" stroke-linecap="round"/></svg>
-          <input class="search-in" id="lanc-search" placeholder="Pesquise pela descrição" oninput="renderLanc()">
+          <input class="search-in" id="lanc-search" placeholder="Pesquise por descrição, categoria, fornecedor..." oninput="renderLanc()">
         </div>
         <div id="lanc-search-total" style="display:none;font-size:11px;font-weight:700;color:var(--fox);background:var(--fox-l);padding:5px 12px;border-radius:20px;white-space:nowrap"></div>
       </div>
@@ -7192,7 +7192,7 @@ function renderLanc(){
   if(lancTab_current!=='todos')data=data.filter(l=>l.tipo===lancTab_current);
   if(r.start)data=data.filter(l=>{const d=l.venc||l.data||'';return d>=r.start&&d<=r.end;});
   if(bankFilter)data=data.filter(l=>l.bancoId===bankFilter||(l.tipo==='transferencia'&&l.bancoOrigemId===bankFilter));
-  if(search)data=data.filter(l=>l.desc.toLowerCase().includes(search));
+  if(search)data=data.filter(function(l){var s=search;return (l.desc||'').toLowerCase().includes(s)||(l.catNome||'').toLowerCase().includes(s)||(l.catCod||'').toLowerCase().includes(s)||(l.forn||'').toLowerCase().includes(s)||(l.fornecedor||'').toLowerCase().includes(s);});
   if(lancPillFilter==='vencidos')data=data.filter(l=>!l.pago&&l.venc<today);
   if(lancPillFilter==='hoje')data=data.filter(l=>!l.pago&&l.venc===today);
   if(lancPillFilter==='avencer')data=data.filter(l=>!l.pago&&l.venc>today);
