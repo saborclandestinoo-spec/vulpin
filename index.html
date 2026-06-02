@@ -3301,45 +3301,43 @@ function dreGetLinhas(){
 const DRE_COD_DEFAULT={
   // Receita Bruta de Vendas
   rec_bruta:  ['3.1.1'],
-  v_ifood:    ['3.1.1.01'],
-  v_pix:      ['3.1.1.04'],
-  v_din:      ['3.1.1.05'],
-  v_cred:     ['3.1.1.03'],
-  v_deb:      ['3.1.1.02'],
-  v_entrega:  ['3.1.1.07'],
+  v_pix:      ['3.1.1.1'],
+  v_din:      ['3.1.1.2'],
+  v_cred:     ['3.1.1.3'],
+  v_deb:      ['3.1.1.4'],
+  v_ifood:    ['3.1.1.5'],
+  v_entrega:  ['3.1.1.6'],
   // Deduções da Receita Bruta
-  deducoes:   ['3.1.2'],
-  cancelam:   ['3.1.2.01'],
-  descontos:  ['3.1.2.02'],
-  // Impostos sobre Vendas
-  imp_vendas: ['3.1.3'],
-  pis_cofins: ['3.1.3.01'],
-  iss:        ['3.1.3.02'],
-  icms:       ['3.1.3.01'],
-  // CPV
-  cpv:        ['3.2.1'],
-  mp:         ['3.2.1'],
-  emb:        ['3.2.1.06'],
-  mod:        ['3.2.1.08','3.2.1.09'],
+  deducoes:   ['3.2'],
+  cancelam:   ['3.2.1'],
+  descontos:  ['3.2.2'],
+  // Impostos sobre Vendas (DAS sobre vendas)
+  imp_vendas: ['3.2.1'],
+  // CPV - Custos dos Produtos Vendidos
+  cpv:        ['4.1'],
+  mp:         ['4.1.1'],
+  emb:        ['4.1.1.2'],
+  mod:        ['4.1.2'],
   // CIF
-  cif:        ['3.2.2'],
-  // Despesas Comerciais
-  desp_vend:  ['3.3.1'],
-  logistica:  ['3.3.1.04','3.3.1.05','3.3.1.06','3.3.1.07'],
-  taxa_if:    ['3.3.1.16'],
-  canais:     ['3.3.1.16','3.3.1.17','3.3.1.18','3.3.1.19','3.3.1.20','3.3.1.21'],
+  cif:        ['4.1.3'],
+  // Despesas Com Vendas
+  desp_vend:  ['4.2'],
+  logistica:  ['4.2.1'],
+  taxa_if:    ['4.2.3'],
+  canais:     ['4.2.3'],
+  marketing:  ['4.2.2'],
   // Despesas Administrativas
-  desp_adm:   ['3.3.2'],
-  pessoal:    ['3.3.2.01','3.3.2.02'],
-  ocupacao:   ['3.3.2.07','3.3.2.08','3.3.2.09'],
-  utilidades: ['3.3.2.10','3.3.2.11','3.3.2.12'],
-  servicos:   ['3.3.2.13','3.3.2.14','3.3.2.15'],
-  tecnologia: ['3.3.2.16'],
-  tributario: ['3.3.2.17'],
-  manutencao: ['3.3.2'],
+  desp_adm:   ['4.3'],
+  pessoal:    ['4.3.1'],
+  ocupacao:   ['4.3.2'],
+  utilidades: ['4.3.2.3','4.3.2.4'],
+  servicos:   ['4.3.3'],
+  tecnologia: ['4.3.3.2'],
+  tributario: ['4.3.4'],
+  manutencao: ['4.3.3.5'],
   // Resultado Financeiro
-  rec_fin:    ['3.3.3.01','3.3.3.02'],
-  desp_fin:   ['3.3.3.03','3.3.3.04','3.3.3.05'],
+  rec_fin:    [],
+  desp_fin:   ['4.4'],
   nao_op:     [],
   prov_ir:    [],
   prov_cs:    [],
@@ -3347,8 +3345,14 @@ const DRE_COD_DEFAULT={
 };
 
 function dreGetCodMap(){
-  try{return Object.assign({},DRE_COD_DEFAULT,JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}'));}
-  catch(e){return Object.assign({},DRE_COD_DEFAULT);}
+  try{
+    const saved=JSON.parse(localStorage.getItem('verp_dre_codmap')||'{}');
+    // Default takes priority — user customizations only for keys NOT in default
+    const extraKeys=Object.keys(saved).filter(function(k){return !(k in DRE_COD_DEFAULT);});
+    const extra={};
+    extraKeys.forEach(function(k){extra[k]=saved[k];});
+    return Object.assign({},DRE_COD_DEFAULT,extra);
+  }catch(e){return Object.assign({},DRE_COD_DEFAULT);}
 }
 function dreSaveCodMap(map){
   localStorage.setItem('verp_dre_codmap',JSON.stringify(map));
