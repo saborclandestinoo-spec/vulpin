@@ -2436,7 +2436,17 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Parcelamento</div>
         <div class="mfg-row mfg-row-3">
           <div class="flt-wrap"><input class="flt-in" id="mdesp-num-parc" type="number" min="2" max="60" placeholder=" " oninput="updateParcPreview('mdesp')"><label class="flt-lbl">Nº de parcelas *</label></div>
-          <div class="flt-wrap"><input class="flt-in" id="mdesp-valor-total-parc" type="number" step="0.01" placeholder=" " oninput="updateParcPreview('mdesp')"><label class="flt-lbl">Valor total</label></div>
+          <div class="flt-wrap">
+            <select class="flt-in" id="mdesp-freq-parc" style="appearance:auto" onchange="updateParcPreview('mdesp')">
+              <option value="mensal">Mensal</option>
+              <option value="quinzenal">Quinzenal</option>
+              <option value="semanal">Semanal</option>
+              <option value="bimestral">Bimestral</option>
+              <option value="trimestral">Trimestral</option>
+              <option value="anual">Anual</option>
+            </select>
+            <label class="flt-lbl flt-lbl-sel">Frequência</label>
+          </div>
           <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)" id="mdesp-parc-preview">—</div>
         </div>
       </div>
@@ -2627,7 +2637,17 @@ html.light .scroll,html.light .content{background:var(--bg2)!important}
         <div style="font-size:11.5px;font-weight:600;color:var(--t);margin-bottom:10px">Parcelamento</div>
         <div class="mfg-row mfg-row-3">
           <div class="flt-wrap"><input class="flt-in" id="mrec-num-parc" type="number" min="2" max="60" placeholder=" " oninput="updateParcPreview('mrec')"><label class="flt-lbl">Nº de parcelas *</label></div>
-          <div class="flt-wrap"><input class="flt-in" id="mrec-valor-total-parc" type="number" step="0.01" placeholder=" " oninput="updateParcPreview('mrec')"><label class="flt-lbl">Valor total</label></div>
+          <div class="flt-wrap">
+            <select class="flt-in" id="mrec-freq-parc" style="appearance:auto" onchange="updateParcPreview('mrec')">
+              <option value="mensal">Mensal</option>
+              <option value="quinzenal">Quinzenal</option>
+              <option value="semanal">Semanal</option>
+              <option value="bimestral">Bimestral</option>
+              <option value="trimestral">Trimestral</option>
+              <option value="anual">Anual</option>
+            </select>
+            <label class="flt-lbl flt-lbl-sel">Frequência</label>
+          </div>
           <div style="display:flex;align-items:center;font-size:11px;color:var(--t3)" id="mrec-parc-preview">—</div>
         </div>
       </div>
@@ -8254,21 +8274,27 @@ function saveLancTipo(tipo,andAnother){
   const tipoLanc=document.getElementById(prefix+'-tipo-lanc')?.value||'unico';
 
   if(!editLancId && tipoLanc==='parcelado'){
-    // Parcelado — gera N lançamentos mensais
     const nParc=parseInt(document.getElementById(prefix+'-num-parc')?.value)||1;
-    const valorTotal=parseFloat(document.getElementById(prefix+'-valor-total-parc')?.value)||valor;
-    const valorParc=valorTotal/nParc;
+    const freqParc=document.getElementById(prefix+'-freq-parc')?.value||'mensal';
+    const valorParc=valor; // cada parcela tem o valor informado
     const grupoId=uid();
-    const dataBase=new Date(obj.data||new Date().toISOString().slice(0,10));
+    const vencBase=obj.venc||obj.data||new Date().toISOString().slice(0,10);
+    const dataBase=new Date(vencBase);
     for(let i=0;i<nParc;i++){
       const d=new Date(dataBase);
-      d.setMonth(d.getMonth()+i);
+      if(freqParc==='mensal')       d.setMonth(d.getMonth()+i);
+      else if(freqParc==='bimestral') d.setMonth(d.getMonth()+i*2);
+      else if(freqParc==='trimestral') d.setMonth(d.getMonth()+i*3);
+      else if(freqParc==='quinzenal') d.setDate(d.getDate()+i*15);
+      else if(freqParc==='semanal')  d.setDate(d.getDate()+i*7);
+      else if(freqParc==='anual')   d.setFullYear(d.getFullYear()+i);
       const dt=d.toISOString().slice(0,10);
       data.push({
         ...obj,
         id:uid(),
         valor:parseFloat(valorParc.toFixed(2)),
-        data:dt,dataPag:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:dt,
+        dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
         parcela:`${i+1}/${nParc}`,
@@ -8502,14 +8528,14 @@ function setTipoLanc(prefix, val, label, e) {
 
 function updateParcPreview(prefix){
   const n=parseInt(document.getElementById(prefix+'-num-parc')?.value)||0;
-  const tot=parseFloat(document.getElementById(prefix+'-valor-total-parc')?.value)||0;
+  const freq=document.getElementById(prefix+'-freq-parc')?.value||'mensal';
+  const val=parseFloat(document.getElementById(prefix+'-valor')?.value)||0;
   const prev=document.getElementById(prefix+'-parc-preview');
-  const valInput=document.getElementById(prefix+'-valor');
+  const freqLabel={mensal:'mensal',quinzenal:'quinzenal',semanal:'semanal',bimestral:'bimestral',trimestral:'trimestral',anual:'anual'};
   if(prev){
-    if(n>1&&tot>0){
-      const parc=tot/n;
-      prev.textContent=`${n}x de R$ ${fmtN(parc)}`;
-      if(valInput&&!valInput.value) valInput.value=parc.toFixed(2);
+    if(n>1){
+      const total=val*n;
+      prev.textContent=`${n}x ${freqLabel[freq]||freq} · Total R$ ${fmtN(total)}`;
     } else {
       prev.textContent='—';
     }
