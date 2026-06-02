@@ -8356,7 +8356,7 @@ function saveLancTipo(tipo,andAnother){
         ...obj,
         id:uid(),
         valor:parseFloat(valorParc.toFixed(2)),
-        data:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:(function(){if(!obj.comp)return dt;const _cp=obj.comp.split('-').map(Number);let cyr=_cp[0],cmo=_cp[1]-1,cdy=_cp[2];if(freqParc==='mensal'){cmo+=i;}else if(freqParc==='bimestral'){cmo+=i*2;}else if(freqParc==='trimestral'){cmo+=i*3;}else if(freqParc==='anual'){cyr+=i;}else if(freqParc==='quinzenal'){const tmp=new Date(cyr,cmo,cdy+i*15);cyr=tmp.getFullYear();cmo=tmp.getMonth();cdy=tmp.getDate();}else if(freqParc==='semanal'){const tmp=new Date(cyr,cmo,cdy+i*7);cyr=tmp.getFullYear();cmo=tmp.getMonth();cdy=tmp.getDate();}const cn=new Date(cyr,cmo,cdy);return cn.getFullYear()+'-'+String(cn.getMonth()+1).padStart(2,'0')+'-'+String(cn.getDate()).padStart(2,'0');})(),
         dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
@@ -8384,7 +8384,7 @@ function saveLancTipo(tipo,andAnother){
       data.push({
         ...obj,
         id:uid(),
-        data:dt,venc:dt,comp:dt,
+        data:dt,venc:dt,comp:(function(){if(!obj.comp)return dt;const _cp=obj.comp.split('-').map(Number);let cyr=_cp[0],cmo=_cp[1]-1,cdy=_cp[2];if(freq==='mensal'){cmo+=i;}else if(freq==='anual'){cyr+=i;}else if(freq==='semanal'){const tmp=new Date(cyr,cmo,cdy+i*7);cyr=tmp.getFullYear();cmo=tmp.getMonth();cdy=tmp.getDate();}else if(freq==='quinzenal'){const tmp=new Date(cyr,cmo,cdy+i*15);cyr=tmp.getFullYear();cmo=tmp.getMonth();cdy=tmp.getDate();}const cn=new Date(cyr,cmo,cdy);return cn.getFullYear()+'-'+String(cn.getMonth()+1).padStart(2,'0')+'-'+String(cn.getDate()).padStart(2,'0');})(),
         dataPag:i===0&&obj.pago?dt:'',
         pago:i===0?obj.pago:false,
         grupoId,
