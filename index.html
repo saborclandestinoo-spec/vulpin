@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STUDIO — Banco de Conteúdos</title>
+<meta name="theme-color" content="#08080B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Studio">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23E1306C'/%3E%3Crect x='22' y='22' width='20' height='20' rx='5' fill='%2308080B'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -69,6 +75,41 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .chan .item .del{all:unset;cursor:pointer;opacity:0;color:var(--txt-3);font-size:14px;line-height:1;padding:0 2px}
 .chan .item:hover .del{opacity:1}
 .chan .item .del:hover{color:var(--yt)}
+
+.userbox{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:var(--r-m);padding:9px 10px;background:rgba(255,255,255,.03)}
+.userbox .ub-av{width:28px;height:28px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:12px;font-weight:700;color:#0A0A0A;background:var(--acid)}
+.userbox b{display:block;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:118px}
+.userbox span{display:flex;align-items:center;gap:5px;font-size:9.5px;color:var(--txt-3);font-weight:500;margin-top:2px}
+.userbox span i{width:6px;height:6px;border-radius:50%;flex:none}
+.userbox button{all:unset;cursor:pointer;margin-left:auto;color:var(--txt-3);font-size:13px;transition:.2s}
+.userbox button:hover{color:var(--yt)}
+
+/* ===== GATE ===== */
+.gate{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(900px 700px at 20% -10%,rgba(225,48,108,.18),transparent 60%),
+             radial-gradient(800px 600px at 90% 110%,rgba(214,255,63,.12),transparent 60%),var(--ink)}
+.gate.on{display:flex;animation:fade .35s var(--e)}
+.gbox{width:100%;max-width:392px;border:1px solid var(--line-2);border-radius:var(--r-l);padding:30px 28px;
+  background:linear-gradient(165deg,var(--surface-2),var(--ink-2));box-shadow:var(--sh);animation:rise .5s var(--e)}
+.gbox .brand{margin-bottom:22px}
+.gstep{display:none}
+.gstep.on{display:block;animation:fade .3s var(--e)}
+.gbox h2{font-size:19px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.gbox .sub{font-size:11.5px;color:var(--txt-3);line-height:1.6;margin-bottom:20px}
+.gbox .field{margin-bottom:13px}
+.tabs{display:flex;gap:7px;margin-bottom:17px}
+.tabs button{all:unset;cursor:pointer;flex:1;text-align:center;padding:9px;border-radius:var(--r-s);border:1px solid var(--line);
+  font-size:12px;font-weight:600;color:var(--txt-2);transition:.25s var(--e)}
+.tabs button.on{background:var(--acid);color:#0A0A0A;border-color:var(--acid)}
+.gerr{display:none;font-size:11px;color:#FF8A8A;background:rgba(255,46,46,.1);border:1px solid rgba(255,46,46,.25);
+  border-radius:8px;padding:9px 11px;margin-bottom:13px;line-height:1.5}
+.glink{all:unset;cursor:pointer;display:block;text-align:center;font-size:11px;color:var(--txt-3);margin-top:14px;transition:.2s}
+.glink:hover{color:var(--acid)}
+.gfoot{font-size:10.5px;color:var(--txt-3);text-align:center;line-height:1.6;margin-top:16px}
+.gsteps{font-size:11px;color:var(--txt-2);line-height:1.75;background:rgba(255,255,255,.03);border:1px solid var(--line);
+  border-radius:var(--r-s);padding:12px 14px;margin-bottom:17px}
+.gsteps b{color:var(--acid);font-weight:600}
+.gsteps code{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--txt)}
 
 .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:14px}
 .streak{border:1px solid var(--line);border-radius:var(--r-m);padding:13px;background:linear-gradient(140deg,rgba(214,255,63,.1),transparent 70%)}
@@ -372,6 +413,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
 
     <div class="side-foot">
+      <div class="userbox" id="userBox" style="display:none">
+        <div class="ub-av" id="ubAv">@</div>
+        <div style="min-width:0"><b id="userMail">—</b><span id="syncDot"><i style="background:#5E5D6B"></i>local</span></div>
+        <button id="logout" title="Sair">⏻</button>
+      </div>
       <div class="streak"><b id="streakN">0</b><small>publicados no total</small></div>
       <button class="btn btn-ghost btn-sm" id="seedBtn" style="justify-content:center">Carregar exemplo</button>
       <button class="btn btn-ghost btn-sm" id="csvBtn" style="justify-content:center">Exportar CSV</button>
@@ -513,9 +559,31 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <button class="btn btn-ghost btn-sm" id="bulkClear">Limpar</button>
 </div>
 
+<div class="gate" id="gate">
+  <div class="gbox">
+    <div class="brand"><div class="dot"></div><div><h1>STUDIO</h1><span>CONTROL</span></div></div>
+
+    <div class="gstep on" id="g-login">
+      <h2>Suas ideias, salvas</h2>
+      <p class="sub">Entre para sincronizar entre celular e computador.</p>
+      <div class="tabs">
+        <button data-auth="in" class="on">Entrar</button>
+        <button data-auth="up">Criar conta</button>
+      </div>
+      <div class="gerr" id="logErr"></div>
+      <div class="field"><label>E-MAIL</label><input id="logMail" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+      <div class="field"><label>SENHA</label><input id="logPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="current-password"></div>
+      <button class="btn btn-primary" id="doAuth" style="width:100%;justify-content:center;margin-top:6px">Entrar</button>
+      <p class="gfoot">Seus conteúdos ficam salvos na sua conta e sincronizam entre aparelhos.</p>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
 /* ===================== CONFIG ===================== */
 const K_ITEMS='studio:items:v2', K_CHAN='studio:channels:v2';
 const STAGES=[
@@ -554,16 +622,106 @@ let items=[], channels=[], activeChan='all', view='dash', filter='all', query=''
 let groupBy='status', sortBy='date', sortDir=1, selected=new Set();
 let editId=null, plat='instagram', calDate=new Date(), newColor=SWATCH[0];
 
-/* ===================== STORAGE ===================== */
-async function save(){
+/* ===================== STORAGE + SUPABASE ===================== */
+/* ============================================================
+   ÚNICA COISA A PREENCHER — 2 LINHAS, DEPOIS NUNCA MAIS.
+   Supabase → Settings → API
+   ============================================================ */
+const SUPABASE = {
+  url: 'https://hozzhfnbevqpxwztgtcg.supabase.co',
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvenpoZm5iZXZxcHh3enRndGNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyMDM3ODAsImV4cCI6MjEwMzc3OTc4MH0.FBO_6cBhGwxTO13E19n_aAXlxoVij9t_uegBGMfsRbk'
+};
+/* ========================================================== */
+
+const CFG_KEY='studio:sb:cfg';
+const _mem={};
+const ls={
+  get(k){try{return localStorage.getItem(k)}catch(e){return k in _mem?_mem[k]:null}},
+  set(k,v){try{localStorage.setItem(k,v)}catch(e){_mem[k]=v}},
+  del(k){try{localStorage.removeItem(k)}catch(e){delete _mem[k]}}
+};
+const authStore={getItem:k=>ls.get(k),setItem:(k,v)=>ls.set(k,v),removeItem:k=>ls.del(k)};
+
+let sb=null, mode='cloud', user=null, saveTimer=null;
+let syncedI=new Set(), syncedC=new Set();
+
+function getCfg(){ return (SUPABASE.url && SUPABASE.key) ? SUPABASE : null; }
+function initClient(){
+  const c=getCfg();
+  if(!c||!c.url||!c.key||c.url.startsWith('COLE_')||c.key.startsWith('COLE_')) return false;
+  try{
+    sb=createClient(c.url.replace(/\/+$/,''),c.key,{auth:{persistSession:true,autoRefreshToken:true,storage:authStore}});
+    return true;
+  }catch(e){ return false; }
+}
+
+/* --- mapeamento linha <-> item --- */
+const itemRow=i=>({id:i.id,user_id:user.id,channel_id:i.channel||null,title:i.title||'',platform:i.platform,
+  format:i.format,status:i.status,pub_date:i.date||null,pub_time:i.time||null,prio:i.prio||'media',
+  tags:i.tags||'',notes:i.notes||'',link:i.link||'',checks:i.checks||{}});
+const rowItem=r=>({id:r.id,channel:r.channel_id,title:r.title||'',platform:r.platform||'instagram',
+  format:r.format||'Reels',status:r.status||'ideia',date:r.pub_date||'',time:r.pub_time||'',
+  prio:r.prio||'media',tags:r.tags||'',notes:r.notes||'',link:r.link||'',checks:r.checks||{}});
+const chanRow=c=>({id:c.id,user_id:user.id,name:c.name,color:c.color});
+
+function setSync(state){
+  const el=document.getElementById('syncDot'); if(!el) return;
+  const map={ok:['#3ED598','salvo'],busy:['#FFB13F','salvando…'],err:['#FF2E2E','erro'],local:['#5E5D6B','offline']};
+  const [c,t]=map[state]||map.ok;
+  el.innerHTML=`<i style="background:${c}"></i>${t}`;
+}
+
+async function pull(){
+  const [c,i]=await Promise.all([
+    sb.from('channels').select('*').order('created_at',{ascending:true}),
+    sb.from('items').select('*').order('created_at',{ascending:true})
+  ]);
+  if(c.error||i.error) throw (c.error||i.error);
+  channels=(c.data||[]).map(r=>({id:r.id,name:r.name,color:r.color}));
+  items=(i.data||[]).map(rowItem);
+  syncedC=new Set(channels.map(x=>x.id));
+  syncedI=new Set(items.map(x=>x.id));
+}
+
+async function push(){
+  if(!sb||!user) return;
+  setSync('busy');
+  try{
+    const delI=[...syncedI].filter(id=>!items.some(x=>x.id===id));
+    const delC=[...syncedC].filter(id=>!channels.some(x=>x.id===id));
+    if(delI.length) await sb.from('items').delete().in('id',delI);
+    if(delC.length) await sb.from('channels').delete().in('id',delC);
+    if(channels.length){ const r=await sb.from('channels').upsert(channels.map(chanRow)); if(r.error) throw r.error; }
+    if(items.length){ const r=await sb.from('items').upsert(items.map(itemRow)); if(r.error) throw r.error; }
+    syncedI=new Set(items.map(x=>x.id));
+    syncedC=new Set(channels.map(x=>x.id));
+    setSync('ok');
+  }catch(e){ setSync('err'); toast('Falha ao salvar na nuvem'); console.error(e); }
+}
+
+async function localSave(){
   try{
     await window.storage.set(K_ITEMS,JSON.stringify(items));
     await window.storage.set(K_CHAN,JSON.stringify(channels));
   }catch(e){}
+  ls.set(K_ITEMS,JSON.stringify(items)); ls.set(K_CHAN,JSON.stringify(channels));
 }
-async function load(){
-  try{const r=await window.storage.get(K_ITEMS); if(r&&r.value) items=JSON.parse(r.value);}catch(e){}
-  try{const r=await window.storage.get(K_CHAN); if(r&&r.value) channels=JSON.parse(r.value);}catch(e){}
+async function localLoad(){
+  let a=null,b=null;
+  try{const r=await window.storage.get(K_ITEMS); if(r&&r.value) a=r.value;}catch(e){}
+  try{const r=await window.storage.get(K_CHAN); if(r&&r.value) b=r.value;}catch(e){}
+  a=a||ls.get(K_ITEMS); b=b||ls.get(K_CHAN);
+  try{ if(a) items=JSON.parse(a); }catch(e){}
+  try{ if(b) channels=JSON.parse(b); }catch(e){}
+}
+
+async function save(){
+  if(mode==='local'){ await localSave(); return; }
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(push,300);
+}
+
+function ensureChannels(){
   if(!channels.length) channels=[
     {id:'ch_ig',name:'Instagram principal',color:'#E1306C'},
     {id:'ch_yt',name:'Canal YouTube',color:'#FF2E2E'}
@@ -1117,9 +1275,81 @@ $('#seedBtn').onclick=async()=>{
   await save(); renderChans(); renderAll(); toast('Exemplo carregado');
 };
 
+/* ===================== AUTH UI ===================== */
+const gate=()=>document.getElementById('gate');
+function showGate(step){
+  gate().classList.add('on');
+  document.querySelectorAll('.gstep').forEach(s=>s.classList.remove('on'));
+  document.getElementById('g-'+step).classList.add('on');
+}
+function hideGate(){ gate().classList.remove('on'); }
+function gErr(id,msg){ const e=document.getElementById(id); e.textContent=msg||''; e.style.display=msg?'block':'none'; }
+
+async function startSession(u){
+  user=u; mode='cloud';
+  document.getElementById('userMail').textContent=u.email||'conta';
+  document.getElementById('userBox').style.display='flex';
+  try{ await pull(); }catch(e){ toast('Erro ao carregar dados'); console.error(e); }
+  if(!channels.length){ ensureChannels(); await push(); }
+  setSync('ok'); hideGate(); renderChans(); renderAll();
+}
+
+let signMode='in';
+document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>{
+  signMode=b.dataset.auth;
+  document.querySelectorAll('[data-auth]').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('doAuth').textContent = signMode==='in'?'Entrar':'Criar conta';
+  gErr('logErr','');
+});
+document.getElementById('doAuth').onclick=async()=>{
+  const email=document.getElementById('logMail').value.trim();
+  const pass=document.getElementById('logPass').value;
+  if(!email||!pass){ gErr('logErr','Preencha e-mail e senha.'); return; }
+  if(pass.length<6){ gErr('logErr','Senha precisa de 6+ caracteres.'); return; }
+  const btn=document.getElementById('doAuth'); btn.textContent='…'; gErr('logErr','');
+  try{
+    const fn = signMode==='in' ? sb.auth.signInWithPassword({email,password:pass})
+                               : sb.auth.signUp({email,password:pass});
+    const {data,error}=await fn;
+    if(error) throw error;
+    if(!data.session){ gErr('logErr','Confirme o e-mail que enviamos e entre de novo.'); }
+    else await startSession(data.session.user);
+  }catch(e){ gErr('logErr',e.message||'Não deu certo.'); }
+  btn.textContent = signMode==='in'?'Entrar':'Criar conta';
+};
+document.getElementById('logPass').onkeydown=e=>{ if(e.key==='Enter') document.getElementById('doAuth').click(); };
+document.getElementById('logout').onclick=async()=>{
+  if(sb) await sb.auth.signOut();
+  user=null; items=[]; channels=[]; syncedI=new Set(); syncedC=new Set();
+  document.getElementById('userBox').style.display='none';
+  renderChans(); renderAll(); showGate('login');
+};
+
 /* ===================== BOOT ===================== */
 function renderAll(){ renderDash(); renderDB(); renderBoard(); renderCal(); }
-(async()=>{ await load(); buildPops(); renderChans(); fillFormats(); renderAll(); })();
+(async()=>{
+  buildPops(); fillFormats(); setSync('busy');
+  try{
+    const mf={name:'Studio Control',short_name:'Studio',start_url:'.',display:'standalone',
+      background_color:'#08080B',theme_color:'#08080B',
+      icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%23E1306C'/%3E%3Crect x='176' y='176' width='160' height='160' rx='40' fill='%2308080B'/%3E%3C/svg%3E",
+        sizes:'512x512',type:'image/svg+xml',purpose:'any'}]};
+    const l=document.createElement('link'); l.rel='manifest';
+    l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
+    document.head.appendChild(l);
+  }catch(e){}
+  showGate('login');
+  if(!initClient()){
+    gErr('logErr','App ainda não configurado. Preencha SUPABASE no topo do arquivo.');
+    document.getElementById('doAuth').disabled=true;
+    document.getElementById('doAuth').style.opacity=.4;
+    return;
+  }
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data && data.session) await startSession(data.session.user);
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
