@@ -218,6 +218,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   color:var(--txt-3);font-size:11px;font-weight:500;transition:.25s var(--e)}
 .add-card:hover{border-color:var(--acid);color:var(--acid);background:rgba(214,255,63,.05)}
 
+/* ===== QUICK ADD ===== */
+.qadd{border:1px solid var(--acid);border-radius:var(--r-m);background:rgba(214,255,63,.05);padding:10px;
+  animation:pop .25s var(--e)}
+.qadd textarea{all:unset;display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;
+  font-weight:500;line-height:1.45;color:var(--txt);resize:none;min-height:38px}
+.qadd textarea::placeholder{color:var(--txt-3);font-weight:400}
+.qadd .hint{font-size:9px;color:var(--txt-3);margin-top:7px;letter-spacing:.06em}
+.qadd .hint b{color:var(--acid);font-weight:600}
+.qadd.tiny{padding:6px 7px;border-radius:6px}
+.qadd.tiny textarea{font-size:10px;min-height:28px}
+.qadd.tiny .hint{display:none}
+.cell-txt:empty::before{content:'Escreva aqui…';color:var(--txt-3);font-weight:400}
+
 /* ===== CALENDAR ===== */
 .cal-wrap{display:grid;grid-template-columns:1fr 236px;gap:16px;align-items:start}
 @media(max-width:1100px){.cal-wrap{grid-template-columns:1fr}}
@@ -372,7 +385,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input id="q" placeholder="Buscar…">
       </div>
-      <button class="btn btn-primary" id="newBtn"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Novo</button>
+      <button class="btn btn-primary" id="newBtn"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>Ideia rápida</button>
+      <button class="btn btn-ghost btn-sm" id="fullBtn" title="Formulário completo">Detalhado</button>
     </header>
 
     <div class="scroll">
@@ -428,6 +442,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <div class="tray">
             <h3>Sem data</h3>
             <p>Arraste para um dia do calendário para agendar.</p>
+            <button class="add-card" id="trayAdd" style="width:100%;margin-bottom:11px">+ nova ideia</button>
             <div class="tray-list" id="tray"></div>
           </div>
         </div>
@@ -615,6 +630,49 @@ function renderChans(){
   $('#bulkChan').innerHTML='<option value="">Mover canal…</option>'+opts;
 }
 
+/* ===================== QUICK ADD ===================== */
+let openAdd=null, focusNew=null;
+
+function newItem(pre){
+  pre=pre||{};
+  const p=pre.platform||'instagram';
+  return {id:uid(),title:pre.title||'',platform:p,
+    channel:pre.channel||(activeChan!=='all'?activeChan:(channels[0]||{}).id),
+    format:FORMATS[p][0],status:pre.status||'ideia',date:pre.date||'',time:pre.date?'19:00':'',
+    prio:'media',tags:'',notes:'',link:'',checks:{}};
+}
+async function quickCreate(title,pre){
+  if(!channels.length){toast('Crie um canal primeiro');return null}
+  const it=newItem(pre); it.title=title;
+  items.push(it); await save(); renderChans(); return it;
+}
+function inlineAdd(host,pre,opts){
+  opts=opts||{};
+  $$('.qadd').forEach(x=>x.remove());
+  const box=document.createElement('div');
+  box.className='qadd'+(opts.tiny?' tiny':'');
+  box.innerHTML=`<textarea rows="${opts.tiny?1:2}" placeholder="${opts.ph||'Escreva a ideia…'}"></textarea>
+    <div class="hint"><b>Enter</b> salva · <b>Esc</b> fecha</div>`;
+  host.appendChild(box);
+  const ta=box.querySelector('textarea');
+  ta.focus(); ta.scrollIntoView({block:'nearest'});
+  let closed=false;
+  const close=r=>{if(closed)return;closed=true;openAdd=null;box.remove();if(r)renderAll()};
+  ta.onkeydown=async e=>{
+    if(e.key==='Enter'&&!e.shiftKey){
+      e.preventDefault();
+      const v=ta.value.trim();
+      if(!v){close(true);return}
+      closed=true;
+      await quickCreate(v,pre);
+      openAdd=opts.repeat||null;   // mantém campo aberto p/ próxima ideia
+      renderAll();
+      toast('Ideia salva');
+    }else if(e.key==='Escape'){ close(true); }
+  };
+  ta.onblur=()=>setTimeout(()=>close(false),150);
+}
+
 /* ===================== DASH ===================== */
 function renderDash(){
   const v=visible();
@@ -637,7 +695,7 @@ function renderDash(){
   $('#upcoming').innerHTML=next.length?next.map(i=>{
     const[,m,dd]=i.date.split('-');
     return `<div class="up-row" data-id="${i.id}"><div class="up-date"><b>${dd}</b><i>${MONTHS[+m-1].slice(0,3).toUpperCase()}</i></div>
-    <div style="min-width:0;flex:1"><p>${esc(i.title)}</p><small>${esc(chan(i.channel).name)} · ${esc(i.format)} · ${i.time||'--:--'}</small></div>
+    <div style="min-width:0;flex:1"><p>${esc(i.title)||'Sem título'}</p><small>${esc(chan(i.channel).name)} · ${esc(i.format)} · ${i.time||'--:--'}</small></div>
     <span class="tag ${i.platform==='instagram'?'ig':'yt'}">${pct(i)}%</span></div>`;
   }).join(''):`<div class="empty"><b>Nada agendado</b><p>Defina datas no banco ou calendário.</p></div>`;
   $$('#upcoming .up-row').forEach(r=>r.onclick=()=>openModal(r.dataset.id));
@@ -746,9 +804,11 @@ function wireDB(){
       el.onkeydown=e=>{ if(e.key==='Enter'){e.preventDefault();el.blur()} };
       el.onblur=async()=>{
         const val=el.textContent.trim();
-        if(f==='title'){ it.title=val||'Sem título'; }
-        else it.tags=tagArr(val).join(', ');
-        await save(); renderAll();
+        if(f==='title'){
+          if(!val && !it.notes && !it.tags && !it.date){ items=items.filter(x=>x.id!==it.id); }
+          else it.title=val||'Sem título';
+        } else it.tags=tagArr(val).join(', ');
+        await save(); renderChans(); renderAll();
       };
     }else{
       el.onchange=async()=>{
@@ -774,15 +834,22 @@ function wireDB(){
     $('#srtLbl').textContent='Ordenar: '+((SORTS.find(x=>x.id===s)||{}).n||s);
     renderDB();
   });
-  $$('[data-add]').forEach(b=>b.onclick=()=>{
-    const k=b.dataset.add;
-    const pre={};
+  $$('[data-add]').forEach(b=>b.onclick=async()=>{
+    const k=b.dataset.add, pre={};
     if(groupBy==='status'&&k) pre.status=k;
     if(groupBy==='channel'&&k) pre.channel=k;
     if(groupBy==='platform'&&k) pre.platform=k;
-    if(groupBy==='prio'&&k) pre.prio=k;
-    openModal(null,pre);
+    if(!channels.length){toast('Crie um canal primeiro');return}
+    const it=newItem(pre);
+    if(groupBy==='prio'&&k) it.prio=k;
+    if(groupBy==='format'&&k) it.format=k;
+    items.push(it); await save(); focusNew=it.id; renderChans(); renderAll();
   });
+  if(focusNew){
+    const cell=document.querySelector(`[data-edit="title"][data-id="${focusNew}"]`);
+    focusNew=null;
+    if(cell){ cell.focus(); cell.scrollIntoView({block:'nearest'}); }
+  }
 }
 
 function syncBulk(){
@@ -831,7 +898,7 @@ function cardHTML(i){
     <div class="card-top"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
       <span class="fmt">${esc(i.format)}</span><span class="prio" style="background:${PRIOS[i.prio||'media'].c}"></span></div>
     <div class="chan-tag"><i style="background:${c.color}"></i>${esc(c.name)}</div>
-    <h5>${esc(i.title)}</h5>
+    <h5>${esc(i.title)||'<span style="color:var(--txt-3)">Sem título</span>'}</h5>
     <div class="mini"><i style="width:${p}%"></i></div>
     <div class="card-foot"><span class="${isLate(i)?'late':''}">${fmtD(i.date)} ${i.time||''}</span><span>${p}%</span>
       <button class="kill" data-kill="${i.id}"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button></div>
@@ -844,7 +911,7 @@ function renderBoard(){
     return `<div class="col" data-stage="${s.id}"><div class="col-head"><i style="background:${s.c}"></i><h4>${s.name}</h4><b>${l.length}</b></div>
       <div class="col-body">${l.map(cardHTML).join('')}</div><button class="add-card" data-st="${s.id}">+ adicionar</button></div>`;
   }).join('');
-  $$('.add-card').forEach(b=>b.onclick=()=>openModal(null,{status:b.dataset.st}));
+  $$('.add-card').forEach(b=>b.onclick=()=>{openAdd={type:'board',key:b.dataset.st};renderBoard()});
   $$('[data-kill]').forEach(b=>b.onclick=async e=>{
     e.stopPropagation(); items=items.filter(i=>i.id!==b.dataset.kill);
     await save(); renderChans(); renderAll(); toast('Removido');
@@ -867,6 +934,10 @@ function renderBoard(){
       }
     };
   });
+  if(openAdd&&openAdd.type==='board'){
+    const body=document.querySelector(`.col[data-stage="${openAdd.key}"] .col-body`);
+    if(body) inlineAdd(body,{status:openAdd.key},{repeat:{type:'board',key:openAdd.key}});
+  }
 }
 
 /* ===================== CALENDAR ===================== */
@@ -884,7 +955,7 @@ function renderCal(){
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
       ${l.map(i=>{const c=chan(i.channel);
         return `<div class="pill" draggable="true" data-id="${i.id}"
-          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${i.time?i.time+' ':''}${esc(i.title)}</div>`}).join('')}
+          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
@@ -895,7 +966,7 @@ function renderCal(){
   const nd=v.filter(i=>!i.date);
   $('#tray').innerHTML=nd.length?nd.map(i=>{const c=chan(i.channel);
     return `<div class="tray-item" draggable="true" data-id="${i.id}">
-      <p>${esc(i.title)}</p><small style="color:${c.color}">${esc(c.name)} · ${esc(i.format)}</small></div>`}).join('')
+      <p>${esc(i.title)||'Sem título'}</p><small style="color:${c.color}">${esc(c.name)} · ${esc(i.format)}</small></div>`}).join('')
     :`<div class="empty" style="padding:24px 0"><p>Tudo agendado 🎉</p></div>`;
 
   const drag=el=>{
@@ -905,7 +976,7 @@ function renderCal(){
   };
   $$('#cal .pill').forEach(drag);
   $$('#tray .tray-item').forEach(drag);
-  $$('[data-new]').forEach(b=>b.onclick=e=>{e.stopPropagation();openModal(null,{date:b.dataset.new})});
+  $$('[data-new]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdd={type:'cal',key:b.dataset.new};renderCal()});
   $$('#cal .day[data-date]').forEach(day=>{
     day.ondragover=e=>{e.preventDefault();day.classList.add('drop')};
     day.ondragleave=()=>day.classList.remove('drop');
@@ -917,7 +988,15 @@ function renderCal(){
         await save(); renderAll(); toast('Agendado para '+fmtD(it.date)); }
     };
   });
+  if(openAdd&&openAdd.type==='cal'){
+    const day=document.querySelector(`.day[data-date="${openAdd.key}"]`);
+    if(day) inlineAdd(day,{date:openAdd.key,status:'roteiro'},{tiny:true,ph:'Ideia…',repeat:{type:'cal',key:openAdd.key}});
+  }
+  if(openAdd&&openAdd.type==='tray'){
+    inlineAdd($('#tray'),{},{ph:'Ideia sem data…',repeat:{type:'tray'}});
+  }
 }
+$('#trayAdd').onclick=()=>{openAdd={type:'tray'};renderCal()};
 $('#prevM').onclick=()=>{calDate.setMonth(calDate.getMonth()-1);renderCal()};
 $('#nextM').onclick=()=>{calDate.setMonth(calDate.getMonth()+1);renderCal()};
 $('#todayBtn').onclick=()=>{calDate=new Date();renderCal()};
@@ -949,7 +1028,17 @@ function openModal(id,pre){
   setTimeout(()=>$('#fTitle').focus(),120);
 }
 const closeModal=()=>{$('#veil').classList.remove('on');editId=null};
-$('#newBtn').onclick=()=>openModal();
+$('#newBtn').onclick=async()=>{
+  if(!channels.length){toast('Crie um canal primeiro');return}
+  if(view==='board'){ openAdd={type:'board',key:'ideia'}; renderBoard(); }
+  else if(view==='cal'){ openAdd={type:'tray'}; renderCal(); }
+  else{
+    if(view!=='db') gotoView('db');
+    const it=newItem({}); items.push(it); await save();
+    focusNew=it.id; renderChans(); renderAll();
+  }
+};
+$('#fullBtn').onclick=()=>openModal();
 $('#closeM').onclick=closeModal; $('#cancelM').onclick=closeModal;
 $('#veil').onclick=e=>{if(e.target===$('#veil'))closeModal()};
 $('#saveM').onclick=async()=>{
@@ -981,18 +1070,19 @@ $('#saveC').onclick=async()=>{
 
 /* ===================== NAV / FILTERS ===================== */
 const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar']};
-$$('.nav button').forEach(b=>b.onclick=()=>{
-  $$('.nav button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
-  view=b.dataset.view;
+function gotoView(v){
+  view=v;
+  $$('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
   $$('.view').forEach(s=>s.classList.remove('on'));
-  $('#v-'+view).classList.add('on');
-  $('#vTitle').innerHTML=TITLES[view][0]+' <em>/ '+TITLES[view][1]+'</em>';
-});
+  $('#v-'+v).classList.add('on');
+  $('#vTitle').innerHTML=TITLES[v][0]+' <em>/ '+TITLES[v][1]+'</em>';
+}
+$$('.nav button').forEach(b=>b.onclick=()=>gotoView(b.dataset.view));
 $$('.chip').forEach(c=>c.onclick=()=>{$$('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');filter=c.dataset.f;renderAll()});
 $('#q').oninput=e=>{query=e.target.value.toLowerCase().trim();renderAll()};
 document.onkeydown=e=>{
   if(e.key==='Escape'){closeModal();closeC()}
-  if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();openModal()}
+  if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();$('#newBtn').click()}
 };
 
 /* ===================== CSV ===================== */
