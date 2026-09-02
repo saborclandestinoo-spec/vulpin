@@ -105,6 +105,29 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   border-radius:8px;padding:9px 11px;margin-bottom:13px;line-height:1.5}
 .glink{all:unset;cursor:pointer;display:block;text-align:center;font-size:11px;color:var(--txt-3);margin-top:14px;transition:.2s}
 .glink:hover{color:var(--acid)}
+.fm{width:100%;box-sizing:border-box;all:unset;font-family:inherit;font-size:13px;color:var(--txt);
+  background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px;transition:.25s var(--e)}
+.fm:focus{border-color:var(--acid);background:rgba(214,255,63,.04)}
+.fm::placeholder{color:var(--txt-3)}
+.num{all:unset;width:100%;box-sizing:border-box;font-family:inherit;font-size:12px;font-weight:600;color:var(--txt);
+  text-align:right;padding:4px 6px;border-radius:5px;transition:.18s;-moz-appearance:textfield}
+.num::-webkit-outer-spin-button,.num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.num:hover{background:rgba(255,255,255,.05)}
+.num:focus{background:rgba(214,255,63,.09);box-shadow:0 0 0 1px var(--acid)}
+.num::placeholder{color:var(--txt-3);font-weight:400}
+.eng{font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px}
+.mx-src{font-size:8.5px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border-radius:4px;
+  background:rgba(58,183,255,.16);color:#8FD5FF}
+.rank{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+.rank:last-child{border:0}
+.rank .pos{width:22px;height:22px;border-radius:7px;flex:none;display:grid;place-items:center;font-size:10px;font-weight:800;
+  background:rgba(255,255,255,.07);color:var(--txt-2)}
+.rank:first-child .pos{background:var(--acid);color:#0A0A0A}
+.rank p{flex:1;min-width:0;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank b{font-size:12.5px;font-weight:700;color:var(--acid)}
+.rank small{display:block;font-size:9.5px;color:var(--txt-3)}
+.igcfg{display:none;border:1px solid var(--line);border-radius:var(--r-m);padding:15px;margin-bottom:16px;background:rgba(20,20,27,.6)}
+.igcfg.on{display:block;animation:fade .3s var(--e)}
 .gfoot{font-size:10.5px;color:var(--txt-3);text-align:center;line-height:1.6;margin-top:16px}
 .gsteps{font-size:11px;color:var(--txt-2);line-height:1.75;background:rgba(255,255,255,.03);border:1px solid var(--line);
   border-radius:var(--r-s);padding:12px 14px;margin-bottom:17px}
@@ -405,6 +428,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <button data-view="db"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>Banco de conteúdos</button>
       <button data-view="board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Pipeline</button>
       <button data-view="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
+      <button data-view="mx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 20h18"/><path d="M6 20V11M11 20V5M16 20v-6M21 20v-9"/></svg>Métricas</button>
     </nav>
 
     <div>
@@ -493,6 +517,38 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           </div>
         </div>
       </section>
+      <!-- MÉTRICAS -->
+      <section class="view" id="v-mx">
+        <div class="tools">
+          <button class="btn btn-primary btn-sm" id="mxSync"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Puxar números</button>
+          <button class="btn btn-ghost btn-sm" id="igToggle">Conectar Instagram</button>
+          <span style="font-size:10.5px;color:var(--txt-3);margin-left:4px" id="mxWhen"></span>
+        </div>
+
+        <div class="igcfg" id="igCfg">
+          <div class="row">
+            <div class="field"><label>INSTAGRAM BUSINESS ID</label><input id="igUser" placeholder="17841400000000000"></div>
+            <div class="field"><label>ACCESS TOKEN (LONGA DURAÇÃO)</label><input id="igTok" type="password" placeholder="EAAG..."></div>
+          </div>
+          <p style="font-size:10.5px;color:var(--txt-3);line-height:1.6;margin-bottom:12px">
+            Guardado no banco, protegido por RLS. Nunca fica no navegador nem no código.
+            Pegue em developers.facebook.com → Graph API Explorer com as permissões
+            <code>instagram_basic</code> e <code>instagram_manage_insights</code>.
+          </p>
+          <button class="btn btn-primary btn-sm" id="igSave">Salvar token</button>
+        </div>
+
+        <div class="stats" id="mxStats"></div>
+        <div class="grid2" style="margin-bottom:18px">
+          <div class="panel"><h3>Top publicações <em>POR VIEWS</em></h3><div id="mxTop"></div></div>
+          <div class="panel"><h3>Média por formato <em>VIEWS</em></h3><div id="mxFmt"></div></div>
+        </div>
+        <div class="grid2" style="margin-bottom:18px">
+          <div class="panel"><h3>Melhor dia da semana <em>MÉDIA DE VIEWS</em></h3><div id="mxDow"></div></div>
+          <div class="panel"><h3>Média por canal <em>ENGAJAMENTO</em></h3><div id="mxChan"></div></div>
+        </div>
+        <div id="mxTable"></div>
+      </section>
     </div>
   </main>
 </div>
@@ -524,7 +580,25 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       </div>
       <div class="field"><label>CHECKLIST DE PRODUÇÃO</label><div class="checks" id="fChecks"></div></div>
       <div class="field"><label>ROTEIRO / OBSERVAÇÕES</label><textarea id="fNotes" placeholder="Gancho, desenvolvimento, CTA…"></textarea></div>
-      <div class="field"><label>LINK (arquivo, drive, publicação)</label><input id="fLink" placeholder="https://"></div>
+      <div class="field"><label>LINK DA PUBLICAÇÃO (usado para puxar métricas)</label><input id="fLink" placeholder="https://youtu.be/... ou https://instagram.com/reel/..."></div>
+      <div id="mxBlock" style="display:none">
+        <div class="field"><label>MÉTRICAS PÓS-POSTAGEM</label>
+          <div class="row3" style="margin-bottom:12px">
+            <input class="fm" data-fm="views" type="number" placeholder="Views">
+            <input class="fm" data-fm="likes" type="number" placeholder="Curtidas">
+            <input class="fm" data-fm="comments" type="number" placeholder="Comentários">
+          </div>
+          <div class="row3" style="margin-bottom:12px">
+            <input class="fm" data-fm="saves" type="number" placeholder="Salvamentos">
+            <input class="fm" data-fm="shares" type="number" placeholder="Compart.">
+            <input class="fm" data-fm="reach" type="number" placeholder="Alcance">
+          </div>
+          <div class="row">
+            <input class="fm" data-fm="retention" type="number" step="0.1" placeholder="Retenção média %">
+            <button class="btn btn-ghost btn-sm" id="mxOne" style="justify-content:center">Puxar automático</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="mfoot">
       <button class="btn btn-ghost" id="cancelM">Cancelar</button>
@@ -656,12 +730,31 @@ function initClient(){
 }
 
 /* --- mapeamento linha <-> item --- */
-const itemRow=i=>({id:i.id,user_id:user.id,channel_id:i.channel||null,title:i.title||'',platform:i.platform,
-  format:i.format,status:i.status,pub_date:i.date||null,pub_time:i.time||null,prio:i.prio||'media',
-  tags:i.tags||'',notes:i.notes||'',link:i.link||'',checks:i.checks||{}});
-const rowItem=r=>({id:r.id,channel:r.channel_id,title:r.title||'',platform:r.platform||'instagram',
-  format:r.format||'Reels',status:r.status||'ideia',date:r.pub_date||'',time:r.pub_time||'',
-  prio:r.prio||'media',tags:r.tags||'',notes:r.notes||'',link:r.link||'',checks:r.checks||{}});
+const MET=['views','likes','comments','saves','shares','reach','retention'];
+const nz=v=>(v===''||v===null||v===undefined||isNaN(v))?null:Number(v);
+const itemRow=i=>{
+  const o={id:i.id,user_id:user.id,channel_id:i.channel||null,title:i.title||'',platform:i.platform,
+    format:i.format,status:i.status,pub_date:i.date||null,pub_time:i.time||null,prio:i.prio||'media',
+    tags:i.tags||'',notes:i.notes||'',link:i.link||'',checks:i.checks||{},
+    metrics_at:i.metrics_at||null,metrics_auto:!!i.auto};
+  MET.forEach(k=>o[k]=nz(i[k]));
+  return o;
+};
+const rowItem=r=>{
+  const o={id:r.id,channel:r.channel_id,title:r.title||'',platform:r.platform||'instagram',
+    format:r.format||'Reels',status:r.status||'ideia',date:r.pub_date||'',time:r.pub_time||'',
+    prio:r.prio||'media',tags:r.tags||'',notes:r.notes||'',link:r.link||'',checks:r.checks||{},
+    metrics_at:r.metrics_at||null,auto:!!r.metrics_auto};
+  MET.forEach(k=>o[k]=r[k]===null?'':r[k]);
+  return o;
+};
+const engRate=i=>{
+  const base=Number(i.reach)||Number(i.views)||0;
+  if(!base) return null;
+  const acts=(Number(i.likes)||0)+(Number(i.comments)||0)+(Number(i.saves)||0)+(Number(i.shares)||0);
+  return acts/base*100;
+};
+const hasMx=i=>MET.some(k=>i[k]!==''&&i[k]!==null&&i[k]!==undefined);
 const chanRow=c=>({id:c.id,user_id:user.id,name:c.name,color:c.color});
 
 function setSync(state){
@@ -1182,9 +1275,16 @@ function openModal(id,pre){
   $('#fNotes').value=it?(it.notes||''):'';
   $('#fLink').value=it?(it.link||''):'';
   buildChecks(it?it.checks:null);
+  $$('[data-fm]').forEach(f=>{ const v=it?it[f.dataset.fm]:''; f.value=(v===''||v==null)?'':v });
+  toggleMxBlock();
   $('#veil').classList.add('on');
   setTimeout(()=>$('#fTitle').focus(),120);
 }
+function toggleMxBlock(){
+  const on=$('#fStatus').value==='postado';
+  $('#mxBlock').style.display=on?'block':'none';
+}
+$('#fStatus').onchange=toggleMxBlock;
 const closeModal=()=>{$('#veil').classList.remove('on');editId=null};
 $('#newBtn').onclick=async()=>{
   if(!channels.length){toast('Crie um canal primeiro');return}
@@ -1207,6 +1307,7 @@ $('#saveM').onclick=async()=>{
   const d={title:t,platform:plat,channel:$('#fChannel').value,format:$('#fFormat').value,status:$('#fStatus').value,
     date:$('#fDate').value,time:$('#fTime').value,prio:$('#fPrio').value,
     tags:tagArr($('#fTags').value).join(', '),notes:$('#fNotes').value.trim(),link:$('#fLink').value.trim(),checks};
+  $$('[data-fm]').forEach(f=>{ d[f.dataset.fm]=f.value===''?'':Number(f.value) });
   if(editId){Object.assign(items.find(i=>i.id===editId),d);toast('Atualizado')}
   else{items.push({id:uid(),...d});toast('Conteúdo criado')}
   await save(); renderChans(); renderAll(); closeModal();
@@ -1227,7 +1328,7 @@ $('#saveC').onclick=async()=>{
 };
 
 /* ===================== NAV / FILTERS ===================== */
-const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar']};
+const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar'],mx:['Métricas','desempenho pós-postagem']};
 function gotoView(v){
   view=v;
   $$('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
@@ -1273,6 +1374,183 @@ $('#seedBtn').onclick=async()=>{
     {id:uid(),title:'Série: 4 vídeos sobre roteiro para Shorts',channel:yt,platform:'youtube',format:'Short',status:'ideia',date:'',time:'',prio:'media',tags:'serie, roteiro',notes:'Sequência semanal.',link:'',checks:ck()}
   ]);
   await save(); renderChans(); renderAll(); toast('Exemplo carregado');
+};
+
+
+/* ===================== MÉTRICAS ===================== */
+const fmtN=n=>{
+  n=Number(n)||0;
+  if(n>=1e6) return (n/1e6).toFixed(n>=1e7?0:1).replace('.',',')+'M';
+  if(n>=1e3) return (n/1e3).toFixed(n>=1e4?0:1).replace('.',',')+'k';
+  return String(n);
+};
+const engColor=e=>e>=8?'#3ED598':e>=4?'#D6FF3F':e>=2?'#FFB13F':'#FF2E2E';
+const posted=()=>visible().filter(i=>i.status==='postado');
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+
+function bars(rows){
+  if(!rows.length) return `<div class="empty" style="padding:26px 0"><p>Sem dados ainda.</p></div>`;
+  const mx=Math.max(1,...rows.map(r=>r.v));
+  return rows.map(r=>`<div class="fn"><span>${esc(r.n)}</span>
+    <div class="track"><div class="fill" style="width:${Math.max(9,r.v/mx*100)}%;background:${r.c||'#3AB7FF'}">${r.lbl}</div></div></div>`).join('');
+}
+
+function renderMx(){
+  const all=posted(), withM=all.filter(hasMx);
+
+  const tv=withM.reduce((a,i)=>a+(Number(i.views)||0),0);
+  const engs=withM.map(engRate).filter(e=>e!==null);
+  const me=avg(engs);
+  const best=withM.slice().sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0))[0];
+  const fmts={};
+  withM.forEach(i=>{ (fmts[i.format]=fmts[i.format]||[]).push(Number(i.views)||0) });
+  const bestFmt=Object.entries(fmts).sort((a,b)=>avg(b[1])-avg(a[1]))[0];
+
+  document.getElementById('mxStats').innerHTML=[
+    {u:'VIEWS TOTAIS',n:fmtN(tv),s:`${withM.length} publicações medidas`,c:'#3AB7FF'},
+    {u:'ENGAJAMENTO MÉDIO',n:me?me.toFixed(1).replace('.',',')+'%':'—',s:'curtidas+coment+salvos+compart',c:engColor(me)},
+    {u:'MELHOR POST',n:best?fmtN(best.views||0):'—',s:best?best.title.slice(0,32):'sem dados',c:'#D6FF3F'},
+    {u:'MELHOR FORMATO',n:bestFmt?fmtN(Math.round(avg(bestFmt[1]))):'—',s:bestFmt?bestFmt[0]:'sem dados',c:'#E1306C'}
+  ].map(d=>`<div class="stat" style="--c:${d.c}"><u>${d.u}</u>
+      <b style="font-size:${String(d.n).length>5?'28px':'38px'}">${d.n}</b><small>${esc(d.s)}</small></div>`).join('');
+
+  // top posts
+  const top=withM.slice().sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0)).slice(0,6);
+  document.getElementById('mxTop').innerHTML=top.length?top.map((i,n)=>{
+    const e=engRate(i);
+    return `<div class="rank" data-id="${i.id}" style="cursor:pointer"><div class="pos">${n+1}</div>
+      <div style="flex:1;min-width:0"><p>${esc(i.title)||'Sem título'}</p>
+      <small>${esc(chan(i.channel).name)} · ${esc(i.format)} · ${fmtD(i.date)}</small></div>
+      <div style="text-align:right"><b>${fmtN(i.views||0)}</b>
+      <small style="color:${e!==null?engColor(e):'var(--txt-3)'}">${e!==null?e.toFixed(1).replace('.',',')+'%':'—'}</small></div></div>`;
+  }).join(''):`<div class="empty" style="padding:26px 0"><p>Marque conteúdos como Postado e preencha os números.</p></div>`;
+  document.querySelectorAll('#mxTop .rank').forEach(r=>r.onclick=()=>openModal(r.dataset.id));
+
+  // por formato
+  document.getElementById('mxFmt').innerHTML=bars(Object.entries(fmts)
+    .map(([n,a])=>({n,v:Math.round(avg(a)),lbl:fmtN(Math.round(avg(a))),c:'#E1306C'}))
+    .sort((a,b)=>b.v-a.v));
+
+  // por dia da semana
+  const dws={};
+  withM.filter(i=>i.date).forEach(i=>{
+    const d=DOW[new Date(i.date+'T12:00:00').getDay()];
+    (dws[d]=dws[d]||[]).push(Number(i.views)||0);
+  });
+  document.getElementById('mxDow').innerHTML=bars(DOW.filter(d=>dws[d])
+    .map(d=>({n:d,v:Math.round(avg(dws[d])),lbl:fmtN(Math.round(avg(dws[d]))),c:'#D6FF3F'})));
+
+  // por canal (engajamento)
+  const chs={};
+  withM.forEach(i=>{ const e=engRate(i); if(e!==null)(chs[i.channel]=chs[i.channel]||[]).push(e) });
+  document.getElementById('mxChan').innerHTML=bars(Object.entries(chs)
+    .map(([id,a])=>({n:chan(id).name,v:avg(a),lbl:avg(a).toFixed(1).replace('.',',')+'%',c:chan(id).color}))
+    .sort((a,b)=>b.v-a.v));
+
+  // tabela editável
+  const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
+              ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
+  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px';
+  let h=`<div class="tbl"><div class="tr head" style="grid-template-columns:${tpl}">
+    <div class="td">PUBLICAÇÃO</div><div class="td">CANAL</div><div class="td">DATA</div>
+    ${cols.map(c=>`<div class="td" style="justify-content:flex-end">${c[1]}</div>`).join('')}
+    <div class="td" style="justify-content:flex-end">ENG.</div></div>`;
+
+  const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  h+=list.map(i=>{
+    const e=engRate(i), c=chan(i.channel);
+    return `<div class="tr row" style="grid-template-columns:${tpl}">
+      <div class="td"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
+        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;cursor:pointer"
+          data-open="${i.id}">${esc(i.title)||'Sem título'}</span>
+        ${i.auto?'<span class="mx-src">AUTO</span>':''}</div>
+      <div class="td" style="color:${c.color};font-size:11px;font-weight:600">${esc(c.name)}</div>
+      <div class="td" style="font-size:11px;color:var(--txt-2)">${fmtD(i.date)}</div>
+      ${cols.map(c2=>`<div class="td"><input class="num" type="number" data-m="${c2[0]}" data-id="${i.id}"
+          value="${i[c2[0]]===''||i[c2[0]]==null?'':i[c2[0]]}" placeholder="—"></div>`).join('')}
+      <div class="td" style="justify-content:flex-end">
+        ${e!==null?`<span class="eng" style="background:${engColor(e)}22;color:${engColor(e)}">${e.toFixed(1).replace('.',',')}%</span>`:'<span style="color:var(--txt-3);font-size:11px">—</span>'}</div>
+    </div>`;
+  }).join('');
+  h+='</div>';
+  document.getElementById('mxTable').innerHTML=list.length?h:
+    `<div class="empty"><b>Nada publicado ainda</b><p>Mova um conteúdo para "Postado" no Pipeline.</p></div>`;
+
+  document.querySelectorAll('#mxTable [data-m]').forEach(inp=>inp.onchange=async()=>{
+    const it=items.find(x=>x.id===inp.dataset.id); if(!it) return;
+    it[inp.dataset.m]=inp.value===''?'':Number(inp.value);
+    it.auto=false;
+    await save(); renderMx();
+  });
+  document.querySelectorAll('#mxTable [data-open]').forEach(el=>el.onclick=()=>openModal(el.dataset.open));
+
+  const last=withM.map(i=>i.metrics_at).filter(Boolean).sort().pop();
+  document.getElementById('mxWhen').textContent=last?'atualizado '+new Date(last).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+}
+
+/* ---------- puxar automático ---------- */
+async function fetchOne(it){
+  if(!sb||!user) return {error:'Entre na sua conta.'};
+  if(!it.link) return {error:'Sem link da publicação.'};
+  const {data,error}=await sb.functions.invoke('metrics',{body:{platform:it.platform,url:it.link}});
+  if(error) return {error:error.message||'Função indisponível.'};
+  return data||{error:'Sem resposta.'};
+}
+function applyMx(it,d){
+  let got=0;
+  MET.forEach(k=>{ if(d[k]!==undefined&&d[k]!==null){ it[k]=d[k]; got++ } });
+  if(got){ it.metrics_at=new Date().toISOString(); it.auto=true; }
+  return got;
+}
+
+document.getElementById('mxSync').onclick=async()=>{
+  const list=posted().filter(i=>i.link);
+  if(!list.length){ toast('Nenhum post com link'); return; }
+  const btn=document.getElementById('mxSync'); btn.textContent='Puxando…';
+  let ok=0, err='';
+  for(const it of list){
+    const d=await fetchOne(it);
+    if(d.error){ err=d.error; continue; }
+    if(applyMx(it,d)) ok++;
+  }
+  await save(); renderAll();
+  btn.innerHTML='<svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Puxar números';
+  toast(ok?`${ok} atualizados`:(err||'Nada atualizado'));
+};
+
+document.getElementById('mxOne').onclick=async()=>{
+  if(!editId){ toast('Salve o conteúdo primeiro'); return; }
+  const it=items.find(x=>x.id===editId); if(!it) return;
+  it.link=document.getElementById('fLink').value.trim();
+  const btn=document.getElementById('mxOne'); btn.textContent='Puxando…';
+  const d=await fetchOne(it);
+  btn.textContent='Puxar automático';
+  if(d.error){ toast(d.error); return; }
+  if(applyMx(it,d)){
+    document.querySelectorAll('[data-fm]').forEach(f=>{ const v=it[f.dataset.fm]; f.value=(v===''||v==null)?'':v });
+    await save(); renderAll(); toast('Números atualizados');
+  }else toast('Nada retornado');
+};
+
+/* ---------- token do Instagram ---------- */
+document.getElementById('igToggle').onclick=async()=>{
+  const box=document.getElementById('igCfg');
+  box.classList.toggle('on');
+  if(box.classList.contains('on')&&sb&&user){
+    const {data}=await sb.from('secrets').select('ig_user_id').eq('user_id',user.id).maybeSingle();
+    if(data){ document.getElementById('igUser').value=data.ig_user_id||''; }
+  }
+};
+document.getElementById('igSave').onclick=async()=>{
+  if(!sb||!user){ toast('Entre na sua conta'); return; }
+  const ig_user_id=document.getElementById('igUser').value.trim();
+  const ig_token=document.getElementById('igTok').value.trim();
+  if(!ig_user_id||!ig_token){ toast('Preencha os dois campos'); return; }
+  const {error}=await sb.from('secrets').upsert({user_id:user.id,ig_user_id,ig_token,updated_at:new Date().toISOString()});
+  if(error){ toast('Erro ao salvar'); console.error(error); return; }
+  document.getElementById('igTok').value='';
+  document.getElementById('igCfg').classList.remove('on');
+  toast('Instagram conectado');
 };
 
 /* ===================== AUTH UI ===================== */
@@ -1326,7 +1604,7 @@ document.getElementById('logout').onclick=async()=>{
 };
 
 /* ===================== BOOT ===================== */
-function renderAll(){ renderDash(); renderDB(); renderBoard(); renderCal(); }
+function renderAll(){ renderDash(); renderDB(); renderBoard(); renderCal(); renderMx(); }
 (async()=>{
   buildPops(); fillFormats(); setSync('busy');
   try{
