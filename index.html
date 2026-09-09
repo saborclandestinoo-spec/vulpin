@@ -235,6 +235,28 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .tr.row:hover .expand{opacity:1}
 .expand:hover{color:var(--acid);border-color:var(--acid)}
 .row-add{padding:10px 14px;font-size:11.5px;color:var(--txt-3);cursor:pointer;transition:.2s;border-top:1px solid var(--line)}
+
+/* ===== MOBILE ROW LIST (replaces wide table on phones) ===== */
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mrow{position:relative;display:flex;align-items:stretch;gap:11px;padding:11px 14px 11px 12px;
+  border:1px solid var(--line);border-radius:var(--r-m);background:var(--surface);cursor:pointer;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;
+  transition:.2s var(--e)}
+.mrow:active{background:rgba(20,20,35,.04)}
+.mrow .bar{width:3px;border-radius:3px;flex:none;align-self:stretch}
+.mrow .mdel{all:unset;cursor:pointer;position:absolute;top:9px;right:9px;width:26px;height:26px;
+  display:grid;place-items:center;color:var(--txt-3);border-radius:7px}
+.mrow .mdel svg{width:13px;height:13px;stroke-width:2}
+.mrow .mdel:active{background:rgba(24,24,31,.08);color:var(--yt)}
+.mrow .body{flex:1;min-width:0;padding-right:26px}
+.mrow .ttl{font-size:13.5px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;margin-bottom:5px}
+.mrow .meta{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--txt-3);flex-wrap:wrap;margin-bottom:7px}
+.mrow .meta .dot{width:2px;height:2px;border-radius:50%;background:var(--txt-3);flex:none}
+.mrow .meta2{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--txt-2);margin-bottom:8px;flex-wrap:wrap}
+.mrow .meta2 .late{color:var(--yt);font-weight:600}
+.mrow .mstatus{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:5px}
+.mrow .mini{margin-bottom:0}
 .row-add:hover{color:var(--acid);background:rgba(24,24,31,.04)}
 
 .bulk{position:fixed;bottom:22px;left:50%;transform:translate(-50%,110px);z-index:70;display:flex;align-items:center;gap:10px;
@@ -258,6 +280,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .col-body{display:flex;flex-direction:column;gap:9px;min-height:52px}
 
 .card{border:1px solid var(--line);border-radius:var(--r-m);padding:12px;cursor:grab;position:relative;overflow:hidden;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;
   background:linear-gradient(155deg,var(--surface-2),var(--surface));transition:.28s var(--e);animation:pop .35s var(--e) backwards}
 @keyframes pop{from{opacity:0;transform:scale(.94) translateY(8px)}}
 .card:hover{transform:translateY(-3px);border-color:var(--line-2);box-shadow:var(--sh)}
@@ -319,6 +342,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .day:hover .plus{opacity:1}
 .day .plus:hover{color:var(--acid)}
 .pill{font-size:9.5px;font-weight:600;padding:4px 6px;border-radius:5px;cursor:grab;overflow:hidden;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;
   text-overflow:ellipsis;white-space:nowrap;transition:.2s var(--e);border-left:2px solid}
 .pill:hover{transform:translateX(2px)}
 .pill.drag{opacity:.4}
@@ -326,7 +350,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .tray h3{font-size:11.5px;font-weight:600;margin-bottom:4px}
 .tray p{font-size:10.5px;color:var(--txt-3);margin-bottom:13px;line-height:1.5}
 .tray-list{display:flex;flex-direction:column;gap:8px;max-height:62vh;overflow-y:auto}
-.tray-item{border:1px solid var(--line);border-radius:var(--r-s);padding:9px 10px;cursor:grab;transition:.22s var(--e);background:var(--surface)}
+.tray-item{border:1px solid var(--line);border-radius:var(--r-s);padding:9px 10px;cursor:grab;transition:.22s var(--e);background:var(--surface);
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .tray-item:hover{border-color:var(--line-2);transform:translateX(-3px)}
 .tray-item p{font-size:11px;font-weight:500;color:var(--txt);margin:0 0 4px;line-height:1.35;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -922,6 +947,7 @@ function ensureChannels(){
 
 /* ===================== HELPERS ===================== */
 const $=s=>document.querySelector(s);
+const isTouch=matchMedia('(pointer: coarse)').matches;
 const $$=s=>Array.from(document.querySelectorAll(s));
 const uid=p=>(p||'c')+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -1160,12 +1186,38 @@ function tableHTML(list){
   return h;
 }
 
+function mobileListHTML(list){
+  return `<div class="mlist">`+list.map(i=>{
+    const s=stage(i.status), c=chan(i.channel), tp=topic(i.topic), p=pct(i);
+    const meta=[esc(c.name)];
+    if(tp) meta.push(esc(tp.name));
+    meta.push(i.platform==='instagram'?'IG':'YT');
+    meta.push(esc(i.format));
+    return `<div class="mrow" data-open="${i.id}">
+      <div class="bar" style="background:${s.c}"></div>
+      <button class="mdel" data-kill="${i.id}"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+      <div class="body">
+        <div class="ttl">${esc(i.title)||'Sem título'}</div>
+        <div class="meta">${meta.map(m=>`<span>${m}</span>`).join('<i class="dot"></i>')}</div>
+        <div class="meta2">
+          <span class="mstatus" style="background:${s.c}22;color:${s.c}">${s.name}</span>
+          <span class="${isLate(i)?'late':''}">${fmtD(i.date)}${i.time?' · '+i.time:''}</span>
+          <span class="prio" style="background:${PRIOS[i.prio||'media'].c}"></span>
+        </div>
+        <div class="mini"><i style="width:${p}%"></i></div>
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+
 function renderDB(){
   const v=visible().slice().sort(sortFn);
   if(!v.length){ $('#dbBody').innerHTML=`<div class="empty"><b>Banco vazio</b><p>Crie um conteúdo ou carregue o exemplo.</p></div>`; return; }
+  const mob=window.matchMedia('(max-width:860px)').matches;
+  const render=mob?mobileListHTML:tableHTML;
   let h='';
   if(groupBy==='none'){
-    h=`<div class="group">${tableHTML(v)}<div class="row-add" data-add="">+ Nova linha</div></div>`;
+    h=`<div class="group">${render(v)}<div class="row-add" data-add="">+ Nova linha</div></div>`;
   }else{
     let keys=[];
     if(groupBy==='status') keys=STAGES.map(s=>({k:s.id,n:s.name,c:s.c}));
@@ -1178,7 +1230,7 @@ function renderDB(){
       const list=v.filter(i=>(groupBy==='prio'?(i.prio||'media'):(groupBy==='topic'?(i.topic||''):i[groupBy]))===g.k);
       if(!list.length) return;
       h+=`<div class="group"><div class="ghead"><i style="background:${g.c}"></i><h4>${esc(g.n)}</h4><b>${list.length}</b>
-        <button class="g-add" data-add="${g.k}">+ adicionar</button></div>${tableHTML(list)}</div>`;
+        <button class="g-add" data-add="${g.k}">+ adicionar</button></div>${render(list)}</div>`;
     });
   }
   $('#dbBody').innerHTML=h;
@@ -1284,7 +1336,7 @@ function buildPops(){
 function cardHTML(i){
   const p=pct(i), c=chan(i.channel), tp=topic(i.topic);
   const edge=i.platform==='instagram'?'linear-gradient(180deg,var(--ig-a),var(--ig-c))':'var(--yt)';
-  return `<div class="card" draggable="true" data-id="${i.id}">
+  return `<div class="card" draggable="${isTouch?'false':'true'}" data-id="${i.id}">
     <div class="edge" style="background:${edge}"></div>
     <div class="card-top"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
       <span class="fmt">${esc(i.format)}</span><span class="prio" style="background:${PRIOS[i.prio||'media'].c}"></span></div>
@@ -1345,7 +1397,7 @@ function renderCal(){
     h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
       ${l.map(i=>{const c=chan(i.channel);
-        return `<div class="pill" draggable="true" data-id="${i.id}"
+        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}"
           style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}
     </div>`;
   }
@@ -1356,7 +1408,7 @@ function renderCal(){
   // tray
   const nd=v.filter(i=>!i.date);
   $('#tray').innerHTML=nd.length?nd.map(i=>{const c=chan(i.channel);
-    return `<div class="tray-item" draggable="true" data-id="${i.id}">
+    return `<div class="tray-item" draggable="${isTouch?'false':'true'}" data-id="${i.id}">
       <p>${esc(i.title)||'Sem título'}</p><small style="color:${c.color}">${esc(c.name)} · ${esc(i.format)}</small></div>`}).join('')
     :`<div class="empty" style="padding:24px 0"><p>Tudo agendado 🎉</p></div>`;
 
@@ -1507,6 +1559,10 @@ document.onkeydown=e=>{
   if(e.key==='Escape'){closeModal();closeC()}
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){e.preventDefault();$('#newBtn').click()}
 };
+let _mobMQ=window.matchMedia('(max-width:860px)'), _mobLast=_mobMQ.matches;
+(_mobMQ.addEventListener?_mobMQ.addEventListener.bind(_mobMQ):_mobMQ.addListener.bind(_mobMQ))('change',e=>{
+  if(e.matches!==_mobLast){ _mobLast=e.matches; renderDB(); }
+});
 
 /* ===================== CSV ===================== */
 $('#csvBtn').onclick=()=>{
