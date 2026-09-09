@@ -343,9 +343,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .day > .dnum .plus{all:unset;cursor:pointer;margin-left:auto;font-size:13px;line-height:1;color:var(--txt-3);opacity:0;transition:.2s}
 .day:hover .plus{opacity:1}
 .day .plus:hover{color:var(--acid)}
-.pill{font-size:9.5px;font-weight:600;padding:4px 6px;border-radius:5px;cursor:grab;overflow:hidden;
+.pill{font-size:9.5px;font-weight:600;padding:4px 6px;border-radius:5px;cursor:grab;line-height:1.35;
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation;
-  text-overflow:ellipsis;white-space:nowrap;transition:.2s var(--e);border-left:2px solid;flex:none;width:100%;box-sizing:border-box}
+  white-space:normal;word-break:break-word;transition:.2s var(--e);border-left:2px solid;flex:none;width:100%;box-sizing:border-box}
 .pill:hover{transform:translateX(2px)}
 .pill.drag{opacity:.4}
 .tray{border:1px solid var(--line);border-radius:var(--r-l);background:rgba(255,255,255,.6);padding:15px;position:sticky;top:0}
