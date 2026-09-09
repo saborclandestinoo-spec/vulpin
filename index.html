@@ -156,8 +156,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:99px;
   font-size:12.5px;font-weight:600;transition:.25s var(--e);white-space:nowrap}
 .btn svg{width:14px;height:14px;stroke-width:2.4;fill:none}
-.btn-primary{background:var(--acid);color:var(--inv-txt);box-shadow:0 8px 24px -8px rgba(24,24,31,.8)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 32px -8px rgba(24,24,31,.95)}
+.btn-primary{background:var(--acid);color:var(--inv-txt);box-shadow:0 8px 20px -8px rgba(24,24,31,.45)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 28px -8px rgba(24,24,31,.55)}
 .btn-ghost{border:1px solid var(--line-2);color:var(--txt-2)}
 .btn-ghost:hover{color:var(--txt);border-color:var(--txt-3);background:rgba(20,20,35,.04)}
 .btn-sm{padding:7px 12px;font-size:11.5px}
@@ -437,6 +437,11 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div class="chan" id="chanList"></div>
     </div>
 
+    <div>
+      <div class="sec-label">ITENS <button id="addTopic" title="Novo item">+</button></div>
+      <div class="chan" id="topicList"></div>
+    </div>
+
     <div class="side-foot">
       <div class="userbox" id="userBox" style="display:none">
         <div class="ub-av" id="ubAv">@</div>
@@ -569,6 +574,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         <div class="field"><label>CANAL</label><select id="fChannel"></select></div>
         <div class="field"><label>FORMATO</label><select id="fFormat"></select></div>
       </div>
+      <div class="field"><label>ITEM / ASSUNTO (opcional)</label><select id="fTopic"><option value="">Nenhum</option></select></div>
       <div class="field"><label>TÍTULO / PAUTA</label><input id="fTitle" placeholder="Ex: 5 erros que matam seu alcance"></div>
       <div class="row3">
         <div class="field"><label>ETAPA</label><select id="fStatus"></select></div>
@@ -626,6 +632,23 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
+<div class="veil" id="veilT">
+  <div class="modal sm">
+    <div class="mhead">
+      <div><h2>Novo item</h2><p>Um objeto, produto ou assunto — agrupe ideias dentro dele</p></div>
+      <button class="x" id="closeT"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="mbody">
+      <div class="field"><label>NOME DO ITEM</label><input id="tName" placeholder="Ex: Forno elétrico novo"></div>
+      <div class="field"><label>COR</label><div class="swatch" id="tSwatch"></div></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" id="cancelT">Cancelar</button>
+      <button class="btn btn-primary" id="saveT">Criar item</button>
+    </div>
+  </div>
+</div>
+
 <div class="bulk" id="bulk">
   <span id="bulkN">0 selecionados</span>
   <select id="bulkStatus"><option value="">Mover etapa…</option></select>
@@ -660,7 +683,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 /* ===================== CONFIG ===================== */
-const K_ITEMS='studio:items:v2', K_CHAN='studio:channels:v2';
+const K_ITEMS='studio:items:v2', K_CHAN='studio:channels:v2', K_TOPIC='studio:topics:v1';
 const STAGES=[
   {id:'ideia',name:'Ideia',c:'#B8B7B2'},
   {id:'roteiro',name:'Roteiro',c:'#98979F'},
@@ -682,6 +705,7 @@ const COLS=[
   {id:'sel',   n:'',           w:'34px',   fix:true},
   {id:'title', n:'TÍTULO',     w:'minmax(220px,2.2fr)', vis:true, sort:true},
   {id:'channel',n:'CANAL',     w:'130px',  vis:true, sort:true},
+  {id:'topic', n:'ITEM',       w:'130px',  vis:true, sort:true},
   {id:'platform',n:'PLATAF.',  w:'96px',   vis:true, sort:true},
   {id:'format',n:'FORMATO',    w:'132px',  vis:true, sort:true},
   {id:'status',n:'ETAPA',      w:'128px',  vis:true, sort:true},
@@ -693,7 +717,7 @@ const COLS=[
 ];
 
 /* ===================== STATE ===================== */
-let items=[], channels=[], activeChan='all', view='dash', filter='all', query='';
+let items=[], channels=[], topics=[], activeChan='all', activeTopic='all', view='dash', filter='all', query='';
 let groupBy='status', sortBy='date', sortDir=1, selected=new Set();
 let editId=null, plat='instagram', calDate=new Date(), newColor=SWATCH[0];
 
@@ -718,7 +742,7 @@ const ls={
 const authStore={getItem:k=>ls.get(k),setItem:(k,v)=>ls.set(k,v),removeItem:k=>ls.del(k)};
 
 let sb=null, mode='cloud', user=null, saveTimer=null;
-let syncedI=new Set(), syncedC=new Set();
+let syncedI=new Set(), syncedC=new Set(), syncedT=new Set();
 
 function getCfg(){ return (SUPABASE.url && SUPABASE.key) ? SUPABASE : null; }
 function initClient(){
@@ -734,7 +758,7 @@ function initClient(){
 const MET=['views','likes','comments','saves','shares','reach','retention'];
 const nz=v=>(v===''||v===null||v===undefined||isNaN(v))?null:Number(v);
 const itemRow=i=>{
-  const o={id:i.id,user_id:user.id,channel_id:i.channel||null,title:i.title||'',platform:i.platform,
+  const o={id:i.id,user_id:user.id,channel_id:i.channel||null,topic_id:i.topic||null,title:i.title||'',platform:i.platform,
     format:i.format,status:i.status,pub_date:i.date||null,pub_time:i.time||null,prio:i.prio||'media',
     tags:i.tags||'',notes:i.notes||'',link:i.link||'',checks:i.checks||{},
     metrics_at:i.metrics_at||null,metrics_auto:!!i.auto};
@@ -742,7 +766,7 @@ const itemRow=i=>{
   return o;
 };
 const rowItem=r=>{
-  const o={id:r.id,channel:r.channel_id,title:r.title||'',platform:r.platform||'instagram',
+  const o={id:r.id,channel:r.channel_id,topic:r.topic_id||'',title:r.title||'',platform:r.platform||'instagram',
     format:r.format||'Reels',status:r.status||'ideia',date:r.pub_date||'',time:r.pub_time||'',
     prio:r.prio||'media',tags:r.tags||'',notes:r.notes||'',link:r.link||'',checks:r.checks||{},
     metrics_at:r.metrics_at||null,auto:!!r.metrics_auto};
@@ -757,6 +781,7 @@ const engRate=i=>{
 };
 const hasMx=i=>MET.some(k=>i[k]!==''&&i[k]!==null&&i[k]!==undefined);
 const chanRow=c=>({id:c.id,user_id:user.id,name:c.name,color:c.color});
+const topicRow=t=>({id:t.id,user_id:user.id,name:t.name,color:t.color});
 
 function setSync(state){
   const el=document.getElementById('syncDot'); if(!el) return;
@@ -766,14 +791,17 @@ function setSync(state){
 }
 
 async function pull(){
-  const [c,i]=await Promise.all([
+  const [c,t,i]=await Promise.all([
     sb.from('channels').select('*').order('created_at',{ascending:true}),
+    sb.from('topics').select('*').order('created_at',{ascending:true}),
     sb.from('items').select('*').order('created_at',{ascending:true})
   ]);
-  if(c.error||i.error) throw (c.error||i.error);
+  if(c.error||t.error||i.error) throw (c.error||t.error||i.error);
   channels=(c.data||[]).map(r=>({id:r.id,name:r.name,color:r.color}));
+  topics=(t.data||[]).map(r=>({id:r.id,name:r.name,color:r.color}));
   items=(i.data||[]).map(rowItem);
   syncedC=new Set(channels.map(x=>x.id));
+  syncedT=new Set(topics.map(x=>x.id));
   syncedI=new Set(items.map(x=>x.id));
 }
 
@@ -783,12 +811,16 @@ async function push(){
   try{
     const delI=[...syncedI].filter(id=>!items.some(x=>x.id===id));
     const delC=[...syncedC].filter(id=>!channels.some(x=>x.id===id));
+    const delT=[...syncedT].filter(id=>!topics.some(x=>x.id===id));
     if(delI.length) await sb.from('items').delete().in('id',delI);
     if(delC.length) await sb.from('channels').delete().in('id',delC);
+    if(delT.length) await sb.from('topics').delete().in('id',delT);
     if(channels.length){ const r=await sb.from('channels').upsert(channels.map(chanRow)); if(r.error) throw r.error; }
+    if(topics.length){ const r=await sb.from('topics').upsert(topics.map(topicRow)); if(r.error) throw r.error; }
     if(items.length){ const r=await sb.from('items').upsert(items.map(itemRow)); if(r.error) throw r.error; }
     syncedI=new Set(items.map(x=>x.id));
     syncedC=new Set(channels.map(x=>x.id));
+    syncedT=new Set(topics.map(x=>x.id));
     setSync('ok');
   }catch(e){ setSync('err'); toast('Falha ao salvar na nuvem'); console.error(e); }
 }
@@ -797,16 +829,19 @@ async function localSave(){
   try{
     await window.storage.set(K_ITEMS,JSON.stringify(items));
     await window.storage.set(K_CHAN,JSON.stringify(channels));
+    await window.storage.set(K_TOPIC,JSON.stringify(topics));
   }catch(e){}
-  ls.set(K_ITEMS,JSON.stringify(items)); ls.set(K_CHAN,JSON.stringify(channels));
+  ls.set(K_ITEMS,JSON.stringify(items)); ls.set(K_CHAN,JSON.stringify(channels)); ls.set(K_TOPIC,JSON.stringify(topics));
 }
 async function localLoad(){
-  let a=null,b=null;
+  let a=null,b=null,d=null;
   try{const r=await window.storage.get(K_ITEMS); if(r&&r.value) a=r.value;}catch(e){}
   try{const r=await window.storage.get(K_CHAN); if(r&&r.value) b=r.value;}catch(e){}
-  a=a||ls.get(K_ITEMS); b=b||ls.get(K_CHAN);
+  try{const r=await window.storage.get(K_TOPIC); if(r&&r.value) d=r.value;}catch(e){}
+  a=a||ls.get(K_ITEMS); b=b||ls.get(K_CHAN); d=d||ls.get(K_TOPIC);
   try{ if(a) items=JSON.parse(a); }catch(e){}
   try{ if(b) channels=JSON.parse(b); }catch(e){}
+  try{ if(d) topics=JSON.parse(d); }catch(e){}
 }
 
 async function save(){
@@ -831,6 +866,7 @@ const pct=i=>Math.round(Object.values(i.checks||{}).filter(Boolean).length/CHECK
 const isLate=i=>i.date&&i.date<today()&&i.status!=='postado';
 const stage=id=>STAGES.find(s=>s.id===id)||STAGES[0];
 const chan=id=>channels.find(c=>c.id===id)||{name:'—',color:'#7A7982'};
+const topic=id=>topics.find(t=>t.id===id)||null;
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tagArr=t=>(t||'').split(',').map(s=>s.trim()).filter(Boolean);
 function fmtD(d){if(!d)return '—';const[,m,dd]=d.split('-');return dd+'/'+m}
@@ -839,12 +875,13 @@ function toast(m){$('#toast').textContent=m;$('#toast').classList.add('on');clea
 function visible(){
   return items.filter(i=>{
     if(activeChan!=='all'&&i.channel!==activeChan) return false;
+    if(activeTopic!=='all'&&(i.topic||'')!==activeTopic) return false;
     if(filter==='instagram'&&i.platform!=='instagram') return false;
     if(filter==='youtube'&&i.platform!=='youtube') return false;
     if(filter==='late'&&!isLate(i)) return false;
     if(filter==='nodate'&&i.date) return false;
     if(query){
-      const h=(i.title+' '+(i.tags||'')+' '+(i.notes||'')+' '+chan(i.channel).name).toLowerCase();
+      const h=(i.title+' '+(i.tags||'')+' '+(i.notes||'')+' '+chan(i.channel).name+' '+(topic(i.topic)?topic(i.topic).name:'')).toLowerCase();
       if(!h.includes(query)) return false;
     }
     return true;
@@ -882,6 +919,36 @@ function renderChans(){
   $('#bulkChan').innerHTML='<option value="">Mover canal…</option>'+opts;
 }
 
+/* ===================== SIDEBAR ITENS (assuntos) ===================== */
+function renderTopics(){
+  const all=items.length;
+  let h=`<button class="item ${activeTopic==='all'?'on':''}" data-t="all">
+    <i style="background:linear-gradient(120deg,var(--txt-3),var(--txt))"></i>Todos os itens<b>${all}</b></button>`;
+  h+=topics.map(t=>{
+    const n=items.filter(i=>i.topic===t.id).length;
+    return `<button class="item ${activeTopic===t.id?'on':''}" data-t="${t.id}">
+      <i style="background:${t.color}"></i>${esc(t.name)}<b>${n}</b>
+      <span class="del" data-delt="${t.id}">×</span></button>`;
+  }).join('');
+  $('#topicList').innerHTML=h||`<div style="font-size:11px;color:var(--txt-3);padding:6px 10px">Nenhum item ainda</div>`;
+  $$('#topicList .item').forEach(b=>b.onclick=e=>{
+    if(e.target.dataset.delt) return;
+    activeTopic=b.dataset.t; renderTopics(); renderAll();
+  });
+  $$('[data-delt]').forEach(b=>b.onclick=async e=>{
+    e.stopPropagation();
+    const id=b.dataset.delt;
+    const n=items.filter(i=>i.topic===id).length;
+    if(n&&!confirm(`Remover item? ${n} ideia(s) ficam sem item, mas não serão apagadas.`)) return;
+    topics=topics.filter(t=>t.id!==id);
+    items.forEach(i=>{ if(i.topic===id) i.topic=''; });
+    if(activeTopic===id) activeTopic='all';
+    await save(); renderTopics(); renderAll(); toast('Item removido');
+  });
+  const opts='<option value="">Nenhum</option>'+topics.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  $('#fTopic').innerHTML=opts;
+}
+
 /* ===================== QUICK ADD ===================== */
 let openAdd=null, focusNew=null;
 
@@ -890,6 +957,7 @@ function newItem(pre){
   const p=pre.platform||'instagram';
   return {id:uid(),title:pre.title||'',platform:p,
     channel:pre.channel||(activeChan!=='all'?activeChan:(channels[0]||{}).id),
+    topic:pre.topic!==undefined?pre.topic:(activeTopic!=='all'?activeTopic:''),
     format:FORMATS[p][0],status:pre.status||'ideia',date:pre.date||'',time:pre.date?'19:00':'',
     prio:'media',tags:'',notes:'',link:'',checks:{}};
 }
@@ -954,7 +1022,7 @@ function renderDash(){
 }
 
 /* ===================== DATABASE ===================== */
-const GROUPS=[{id:'none',n:'Nenhum'},{id:'status',n:'Etapa'},{id:'channel',n:'Canal'},
+const GROUPS=[{id:'none',n:'Nenhum'},{id:'status',n:'Etapa'},{id:'channel',n:'Canal'},{id:'topic',n:'Item'},
   {id:'platform',n:'Plataforma'},{id:'format',n:'Formato'},{id:'prio',n:'Prioridade'}];
 const SORTS=[{id:'date',n:'Data'},{id:'title',n:'Título'},{id:'status',n:'Etapa'},{id:'prog',n:'Progresso'},{id:'prio',n:'Prioridade'}];
 
@@ -978,6 +1046,12 @@ function cellHTML(i,c){
       const cur=chan(i.channel);
       return `<select class="cell-sel" data-edit="channel" data-id="${i.id}" style="background:${cur.color}22;color:${cur.color}">
         ${channels.map(x=>`<option value="${x.id}" ${x.id===i.channel?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`;
+    }
+    case 'topic':{
+      const cur=topic(i.topic);
+      return `<select class="cell-sel" data-edit="topic" data-id="${i.id}" style="background:${(cur?cur.color:'#98979F')}1A;color:${cur?cur.color:'var(--txt-3)'}">
+        <option value="">—</option>
+        ${topics.map(x=>`<option value="${x.id}" ${x.id===i.topic?'selected':''}>${esc(x.name)}</option>`).join('')}</select>`;
     }
     case 'platform':{
       const ig=i.platform==='instagram';
@@ -1033,11 +1107,12 @@ function renderDB(){
     let keys=[];
     if(groupBy==='status') keys=STAGES.map(s=>({k:s.id,n:s.name,c:s.c}));
     else if(groupBy==='channel') keys=channels.map(c=>({k:c.id,n:c.name,c:c.color}));
+    else if(groupBy==='topic') keys=[...topics.map(t=>({k:t.id,n:t.name,c:t.color})),{k:'',n:'Sem item',c:'#B8B7B2'}];
     else if(groupBy==='platform') keys=[{k:'instagram',n:'Instagram',c:'#454450'},{k:'youtube',n:'YouTube',c:'#18181F'}];
     else if(groupBy==='format') keys=[...new Set(v.map(i=>i.format))].map(f=>({k:f,n:f,c:'#7A7982'}));
     else if(groupBy==='prio') keys=Object.entries(PRIOS).map(([k,p])=>({k,n:p.n,c:p.c}));
     keys.forEach(g=>{
-      const list=v.filter(i=>(groupBy==='prio'?(i.prio||'media'):i[groupBy])===g.k);
+      const list=v.filter(i=>(groupBy==='prio'?(i.prio||'media'):(groupBy==='topic'?(i.topic||''):i[groupBy]))===g.k);
       if(!list.length) return;
       h+=`<div class="group"><div class="ghead"><i style="background:${g.c}"></i><h4>${esc(g.n)}</h4><b>${list.length}</b>
         <button class="g-add" data-add="${g.k}">+ adicionar</button></div>${tableHTML(list)}</div>`;
@@ -1067,7 +1142,7 @@ function wireDB(){
         it[f]=el.value;
         if(f==='platform'&&!FORMATS[el.value].includes(it.format)) it.format=FORMATS[el.value][0];
         if(f==='status'&&el.value==='postado') it.checks=Object.fromEntries(CHECKS.map(c=>[c.id,true]));
-        await save(); renderAll();
+        await save(); if(f==='topic') renderTopics(); if(f==='channel') renderChans(); renderAll();
       };
       el.onclick=e=>e.stopPropagation();
     }
@@ -1090,12 +1165,13 @@ function wireDB(){
     const k=b.dataset.add, pre={};
     if(groupBy==='status'&&k) pre.status=k;
     if(groupBy==='channel'&&k) pre.channel=k;
+    if(groupBy==='topic') pre.topic=k;
     if(groupBy==='platform'&&k) pre.platform=k;
     if(!channels.length){toast('Crie um canal primeiro');return}
     const it=newItem(pre);
     if(groupBy==='prio'&&k) it.prio=k;
     if(groupBy==='format'&&k) it.format=k;
-    items.push(it); await save(); focusNew=it.id; renderChans(); renderAll();
+    items.push(it); await save(); focusNew=it.id; renderChans(); renderTopics(); renderAll();
   });
   if(focusNew){
     const cell=document.querySelector(`[data-edit="title"][data-id="${focusNew}"]`);
@@ -1111,7 +1187,7 @@ function syncBulk(){
 $('#bulkClear').onclick=()=>{selected.clear();renderDB();syncBulk()};
 $('#bulkDel').onclick=async()=>{
   items=items.filter(i=>!selected.has(i.id));
-  selected.clear(); await save(); renderChans(); renderAll(); syncBulk(); toast('Removidos');
+  selected.clear(); await save(); renderChans(); renderTopics(); renderAll(); syncBulk(); toast('Removidos');
 };
 $('#bulkStatus').onchange=async e=>{
   if(!e.target.value) return;
@@ -1143,13 +1219,13 @@ function buildPops(){
 
 /* ===================== BOARD ===================== */
 function cardHTML(i){
-  const p=pct(i), c=chan(i.channel);
+  const p=pct(i), c=chan(i.channel), tp=topic(i.topic);
   const edge=i.platform==='instagram'?'linear-gradient(180deg,var(--ig-a),var(--ig-c))':'var(--yt)';
   return `<div class="card" draggable="true" data-id="${i.id}">
     <div class="edge" style="background:${edge}"></div>
     <div class="card-top"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
       <span class="fmt">${esc(i.format)}</span><span class="prio" style="background:${PRIOS[i.prio||'media'].c}"></span></div>
-    <div class="chan-tag"><i style="background:${c.color}"></i>${esc(c.name)}</div>
+    <div class="chan-tag"><i style="background:${c.color}"></i>${esc(c.name)}${tp?` · ${esc(tp.name)}`:''}</div>
     <h5>${esc(i.title)||'<span style="color:var(--txt-3)">Sem título</span>'}</h5>
     <div class="mini"><i style="width:${p}%"></i></div>
     <div class="card-foot"><span class="${isLate(i)?'late':''}">${fmtD(i.date)} ${i.time||''}</span><span>${p}%</span>
@@ -1166,7 +1242,7 @@ function renderBoard(){
   $$('.add-card').forEach(b=>b.onclick=()=>{openAdd={type:'board',key:b.dataset.st};renderBoard()});
   $$('[data-kill]').forEach(b=>b.onclick=async e=>{
     e.stopPropagation(); items=items.filter(i=>i.id!==b.dataset.kill);
-    await save(); renderChans(); renderAll(); toast('Removido');
+    await save(); renderChans(); renderTopics(); renderAll(); toast('Removido');
   });
   $$('#board .card').forEach(c=>{
     c.onclick=e=>{if(!e.target.closest('.kill'))openModal(c.dataset.id)};
@@ -1267,6 +1343,7 @@ function openModal(id,pre){
   $('#mTitle').textContent=it?'Editar conteúdo':'Novo conteúdo';
   setPlat(it?it.platform:(pre.platform||'instagram'), it?it.format:null);
   $('#fChannel').value=it?it.channel:(pre.channel||(activeChan!=='all'?activeChan:(channels[0]||{}).id));
+  $('#fTopic').value=it?(it.topic||''):(pre.topic!==undefined?pre.topic:(activeTopic!=='all'?activeTopic:''));
   $('#fTitle').value=it?it.title:'';
   $('#fStatus').value=it?it.status:(pre.status||'ideia');
   $('#fDate').value=it?(it.date||''):(pre.date||'');
@@ -1294,7 +1371,7 @@ $('#newBtn').onclick=async()=>{
   else{
     if(view!=='db') gotoView('db');
     const it=newItem({}); items.push(it); await save();
-    focusNew=it.id; renderChans(); renderAll();
+    focusNew=it.id; renderChans(); renderTopics(); renderAll();
   }
 };
 $('#fullBtn').onclick=()=>openModal();
@@ -1305,13 +1382,13 @@ $('#saveM').onclick=async()=>{
   if(!t){$('#fTitle').focus();toast('Dê um título');return}
   if(!channels.length){toast('Crie um canal primeiro');return}
   const checks={}; $$('[data-ck]').forEach(c=>checks[c.dataset.ck]=c.checked);
-  const d={title:t,platform:plat,channel:$('#fChannel').value,format:$('#fFormat').value,status:$('#fStatus').value,
+  const d={title:t,platform:plat,channel:$('#fChannel').value,topic:$('#fTopic').value,format:$('#fFormat').value,status:$('#fStatus').value,
     date:$('#fDate').value,time:$('#fTime').value,prio:$('#fPrio').value,
     tags:tagArr($('#fTags').value).join(', '),notes:$('#fNotes').value.trim(),link:$('#fLink').value.trim(),checks};
   $$('[data-fm]').forEach(f=>{ d[f.dataset.fm]=f.value===''?'':Number(f.value) });
   if(editId){Object.assign(items.find(i=>i.id===editId),d);toast('Atualizado')}
   else{items.push({id:uid(),...d});toast('Conteúdo criado')}
-  await save(); renderChans(); renderAll(); closeModal();
+  await save(); renderChans(); renderTopics(); renderAll(); closeModal();
 };
 
 /* modal canal */
@@ -1326,6 +1403,23 @@ $('#saveC').onclick=async()=>{
   const n=$('#cName').value.trim(); if(!n){toast('Dê um nome');return}
   channels.push({id:uid('ch_'),name:n,color:newColor});
   await save(); renderChans(); renderAll(); closeC(); toast('Canal criado');
+};
+
+/* modal item (assunto) */
+let newTopicColor=SWATCH[0];
+$('#tSwatch').innerHTML=SWATCH.map((c,idx)=>`<button data-c="${c}" class="${idx===0?'on':''}" style="background:${c};color:${c}"></button>`).join('');
+$$('#tSwatch button').forEach(b=>b.onclick=()=>{newTopicColor=b.dataset.c;$$('#tSwatch button').forEach(x=>x.classList.remove('on'));b.classList.add('on')});
+$('#addTopic').onclick=()=>{$('#tName').value='';$('#veilT').classList.add('on');setTimeout(()=>$('#tName').focus(),120)};
+const closeT=()=>$('#veilT').classList.remove('on');
+$('#closeT').onclick=closeT; $('#cancelT').onclick=closeT;
+$('#veilT').onclick=e=>{if(e.target===$('#veilT'))closeT()};
+$('#tName').onkeydown=e=>{if(e.key==='Enter')$('#saveT').click()};
+$('#saveT').onclick=async()=>{
+  const n=$('#tName').value.trim(); if(!n){toast('Dê um nome ao item');return}
+  const t={id:uid('tp_'),name:n,color:newTopicColor};
+  topics.push(t);
+  await save(); renderTopics(); renderAll(); closeT(); toast('Item criado');
+  activeTopic=t.id; renderTopics(); renderAll(); gotoView('db');
 };
 
 /* ===================== NAV / FILTERS ===================== */
@@ -1347,8 +1441,8 @@ document.onkeydown=e=>{
 
 /* ===================== CSV ===================== */
 $('#csvBtn').onclick=()=>{
-  const head=['Titulo','Canal','Plataforma','Formato','Etapa','Data','Hora','Prioridade','Tags','Progresso','Link','Notas'];
-  const rows=visible().map(i=>[i.title,chan(i.channel).name,i.platform,i.format,stage(i.status).name,i.date||'',i.time||'',
+  const head=['Titulo','Canal','Item','Plataforma','Formato','Etapa','Data','Hora','Prioridade','Tags','Progresso','Link','Notas'];
+  const rows=visible().map(i=>[i.title,chan(i.channel).name,(topic(i.topic)?topic(i.topic).name:''),i.platform,i.format,stage(i.status).name,i.date||'',i.time||'',
     PRIOS[i.prio||'media'].n,i.tags||'',pct(i)+'%',i.link||'',(i.notes||'').replace(/\n/g,' ')]);
   const csv='\uFEFF'+[head,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
   const a=document.createElement('a');
@@ -1374,7 +1468,7 @@ $('#seedBtn').onclick=async()=>{
     {id:uid(),title:'Live de perguntas e respostas mensal',channel:ig,platform:'instagram',format:'Live',status:'ideia',date:'',time:'',prio:'baixa',tags:'live, qna',notes:'Divulgar 3 dias antes.',link:'',checks:ck()},
     {id:uid(),title:'Série: 4 vídeos sobre roteiro para Shorts',channel:yt,platform:'youtube',format:'Short',status:'ideia',date:'',time:'',prio:'media',tags:'serie, roteiro',notes:'Sequência semanal.',link:'',checks:ck()}
   ]);
-  await save(); renderChans(); renderAll(); toast('Exemplo carregado');
+  await save(); renderChans(); renderTopics(); renderAll(); toast('Exemplo carregado');
 };
 
 
@@ -1570,7 +1664,7 @@ async function startSession(u){
   document.getElementById('userBox').style.display='flex';
   try{ await pull(); }catch(e){ toast('Erro ao carregar dados'); console.error(e); }
   if(!channels.length){ ensureChannels(); await push(); }
-  setSync('ok'); hideGate(); renderChans(); renderAll();
+  setSync('ok'); hideGate(); renderChans(); renderTopics(); renderAll();
 }
 
 let signMode='in';
@@ -1599,9 +1693,9 @@ document.getElementById('doAuth').onclick=async()=>{
 document.getElementById('logPass').onkeydown=e=>{ if(e.key==='Enter') document.getElementById('doAuth').click(); };
 document.getElementById('logout').onclick=async()=>{
   if(sb) await sb.auth.signOut();
-  user=null; items=[]; channels=[]; syncedI=new Set(); syncedC=new Set();
+  user=null; items=[]; channels=[]; topics=[]; syncedI=new Set(); syncedC=new Set(); syncedT=new Set();
   document.getElementById('userBox').style.display='none';
-  renderChans(); renderAll(); showGate('login');
+  renderChans(); renderTopics(); renderAll(); showGate('login');
 };
 
 /* ===================== BOOT ===================== */
