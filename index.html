@@ -411,12 +411,74 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .empty{text-align:center;padding:56px 20px;color:var(--txt-3)}
 .empty b{display:block;font-size:14px;font-weight:600;color:var(--txt-2);margin-bottom:6px}
 .empty p{font-size:12px}
-@media(max-width:860px){.app{grid-template-columns:1fr}.side{display:none}}
+/* ===================== MOBILE ===================== */
+#menuBtn{display:none}
+.scrim{display:none;position:fixed;inset:0;z-index:65;background:rgba(24,24,31,.35);backdrop-filter:blur(2px)}
+.scrim.on{display:block;animation:fade .25s var(--e)}
+
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{
+    position:fixed;inset:0 auto 0 0;z-index:70;width:82vw;max-width:320px;
+    transform:translateX(-100%);transition:transform .32s var(--e);
+    box-shadow:24px 0 60px -20px rgba(24,24,31,.35);
+    padding-bottom:calc(22px + env(safe-area-inset-bottom));
+  }
+  .side.open{transform:translateX(0)}
+  #menuBtn{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
+    background:var(--surface);flex:none;order:-1;margin-right:2px}
+  #menuBtn svg{width:17px;height:17px;stroke-width:2}
+  .top{padding:12px 14px;gap:8px;flex-wrap:wrap}
+  .vtitle{font-size:15px;order:1}
+  .vtitle em{display:none}
+  .search{order:3;width:100%;margin-left:0}
+  .search:focus-within{width:100%}
+  #newBtn{order:2;margin-left:auto}
+  #fullBtn{display:none}
+  .scroll{padding:16px 14px}
+
+  /* database table: keep every column, scroll sideways */
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tr{min-width:max-content}
+  .ghead{flex-wrap:wrap;row-gap:6px}
+
+  /* kanban: snap-scroll columns, one nearly full-width at a time */
+  .board{scroll-snap-type:x mandatory;padding-bottom:10px;gap:11px}
+  .col{width:84vw;scroll-snap-align:start}
+
+  /* calendar: compact cells */
+  .day{min-height:72px;padding:5px}
+  .day > .dnum b{font-size:10px}
+  .pill{font-size:8.5px;padding:3px 5px}
+  .cal{gap:4px}
+  .dow{font-size:8.5px}
+  .cal-top h3{font-size:17px;min-width:0;flex:1}
+
+  /* modal: full-height sheet, no iOS zoom on inputs */
+  .veil{padding:0;align-items:flex-end}
+  .modal,.modal.sm{max-width:100%;width:100%;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;
+    animation:sheetUp .38s var(--e)}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .field input,.field textarea,.field select,.fm,.num,.cell-txt,.cell-sel,.cell-date{font-size:16px}
+  .row3{grid-template-columns:1fr 1fr}
+  .row3 > :last-child{grid-column:1/-1}
+  .mfoot{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+
+  /* bulk bar + toast stay clear of home indicator */
+  .bulk{bottom:calc(18px + env(safe-area-inset-bottom));max-width:94vw;flex-wrap:wrap;justify-content:center}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
+
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat b{font-size:30px}
+  .tools{gap:6px}
+  .idea-box{flex-direction:column}
+}
 </style>
 </head>
 <body>
 
 <div class="app">
+  <div class="scrim" id="scrim"></div>
   <aside class="side">
     <div class="brand">
       <div class="dot"></div>
@@ -456,6 +518,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
   <main class="main">
     <header class="top">
+      <button id="menuBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
       <div class="vtitle" id="vTitle">Painel <em>/ visão geral</em></div>
       <div class="search">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -902,7 +965,7 @@ function renderChans(){
   $('#chanList').innerHTML=h;
   $$('#chanList .item').forEach(b=>b.onclick=e=>{
     if(e.target.dataset.delc) return;
-    activeChan=b.dataset.c; renderChans(); renderAll();
+    activeChan=b.dataset.c; renderChans(); renderAll(); closeDrawer();
   });
   $$('[data-delc]').forEach(b=>b.onclick=async e=>{
     e.stopPropagation();
@@ -933,7 +996,7 @@ function renderTopics(){
   $('#topicList').innerHTML=h||`<div style="font-size:11px;color:var(--txt-3);padding:6px 10px">Nenhum item ainda</div>`;
   $$('#topicList .item').forEach(b=>b.onclick=e=>{
     if(e.target.dataset.delt) return;
-    activeTopic=b.dataset.t; renderTopics(); renderAll();
+    activeTopic=b.dataset.t; renderTopics(); renderAll(); closeDrawer();
   });
   $$('[data-delt]').forEach(b=>b.onclick=async e=>{
     e.stopPropagation();
@@ -1423,6 +1486,11 @@ $('#saveT').onclick=async()=>{
 };
 
 /* ===================== NAV / FILTERS ===================== */
+function openDrawer(){ $('.side').classList.add('open'); $('#scrim').classList.add('on'); }
+function closeDrawer(){ $('.side').classList.remove('open'); $('#scrim').classList.remove('on'); }
+$('#menuBtn').onclick=openDrawer;
+$('#scrim').onclick=closeDrawer;
+
 const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar'],mx:['Métricas','desempenho pós-postagem']};
 function gotoView(v){
   view=v;
@@ -1430,6 +1498,7 @@ function gotoView(v){
   $$('.view').forEach(s=>s.classList.remove('on'));
   $('#v-'+v).classList.add('on');
   $('#vTitle').innerHTML=TITLES[v][0]+' <em>/ '+TITLES[v][1]+'</em>';
+  closeDrawer();
 }
 $$('.nav button').forEach(b=>b.onclick=()=>gotoView(b.dataset.view));
 $$('.chip').forEach(c=>c.onclick=()=>{$$('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');filter=c.dataset.f;renderAll()});
