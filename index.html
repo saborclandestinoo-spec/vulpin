@@ -653,31 +653,36 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 <div class="veil" id="veil">
   <div class="modal">
     <div class="mhead">
-      <div><h2 id="mTitle">Novo conteúdo</h2><p>Canal, plataforma, formato e etapa</p></div>
+      <div><h2 id="mTitle">Novo conteúdo</h2><p>Comece só com o roteiro</p></div>
       <button class="x" id="closeM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="mbody">
-      <div class="field"><label>PLATAFORMA</label>
-        <div class="seg" id="segP"><button data-p="instagram" class="on">Instagram</button><button data-p="youtube">YouTube</button></div>
-      </div>
-      <div class="row">
-        <div class="field"><label>CANAL</label><select id="fChannel"></select></div>
-        <div class="field"><label>FORMATO</label><select id="fFormat"></select></div>
-      </div>
-      <div class="field"><label>ITEM / ASSUNTO (opcional)</label><select id="fTopic"><option value="">Nenhum</option></select></div>
       <div class="field"><label>TÍTULO / PAUTA</label><input id="fTitle" placeholder="Ex: 5 erros que matam seu alcance"></div>
-      <div class="row3">
-        <div class="field"><label>ETAPA</label><select id="fStatus"></select></div>
-        <div class="field"><label>DATA</label><input type="date" id="fDate"></div>
-        <div class="field"><label>HORA</label><input type="time" id="fTime" value="19:00"></div>
+      <div class="field"><label>ROTEIRO / OBSERVAÇÕES</label><textarea id="fNotes" placeholder="Gancho, desenvolvimento, CTA…" style="min-height:140px"></textarea></div>
+      <div class="field"><label>ETAPA</label><select id="fStatus"></select></div>
+      <p id="ideaHint" style="font-size:10.5px;color:var(--txt-3);line-height:1.6;margin:-6px 0 2px">
+        Só o roteiro por enquanto. Canal, formato, data e o resto aparecem quando a etapa sair de Ideia.
+      </p>
+      <div id="fExtra">
+        <div class="field"><label>PLATAFORMA</label>
+          <div class="seg" id="segP"><button data-p="instagram" class="on">Instagram</button><button data-p="youtube">YouTube</button></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>CANAL</label><select id="fChannel"></select></div>
+          <div class="field"><label>FORMATO</label><select id="fFormat"></select></div>
+        </div>
+        <div class="field"><label>ITEM / ASSUNTO (opcional)</label><select id="fTopic"><option value="">Nenhum</option></select></div>
+        <div class="row">
+          <div class="field"><label>DATA</label><input type="date" id="fDate"></div>
+          <div class="field"><label>HORA</label><input type="time" id="fTime" value="19:00"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>PRIORIDADE</label><select id="fPrio"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></div>
+          <div class="field"><label>TAGS (vírgula)</label><input id="fTags" placeholder="marketing, reels, dicas"></div>
+        </div>
+        <div class="field"><label>CHECKLIST DE PRODUÇÃO</label><div class="checks" id="fChecks"></div></div>
+        <div class="field"><label>LINK DA PUBLICAÇÃO (usado para puxar métricas)</label><input id="fLink" placeholder="https://youtu.be/... ou https://instagram.com/reel/..."></div>
       </div>
-      <div class="row">
-        <div class="field"><label>PRIORIDADE</label><select id="fPrio"><option value="alta">Alta</option><option value="media" selected>Média</option><option value="baixa">Baixa</option></select></div>
-        <div class="field"><label>TAGS (vírgula)</label><input id="fTags" placeholder="marketing, reels, dicas"></div>
-      </div>
-      <div class="field"><label>CHECKLIST DE PRODUÇÃO</label><div class="checks" id="fChecks"></div></div>
-      <div class="field"><label>ROTEIRO / OBSERVAÇÕES</label><textarea id="fNotes" placeholder="Gancho, desenvolvimento, CTA…"></textarea></div>
-      <div class="field"><label>LINK DA PUBLICAÇÃO (usado para puxar métricas)</label><input id="fLink" placeholder="https://youtu.be/... ou https://instagram.com/reel/..."></div>
       <div id="mxBlock" style="display:none">
         <div class="field"><label>MÉTRICAS PÓS-POSTAGEM</label>
           <div class="row3" style="margin-bottom:12px">
@@ -1471,15 +1476,18 @@ function openModal(id,pre){
   $('#fLink').value=it?(it.link||''):'';
   buildChecks(it?it.checks:null);
   $$('[data-fm]').forEach(f=>{ const v=it?it[f.dataset.fm]:''; f.value=(v===''||v==null)?'':v });
-  toggleMxBlock();
+  toggleFieldsByStatus();
   $('#veil').classList.add('on');
   setTimeout(()=>$('#fTitle').focus(),120);
 }
-function toggleMxBlock(){
-  const on=$('#fStatus').value==='postado';
-  $('#mxBlock').style.display=on?'block':'none';
+function toggleFieldsByStatus(){
+  const st=$('#fStatus').value;
+  const isIdea=st==='ideia';
+  $('#fExtra').style.display=isIdea?'none':'block';
+  $('#ideaHint').style.display=isIdea?'block':'none';
+  $('#mxBlock').style.display=(st==='postado')?'block':'none';
 }
-$('#fStatus').onchange=toggleMxBlock;
+$('#fStatus').onchange=toggleFieldsByStatus;
 const closeModal=()=>{$('#veil').classList.remove('on');editId=null};
 $('#newBtn').onclick=async()=>{
   if(!channels.length){toast('Crie um canal primeiro');return}
