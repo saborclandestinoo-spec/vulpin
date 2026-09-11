@@ -1451,7 +1451,7 @@ function renderCal(){
     const dc=l.length?stage(l[0].status).c:null;
     h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}"
       title="${l.length?'Toca no quadrado pra avançar (volta pra Ideia depois de Postado)':''}"
-      style="${dc?`border-color:${dc}55;background:${dc}0D`:''}">
+      style="${dc?`border:2px solid ${dc};background:${dc}26`:''}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
       <div class="day-pills">${l.map(i=>{const c=chan(i.channel),done=i.status==='postado';
         return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${stage(i.status).name} (toca pra editar)"
