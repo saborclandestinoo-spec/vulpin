@@ -199,7 +199,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ghead .g-add{all:unset;cursor:pointer;margin-left:auto;font-size:11px;color:var(--txt-3);transition:.2s}
 .ghead .g-add:hover{color:var(--acid)}
 
-.tbl{width:100%;border:1px solid var(--line);border-radius:var(--r-m);overflow:hidden;background:rgba(255,255,255,.6)}
+.tbl{width:100%;border:1px solid var(--line);border-radius:var(--r-m);overflow-x:auto;overflow-y:hidden;background:rgba(255,255,255,.6);-webkit-overflow-scrolling:touch}
 .tr{display:grid;align-items:stretch;border-bottom:1px solid var(--line);transition:.18s}
 .tr:last-child{border-bottom:0}
 .tr.head{background:rgba(244,243,239,.92);position:sticky;top:0;z-index:5}
