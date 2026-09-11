@@ -1680,6 +1680,33 @@ const engColor=e=>e>=8?'#18181F':e>=4?'#5D5C68':e>=2?'#98979F':'#D3D2CC';
 const posted=()=>visible().filter(i=>i.status==='postado');
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 
+/* ---------- desempenho: compara cada post com a média do próprio canal ---------- */
+function perfPool(withM){
+  const byChannel={};
+  withM.forEach(i=>{ (byChannel[i.channel]=byChannel[i.channel]||[]).push(i); });
+  return byChannel;
+}
+function perfScore(i,withM,byChannel){
+  let pool=byChannel[i.channel]||[];
+  if(pool.length<3) pool=withM; // canal com poucos posts: compara com todo o histórico
+  const others=pool.filter(x=>x.id!==i.id);
+  if(others.length<1) return null; // sem base de comparação ainda
+  const avgV=avg(others.map(x=>Number(x.views)||0));
+  const avgE=avg(others.map(engRate).filter(e=>e!==null));
+  const e=engRate(i);
+  const vRatio=avgV>0?(Number(i.views)||0)/avgV:1;
+  const eRatio=(avgE>0&&e!==null)?e/avgE:1;
+  const score=vRatio*0.45+eRatio*0.55;
+  if(score>=1.5) return {n:'Ótimo',emoji:'🔥',c:'#00B368',score};
+  if(score>=1.1) return {n:'Bom',emoji:'📈',c:'#2E63C6',score};
+  if(score>=0.7) return {n:'Mediano',emoji:'📊',c:'#98979F',score};
+  return {n:'Fraco',emoji:'📉',c:'#FF3B3B',score};
+}
+function perfBadge(p){
+  return p?`<span class="eng" style="background:${p.c}1E;color:${p.c}">${p.emoji} ${p.n}</span>`
+          :'<span style="color:var(--txt-3);font-size:10.5px">1º post</span>';
+}
+
 function bars(rows){
   if(!rows.length) return `<div class="empty" style="padding:26px 0"><p>Sem dados ainda.</p></div>`;
   const mx=Math.max(1,...rows.map(r=>r.v));
@@ -1697,24 +1724,27 @@ function renderMx(){
   const fmts={};
   withM.forEach(i=>{ (fmts[i.format]=fmts[i.format]||[]).push(Number(i.views)||0) });
   const bestFmt=Object.entries(fmts).sort((a,b)=>avg(b[1])-avg(a[1]))[0];
+  const byChannel=perfPool(withM);
+  const perfAll=withM.map(i=>perfScore(i,withM,byChannel)).filter(Boolean);
+  const goodCount=perfAll.filter(p=>p.n==='Ótimo'||p.n==='Bom').length;
 
   document.getElementById('mxStats').innerHTML=[
     {u:'VIEWS TOTAIS',n:fmtN(tv),s:`${withM.length} publicações medidas`,c:'#5D5C68'},
     {u:'ENGAJAMENTO MÉDIO',n:me?me.toFixed(1).replace('.',',')+'%':'—',s:'curtidas+coment+salvos+compart',c:engColor(me)},
     {u:'MELHOR POST',n:best?fmtN(best.views||0):'—',s:best?best.title.slice(0,32):'sem dados',c:'#2C2B34'},
-    {u:'MELHOR FORMATO',n:bestFmt?fmtN(Math.round(avg(bestFmt[1]))):'—',s:bestFmt?bestFmt[0]:'sem dados',c:'#454450'}
+    {u:'ACIMA DA MÉDIA',n:perfAll.length?`${goodCount}/${perfAll.length}`:'—',s:'bom ou ótimo vs seu histórico',c:goodCount>=perfAll.length/2?'#00B368':'#FF3B3B'}
   ].map(d=>`<div class="stat" style="--c:${d.c}"><u>${d.u}</u>
       <b style="font-size:${String(d.n).length>5?'28px':'38px'}">${d.n}</b><small>${esc(d.s)}</small></div>`).join('');
 
   // top posts
   const top=withM.slice().sort((a,b)=>(Number(b.views)||0)-(Number(a.views)||0)).slice(0,6);
   document.getElementById('mxTop').innerHTML=top.length?top.map((i,n)=>{
-    const e=engRate(i);
+    const e=engRate(i), p=perfScore(i,withM,byChannel);
     return `<div class="rank" data-id="${i.id}" style="cursor:pointer"><div class="pos">${n+1}</div>
       <div style="flex:1;min-width:0"><p>${esc(i.title)||'Sem título'}</p>
       <small>${esc(chan(i.channel).name)} · ${esc(i.format)} · ${fmtD(i.date)}</small></div>
-      <div style="text-align:right"><b>${fmtN(i.views||0)}</b>
-      <small style="color:${e!==null?engColor(e):'var(--txt-3)'}">${e!==null?e.toFixed(1).replace('.',',')+'%':'—'}</small></div></div>`;
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+      <b>${fmtN(i.views||0)}</b>${perfBadge(p)}</div></div>`;
   }).join(''):`<div class="empty" style="padding:26px 0"><p>Marque conteúdos como Postado e preencha os números.</p></div>`;
   document.querySelectorAll('#mxTop .rank').forEach(r=>r.onclick=()=>openModal(r.dataset.id));
 
@@ -1742,15 +1772,16 @@ function renderMx(){
   // tabela editável
   const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
               ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
-  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px';
+  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px 118px';
   let h=`<div class="tbl"><div class="tr head" style="grid-template-columns:${tpl}">
     <div class="td">PUBLICAÇÃO</div><div class="td">CANAL</div><div class="td">DATA</div>
     ${cols.map(c=>`<div class="td" style="justify-content:flex-end">${c[1]}</div>`).join('')}
-    <div class="td" style="justify-content:flex-end">ENG.</div></div>`;
+    <div class="td" style="justify-content:flex-end">ENG.</div>
+    <div class="td" style="justify-content:flex-end">DESEMPENHO</div></div>`;
 
   const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   h+=list.map(i=>{
-    const e=engRate(i), c=chan(i.channel);
+    const e=engRate(i), c=chan(i.channel), p=hasMx(i)?perfScore(i,withM,byChannel):null;
     return `<div class="tr row" style="grid-template-columns:${tpl}">
       <div class="td"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;cursor:pointer"
@@ -1762,6 +1793,7 @@ function renderMx(){
           value="${i[c2[0]]===''||i[c2[0]]==null?'':i[c2[0]]}" placeholder="—"></div>`).join('')}
       <div class="td" style="justify-content:flex-end">
         ${e!==null?`<span class="eng" style="background:${engColor(e)}22;color:${engColor(e)}">${e.toFixed(1).replace('.',',')}%</span>`:'<span style="color:var(--txt-3);font-size:11px">—</span>'}</div>
+      <div class="td" style="justify-content:flex-end">${hasMx(i)?perfBadge(p):'<span style="color:var(--txt-3);font-size:10.5px">sem dados</span>'}</div>
     </div>`;
   }).join('');
   h+='</div>';
