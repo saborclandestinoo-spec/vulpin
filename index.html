@@ -797,10 +797,10 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 /* ===================== CONFIG ===================== */
 const K_ITEMS='studio:items:v2', K_CHAN='studio:channels:v2', K_TOPIC='studio:topics:v1';
 const STAGES=[
-  {id:'ideia',name:'Ideia',c:'#B8B7B2'},
+  {id:'ideia',name:'Ideia',c:'#E14B4B'},
   {id:'roteiro',name:'Roteiro',c:'#98979F'},
-  {id:'gravacao',name:'Gravação',c:'#7A7982'},
-  {id:'edicao',name:'Edição',c:'#5D5C68'},
+  {id:'gravacao',name:'Gravação',c:'#D9A400'},
+  {id:'edicao',name:'Edição',c:'#F2790C'},
   {id:'revisao',name:'Revisão',c:'#454450'},
   {id:'agendado',name:'Agendado',c:'#2C2B34'},
   {id:'postado',name:'Postado',c:'#1F9D5C'}
@@ -1435,9 +1435,9 @@ function renderCal(){
     const l=v.filter(i=>i.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
-      <div class="day-pills">${l.map(i=>{const c=chan(i.channel);
-        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'}"
-          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
+      <div class="day-pills">${l.map(i=>{const s=stage(i.status),done=i.status==='postado';
+        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${s.name} (toca pra avançar)"
+          style="background:${s.c}1F;color:${s.c};border-left-color:${s.c}">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
@@ -1451,13 +1451,13 @@ function renderCal(){
       <p>${esc(i.title)||'Sem título'}</p><small style="color:${c.color}">${esc(c.name)} · ${esc(i.format)}</small></div>`}).join('')
     :`<div class="empty" style="padding:24px 0"><p>Tudo agendado 🎉</p></div>`;
 
-  const drag=el=>{
+  const drag=(el,onClick)=>{
     el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.id);el.classList.add('drag')};
     el.ondragend=()=>el.classList.remove('drag');
-    el.onclick=()=>openModal(el.dataset.id);
+    el.onclick=onClick;
   };
-  $$('#cal .pill').forEach(drag);
-  $$('#tray .tray-item').forEach(drag);
+  $$('#cal .pill').forEach(el=>drag(el,()=>cycleStatus(el.dataset.id)));
+  $$('#tray .tray-item').forEach(el=>drag(el,()=>openModal(el.dataset.id)));
   $$('[data-new]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdd={type:'cal',key:b.dataset.new};renderCal()});
   $$('#cal .day[data-date]').forEach(day=>{
     day.ondragover=e=>{e.preventDefault();day.classList.add('drop')};
