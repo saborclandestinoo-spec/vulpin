@@ -407,15 +407,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .modal.sm{max-width:400px}
 @keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}}
 
-/* content modal (#veil) takes the whole screen — no card, no dimmed backdrop behind it */
-#veil{background:var(--ink);backdrop-filter:none;padding:0;align-items:stretch;justify-content:stretch}
-#veil .modal{max-width:100%;width:100%;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:none;border-radius:0;box-shadow:none;
-  background:var(--ink);display:flex;flex-direction:column;animation:none}
-#veil .mbody{flex:1;overflow-y:auto}
-#veil .mhead{border-bottom:none;flex:none}
-#veil .mhead p{display:none}
-#veil .mfoot{flex:none;position:sticky;bottom:0}
-
 .mhead{padding:20px 23px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
 .mhead h2{font-size:16px;font-weight:700;letter-spacing:-.03em}
 .mhead p{font-size:11px;color:var(--txt-3);margin-top:2px}
@@ -423,8 +414,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .x:hover{background:rgba(20,20,35,.08);color:var(--txt);transform:rotate(90deg)}
 .mbody{padding:20px 23px;display:flex;flex-direction:column;gap:15px}
 .mbody.idea-only{padding:16px}
-.mbody.idea-only #fNotesWrap{gap:0;flex:1;display:flex;flex-direction:column}
-.mbody.idea-only #fNotes{border-color:transparent;background:transparent;padding:8px 4px;font-size:16px;line-height:1.8;box-shadow:none;flex:1}
+.mbody.idea-only #fTitleWrap #fTitle{border-color:transparent;background:transparent;padding:6px 4px;
+  font-size:21px;font-weight:700;letter-spacing:-.02em;box-shadow:none}
+.mbody.idea-only #fTitleWrap #fTitle:focus{background:transparent;box-shadow:none;border-color:transparent}
+.mbody.idea-only #fTitleWrap label{display:none}
+.mbody.idea-only #fNotesWrap{gap:0}
+.mbody.idea-only #fNotes{border-color:transparent;background:transparent;padding:8px 4px;font-size:15px;line-height:1.7;box-shadow:none}
 .mbody.idea-only #fNotes:focus{background:transparent;box-shadow:none;border-color:transparent}
 .field label{display:block;font-size:9.5px;letter-spacing:.16em;color:var(--txt-3);font-weight:700;margin-bottom:7px}
 .field input,.field textarea,.field select{width:100%;all:unset;box-sizing:border-box;font-family:inherit;font-size:13px;color:var(--txt);
