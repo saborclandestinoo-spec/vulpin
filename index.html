@@ -401,6 +401,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .x{all:unset;cursor:pointer;margin-left:auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--txt-2);transition:.2s}
 .x:hover{background:rgba(20,20,35,.08);color:var(--txt);transform:rotate(90deg)}
 .mbody{padding:20px 23px;display:flex;flex-direction:column;gap:15px}
+.mbody.idea-only{padding:16px}
+.mbody.idea-only #fNotesWrap{gap:0}
+.mbody.idea-only #fNotes{border-color:transparent;background:transparent;padding:8px 4px;font-size:15px;line-height:1.7;box-shadow:none}
+.mbody.idea-only #fNotes:focus{background:transparent;box-shadow:none;border-color:transparent}
 .field label{display:block;font-size:9.5px;letter-spacing:.16em;color:var(--txt-3);font-weight:700;margin-bottom:7px}
 .field input,.field textarea,.field select{width:100%;all:unset;box-sizing:border-box;font-family:inherit;font-size:13px;color:var(--txt);
   background:rgba(20,20,35,.035);border:1px solid var(--line);border-radius:var(--r-s);padding:11px 13px;transition:.25s var(--e)}
@@ -656,13 +660,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div><h2 id="mTitle">Novo conteúdo</h2><p>Comece só com o roteiro</p></div>
       <button class="x" id="closeM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
-    <div class="mbody">
-      <div class="field"><label>TÍTULO / PAUTA</label><input id="fTitle" placeholder="Ex: 5 erros que matam seu alcance"></div>
-      <div class="field"><label>ROTEIRO / OBSERVAÇÕES</label><textarea id="fNotes" placeholder="Gancho, desenvolvimento, CTA…" style="min-height:140px"></textarea></div>
-      <div class="field"><label>ETAPA</label><select id="fStatus"></select></div>
-      <p id="ideaHint" style="font-size:10.5px;color:var(--txt-3);line-height:1.6;margin:-6px 0 2px">
-        Só o roteiro por enquanto. Canal, formato, data e o resto aparecem quando a etapa sair de Ideia.
-      </p>
+    <div class="mbody" id="mBody">
+      <div class="field" id="fNotesWrap"><label id="fNotesLabel">ROTEIRO / OBSERVAÇÕES</label><textarea id="fNotes" placeholder="Escreve a ideia aqui…" style="min-height:140px"></textarea></div>
+      <div id="fTitleWrap" class="field"><label>TÍTULO / PAUTA</label><input id="fTitle" placeholder="Ex: 5 erros que matam seu alcance"></div>
+      <div id="fStatusWrap" class="field"><label>ETAPA</label><select id="fStatus"></select></div>
       <div id="fExtra">
         <div class="field"><label>PLATAFORMA</label>
           <div class="seg" id="segP"><button data-p="instagram" class="on">Instagram</button><button data-p="youtube">YouTube</button></div>
@@ -1478,14 +1479,19 @@ function openModal(id,pre){
   $$('[data-fm]').forEach(f=>{ const v=it?it[f.dataset.fm]:''; f.value=(v===''||v==null)?'':v });
   toggleFieldsByStatus();
   $('#veil').classList.add('on');
-  setTimeout(()=>$('#fTitle').focus(),120);
+  setTimeout(()=>$(($('#fStatus').value==='ideia')?'#fNotes':'#fTitle').focus(),120);
 }
 function toggleFieldsByStatus(){
   const st=$('#fStatus').value;
   const isIdea=st==='ideia';
+  $('#fTitleWrap').style.display=isIdea?'none':'block';
+  $('#fStatusWrap').style.display=isIdea?'none':'block';
   $('#fExtra').style.display=isIdea?'none':'block';
-  $('#ideaHint').style.display=isIdea?'block':'none';
   $('#mxBlock').style.display=(st==='postado')?'block':'none';
+  $('#mBody').classList.toggle('idea-only',isIdea);
+  $('#fNotesLabel').style.display=isIdea?'none':'block';
+  $('#fNotes').placeholder=isIdea?'Escreve a ideia aqui…':'Gancho, desenvolvimento, CTA…';
+  $('#fNotes').style.minHeight=isIdea?'56vh':'140px';
 }
 $('#fStatus').onchange=toggleFieldsByStatus;
 const closeModal=()=>{$('#veil').classList.remove('on');editId=null};
@@ -1503,13 +1509,20 @@ $('#fullBtn').onclick=()=>openModal();
 $('#closeM').onclick=closeModal; $('#cancelM').onclick=closeModal;
 $('#veil').onclick=e=>{if(e.target===$('#veil'))closeModal()};
 $('#saveM').onclick=async()=>{
-  const t=$('#fTitle').value.trim();
+  const isIdea=$('#fStatus').value==='ideia';
+  const notes=$('#fNotes').value.trim();
+  let t=$('#fTitle').value.trim();
+  if(isIdea && !t){
+    if(!notes){ $('#fNotes').focus(); toast('Escreve alguma coisa'); return }
+    const firstLine=notes.split('\n')[0].trim();
+    t=firstLine.length>60?firstLine.slice(0,60)+'…':firstLine;
+  }
   if(!t){$('#fTitle').focus();toast('Dê um título');return}
   if(!channels.length){toast('Crie um canal primeiro');return}
   const checks={}; $$('[data-ck]').forEach(c=>checks[c.dataset.ck]=c.checked);
   const d={title:t,platform:plat,channel:$('#fChannel').value,topic:$('#fTopic').value,format:$('#fFormat').value,status:$('#fStatus').value,
     date:$('#fDate').value,time:$('#fTime').value,prio:$('#fPrio').value,
-    tags:tagArr($('#fTags').value).join(', '),notes:$('#fNotes').value.trim(),link:$('#fLink').value.trim(),checks};
+    tags:tagArr($('#fTags').value).join(', '),notes,link:$('#fLink').value.trim(),checks};
   $$('[data-fm]').forEach(f=>{ d[f.dataset.fm]=f.value===''?'':Number(f.value) });
   if(editId){Object.assign(items.find(i=>i.id===editId),d);toast('Atualizado')}
   else{items.push({id:uid(),...d});toast('Conteúdo criado')}
