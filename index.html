@@ -1752,7 +1752,7 @@ async function renderMx(){
   // tabela editável
   const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
               ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
-  const tpl='minmax(190px,1.6fr) 108px 90px 72px '+cols.map(()=>'82px').join(' ')+' 74px 100px 92px';
+  const tpl='minmax(200px,340px) 108px 90px 72px '+cols.map(()=>'82px').join(' ')+' 74px 100px 92px';
 
   const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
