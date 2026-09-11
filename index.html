@@ -1752,7 +1752,7 @@ async function renderMx(){
   // tabela editável
   const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
               ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
-  const tpl='minmax(190px,1.6fr) 108px 90px 64px '+cols.map(()=>'82px').join(' ')+' 74px 100px 92px';
+  const tpl='minmax(190px,1.6fr) 108px 90px 72px '+cols.map(()=>'82px').join(' ')+' 74px 100px 92px';
 
   const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 
@@ -1779,7 +1779,7 @@ async function renderMx(){
           data-open="${i.id}">${esc(i.title)||'Sem título'}</span></div>
       <div class="td" style="color:${c.color};font-size:11px;font-weight:600">${esc(c.name)}</div>
       <div class="td" style="font-size:11px;color:var(--txt-2)">${fmtD(i.date)}</div>
-      <div class="td"><input class="cell-date" type="time" data-m="time" data-id="${i.id}" value="${i.time||''}" style="font-size:11px"></div>
+      <div class="td"><input class="cell-date" type="text" inputmode="numeric" placeholder="19:00" data-m="time" data-id="${i.id}" value="${i.time||''}" style="font-size:11px;width:100%"></div>
       ${cols.map(c2=>`<div class="td"><input class="num" type="number" data-m="${c2[0]}" data-id="${i.id}"
           value="${i[c2[0]]===''||i[c2[0]]==null?'':i[c2[0]]}" placeholder="—"></div>`).join('')}
       <div class="td" style="justify-content:flex-end">
