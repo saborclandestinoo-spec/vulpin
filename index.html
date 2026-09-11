@@ -406,6 +406,16 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   background:linear-gradient(165deg,var(--surface-2),var(--ink-2));box-shadow:var(--sh);animation:rise .45s var(--e);overflow:hidden}
 .modal.sm{max-width:400px}
 @keyframes rise{from{opacity:0;transform:translateY(24px) scale(.97)}}
+
+/* content modal (#veil) takes the whole screen — no card, no dimmed backdrop behind it */
+#veil{background:var(--ink);backdrop-filter:none;padding:0;align-items:stretch;justify-content:stretch}
+#veil .modal{max-width:100%;width:100%;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border:none;border-radius:0;box-shadow:none;
+  background:var(--ink);display:flex;flex-direction:column;animation:none}
+#veil .mbody{flex:1;overflow-y:auto}
+#veil .mhead{border-bottom:none;flex:none}
+#veil .mhead p{display:none}
+#veil .mfoot{flex:none;position:sticky;bottom:0}
+
 .mhead{padding:20px 23px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
 .mhead h2{font-size:16px;font-weight:700;letter-spacing:-.03em}
 .mhead p{font-size:11px;color:var(--txt-3);margin-top:2px}
@@ -413,8 +423,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .x:hover{background:rgba(20,20,35,.08);color:var(--txt);transform:rotate(90deg)}
 .mbody{padding:20px 23px;display:flex;flex-direction:column;gap:15px}
 .mbody.idea-only{padding:16px}
-.mbody.idea-only #fNotesWrap{gap:0}
-.mbody.idea-only #fNotes{border-color:transparent;background:transparent;padding:8px 4px;font-size:15px;line-height:1.7;box-shadow:none}
+.mbody.idea-only #fNotesWrap{gap:0;flex:1;display:flex;flex-direction:column}
+.mbody.idea-only #fNotes{border-color:transparent;background:transparent;padding:8px 4px;font-size:16px;line-height:1.8;box-shadow:none;flex:1}
 .mbody.idea-only #fNotes:focus{background:transparent;box-shadow:none;border-color:transparent}
 .field label{display:block;font-size:9.5px;letter-spacing:.16em;color:var(--txt-3);font-weight:700;margin-bottom:7px}
 .field input,.field textarea,.field select{width:100%;all:unset;box-sizing:border-box;font-family:inherit;font-size:13px;color:var(--txt);
@@ -668,7 +678,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 <div class="veil" id="veil">
   <div class="modal">
     <div class="mhead">
-      <div><h2 id="mTitle">Novo conteúdo</h2><p>Comece só com o roteiro</p></div>
+      <div><h2 id="mTitle">Novo conteúdo</h2><p>Título e roteiro — o resto muda pelo Pipeline</p></div>
       <button class="x" id="closeM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="mbody" id="mBody">
@@ -1505,19 +1515,18 @@ function openModal(id,pre){
   $$('[data-fm]').forEach(f=>{ const v=it?it[f.dataset.fm]:''; f.value=(v===''||v==null)?'':v });
   toggleFieldsByStatus();
   $('#veil').classList.add('on');
-  setTimeout(()=>$(($('#fStatus').value==='ideia')?'#fNotes':'#fTitle').focus(),120);
+  setTimeout(()=>$('#fTitle').focus(),120);
 }
 function toggleFieldsByStatus(){
   const st=$('#fStatus').value;
-  const isIdea=st==='ideia';
   $('#fTitleWrap').style.display='block';
-  $('#fStatusWrap').style.display=isIdea?'none':'block';
-  $('#fExtra').style.display=isIdea?'none':'block';
+  $('#fStatusWrap').style.display='none';
+  $('#fExtra').style.display='none';
   $('#mxBlock').style.display=(st==='postado')?'block':'none';
-  $('#mBody').classList.toggle('idea-only',isIdea);
-  $('#fNotesLabel').style.display=isIdea?'none':'block';
-  $('#fNotes').placeholder=isIdea?'Escreve a ideia aqui…':'Gancho, desenvolvimento, CTA…';
-  $('#fNotes').style.minHeight=isIdea?'46vh':'140px';
+  $('#mBody').classList.add('idea-only');
+  $('#fNotesLabel').style.display='none';
+  $('#fNotes').placeholder='Escreve aqui…';
+  $('#fNotes').style.minHeight='46vh';
 }
 $('#fStatus').onchange=toggleFieldsByStatus;
 const closeModal=()=>{$('#veil').classList.remove('on');editId=null};
