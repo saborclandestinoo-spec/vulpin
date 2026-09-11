@@ -988,23 +988,20 @@ async function cycleStatus(id){
   await save(); renderChans(); renderTopics(); renderAll();
   toast(next.id==='postado'?'Postado ✓':'Movido para '+next.name);
 }
+const DAYCYCLE=['ideia','gravacao','edicao','postado'];
 async function cycleDay(ds){
   const dayItems=items.filter(i=>i.date===ds);
   if(!dayItems.length) return;
-  let moved=0, allDone=true;
   dayItems.forEach(it=>{
-    const idx=STAGES.findIndex(s=>s.id===it.status);
-    if(idx>=0 && idx<STAGES.length-1){
-      const next=STAGES[idx+1];
-      it.status=next.id;
-      if(next.id==='postado') it.checks=Object.fromEntries(CHECKS.map(c=>[c.id,true]));
-      moved++;
-    }
-    if(it.status!=='postado') allDone=false;
+    let idx=DAYCYCLE.indexOf(it.status);
+    if(idx===-1) idx=0; // roteiro/revisão/agendado entram no ciclo a partir daqui
+    const next=DAYCYCLE[(idx+1)%DAYCYCLE.length];
+    it.status=next;
+    it.checks=next==='postado'?Object.fromEntries(CHECKS.map(c=>[c.id,true])):it.checks;
   });
-  if(!moved){ toast(allDone?'Já está tudo postado ✓':'Nada pra avançar'); return; }
   await save(); renderChans(); renderTopics(); renderAll();
-  toast(dayItems.length>1?`${moved} conteúdo(s) avançaram`:'Movido para '+stage(dayItems[0].status).name);
+  const s=stage(dayItems[0].status);
+  toast(dayItems.length>1?`${dayItems.length} conteúdo(s) → ${s.name}`:'Movido para '+s.name);
 }
 const chan=id=>channels.find(c=>c.id===id)||{name:'—',color:'#7A7982'};
 const topic=id=>topics.find(t=>t.id===id)||null;
@@ -1453,12 +1450,12 @@ function renderCal(){
     const l=v.filter(i=>i.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const dc=l.length?stage(l[0].status).c:null;
     h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}"
-      title="${l.length?'Toca no quadrado pra avançar a etapa':''}"
+      title="${l.length?'Toca no quadrado pra avançar (volta pra Ideia depois de Postado)':''}"
       style="${dc?`border-color:${dc}55;background:${dc}0D`:''}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
-      <div class="day-pills">${l.map(i=>{const s=stage(i.status),done=i.status==='postado';
-        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${s.name} (toca pra editar)"
-          style="background:${s.c}1F;color:${s.c};border-left-color:${s.c}">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
+      <div class="day-pills">${l.map(i=>{const c=chan(i.channel),done=i.status==='postado';
+        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${stage(i.status).name} (toca pra editar)"
+          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
