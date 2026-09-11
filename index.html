@@ -635,25 +635,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       </section>
       <!-- MÉTRICAS -->
       <section class="view" id="v-mx">
-        <div class="tools">
-          <button class="btn btn-primary btn-sm" id="mxSync"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Puxar números</button>
-          <button class="btn btn-ghost btn-sm" id="igToggle">Conectar Instagram</button>
-          <span style="font-size:10.5px;color:var(--txt-3);margin-left:4px" id="mxWhen"></span>
-        </div>
-
-        <div class="igcfg" id="igCfg">
-          <div class="row">
-            <div class="field"><label>INSTAGRAM BUSINESS ID</label><input id="igUser" placeholder="17841400000000000"></div>
-            <div class="field"><label>ACCESS TOKEN (LONGA DURAÇÃO)</label><input id="igTok" type="password" placeholder="EAAG..."></div>
-          </div>
-          <p style="font-size:10.5px;color:var(--txt-3);line-height:1.6;margin-bottom:12px">
-            Guardado no banco, protegido por RLS. Nunca fica no navegador nem no código.
-            Pegue em developers.facebook.com → Graph API Explorer com as permissões
-            <code>instagram_basic</code> e <code>instagram_manage_insights</code>.
-          </p>
-          <button class="btn btn-primary btn-sm" id="igSave">Salvar token</button>
-        </div>
-
         <div class="stats" id="mxStats"></div>
         <div class="grid2" style="margin-bottom:18px">
           <div class="panel"><h3>Top publicações <em>POR VIEWS</em></h3><div id="mxTop"></div></div>
@@ -713,8 +694,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
             <input class="fm" data-fm="reach" type="number" placeholder="Alcance">
           </div>
           <div class="row">
-            <input class="fm" data-fm="retention" type="number" step="0.1" placeholder="Retenção média %">
-            <button class="btn btn-ghost btn-sm" id="mxOne" style="justify-content:center">Puxar automático</button>
+            <input class="fm" data-fm="retention" type="number" step="0.1" placeholder="Retenção média %" style="grid-column:1/-1">
           </div>
         </div>
       </div>
@@ -1772,26 +1752,22 @@ async function renderMx(){
   // tabela editável
   const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
               ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
-  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px 118px 110px';
+  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px 118px';
 
   const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  const measuredIds=list.filter(hasMx).map(i=>i.id);
-  if(await loadHistory(measuredIds)){ renderMx(); return; } // recarrega já com o histórico em cache
 
   let h=`<div class="tbl"><div class="tr head" style="grid-template-columns:${tpl}">
     <div class="td">PUBLICAÇÃO</div><div class="td">CANAL</div><div class="td">DATA</div>
     ${cols.map(c=>`<div class="td" style="justify-content:flex-end">${c[1]}</div>`).join('')}
     <div class="td" style="justify-content:flex-end">ENG.</div>
-    <div class="td" style="justify-content:flex-end">DESEMPENHO</div>
-    <div class="td" style="justify-content:flex-end">CRESCIMENTO</div></div>`;
+    <div class="td" style="justify-content:flex-end">DESEMPENHO</div></div>`;
 
   h+=list.map(i=>{
     const e=engRate(i), c=chan(i.channel), p=hasMx(i)?perfScore(i,withM,byChannel):null;
     return `<div class="tr row" style="grid-template-columns:${tpl}">
       <div class="td"><span class="tag ${i.platform==='instagram'?'ig':'yt'}">${i.platform==='instagram'?'IG':'YT'}</span>
         <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;cursor:pointer"
-          data-open="${i.id}">${esc(i.title)||'Sem título'}</span>
-        ${i.auto?'<span class="mx-src">AUTO</span>':''}</div>
+          data-open="${i.id}">${esc(i.title)||'Sem título'}</span></div>
       <div class="td" style="color:${c.color};font-size:11px;font-weight:600">${esc(c.name)}</div>
       <div class="td" style="font-size:11px;color:var(--txt-2)">${fmtD(i.date)}</div>
       ${cols.map(c2=>`<div class="td"><input class="num" type="number" data-m="${c2[0]}" data-id="${i.id}"
@@ -1799,7 +1775,6 @@ async function renderMx(){
       <div class="td" style="justify-content:flex-end">
         ${e!==null?`<span class="eng" style="background:${engColor(e)}22;color:${engColor(e)}">${e.toFixed(1).replace('.',',')}%</span>`:'<span style="color:var(--txt-3);font-size:11px">—</span>'}</div>
       <div class="td" style="justify-content:flex-end">${hasMx(i)?perfBadge(p):'<span style="color:var(--txt-3);font-size:10.5px">sem dados</span>'}</div>
-      <div class="td" style="justify-content:flex-end">${sb&&user?sparkSVG(historyCache[i.id]):'<span style="color:var(--txt-3);font-size:10px">entre p/ ver</span>'}</div>
     </div>`;
   }).join('');
   h+='</div>';
@@ -1813,113 +1788,7 @@ async function renderMx(){
     await save(); renderMx();
   });
   document.querySelectorAll('#mxTable [data-open]').forEach(el=>el.onclick=()=>openModal(el.dataset.open));
-
-  const last=withM.map(i=>i.metrics_at).filter(Boolean).sort().pop();
-  document.getElementById('mxWhen').textContent=last?'atualizado '+new Date(last).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
 }
-
-/* ---------- puxar automático ---------- */
-async function fetchOne(it){
-  if(!sb||!user) return {error:'Entre na sua conta.'};
-  if(!it.link) return {error:'Sem link da publicação.'};
-  const {data,error}=await sb.functions.invoke('metrics',{body:{platform:it.platform,url:it.link}});
-  if(error) return {error:error.message||'Função indisponível.'};
-  return data||{error:'Sem resposta.'};
-}
-function applyMx(it,d){
-  let got=0;
-  MET.forEach(k=>{ if(d[k]!==undefined&&d[k]!==null){ it[k]=d[k]; got++ } });
-  if(got){ it.metrics_at=new Date().toISOString(); it.auto=true; }
-  return got;
-}
-async function logHistory(it){
-  if(!sb||!user) return;
-  try{
-    await sb.from('metrics_history').insert({
-      item_id:it.id, user_id:user.id,
-      views:nz(it.views), likes:nz(it.likes), comments:nz(it.comments),
-      saves:nz(it.saves), shares:nz(it.shares), reach:nz(it.reach)
-    });
-    delete historyCache[it.id]; // força recarregar o gráfico desse post
-  }catch(e){ console.error(e); }
-}
-let historyCache={};
-async function loadHistory(ids){
-  if(!sb||!user) return false;
-  const missing=ids.filter(id=>!(id in historyCache));
-  if(!missing.length) return false;
-  missing.forEach(id=>historyCache[id]=[]); // evita pedir de novo em paralelo
-  try{
-    const {data}=await sb.from('metrics_history').select('item_id,captured_at,views')
-      .in('item_id',missing).order('captured_at',{ascending:true});
-    (data||[]).forEach(r=>{ (historyCache[r.item_id]=historyCache[r.item_id]||[]).push(r); });
-    return true;
-  }catch(e){ return false; }
-}
-function sparkSVG(pts,color){
-  if(!pts||pts.length<2) return `<span style="color:var(--txt-3);font-size:10px">sem histórico</span>`;
-  const vals=pts.map(p=>Number(p.views)||0);
-  const mn=Math.min(...vals), mx=Math.max(...vals,1);
-  const W=96,H=26,pad=2;
-  const xs=vals.map((_,i)=>pad+(i/(vals.length-1))*(W-pad*2));
-  const ys=vals.map(v=>H-pad-((v-mn)/(mx-mn||1))*(H-pad*2));
-  const pts2=xs.map((x,i)=>`${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
-  const up=vals[vals.length-1]>=vals[0];
-  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
-    <polyline points="${pts2}" fill="none" stroke="${color||(up?'#00B368':'#FF3B3B')}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-}
-
-document.getElementById('mxSync').onclick=async()=>{
-  const list=posted().filter(i=>i.link);
-  if(!list.length){ toast('Nenhum post com link'); return; }
-  const btn=document.getElementById('mxSync'); btn.textContent='Puxando…';
-  let ok=0, err='';
-  for(const it of list){
-    const d=await fetchOne(it);
-    if(d.error){ err=d.error; continue; }
-    if(applyMx(it,d)){ ok++; await logHistory(it); }
-  }
-  await save(); renderAll();
-  btn.innerHTML='<svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Puxar números';
-  toast(ok?`${ok} atualizados`:(err||'Nada atualizado'));
-};
-
-document.getElementById('mxOne').onclick=async()=>{
-  if(!editId){ toast('Salve o conteúdo primeiro'); return; }
-  const it=items.find(x=>x.id===editId); if(!it) return;
-  it.link=document.getElementById('fLink').value.trim();
-  const btn=document.getElementById('mxOne'); btn.textContent='Puxando…';
-  const d=await fetchOne(it);
-  btn.textContent='Puxar automático';
-  if(d.error){ toast(d.error); return; }
-  if(applyMx(it,d)){
-    document.querySelectorAll('[data-fm]').forEach(f=>{ const v=it[f.dataset.fm]; f.value=(v===''||v==null)?'':v });
-    await logHistory(it);
-    await save(); renderAll(); toast('Números atualizados');
-  }else toast('Nada retornado');
-};
-
-/* ---------- token do Instagram ---------- */
-document.getElementById('igToggle').onclick=async()=>{
-  const box=document.getElementById('igCfg');
-  box.classList.toggle('on');
-  if(box.classList.contains('on')&&sb&&user){
-    const {data}=await sb.from('secrets').select('ig_user_id').eq('user_id',user.id).maybeSingle();
-    if(data){ document.getElementById('igUser').value=data.ig_user_id||''; }
-  }
-};
-document.getElementById('igSave').onclick=async()=>{
-  if(!sb||!user){ toast('Entre na sua conta'); return; }
-  const ig_user_id=document.getElementById('igUser').value.trim();
-  const ig_token=document.getElementById('igTok').value.trim();
-  if(!ig_user_id||!ig_token){ toast('Preencha os dois campos'); return; }
-  const {error}=await sb.from('secrets').upsert({user_id:user.id,ig_user_id,ig_token,updated_at:new Date().toISOString()});
-  if(error){ toast('Erro ao salvar'); console.error(error); return; }
-  document.getElementById('igTok').value='';
-  document.getElementById('igCfg').classList.remove('on');
-  toast('Instagram conectado');
-};
 
 /* ===================== AUTH UI ===================== */
 const gate=()=>document.getElementById('gate');
