@@ -988,6 +988,24 @@ async function cycleStatus(id){
   await save(); renderChans(); renderTopics(); renderAll();
   toast(next.id==='postado'?'Postado ✓':'Movido para '+next.name);
 }
+async function cycleDay(ds){
+  const dayItems=items.filter(i=>i.date===ds);
+  if(!dayItems.length) return;
+  let moved=0, allDone=true;
+  dayItems.forEach(it=>{
+    const idx=STAGES.findIndex(s=>s.id===it.status);
+    if(idx>=0 && idx<STAGES.length-1){
+      const next=STAGES[idx+1];
+      it.status=next.id;
+      if(next.id==='postado') it.checks=Object.fromEntries(CHECKS.map(c=>[c.id,true]));
+      moved++;
+    }
+    if(it.status!=='postado') allDone=false;
+  });
+  if(!moved){ toast(allDone?'Já está tudo postado ✓':'Nada pra avançar'); return; }
+  await save(); renderChans(); renderTopics(); renderAll();
+  toast(dayItems.length>1?`${moved} conteúdo(s) avançaram`:'Movido para '+stage(dayItems[0].status).name);
+}
 const chan=id=>channels.find(c=>c.id===id)||{name:'—',color:'#7A7982'};
 const topic=id=>topics.find(t=>t.id===id)||null;
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1433,10 +1451,13 @@ function renderCal(){
   for(let d=1;d<=days;d++){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const l=v.filter(i=>i.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-    h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}">
+    const dc=l.length?stage(l[0].status).c:null;
+    h+=`<div class="day ${ds===today()?'today':''}" data-date="${ds}"
+      title="${l.length?'Toca no quadrado pra avançar a etapa':''}"
+      style="${dc?`border-color:${dc}55;background:${dc}0D`:''}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
       <div class="day-pills">${l.map(i=>{const s=stage(i.status),done=i.status==='postado';
-        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${s.name} (toca pra avançar)"
+        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${s.name} (toca pra editar)"
           style="background:${s.c}1F;color:${s.c};border-left-color:${s.c}">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
     </div>`;
   }
@@ -1454,9 +1475,9 @@ function renderCal(){
   const drag=(el,onClick)=>{
     el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.id);el.classList.add('drag')};
     el.ondragend=()=>el.classList.remove('drag');
-    el.onclick=onClick;
+    el.onclick=e=>{ e.stopPropagation(); onClick(); };
   };
-  $$('#cal .pill').forEach(el=>drag(el,()=>cycleStatus(el.dataset.id)));
+  $$('#cal .pill').forEach(el=>drag(el,()=>openModal(el.dataset.id)));
   $$('#tray .tray-item').forEach(el=>drag(el,()=>openModal(el.dataset.id)));
   $$('[data-new]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdd={type:'cal',key:b.dataset.new};renderCal()});
   $$('#cal .day[data-date]').forEach(day=>{
@@ -1469,6 +1490,7 @@ function renderCal(){
         if(it.status==='ideia') it.status='roteiro';
         await save(); renderAll(); toast('Agendado para '+fmtD(it.date)); }
     };
+    day.onclick=()=>cycleDay(day.dataset.date);
   });
   if(openAdd&&openAdd.type==='cal'){
     const day=document.querySelector(`.day[data-date="${openAdd.key}"]`);
