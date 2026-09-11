@@ -259,8 +259,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   display:inline-flex;align-items:center;gap:4px;transition:.18s var(--e)}
 .mrow .mstatus:active{transform:scale(.94)}
 .mrow .mstatus svg{width:9px;height:9px;flex:none}
-.mrow.done{border-color:rgba(31,157,92,.35);background:rgba(31,157,92,.04)}
-.mrow.done .ttl{color:#1F9D5C}
+.mrow.done{border-color:rgba(0,179,104,.35);background:rgba(0,179,104,.04)}
+.mrow.done .ttl{color:#00B368}
 .mrow .mini{margin-bottom:0}
 .row-add:hover{color:var(--acid);background:rgba(46,99,198,.04)}
 
@@ -298,7 +298,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .fmt{font-size:9.5px;color:var(--txt-3);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prio{margin-left:auto;width:7px;height:7px;border-radius:50%;flex:none}
 .card h5{font-size:12.5px;font-weight:600;line-height:1.4;margin-bottom:9px}
-.card.done{border-color:rgba(31,157,92,.35);background:linear-gradient(155deg,rgba(31,157,92,.06),var(--surface))}
+.card.done{border-color:rgba(0,179,104,.35);background:linear-gradient(155deg,rgba(0,179,104,.06),var(--surface))}
 .stagechip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;
   padding:4px 9px;border-radius:99px;margin-bottom:9px;transition:.2s var(--e)}
 .stagechip:hover{filter:brightness(.94)}
@@ -797,13 +797,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 /* ===================== CONFIG ===================== */
 const K_ITEMS='studio:items:v2', K_CHAN='studio:channels:v2', K_TOPIC='studio:topics:v1';
 const STAGES=[
-  {id:'ideia',name:'Ideia',c:'#E14B4B'},
+  {id:'ideia',name:'Ideia',c:'#FF3B3B'},
   {id:'roteiro',name:'Roteiro',c:'#98979F'},
-  {id:'gravacao',name:'Gravação',c:'#D9A400'},
-  {id:'edicao',name:'Edição',c:'#F2790C'},
+  {id:'gravacao',name:'Gravação',c:'#F5B301'},
+  {id:'edicao',name:'Edição',c:'#FF7A00'},
   {id:'revisao',name:'Revisão',c:'#454450'},
   {id:'agendado',name:'Agendado',c:'#2C2B34'},
-  {id:'postado',name:'Postado',c:'#1F9D5C'}
+  {id:'postado',name:'Postado',c:'#00B368'}
 ];
 const FORMATS={instagram:['Reels','Carrossel','Story','Post estático','Live'],youtube:['Vídeo longo','Short','Live','Podcast','Comunidade']};
 const CHECKS=[{id:'roteiro',n:'Roteiro'},{id:'gravado',n:'Gravado'},{id:'editado',n:'Editado'},
@@ -1254,7 +1254,7 @@ function mobileListHTML(list){
           <span class="${isLate(i)?'late':''}">${fmtD(i.date)}${i.time?' · '+i.time:''}</span>
           <span class="prio" style="background:${PRIOS[i.prio||'media'].c}"></span>
         </div>
-        <div class="mini"><i style="width:${p}%;background:${done?'#1F9D5C':'linear-gradient(90deg,var(--acid-2),var(--acid))'}"></i></div>
+        <div class="mini"><i style="width:${p}%;background:${done?'#00B368':'linear-gradient(90deg,var(--acid-2),var(--acid))'}"></i></div>
       </div>
     </div>`;
   }).join('')+`</div>`;
@@ -1395,7 +1395,7 @@ function cardHTML(i){
     <h5>${esc(i.title)||'<span style="color:var(--txt-3)">Sem título</span>'}</h5>
     <button class="stagechip" data-cycle="${i.id}" style="background:${s.c}1E;color:${s.c}">
       ${done?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg>':''}${s.name}${done?'':' →'}</button>
-    <div class="mini"><i style="width:${p}%;background:${done?'#1F9D5C':'linear-gradient(90deg,var(--acid-2),var(--acid))'}"></i></div>
+    <div class="mini"><i style="width:${p}%;background:${done?'#00B368':'linear-gradient(90deg,var(--acid-2),var(--acid))'}"></i></div>
     <div class="card-foot"><span class="${isLate(i)?'late':''}">${fmtD(i.date)} ${i.time||''}</span><span>${p}%</span>
       <button class="kill" data-kill="${i.id}"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button></div>
   </div>`;
