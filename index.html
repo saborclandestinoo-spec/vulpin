@@ -1714,7 +1714,7 @@ function bars(rows){
     <div class="track"><div class="fill" style="width:${Math.max(9,r.v/mx*100)}%;background:${r.c||'#5D5C68'}">${r.lbl}</div></div></div>`).join('');
 }
 
-function renderMx(){
+async function renderMx(){
   const all=posted(), withM=all.filter(hasMx);
 
   const tv=withM.reduce((a,i)=>a+(Number(i.views)||0),0);
@@ -1772,14 +1772,19 @@ function renderMx(){
   // tabela editável
   const cols=[['views','VIEWS'],['likes','LIKES'],['comments','COMENT'],['saves','SALVOS'],
               ['shares','COMPART'],['reach','ALCANCE'],['retention','RETEN %']];
-  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px 118px';
+  const tpl='minmax(190px,1.6fr) 108px 96px '+cols.map(()=>'82px').join(' ')+' 74px 118px 110px';
+
+  const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const measuredIds=list.filter(hasMx).map(i=>i.id);
+  if(await loadHistory(measuredIds)){ renderMx(); return; } // recarrega já com o histórico em cache
+
   let h=`<div class="tbl"><div class="tr head" style="grid-template-columns:${tpl}">
     <div class="td">PUBLICAÇÃO</div><div class="td">CANAL</div><div class="td">DATA</div>
     ${cols.map(c=>`<div class="td" style="justify-content:flex-end">${c[1]}</div>`).join('')}
     <div class="td" style="justify-content:flex-end">ENG.</div>
-    <div class="td" style="justify-content:flex-end">DESEMPENHO</div></div>`;
+    <div class="td" style="justify-content:flex-end">DESEMPENHO</div>
+    <div class="td" style="justify-content:flex-end">CRESCIMENTO</div></div>`;
 
-  const list=all.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   h+=list.map(i=>{
     const e=engRate(i), c=chan(i.channel), p=hasMx(i)?perfScore(i,withM,byChannel):null;
     return `<div class="tr row" style="grid-template-columns:${tpl}">
@@ -1794,6 +1799,7 @@ function renderMx(){
       <div class="td" style="justify-content:flex-end">
         ${e!==null?`<span class="eng" style="background:${engColor(e)}22;color:${engColor(e)}">${e.toFixed(1).replace('.',',')}%</span>`:'<span style="color:var(--txt-3);font-size:11px">—</span>'}</div>
       <div class="td" style="justify-content:flex-end">${hasMx(i)?perfBadge(p):'<span style="color:var(--txt-3);font-size:10.5px">sem dados</span>'}</div>
+      <div class="td" style="justify-content:flex-end">${sb&&user?sparkSVG(historyCache[i.id]):'<span style="color:var(--txt-3);font-size:10px">entre p/ ver</span>'}</div>
     </div>`;
   }).join('');
   h+='</div>';
@@ -1826,6 +1832,43 @@ function applyMx(it,d){
   if(got){ it.metrics_at=new Date().toISOString(); it.auto=true; }
   return got;
 }
+async function logHistory(it){
+  if(!sb||!user) return;
+  try{
+    await sb.from('metrics_history').insert({
+      item_id:it.id, user_id:user.id,
+      views:nz(it.views), likes:nz(it.likes), comments:nz(it.comments),
+      saves:nz(it.saves), shares:nz(it.shares), reach:nz(it.reach)
+    });
+    delete historyCache[it.id]; // força recarregar o gráfico desse post
+  }catch(e){ console.error(e); }
+}
+let historyCache={};
+async function loadHistory(ids){
+  if(!sb||!user) return false;
+  const missing=ids.filter(id=>!(id in historyCache));
+  if(!missing.length) return false;
+  missing.forEach(id=>historyCache[id]=[]); // evita pedir de novo em paralelo
+  try{
+    const {data}=await sb.from('metrics_history').select('item_id,captured_at,views')
+      .in('item_id',missing).order('captured_at',{ascending:true});
+    (data||[]).forEach(r=>{ (historyCache[r.item_id]=historyCache[r.item_id]||[]).push(r); });
+    return true;
+  }catch(e){ return false; }
+}
+function sparkSVG(pts,color){
+  if(!pts||pts.length<2) return `<span style="color:var(--txt-3);font-size:10px">sem histórico</span>`;
+  const vals=pts.map(p=>Number(p.views)||0);
+  const mn=Math.min(...vals), mx=Math.max(...vals,1);
+  const W=96,H=26,pad=2;
+  const xs=vals.map((_,i)=>pad+(i/(vals.length-1))*(W-pad*2));
+  const ys=vals.map(v=>H-pad-((v-mn)/(mx-mn||1))*(H-pad*2));
+  const pts2=xs.map((x,i)=>`${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const up=vals[vals.length-1]>=vals[0];
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block">
+    <polyline points="${pts2}" fill="none" stroke="${color||(up?'#00B368':'#FF3B3B')}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
 
 document.getElementById('mxSync').onclick=async()=>{
   const list=posted().filter(i=>i.link);
@@ -1835,7 +1878,7 @@ document.getElementById('mxSync').onclick=async()=>{
   for(const it of list){
     const d=await fetchOne(it);
     if(d.error){ err=d.error; continue; }
-    if(applyMx(it,d)) ok++;
+    if(applyMx(it,d)){ ok++; await logHistory(it); }
   }
   await save(); renderAll();
   btn.innerHTML='<svg viewBox="0 0 24 24" stroke="currentColor"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>Puxar números';
@@ -1852,6 +1895,7 @@ document.getElementById('mxOne').onclick=async()=>{
   if(d.error){ toast(d.error); return; }
   if(applyMx(it,d)){
     document.querySelectorAll('[data-fm]').forEach(f=>{ const v=it[f.dataset.fm]; f.value=(v===''||v==null)?'':v });
+    await logHistory(it);
     await save(); renderAll(); toast('Números atualizados');
   }else toast('Nada retornado');
 };
