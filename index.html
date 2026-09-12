@@ -554,6 +554,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <button data-view="board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Pipeline</button>
       <button data-view="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
       <button data-view="mx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 20h18"/><path d="M6 20V11M11 20V5M16 20v-6M21 20v-9"/></svg>Métricas</button>
+      <button data-view="ideas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.5 1 .5 1.6h6c0-.6 0-1.2.5-1.6A6 6 0 0 0 12 3z"/></svg>Ideias</button>
     </nav>
 
     <div>
@@ -659,11 +660,19 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <div class="panel"><h3>Melhor dia da semana <em>MÉDIA DE VIEWS</em></h3><div id="mxDow"></div></div>
           <div class="panel"><h3>Média por canal <em>ENGAJAMENTO</em></h3><div id="mxChan"></div></div>
         </div>
+        <div id="mxTable"></div>
+      </section>
+
+      <!-- IDEIAS -->
+      <section class="view" id="v-ideas">
         <div class="panel" id="ideasPanel" style="margin-bottom:18px">
-          <h3>💡 Ideias com base no seu histórico <em>AUTOMÁTICO</em></h3>
+          <h3>💡 Com base no que já funcionou <em>AUTOMÁTICO</em></h3>
           <div id="ideasBody"></div>
         </div>
-        <div id="mxTable"></div>
+        <div class="panel" id="genPanel">
+          <h3>✨ Ideias novas pra você criar <em>GERADAS A PARTIR DOS SEUS ITENS</em></h3>
+          <div id="genBody"></div>
+        </div>
       </section>
     </div>
   </main>
@@ -1614,7 +1623,7 @@ function closeDrawer(){ $('.side').classList.remove('open'); $('#scrim').classLi
 $('#menuBtn').onclick=openDrawer;
 $('#scrim').onclick=closeDrawer;
 
-const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar'],mx:['Métricas','desempenho pós-postagem']};
+const TITLES={dash:['Painel','visão geral'],db:['Banco de conteúdos','tabela editável'],board:['Pipeline','arraste entre etapas'],cal:['Calendário','arraste para agendar'],mx:['Métricas','desempenho pós-postagem'],ideas:['Ideias','sugestões com base no seu histórico']};
 function gotoView(v){
   view=v;
   $$('.nav button').forEach(x=>x.classList.toggle('on',x.dataset.view===v));
@@ -1804,6 +1813,70 @@ function renderIdeas(withM,byChannel){
   document.querySelectorAll('#ideasBody [data-open]').forEach(hk=>hk.onclick=()=>openModal(hk.dataset.open));
 }
 
+/* ---------- gerador de ideias novas, remixando os Itens que você já tem ---------- */
+const IDEA_TEMPLATES=[
+  {t:'Comprei {item} e {word}? A verdade sem filtro',needsWord:true},
+  {t:'Vale a pena comprar {item}? Testei de verdade',needsWord:false},
+  {t:'{n} coisas que eu não sabia sobre {item} antes de comprar',needsWord:false},
+  {t:'O que ninguém te conta sobre {item}',needsWord:false},
+  {t:'{item}: antes e depois',needsWord:false},
+  {t:'Reagindo ao preço de {item}',needsWord:false},
+  {t:'Comprei {item} só pra fazer conteúdo — olha no que deu',needsWord:false},
+  {t:'{n} erros que eu cometi com {item}',needsWord:false},
+  {t:'{item} caro vs {item} barato: qual vale mais?',needsWord:false},
+  {t:'Testei {item} por uma semana, o resultado {word}',needsWord:true},
+  {t:'Arrependimento de compra: {item}?',needsWord:false},
+  {t:'Bastidores de como uso {item} no dia a dia',needsWord:false},
+];
+
+function fillTemplate(tpl,itemName,word){
+  const n=[3,5,7][Math.floor(Math.random()*3)];
+  return tpl.t.replace('{item}',itemName).replace('{n}',n).replace('{word}',word||'surpreendeu');
+}
+
+function renderGenerator(withM,byChannel){
+  const el=document.getElementById('genBody');
+  if(!topics.length){
+    el.innerHTML=`<div class="idea-empty">Cria um <b>Item</b> na barra lateral primeiro (ex: "Forno elétrico") — é a partir dele que eu monto ideias novas.</div>`;
+    return;
+  }
+  const ins=computeInsights(withM,byChannel,topics);
+  const bestWord=ins&&ins.topWords.length?ins.topWords[0].word:null;
+
+  const cards=topics.map(t=>{
+    const own=items.filter(i=>i.topic===t.id);
+    const ideaCount=own.filter(i=>i.status==='ideia').length;
+    const picks=[...IDEA_TEMPLATES].sort(()=>Math.random()-0.5).slice(0,2);
+    return {topic:t,ideaCount,total:own.length,
+      sug:picks.map(tp=>fillTemplate(tp,t.name,bestWord))};
+  });
+
+  el.innerHTML=cards.map(c=>`
+    <div class="idea-sub" style="display:flex;align-items:center;gap:8px;margin-top:${cards.indexOf(c)?20:0}px">
+      <i style="width:8px;height:8px;border-radius:3px;background:${c.topic.color}"></i>${esc(c.topic.name)}
+      <span style="font-weight:400;letter-spacing:0;color:var(--txt-3);text-transform:none">
+        ${c.total} conteúdo${c.total===1?'':'s'} já criado${c.total===1?'':'s'}</span>
+    </div>
+    ${c.sug.map(s=>`<div class="hook" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+      <p style="margin:0;flex:1">${esc(s)}</p>
+      <button class="btn btn-ghost btn-sm" data-gen-add="${c.topic.id}" data-gen-title="${esc(s)}" style="flex:none">+ Criar</button>
+    </div>`).join('')}
+  `).join('');
+
+  document.querySelectorAll('[data-gen-add]').forEach(b=>b.onclick=async()=>{
+    if(!channels.length){ toast('Crie um canal primeiro'); return; }
+    const it=newItem({title:b.dataset.genTitle,topic:b.dataset.genAdd});
+    items.push(it); await save(); renderTopics(); renderAll(); toast('Ideia criada — abre em Pipeline');
+  });
+}
+
+function renderIdeasPage(){
+  const withM=posted().filter(hasMx);
+  const byChannel=perfPool(withM);
+  renderIdeas(withM,byChannel);
+  renderGenerator(withM,byChannel);
+}
+
 function bars(rows){
   if(!rows.length) return `<div class="empty" style="padding:26px 0"><p>Sem dados ainda.</p></div>`;
   const mx=Math.max(1,...rows.map(r=>r.v));
@@ -1824,7 +1897,6 @@ async function renderMx(){
   const byChannel=perfPool(withM);
   const perfAll=withM.map(i=>perfScore(i,withM,byChannel)).filter(Boolean);
   const goodCount=perfAll.filter(p=>p.n==='Ótimo'||p.n==='Bom').length;
-  renderIdeas(withM,byChannel);
 
   document.getElementById('mxStats').innerHTML=[
     {u:'VIEWS TOTAIS',n:fmtN(tv),s:`${withM.length} publicações medidas`,c:'#5D5C68'},
@@ -1970,7 +2042,7 @@ document.getElementById('logout').onclick=async()=>{
 };
 
 /* ===================== BOOT ===================== */
-function renderAll(){ renderDash(); renderDB(); renderBoard(); renderCal(); renderMx(); }
+function renderAll(){ renderDash(); renderDB(); renderBoard(); renderCal(); renderMx(); renderIdeasPage(); }
 (async()=>{
   buildPops(); fillFormats(); setSync('busy');
   try{
