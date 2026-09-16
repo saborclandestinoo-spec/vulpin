@@ -1467,11 +1467,8 @@ function renderCal(){
       style="${dc?`border:2px solid ${dc};background:${dc}26`:''}">
       <div class="dnum"><b>${d}</b><button class="plus" data-new="${ds}">+</button></div>
       <div class="day-pills">${l.map(i=>{const c=chan(i.channel),done=i.status==='postado';
-        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${stage(i.status).name} (toca pra editar)"
-          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">
-          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</span>
-          <button class="pill-x" data-unsched="${i.id}" title="Tirar do calendário">×</button>
-        </div>`}).join('')}</div>
+        return `<div class="pill" draggable="${isTouch?'false':'true'}" data-id="${i.id}" title="${esc(i.title)||'Sem título'} — ${stage(i.status).name} (toca pra editar, arraste pra fora do calendário pra tirar a data)"
+          style="background:${c.color}1F;color:${c.color};border-left-color:${c.color}">${done?'✓ ':''}${i.time?i.time+' ':''}${esc(i.title)||'Sem título'}</div>`}).join('')}</div>
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
@@ -1485,25 +1482,27 @@ function renderCal(){
       <p>${esc(i.title)||'Sem título'}</p><small style="color:${c.color}">${esc(c.name)} · ${esc(i.format)}</small></div>`}).join('')
     :`<div class="empty" style="padding:24px 0"><p>Tudo agendado 🎉</p></div>`;
 
-  const drag=(el,onClick)=>{
-    el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.id);el.classList.add('drag')};
-    el.ondragend=()=>el.classList.remove('drag');
+  let droppedOk=false; // marca se o arraste terminou em cima de um alvo válido (dia ou bandeja)
+  const drag=(el,onClick,hadDate)=>{
+    el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.id);el.classList.add('drag');droppedOk=false};
+    el.ondragend=async e=>{
+      el.classList.remove('drag');
+      // soltou fora de qualquer dia ou da bandeja "sem data": tira do calendário
+      if(hadDate && !droppedOk){
+        const it=items.find(x=>x.id===el.dataset.id);
+        if(it&&it.date){ it.date=''; it.time=''; await save(); renderAll(); toast('Voltou pro Banco de Conteúdos'); }
+      }
+    };
     el.onclick=e=>{ e.stopPropagation(); onClick(); };
   };
-  $$('#cal .pill').forEach(el=>drag(el,()=>openModal(el.dataset.id)));
-  $$('#tray .tray-item').forEach(el=>drag(el,()=>openModal(el.dataset.id)));
-  $$('[data-unsched]').forEach(b=>b.onclick=async e=>{
-    e.stopPropagation();
-    const it=items.find(x=>x.id===b.dataset.unsched); if(!it) return;
-    it.date=''; it.time='';
-    await save(); renderAll(); toast('Tirado do calendário');
-  });
+  $$('#cal .pill').forEach(el=>drag(el,()=>openModal(el.dataset.id),true));
+  $$('#tray .tray-item').forEach(el=>drag(el,()=>openModal(el.dataset.id),false));
   $$('[data-new]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdd={type:'cal',key:b.dataset.new};renderCal()});
   $$('#cal .day[data-date]').forEach(day=>{
     day.ondragover=e=>{e.preventDefault();day.classList.add('drop')};
     day.ondragleave=()=>day.classList.remove('drop');
     day.ondrop=async e=>{
-      e.preventDefault();day.classList.remove('drop');
+      e.preventDefault();day.classList.remove('drop');droppedOk=true;
       const it=items.find(x=>x.id===e.dataTransfer.getData('text/plain'));
       if(it){ it.date=day.dataset.date; if(!it.time) it.time='19:00';
         if(it.status==='ideia') it.status='roteiro';
@@ -1511,14 +1510,6 @@ function renderCal(){
     };
     day.onclick=()=>cycleDay(day.dataset.date);
   });
-  const trayEl=document.getElementById('tray');
-  trayEl.ondragover=e=>{e.preventDefault();trayEl.classList.add('drop')};
-  trayEl.ondragleave=()=>trayEl.classList.remove('drop');
-  trayEl.ondrop=async e=>{
-    e.preventDefault();trayEl.classList.remove('drop');
-    const it=items.find(x=>x.id===e.dataTransfer.getData('text/plain'));
-    if(it&&it.date){ it.date=''; it.time=''; await save(); renderAll(); toast('Tirado do calendário'); }
-  };
   if(openAdd&&openAdd.type==='cal'){
     const day=document.querySelector(`.day[data-date="${openAdd.key}"]`);
     if(day) inlineAdd(day,{date:openAdd.key,status:'roteiro'},{tiny:true,ph:'Ideia…',repeat:{type:'cal',key:openAdd.key}});
