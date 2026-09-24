@@ -1520,16 +1520,37 @@ function renderCalGrid(v){
   $('#cal').innerHTML=calGridHTML(y,m,v);
   wireCalGrid($('#cal'));
 }
+let calScrollFrom=0, calScrollTo=1;
+function monthBlockHTML(y0,m0,offset,v){
+  const d=new Date(y0,m0+offset,1), y=d.getFullYear(), m=d.getMonth();
+  return `<div class="cal-block" data-off="${offset}"><h4>${MONTHS[m]} ${y}</h4><div class="cal">${calGridHTML(y,m,v)}</div></div>`;
+}
+function wireCalScrollInfinite(v,y0,m0){
+  const el=$('#calScroll');
+  el.onscroll=()=>{
+    if(el.scrollTop<60 && calScrollFrom>-60){
+      calScrollFrom--;
+      const prevH=el.scrollHeight;
+      el.insertAdjacentHTML('afterbegin',monthBlockHTML(y0,m0,calScrollFrom,v));
+      el.scrollTop+=el.scrollHeight-prevH;
+      wireCalGrid(el);
+    }
+    if(el.scrollTop+el.clientHeight>el.scrollHeight-160 && calScrollTo<60){
+      calScrollTo++;
+      el.insertAdjacentHTML('beforeend',monthBlockHTML(y0,m0,calScrollTo,v));
+      wireCalGrid(el);
+    }
+  };
+}
 function renderCalScroll(v){
   const y0=calDate.getFullYear(), m0=calDate.getMonth();
   $('#monthLbl').textContent=MONTHS[m0]+' '+y0;
+  calScrollFrom=0; calScrollTo=1;
   let h='';
-  for(let k=0;k<2;k++){
-    const d=new Date(y0,m0+k,1), y=d.getFullYear(), m=d.getMonth();
-    h+=`<div class="cal-block" data-ym="${y}-${m}"><h4>${MONTHS[m]} ${y}</h4><div class="cal">${calGridHTML(y,m,v)}</div></div>`;
-  }
+  for(let o=calScrollFrom;o<=calScrollTo;o++) h+=monthBlockHTML(y0,m0,o,v);
   $('#calScroll').innerHTML=h;
   wireCalGrid($('#calScroll'));
+  wireCalScrollInfinite(v,y0,m0);
 }
 function renderCal(){
   $('#calModeBtn').textContent=calMode==='grid'?'🎡 Roleta':'📅 Mês único';
