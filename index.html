@@ -378,6 +378,46 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .pill-x{all:unset;cursor:pointer;flex:none;width:14px;height:14px;border-radius:4px;display:grid;place-items:center;
   font-size:12px;line-height:1;color:inherit;opacity:.45;transition:.15s}
 .pill-x:hover{opacity:1;background:rgba(24,24,31,.12)}
+/* ---- GRAVAR ---- */
+.rec-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 14px}
+.rec-tabs{display:flex;gap:6px;background:rgba(20,20,35,.05);padding:4px;border-radius:999px}
+.rec-tabs button{all:unset;cursor:pointer;padding:7px 15px;border-radius:999px;font-size:11.5px;font-weight:600;color:var(--txt-2);transition:.2s var(--e);white-space:nowrap}
+.rec-tabs button.on{background:var(--surface);color:var(--txt);box-shadow:0 2px 8px -3px rgba(30,30,55,.28)}
+.rec-day{margin-bottom:26px}
+.rec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.rec-head h3{font-size:14.5px;font-weight:700;letter-spacing:-.02em}
+.rec-head .when{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--txt-3)}
+.rec-head .load{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--txt-2);background:rgba(20,20,35,.05);padding:4px 10px;border-radius:999px}
+.rec-head.hoje h3{color:var(--acid)}
+.rec-set{border:1px solid var(--line);border-radius:var(--r-m);background:rgba(255,255,255,.55);padding:12px;margin-bottom:10px}
+.rec-set > b{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-2);margin-bottom:9px}
+.rec-set > b i{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none;color:var(--txt-3);font-size:10px;margin-left:auto}
+.rec-card{display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid var(--line);border-radius:var(--r-s);
+  background:var(--surface);margin-bottom:7px;transition:.2s var(--e)}
+.rec-card:last-child{margin-bottom:0}
+.rec-card:hover{border-color:var(--line-2);transform:translateX(2px)}
+.rec-card.done{opacity:.5}
+.rec-card.done .rc-t{text-decoration:line-through}
+.rc-chk{all:unset;cursor:pointer;flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line-2);
+  display:grid;place-items:center;font-size:12px;color:transparent;transition:.2s var(--e)}
+.rc-chk:hover{border-color:var(--acid)}
+.rc-chk.on{background:#00B368;border-color:#00B368;color:#fff}
+.rc-main{min-width:0;flex:1;cursor:pointer}
+.rc-t{font-size:12.5px;font-weight:600;line-height:1.35;word-break:break-word}
+.rc-s{font-size:10px;color:var(--txt-3);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.kb{font-size:9px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.rc-acts{display:flex;gap:5px;flex:none}
+.rc-acts button{all:unset;cursor:pointer;font-size:10px;font-weight:600;padding:5px 9px;border-radius:7px;
+  border:1px solid var(--line);color:var(--txt-2);transition:.18s var(--e);white-space:nowrap}
+.rc-acts button:hover{border-color:var(--acid);color:var(--acid);background:rgba(46,99,198,.06)}
+.rc-acts input[type=date]{font:inherit;font-size:10px;font-weight:600;color:var(--txt-2);border:1px solid var(--line);
+  border-radius:7px;padding:4px 7px;background:transparent;cursor:pointer;max-width:124px}
+@media(max-width:860px){
+  .rec-card{flex-wrap:wrap}
+  .rc-main{flex:1 1 60%}
+  .rc-acts{width:100%;margin-left:35px}
+  .rc-acts input[type=date]{flex:1;max-width:none}
+}
 .cal-scroll{display:flex;flex-direction:column;gap:26px;max-height:calc(100vh - 260px);overflow-y:auto;padding-right:6px;scroll-snap-type:y proximity}
 .cal-block{scroll-snap-align:start}
 .cal-block h4{font-size:15px;font-weight:700;letter-spacing:-.02em;text-transform:capitalize;margin-bottom:9px;position:sticky;top:0;background:var(--ink);padding:4px 0;z-index:1}
@@ -561,6 +601,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <button class="on" data-view="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</button>
       <button data-view="db"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14.5h18M9 4v16"/></svg>Banco de conteúdos</button>
       <button data-view="board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/></svg>Pipeline</button>
+      <button data-view="rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="13" height="12" rx="2.5"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/></svg>Gravar</button>
       <button data-view="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendário</button>
       <button data-view="mx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 20h18"/><path d="M6 20V11M11 20V5M16 20v-6M21 20v-9"/></svg>Métricas</button>
       <button data-view="ideas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.5 1 .5 1.6h6c0-.6 0-1.2.5-1.6A6 6 0 0 0 12 3z"/></svg>Ideias</button>
@@ -637,6 +678,20 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 
       <!-- PIPELINE -->
       <section class="view" id="v-board"><div class="board" id="board"></div></section>
+
+      <!-- GRAVAR -->
+      <section class="view" id="v-rec">
+        <div class="stats" id="recStats"></div>
+        <div class="rec-bar">
+          <div class="rec-tabs" id="recTabs">
+            <button class="on" data-k="all">Tudo</button>
+            <button data-k="reel">📱 Reels</button>
+            <button data-k="video">🎬 Vídeos</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="recPlanBtn">⚡ Planejar semana</button>
+        </div>
+        <div id="recBody"></div>
+      </section>
 
       <!-- CALENDÁRIO -->
       <section class="view" id="v-cal">
@@ -825,6 +880,15 @@ const STAGES=[
   {id:'postado',name:'Postado',c:'#00B368'}
 ];
 const FORMATS={instagram:['Reels','Carrossel','Story','Post estático','Live'],youtube:['Vídeo longo','Short','Live','Podcast','Comunidade']};
+/* tipo de gravação: reel (vertical/rápido) x vídeo (horizontal/longo) x estático (não grava) */
+const KINDS={
+  reel:   {n:'Reel',   ic:'📱', c:'#2E63C6', min:20,  setup:'Vertical · celular/tripé'},
+  video:  {n:'Vídeo',  ic:'🎬', c:'#18181F', min:90,  setup:'Horizontal · câmera + luz'},
+  estatico:{n:'Estático',ic:'🖼️', c:'#98979F', min:15, setup:'Sem gravação'}
+};
+const F_REEL=['Reels','Short','Story'], F_VIDEO=['Vídeo longo','Podcast','Live'];
+const kindOf=i=>F_REEL.includes(i.format)?'reel':(F_VIDEO.includes(i.format)?'video':'estatico');
+const kindOb=i=>KINDS[kindOf(i)];
 const CHECKS=[{id:'roteiro',n:'Roteiro'},{id:'gravado',n:'Gravado'},{id:'editado',n:'Editado'},
   {id:'thumb',n:'Capa/Thumb'},{id:'legenda',n:'Legenda'},{id:'trilha',n:'Trilha'}];
 const PRIOS={alta:{n:'Alta',c:'#18181F'},media:{n:'Média',c:'#7A7982'},baixa:{n:'Baixa',c:'#B8B7B2'}};
@@ -892,6 +956,7 @@ const itemRow=i=>{
   const o={id:i.id,user_id:user.id,channel_id:i.channel||null,topic_id:i.topic||null,title:i.title||'',platform:i.platform,
     format:i.format,status:i.status,pub_date:i.date||null,pub_time:i.time||null,prio:i.prio||'media',
     tags:i.tags||'',notes:i.notes||'',link:i.link||'',checks:i.checks||{},
+    rec_date:i.recDate||null,rec_done:!!i.recDone,
     metrics_at:i.metrics_at||null,metrics_auto:!!i.auto};
   MET.forEach(k=>o[k]=nz(i[k]));
   return o;
@@ -900,6 +965,7 @@ const rowItem=r=>{
   const o={id:r.id,channel:r.channel_id,topic:r.topic_id||'',title:r.title||'',platform:r.platform||'instagram',
     format:r.format||'Reels',status:r.status||'ideia',date:r.pub_date||'',time:r.pub_time||'',
     prio:r.prio||'media',tags:r.tags||'',notes:r.notes||'',link:r.link||'',checks:r.checks||{},
+    recDate:r.rec_date||'',recDone:!!r.rec_done,
     metrics_at:r.metrics_at||null,auto:!!r.metrics_auto};
   MET.forEach(k=>o[k]=r[k]===null?'':r[k]);
   return o;
@@ -1115,7 +1181,8 @@ function newItem(pre){
   return {id:uid(),title:pre.title||'',platform:p,
     channel:pre.channel||(activeChan!=='all'?activeChan:(channels[0]||{}).id),
     topic:pre.topic!==undefined?pre.topic:(activeTopic!=='all'?activeTopic:''),
-    format:FORMATS[p][0],status:pre.status||'ideia',date:pre.date||'',time:pre.date?'19:00':'',
+    format:pre.format||FORMATS[p][0],status:pre.status||'ideia',date:pre.date||'',time:pre.date?'19:00':'',
+    recDate:pre.recDate||'',recDone:false,
     prio:'media',tags:'',notes:'',link:'',checks:{}};
 }
 async function quickCreate(title,pre){
@@ -1177,6 +1244,126 @@ function renderDash(){
   }).join(''):`<div class="empty"><b>Nada agendado</b><p>Defina datas no banco ou calendário.</p></div>`;
   $$('#upcoming .up-row').forEach(r=>r.onclick=()=>openModal(r.dataset.id));
 }
+
+/* ===================== GRAVAR (shoot days) ===================== */
+let recFilter='all';
+const dShift=(ds,n)=>{const d=ds?new Date(ds+'T12:00'):new Date();d.setDate(d.getDate()+n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const dowOf=ds=>DOW[new Date(ds+'T12:00').getDay()];
+const hhmm=m=>m>=60?(Math.floor(m/60)+'h'+(m%60?String(m%60).padStart(2,'0'):'')):(m+'min');
+const needsRec=i=>kindOf(i)!=='estatico'&&['ideia','roteiro','gravacao'].includes(i.status);
+const recPool=()=>visible().filter(i=>needsRec(i)||(i.recDone&&i.recDate===today()));
+
+async function recToggle(id){
+  const it=items.find(x=>x.id===id); if(!it) return;
+  if(it.recDone||!needsRec(it)){ it.recDone=false; it.status='gravacao'; it.checks={...it.checks,gravado:false}; }
+  else { it.recDone=true; it.status='edicao'; it.checks={...it.checks,gravado:true,roteiro:true};
+    if(!it.recDate) it.recDate=today(); }
+  await save(); renderAll();
+  toast(it.recDone?'Gravado ✓ → Edição':'Voltou pra Gravação');
+}
+async function recSet(id,ds){
+  const it=items.find(x=>x.id===id); if(!it) return;
+  it.recDate=ds||''; if(it.status==='ideia'&&ds) it.status='roteiro';
+  await save(); renderAll();
+  toast(ds?'Gravação em '+fmtD(ds):'Tirou da agenda de gravação');
+}
+async function recPlanWeek(){
+  const pend=recPool().filter(i=>!i.recDate&&!i.recDone);
+  if(!pend.length){ toast('Nada na fila sem data'); return; }
+  const busy=new Set(recPool().filter(i=>i.recDate&&!i.recDone).map(i=>i.recDate));
+  const freeDay=skip=>{ for(let k=0;k<21;k++){ const d=dShift(today(),k);
+    if(!busy.has(d)&&!skip.has(d)) return d; } return today(); };
+  const used=new Set();
+  const dReel=freeDay(used); used.add(dReel);
+  const dVid=freeDay(used);
+  let n=0;
+  pend.forEach(i=>{ const k=kindOf(i);
+    i.recDate=k==='reel'?dReel:dVid;
+    if(i.status==='ideia') i.status='roteiro'; n++; });
+  await save(); renderAll();
+  toast(`${n} conteúdo(s) agendados · Reels ${fmtD(dReel)} · Vídeos ${fmtD(dVid)}`);
+}
+
+function recCard(i){
+  const k=kindOf(i), K=KINDS[k], c=chan(i.channel), t=today();
+  const late=i.recDate&&i.recDate<t&&!i.recDone;
+  return `<div class="rec-card ${i.recDone?'done':''}" data-rid="${i.id}">
+    <button class="rc-chk ${i.recDone?'on':''}" data-rchk="${i.id}" title="Marcar como gravado">✓</button>
+    <div class="rc-main" data-ropen="${i.id}">
+      <p class="rc-t">${esc(i.title)||'Sem título'}</p>
+      <div class="rc-s">
+        <span class="kb" style="background:${K.c}1A;color:${K.c}">${K.ic} ${K.n}</span>
+        <span style="color:${c.color}">${esc(c.name)}</span>
+        <span>· ${esc(i.format)}</span>
+        ${i.date?`<span>· posta ${fmtD(i.date)}</span>`:''}
+        ${late?`<span style="color:#FF3B3B;font-weight:700">· atrasado</span>`:''}
+      </div>
+    </div>
+    <div class="rc-acts">
+      ${i.recDate?`<input type="date" value="${i.recDate}" data-rdate="${i.id}" title="Dia da gravação">
+        <button data-rclear="${i.id}" title="Tirar da agenda">✕</button>`
+      :`<button data-rday="${i.id}|${t}">Hoje</button>
+        <button data-rday="${i.id}|${dShift(t,1)}">Amanhã</button>
+        <input type="date" data-rdate="${i.id}" title="Escolher dia">`}
+    </div>
+  </div>`;
+}
+
+function recDayHTML(ds,list){
+  const t=today();
+  const lbl=ds===t?'HOJE':(ds===dShift(t,1)?'AMANHÃ':(ds&&ds<t?'ATRASADO':(ds?dowOf(ds):'')));
+  const title=ds?`${fmtD(ds)}`:'Sem data de gravação';
+  const mins=list.filter(i=>!i.recDone).reduce((s,i)=>s+KINDS[kindOf(i)].min,0);
+  const byK={reel:list.filter(i=>kindOf(i)==='reel'),video:list.filter(i=>kindOf(i)==='video')};
+  let sets='';
+  ['reel','video'].forEach(k=>{
+    const l=byK[k]; if(!l.length) return;
+    const K=KINDS[k], pend=l.filter(i=>!i.recDone).length;
+    sets+=`<div class="rec-set">
+      <b style="color:${K.c}">${K.ic} ${K.n}S · ${l.length}<i>${K.setup}${pend?` · ~${hhmm(pend*K.min)}`:' · tudo gravado'}</i></b>
+      ${l.map(recCard).join('')}
+    </div>`;
+  });
+  return `<div class="rec-day">
+    <div class="rec-head ${ds===t?'hoje':''}">
+      <h3>${title}</h3><span class="when">${lbl}</span>
+      ${mins?`<span class="load">⏱ ~${hhmm(mins)} de gravação</span>`:''}
+    </div>${sets}</div>`;
+}
+
+function renderRec(){
+  const t=today();
+  let pool=recPool();
+  if(recFilter!=='all') pool=pool.filter(i=>kindOf(i)===recFilter);
+  const pend=pool.filter(i=>!i.recDone);
+  const st=[
+    {u:'GRAVAR HOJE',n:pend.filter(i=>i.recDate===t).length,s:'na agenda de hoje',c:'#2E63C6'},
+    {u:'REELS NA FILA',n:pend.filter(i=>kindOf(i)==='reel').length,s:'vertical · rápido',c:'#5D5C68'},
+    {u:'VÍDEOS NA FILA',n:pend.filter(i=>kindOf(i)==='video').length,s:'horizontal · longo',c:'#18181F'},
+    {u:'ATRASADOS',n:pend.filter(i=>i.recDate&&i.recDate<t).length,s:'passou o dia',c:'#FF3B3B'}
+  ];
+  $('#recStats').innerHTML=st.map(x=>`<div class="stat" style="--c:${x.c}"><u>${x.u}</u><b>${String(x.n).padStart(2,'0')}</b><small>${x.s}</small></div>`).join('');
+
+  const days={}, nod=[];
+  pool.forEach(i=>{ if(i.recDate){(days[i.recDate]=days[i.recDate]||[]).push(i)} else nod.push(i) });
+  const keys=Object.keys(days).sort();
+  const late=keys.filter(d=>d<t), rest=keys.filter(d=>d>=t);
+  let h=[...late,...rest].map(d=>recDayHTML(d,days[d])).join('');
+  if(nod.length) h+=recDayHTML('',nod);
+  $('#recBody').innerHTML=h||`<div class="empty"><b>Nada pra gravar</b><p>Crie ideias no banco e marque o dia de gravação aqui.</p></div>`;
+
+  $$('#recBody [data-rchk]').forEach(b=>b.onclick=()=>recToggle(b.dataset.rchk));
+  $$('#recBody [data-ropen]').forEach(b=>b.onclick=()=>openModal(b.dataset.ropen));
+  $$('#recBody [data-rday]').forEach(b=>b.onclick=()=>{const[id,d]=b.dataset.rday.split('|');recSet(id,d)});
+  $$('#recBody [data-rclear]').forEach(b=>b.onclick=()=>recSet(b.dataset.rclear,''));
+  $$('#recBody [data-rdate]').forEach(el=>el.onchange=()=>recSet(el.dataset.rdate,el.value));
+}
+$$('#recTabs button').forEach(b=>b.onclick=()=>{
+  $$('#recTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  recFilter=b.dataset.k;renderRec();
+});
+$('#recPlanBtn').onclick=recPlanWeek;
 
 /* ===================== DATABASE ===================== */
 const GROUPS=[{id:'none',n:'Nenhum'},{id:'status',n:'Etapa'},{id:'channel',n:'Canal'},{id:'topic',n:'Item'},
