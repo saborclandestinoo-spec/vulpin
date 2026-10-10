@@ -288,10 +288,45 @@ button.gi:hover{background:#FAFAFC}
 .gbox .btn{width:100%;padding:15px;font-size:16px;margin-top:6px}
 
 /* ---------- toast / fab / tabbar ---------- */
-.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:130;background:var(--txt);color:#fff;padding:12px 18px;
+.toast{display:flex;align-items:center;position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:130;background:var(--txt);color:#fff;padding:12px 18px;
   border-radius:14px;font-size:14px;font-weight:500;box-shadow:var(--sh-lg);opacity:0;visibility:hidden;transition:.3s var(--e);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
 .tabbar,.fab{display:none}
+/* seleção múltipla */
+.selbtn{all:unset;cursor:pointer;font-size:15px;font-weight:600;color:var(--blue);padding:8px 12px;border-radius:11px;margin-left:auto}
+.selbtn:hover{background:var(--blue-soft)}
+.hd .selbtn + .av{margin-left:6px}
+.icard{position:relative}
+.icard .sel{display:none;position:absolute;top:16px;right:16px;width:26px;height:26px;border-radius:50%;border:2px solid #CFCFD6;background:#fff;place-items:center}
+.icard .sel svg{width:14px;height:14px;stroke:#fff;stroke-width:3.2;opacity:0}
+body.selecting .icard .sel{display:grid}
+body.selecting .icard{padding-right:56px}
+body.selecting .icard .spill{pointer-events:none}
+.icard.picked{box-shadow:0 0 0 2.5px var(--blue),var(--sh);background:#F7FAFF}
+.icard.picked .sel{background:var(--blue);border-color:var(--blue)}
+.icard.picked .sel svg{opacity:1}
+.selbar{position:fixed;left:50%;bottom:24px;transform:translate(-50%,140%);z-index:70;width:min(760px,calc(100% - 32px));
+  background:var(--txt);color:#fff;border-radius:22px;box-shadow:var(--sh-lg);padding:12px;transition:transform .35s var(--e);visibility:hidden}
+body.selecting .selbar{transform:translate(-50%,0);visibility:visible}
+.selbar-h{display:flex;align-items:center;gap:10px;padding:0 4px 10px}
+.selbar-h b{font-size:15px;font-weight:700;white-space:nowrap}
+.selbar-h button{white-space:nowrap}
+body.selecting #v-ideias{padding-bottom:200px}
+.selbar-h button{all:unset;cursor:pointer;font-size:14px;font-weight:600;color:#9DB8FF;padding:4px 8px;border-radius:8px}
+.selbar-h button:hover{background:rgba(255,255,255,.1)}
+.selbar-h .x{margin-left:auto;color:#fff}
+.selacts{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.selacts::-webkit-scrollbar{display:none}
+.sa{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:13px;background:rgba(255,255,255,.12);
+  font-size:14px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;border:0;font-family:inherit}
+.sa:hover{background:rgba(255,255,255,.2)}
+.sa select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
+.sa.del{background:rgba(255,59,48,.9)}
+.sa.del:hover{background:var(--red)}
+.sa.off{opacity:.35;pointer-events:none}
+.hiddate{position:fixed;left:-9999px;top:0;opacity:0;width:1px;height:1px}
+.toast button{all:unset;cursor:pointer;margin-left:14px;font-weight:700;color:#9DB8FF}
+body.selecting .fab{display:none}
 
 /* ===================== MOBILE ===================== */
 @media(max-width:820px){
@@ -319,6 +354,11 @@ button.gi:hover{background:#FAFAFC}
   .fab:active{transform:scale(.92)}
   .fab svg{width:27px;height:27px;stroke-width:2.6}
   .toast{bottom:calc(var(--tab) + 92px + env(safe-area-inset-bottom))}
+  .selbar{bottom:calc(var(--tab) + 12px + env(safe-area-inset-bottom));border-radius:20px;padding:12px 10px 10px}
+  .selacts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;overflow:visible}
+  .sa{justify-content:center;padding:11px 6px;font-size:13.5px}
+  body.selecting #v-ideias{padding-bottom:calc(var(--tab) + 230px)}
+  body.selecting .toast{bottom:calc(var(--tab) + 150px + env(safe-area-inset-bottom))}
 
   .rbar .seg{flex:1 1 100%}
   #stFilter button{padding:8px 4px;font-size:13.5px}
@@ -373,7 +413,7 @@ button.gi:hover{background:#FAFAFC}
 
     <!-- IDEIAS -->
     <section class="view" id="v-ideias">
-      <div class="hd"><h1>Ideias <small id="ideasN"></small></h1><button class="av" data-me>?</button></div>
+      <div class="hd"><h1>Ideias <small id="ideasN"></small></h1><button class="selbtn" id="selBtn">Selecionar</button><button class="av" data-me>?</button></div>
       <div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="Buscar ideia ou roteiro"></div>
       <div class="seg plat" id="platIdeas" style="margin-bottom:10px"></div>
       <div class="seg" id="stFilter" style="margin-bottom:12px"></div>
@@ -479,6 +519,18 @@ button.gi:hover{background:#FAFAFC}
   </div>
 </div>
 
+<div class="selbar" id="selbar">
+  <div class="selbar-h"><b id="selN">0 selecionadas</b><button id="selAll">Todas</button><button class="x" id="selDone">Concluir</button></div>
+  <div class="selacts">
+    <label class="sa" id="saSt">Etapa ▾<select id="bSt"></select></label>
+    <label class="sa" id="saFmt">Formato ▾<select id="bFmt"></select></label>
+    <label class="sa" id="saTp">Item ▾<select id="bTp"></select></label>
+    <label class="sa" id="saRec">Gravar em ▾<select id="bRec"></select></label>
+    <label class="sa" id="saPub">Postar em ▾<select id="bPub"></select></label>
+    <button class="sa del" id="bDel">Excluir</button>
+  </div>
+</div>
+<input type="date" class="hiddate" id="bDate">
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -529,6 +581,7 @@ let items=[], channels=[], topics=[];
 let view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all', platIdeas='all', platCal='all';
 let calDate=new Date(), calMode='grid', calDropOk=false, calFrom=0, calTo=1;
 let editId=null, edPre={};
+let selecting=false, picked=new Set(), lastVisible=[], lpAt=0;
 
 /* ===================== HELPERS ===================== */
 const $=s=>document.querySelector(s);
@@ -557,7 +610,9 @@ function platSeg(sel,cur,onPick){
 }
 const needsRec=i=>kindOf(i)!=='estatico'&&(i.status==='ideia'||i.status==='gravacao');
 const kbHTML=i=>{const K=kindOb(i);return `<span class="kb" style="background:${K.c}14;color:${K.c}">${K.ic} ${esc(fmtOf(i).n)}</span>`};
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('on'),2300)}
+function toast(m,act,fn){const t=$('#toast');t.textContent=m;
+  if(act){const b=document.createElement('button');b.textContent=act;b.onclick=()=>{t.classList.remove('on');fn()};t.appendChild(b);}
+  t.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('on'),act?6000:2300)}
 function relDay(ds){const t=today(); if(ds===t)return 'hoje'; if(ds===dShift(t,1))return 'amanhã'; if(ds===dShift(t,-1))return 'ontem';
   return DOWL[new Date(ds+'T12:00').getDay()];}
 
@@ -676,6 +731,7 @@ function buildNav(){
   $$('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
 }
 function go(v){
+  if(v!=='ideias'&&selecting) setSelecting(false);
   view=v;
   $$('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   $$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
@@ -745,7 +801,7 @@ function renderIdeias(){
   l.sort((a,b)=>ord(a.status)-ord(b.status)||(b.id>a.id?1:-1));
   $('#ideasN').textContent=items.length||'';
   $('#ideasList').innerHTML=l.length?l.map((i,k)=>{const s=stage(i.status),tp=topic(i.topic);
-    return `<div class="icard" data-open="${i.id}">
+    return `<div class="icard ${picked.has(i.id)?'picked':''}" data-open="${i.id}"><span class="sel">${ICON.check}</span>
       <div class="top"><button class="spill" data-cyc="${i.id}" style="background:${s.c}1F;color:${s.c}" title="Toque pra avançar"><i style="background:${s.c}"></i>${s.n}</button>
         ${kbHTML(i)}${tp?`<span class="tp">${esc(tp.name)}</span>`:''}</div>
       <h3>${esc(i.title)||'<span style="color:var(--txt-3)">Sem título</span>'}</h3>
@@ -757,7 +813,75 @@ function renderIdeias(){
         <button class="btn btn-blue btn-sm" data-new>Anotar ideia</button></div>`);
   $$('#ideasList [data-cyc]').forEach(b=>b.onclick=e=>{e.stopPropagation();cycleItem(b.dataset.cyc)});
   wireCommon('#v-ideias');
+  lastVisible=l.map(i=>i.id);
+  $$('#ideasList .icard').forEach(c=>{
+    const id=c.dataset.open;
+    if(selecting) c.onclick=()=>{ if(Date.now()-lpAt<700) return; togglePick(id); };
+    // segurar o dedo (ou clicar com Ctrl/Shift) começa a seleção
+    let t=null;
+    c.addEventListener('touchstart',()=>{t=setTimeout(()=>{t=null; if(!selecting){lpAt=Date.now();setSelecting(true);togglePick(id); if(navigator.vibrate)navigator.vibrate(15);}},450)},{passive:true});
+    ['touchend','touchmove','touchcancel'].forEach(ev=>c.addEventListener(ev,()=>{if(t){clearTimeout(t);t=null}},{passive:true}));
+    c.addEventListener('click',e=>{if(!selecting&&(e.ctrlKey||e.metaKey||e.shiftKey)){e.preventDefault();e.stopImmediatePropagation();setSelecting(true);togglePick(id);}},true);
+  });
+  syncSelbar();
 }
+
+/* ---------- seleção múltipla ---------- */
+function setSelecting(on){
+  selecting=on; if(!on) picked.clear();
+  document.body.classList.toggle('selecting',on);
+  $('#selBtn').textContent=on?'Cancelar':'Selecionar';
+  renderIdeias();
+}
+function togglePick(id){ picked.has(id)?picked.delete(id):picked.add(id); renderIdeias(); }
+function syncSelbar(){
+  const n=picked.size;
+  $('#selN').textContent=n?`${n} selecionada${n>1?'s':''}`:'Toque nas ideias';
+  const all=lastVisible.length&&lastVisible.every(id=>picked.has(id));
+  $('#selAll').textContent=all?'Nenhuma':'Todas';
+  $$('.selacts .sa').forEach(x=>x.classList.toggle('off',!n));
+}
+function dayOpts(){
+  const t=today(), o=[`<option value="" selected disabled>Escolher…</option>`,`<option value="${t}">Hoje</option>`,`<option value="${dShift(t,1)}">Amanhã</option>`];
+  for(let k=2;k<7;k++){const d=dShift(t,k); o.push(`<option value="${d}">${relDay(d)} (${fmtD(d)})</option>`);}
+  o.push('<option value="pick">Outro dia…</option>','<option value="none">Tirar data</option>');
+  return o.join('');
+}
+function fillBulk(){
+  $('#bSt').innerHTML='<option value="" selected disabled>Etapa</option>'+STAGES.map(s=>`<option value="${s.id}">${s.n}</option>`).join('');
+  $('#bFmt').innerHTML='<option value="" selected disabled>Formato</option>'+FORMATS.map(f=>`<option value="${f.v}">${f.n}</option>`).join('');
+  $('#bTp').innerHTML='<option value="" selected disabled>Item</option><option value="none">Sem item</option>'+topics.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  $('#bRec').innerHTML=dayOpts(); $('#bPub').innerHTML=dayOpts();
+}
+function bulk(fn,msg){
+  const ids=[...picked]; if(!ids.length) return;
+  items.filter(i=>picked.has(i.id)).forEach(fn);
+  save(); renderAll(); fillBulk(); toast(`${ids.length} ideia${ids.length>1?'s':''} · ${msg}`);
+}
+function applyDate(field,v){
+  if(v==='pick'){ const d=$('#bDate'); d.value=''; d.onchange=()=>{ if(d.value) applyDate(field,d.value); };
+    try{ d.showPicker(); }catch(e){ d.focus(); d.click(); } fillBulk(); return; }
+  const ds=v==='none'?'':v;
+  bulk(i=>{ if(field==='rec'){ i.recDate=ds; if(ds&&i.status==='ideia') i.status='gravacao'; if(!ds) i.recDone=false; }
+            else { i.date=ds; i.time=ds?(i.time||'19:00'):''; } },
+       ds?(field==='rec'?'gravar ':'postar ')+relDay(ds)+' ('+fmtD(ds)+')':(field==='rec'?'sem dia de gravar':'sem dia de postar'));
+}
+$('#selBtn').onclick=()=>setSelecting(!selecting);
+$('#selDone').onclick=()=>setSelecting(false);
+$('#selAll').onclick=()=>{ const all=lastVisible.every(id=>picked.has(id)); lastVisible.forEach(id=>all?picked.delete(id):picked.add(id)); renderIdeias(); };
+$('#bSt').onchange=e=>{const v=e.target.value; bulk(i=>{i.status=v; if(v==='ideia'||v==='gravacao') i.recDone=false; else if(i.recDate) i.recDone=true;},'etapa '+stage(v).n);};
+$('#bFmt').onchange=e=>{const v=e.target.value; bulk(i=>{i.format=v; i.channel=chanFor(fmtOf(i).p);},'formato '+(FORMATS.find(f=>f.v===v)||{}).n);};
+$('#bTp').onchange=e=>{const v=e.target.value; bulk(i=>{i.topic=v==='none'?'':v;},v==='none'?'sem item':'item '+((topic(v)||{}).name||''));};
+$('#bRec').onchange=e=>applyDate('rec',e.target.value);
+$('#bPub').onchange=e=>applyDate('pub',e.target.value);
+$('#bDel').onclick=()=>{
+  const ids=new Set(picked); if(!ids.size) return;
+  const removed=items.map((it,k)=>({it,k})).filter(x=>ids.has(x.it.id));
+  items=items.filter(i=>!ids.has(i.id)); picked.clear(); save(); renderAll();
+  toast(`${removed.length} ideia${removed.length>1?'s':''} excluída${removed.length>1?'s':''}`,'Desfazer',()=>{
+    removed.forEach(({it,k})=>items.splice(Math.min(k,items.length),0,it)); save(); renderAll(); toast('Restaurado ✓');
+  });
+};
 
 /* ===================== GRAVAR ===================== */
 function recRow(i){
@@ -1001,13 +1125,13 @@ function badges(){
   $$('.av').forEach(x=>x.textContent=a);
   $('#meMail').textContent=(user&&user.email)||'—';
 }
-function renderAll(){ renderHoje(); wireCommon('#v-hoje'); renderIdeias(); renderGravar(); renderCal(); badges(); }
+function renderAll(){ fillBulk(); renderHoje(); wireCommon('#v-hoje'); renderIdeias(); renderGravar(); renderCal(); badges(); }
 
 $('#q').oninput=e=>{query=e.target.value.toLowerCase().trim();renderIdeias()};
 $('#fab').onclick=()=>openEditor(null,newPre());
 $('#railNew').onclick=()=>openEditor(null,newPre());
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeEditor();$('#meVeil').classList.remove('on')}
+  if(e.key==='Escape'){ if(!$('#edVeil').classList.contains('on')&&!$('#meVeil').classList.contains('on')&&selecting) setSelecting(false); closeEditor();$('#meVeil').classList.remove('on')}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='n'){e.preventDefault();openEditor(null,newPre())}
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&$('#edVeil').classList.contains('on')){e.preventDefault();$('#edSave').click()}
 });
