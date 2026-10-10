@@ -931,7 +931,7 @@ function gridHTML(y,m){
   for(let i=first-1;i>=0;i--) h+=`<div class="day out"><div class="dn"><b>${prev-i}</b></div></div>`;
   for(let d=1;d<=days;d++){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const l=items.filter(i=>i.date===ds&&platOk(i,platCal)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const l=items.filter(i=>i.date===ds&&platOk(i,platCal)).reverse();
     const c=l.length?stage(l[0].status).c:null;
     h+=`<div class="day ${ds===t?'today':''}" data-date="${ds}" style="${c?`border-color:${c};background:${c}24`:''}"
         title="${l.length?'Clique no dia pra avançar a etapa':'Clique pra criar ideia neste dia'}">
@@ -992,7 +992,7 @@ function renderCal(){
     };
   }
   $('#legend').innerHTML=STAGES.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('')+'<span style="color:var(--txt-3)">· clique no dia pra avançar</span>';
-  const nd=items.filter(i=>!i.date&&i.status!=='postado'&&platOk(i,platCal));
+  const nd=items.filter(i=>!i.date&&i.status!=='postado'&&platOk(i,platCal)).reverse();
   $('#trayHint').textContent=isTouch?'Abra a ideia e escolha o dia de postar.':'Arraste pra um dia pra agendar.';
   $('#tray').innerHTML=nd.length?nd.map(i=>`<div class="titem" draggable="${isTouch?'false':'true'}" data-pid="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small>${esc(fmtOf(i).n)} · ${stage(i.status).n}</small></div>`).join('')
     :`<div class="empty" style="padding:14px 0"><p>Tudo agendado 🎉</p></div>`;
