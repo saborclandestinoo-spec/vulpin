@@ -193,7 +193,7 @@ button{font-family:inherit}
 .rnd svg{width:17px;height:17px;stroke-width:2.4}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .dow{font-size:12.5px;font-weight:600;color:var(--txt-3);text-align:center;padding-bottom:3px}
-.day{height:116px;border-radius:14px;background:var(--card);padding:7px;display:flex;flex-direction:column;gap:4px;overflow:hidden;cursor:pointer;
+.day{height:132px;border-radius:14px;background:var(--card);padding:7px;display:flex;flex-direction:column;gap:4px;overflow:hidden;cursor:pointer;
   transition:.15s;border:2px solid transparent;box-shadow:0 1px 2px rgba(10,10,20,.03)}
 .day:hover{box-shadow:var(--sh)}
 .day.out{background:transparent;box-shadow:none;cursor:default;opacity:.4}
@@ -204,11 +204,13 @@ button{font-family:inherit}
 .dn .plus{all:unset;cursor:pointer;margin-left:auto;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;color:var(--txt-3);font-size:18px;opacity:0;transition:.12s}
 .day:hover .plus{opacity:1}
 .dn .plus:hover{background:var(--blue-soft);color:var(--blue)}
-.pills{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:3px;scrollbar-width:none}
+.pills{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:3px}
 .pills::-webkit-scrollbar{display:none}
-.pill{font-size:11.5px;font-weight:600;padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.95);color:var(--txt);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;flex:none;box-shadow:0 1px 2px rgba(10,10,20,.08);
-  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.pill{flex:1 1 auto;min-height:0;font-size:12px;font-weight:600;line-height:1.3;padding:5px 7px;border-radius:8px;
+  background:rgba(255,255,255,.95);color:var(--txt);border-left:3px solid var(--blue);
+  white-space:normal;word-break:normal;overflow-wrap:normal;overflow:hidden;cursor:grab;
+  box-shadow:0 1px 2px rgba(10,10,20,.08);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.seg.plat button small{font-size:11px;font-weight:500;color:var(--txt-3);margin-left:5px}
 .pill.drag{opacity:.4}
 .cal-scroll{display:flex;flex-direction:column;gap:30px;max-height:calc(100dvh - 190px);overflow-y:auto;padding-right:4px}
 .cal-block h3{font-size:19px;font-weight:800;letter-spacing:-.03em;text-transform:capitalize;margin-bottom:10px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2}
@@ -326,12 +328,13 @@ button.gi:hover{background:#FAFAFC}
   .racts .datechip{flex:1;justify-content:center;padding:10px}
 
   .cal-wrap{grid-template-columns:1fr}
-  .cal{gap:4px}
-  .day{height:70px;border-radius:11px;padding:4px}
+  .cal{gap:3px}
+  .day{height:104px;border-radius:11px;padding:3px}
   .dn{min-height:20px}
   .dn b{font-size:12px;min-width:20px;height:20px}
   .dn .plus{display:none}
-  .pill{font-size:9.5px;padding:2px 4px;border-radius:5px}
+  .pill{font-size:10px;line-height:1.22;padding:3px 2px 3px 3px;border-radius:6px;border-left-width:2px;letter-spacing:-.01em}
+  .seg.plat button small{display:none}
   .dow{font-size:11.5px}
   .cal-top h2{font-size:22px;flex-basis:100%;margin-bottom:4px}
   .cal-scroll{max-height:none;overflow:visible}
@@ -372,6 +375,7 @@ button.gi:hover{background:#FAFAFC}
     <section class="view" id="v-ideias">
       <div class="hd"><h1>Ideias <small id="ideasN"></small></h1><button class="av" data-me>?</button></div>
       <div class="searchbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="Buscar ideia ou roteiro"></div>
+      <div class="seg plat" id="platIdeas" style="margin-bottom:10px"></div>
       <div class="seg" id="stFilter" style="margin-bottom:12px"></div>
       <div class="chips" id="topicChips"></div>
       <div class="ilist" id="ideasList"></div>
@@ -397,8 +401,9 @@ button.gi:hover{background:#FAFAFC}
             <button class="rnd" id="prevM" title="Mês anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 18l-6-6 6-6"/></svg></button>
             <button class="btn btn-soft btn-sm" id="todayBtn">Hoje</button>
             <button class="rnd" id="nextM" title="Próximo mês"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 6l6 6-6 6"/></svg></button>
-            <button class="btn btn-soft btn-sm" id="calMode">🎡 Roleta</button>
+            <button class="btn btn-soft btn-sm" id="calMode">Roleta</button>
           </div>
+          <div class="seg plat" id="platCal" style="margin-bottom:14px;max-width:420px"></div>
           <div class="cal" id="cal"></div>
           <div class="cal-scroll hide" id="calScroll"></div>
           <div class="legend" id="legend"></div>
@@ -521,7 +526,7 @@ const VIEWS=[{id:'hoje',n:'Hoje'},{id:'ideias',n:'Ideias'},{id:'gravar',n:'Grava
 
 /* ===================== STATE ===================== */
 let items=[], channels=[], topics=[];
-let view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all';
+let view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all', platIdeas='all', platCal='all';
 let calDate=new Date(), calMode='grid', calDropOk=false, calFrom=0, calTo=1;
 let editId=null, edPre={};
 
@@ -541,6 +546,15 @@ const fmtOf=i=>FORMATS.find(f=>f.v===i.format)||FORMATS[0];
 const kindOf=i=>fmtOf(i).k;
 const kindOb=i=>KINDS[kindOf(i)];
 const topic=id=>topics.find(t=>t.id===id)||null;
+// YouTube = vídeo longo · Instagram = vídeo curto (Reel, Short, Story, Carrossel)
+const platOf=i=>fmtOf(i).k==='video'?'yt':'ig';
+const PLATS=[{id:'all',n:'Todos'},{id:'yt',n:'YouTube',c:'#FF0033'},{id:'ig',n:'Instagram',c:'#2563EB'}];
+const platOk=(i,f)=>f==='all'||platOf(i)===f;
+function platSeg(sel,cur,onPick){
+  const el=$(sel);
+  el.innerHTML=PLATS.map(x=>`<button data-pl="${x.id}" class="${cur===x.id?'on':''}">${x.c?`<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x.c};margin-right:6px;vertical-align:1px"></i>`:''}${x.n}${x.id!=='all'?`<small>${x.id==='yt'?'longo':'curto'}</small>`:''}</button>`).join('');
+  el.querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>onPick(b.dataset.pl));
+}
 const needsRec=i=>kindOf(i)!=='estatico'&&(i.status==='ideia'||i.status==='gravacao');
 const kbHTML=i=>{const K=kindOb(i);return `<span class="kb" style="background:${K.c}14;color:${K.c}">${K.ic} ${esc(fmtOf(i).n)}</span>`};
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('on'),2300)}
@@ -624,7 +638,7 @@ async function cycleItem(id){
   save(); renderAll(); toast(stage(it.status).n);
 }
 async function cycleDay(ds){
-  const l=items.filter(i=>i.date===ds); if(!l.length) return false;
+  const l=items.filter(i=>i.date===ds&&platOk(i,platCal)); if(!l.length) return false;
   const k=STAGES.findIndex(s=>s.id===l[0].status);
   const nx=STAGES[(k+1)%STAGES.length].id;
   l.forEach(i=>i.status=nx);
@@ -666,6 +680,7 @@ function go(v){
   $$('[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
   $$('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
   $('#main').scrollTop=0;
+  if(v==='cal') requestAnimationFrame(()=>fitPills($('#v-cal')));
 }
 
 /* ===================== HOJE ===================== */
@@ -706,6 +721,7 @@ function renderHoje(){
 
 /* ===================== IDEIAS ===================== */
 function renderIdeias(){
+  platSeg('#platIdeas',platIdeas,v=>{platIdeas=v;renderIdeias()});
   $('#stFilter').innerHTML=[{id:'all',n:'Todas'}].concat(STAGES).map(s=>`<button data-st="${s.id}" class="${stFilter===s.id?'on':''}">${s.n}</button>`).join('');
   $$('#stFilter button').forEach(b=>b.onclick=()=>{stFilter=b.dataset.st;renderIdeias()});
   $('#topicChips').innerHTML=`<button class="chip ${topicFilter==='all'?'on':''}" data-tf="all">Todos os itens</button>`
@@ -721,6 +737,7 @@ function renderIdeias(){
   };
 
   let l=items.slice();
+  if(platIdeas!=='all') l=l.filter(i=>platOk(i,platIdeas));
   if(stFilter!=='all') l=l.filter(i=>i.status===stFilter);
   if(topicFilter!=='all') l=l.filter(i=>i.topic===topicFilter);
   if(query) l=l.filter(i=>(i.title+' '+i.notes).toLowerCase().includes(query));
@@ -790,12 +807,12 @@ function gridHTML(y,m){
   for(let i=first-1;i>=0;i--) h+=`<div class="day out"><div class="dn"><b>${prev-i}</b></div></div>`;
   for(let d=1;d<=days;d++){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const l=items.filter(i=>i.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const l=items.filter(i=>i.date===ds&&platOk(i,platCal)).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
     const c=l.length?stage(l[0].status).c:null;
     h+=`<div class="day ${ds===t?'today':''}" data-date="${ds}" style="${c?`border-color:${c};background:${c}24`:''}"
         title="${l.length?'Clique no dia pra avançar a etapa':'Clique pra criar ideia neste dia'}">
       <div class="dn"><b>${d}</b><button class="plus" data-addday="${ds}" title="Nova ideia neste dia">+</button></div>
-      <div class="pills">${l.map(i=>`<div class="pill" draggable="${isTouch?'false':'true'}" data-pid="${i.id}" title="${esc(i.title)}">${i.status==='postado'?'✓':kindOb(i).ic} ${esc(i.title)||'Sem título'}</div>`).join('')}</div>
+      <div class="pills">${l.map(i=>`<div class="pill" draggable="${isTouch?'false':'true'}" data-pid="${i.id}" title="${esc(i.title)}" style="border-left-color:${platOf(i)==='yt'?'#FF0033':'#2563EB'}">${esc(i.title)||'Sem título'}</div>`).join('')}</div>
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
@@ -808,7 +825,18 @@ function wireDrag(el,hadDate){
     if(hadDate&&!calDropOk){const it=items.find(x=>x.id===el.dataset.pid); if(it&&it.date){it.date='';it.time='';save();renderAll();toast('Tirado da agenda');}}};
   el.onclick=e=>{e.stopPropagation();openEditor(el.dataset.pid)};
 }
+function fitPills(root){
+  // diminui a letra até o título inteiro caber no quadrado
+  const min=isTouch||innerWidth<=820?7.5:9.5;
+  root.querySelectorAll('.pill').forEach(el=>{
+    el.style.fontSize=''; el.style.overflowWrap=''; let fs=parseFloat(getComputedStyle(el).fontSize);
+    const over=()=>el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1;
+    while(over()&&fs>min){ fs-=.5; el.style.fontSize=fs+'px'; }
+    if(over()){ el.style.hyphens='auto'; el.style.overflowWrap='anywhere'; } // último recurso: palavra gigante
+  });
+}
 function wireGrid(root){
+  fitPills(root);
   root.querySelectorAll('.pill').forEach(el=>wireDrag(el,true));
   root.querySelectorAll('[data-addday]').forEach(b=>b.onclick=e=>{e.stopPropagation();openEditor(null,{date:b.dataset.addday})});
   root.querySelectorAll('.day[data-date]').forEach(day=>{
@@ -825,7 +853,8 @@ function blockHTML(off){const d=new Date(calDate.getFullYear(),calDate.getMonth(
 function renderCal(){
   const y=calDate.getFullYear(), m=calDate.getMonth();
   $('#monthLbl').textContent=MONTHS[m]+' '+y;
-  $('#calMode').textContent=calMode==='grid'?'🎡 Roleta':'📅 Um mês';
+  $('#calMode').textContent=calMode==='grid'?'Roleta':'Um mês';
+  platSeg('#platCal',platCal,v=>{platCal=v;renderCal()});
   if(calMode==='grid'){
     $('#calScroll').classList.add('hide'); $('#calScroll').innerHTML=''; $('#cal').classList.remove('hide');
     $('#cal').innerHTML=gridHTML(y,m); wireGrid($('#cal'));
@@ -839,9 +868,9 @@ function renderCal(){
     };
   }
   $('#legend').innerHTML=STAGES.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('')+'<span style="color:var(--txt-3)">· clique no dia pra avançar</span>';
-  const nd=items.filter(i=>!i.date&&i.status!=='postado');
+  const nd=items.filter(i=>!i.date&&i.status!=='postado'&&platOk(i,platCal));
   $('#trayHint').textContent=isTouch?'Abra a ideia e escolha o dia de postar.':'Arraste pra um dia pra agendar.';
-  $('#tray').innerHTML=nd.length?nd.map(i=>`<div class="titem" draggable="${isTouch?'false':'true'}" data-pid="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small>${kindOb(i).ic} ${esc(fmtOf(i).n)} · ${stage(i.status).n}</small></div>`).join('')
+  $('#tray').innerHTML=nd.length?nd.map(i=>`<div class="titem" draggable="${isTouch?'false':'true'}" data-pid="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small>${esc(fmtOf(i).n)} · ${stage(i.status).n}</small></div>`).join('')
     :`<div class="empty" style="padding:14px 0"><p>Tudo agendado 🎉</p></div>`;
   $$('#tray .titem').forEach(el=>wireDrag(el,false));
 }
@@ -1015,6 +1044,7 @@ $('#logout').onclick=async()=>{
   $('#meVeil').classList.remove('on'); renderAll(); gate().classList.add('on');
 };
 
+addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>{if(view==='cal')fitPills($('#v-cal'))},150)});
 /* ===================== BOOT ===================== */
 buildNav(); go('hoje');
 (async()=>{
