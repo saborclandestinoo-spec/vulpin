@@ -251,6 +251,7 @@ button{font-family:inherit}
 .echip small{font-weight:500;color:var(--txt-3)}
 .echip select,.echip input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;font-size:16px}
 .echip.empty-d{color:var(--txt-2);font-weight:500}
+.ed-chips .xbtn{width:38px;height:38px;margin-left:-6px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);border-radius:12px}
 .del-ed{all:unset;cursor:pointer;color:var(--red);font-size:14px;font-weight:600;padding:9px 12px;border-radius:12px;margin-left:auto}
 .del-ed:hover{background:#FFEDEC}
 
@@ -473,8 +474,8 @@ body.selecting .fab{display:none}
       <label class="echip" id="eFmt"><span></span><select id="edFmt"></select></label>
       <label class="echip" id="eSt"><span></span><select id="edSt"></select></label>
       <label class="echip" id="eTp"><span></span><select id="edTp"></select></label>
-      <label class="echip" id="eRec"><span></span><input type="date" id="edRec"></label>
-      <label class="echip" id="ePub"><span></span><input type="date" id="edPub"></label>
+      <label class="echip" id="eRec"><span></span><input type="date" id="edRec"></label><button class="xbtn hide" id="clrRec" title="Tirar dia de gravar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <label class="echip" id="ePub"><span></span><input type="date" id="edPub"></label><button class="xbtn hide" id="clrPub" title="Tirar dia de postar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       <button class="del-ed hide" id="edDel">Excluir</button>
     </div>
   </div>
@@ -488,6 +489,7 @@ body.selecting .fab{display:none}
       <div class="grp" style="margin-top:6px">
         <div class="gi"><div class="av" id="avM">?</div><div style="min-width:0"><b id="meMail2" style="display:block;overflow:hidden;text-overflow:ellipsis">—</b><small class="sync" id="syncM" style="display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--txt-3)"><i></i>salvo</small></div></div>
       </div>
+      <div class="wipe hide" id="dbWarn" style="background:#FFF8E6;margin-top:10px"><p id="dbWarnTxt" style="color:#7A5300;margin:0"></p></div>
       <div class="grp-l">Itens (produtos / assuntos)</div>
       <div class="grp" id="meTopics"></div>
       <div class="grp-l">Dados</div>
@@ -641,7 +643,7 @@ const rowItem=r=>({id:r.id,channel:r.channel_id,topic:r.topic_id||'',title:r.tit
   date:r.pub_date||'',time:r.pub_time||'',recDate:r.rec_date||'',recDone:!!r.rec_done});
 
 function setSync(st){
-  const m={ok:['#00B368','salvo'],busy:['#FFB800','salvando…'],err:['#FF3B30','erro ao salvar']}[st]||['#00B368','salvo'];
+  const m={ok:['#00B368','salvo'],busy:['#FFB800','salvando…'],err:['#FF3B30','erro ao salvar'],warn:['#FFB800','salvo · dia de gravar só neste aparelho']}[st]||['#00B368','salvo'];
   ['#syncR','#syncM'].forEach(s=>{const el=$(s); if(el) el.innerHTML=`<i style="background:${m[0]}"></i>${m[1]}`;});
 }
 async function pull(){
@@ -655,21 +657,62 @@ async function pull(){
   topics=(t.data||[]).map(r=>({id:r.id,name:r.name,color:r.color}));
   items=(i.data||[]).map(rowItem);
   syncedC=new Set(channels.map(x=>x.id)); syncedT=new Set(topics.map(x=>x.id)); syncedI=new Set(items.map(x=>x.id));
+  if(i.data&&i.data.length&&!('rec_date' in i.data[0])){ missingCols.add('rec_date'); missingCols.add('rec_done'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
+  else if(i.data&&i.data.length&&('rec_date' in i.data[0])&&missingCols.has('rec_date')){ missingCols.delete('rec_date'); missingCols.delete('rec_done'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
+  loadRecLocal();
+}
+// colunas que o banco não tem (ex.: rec_date se o SQL de gravação não rodou) — o app pula elas
+const OPT_COLS=['rec_date','rec_done','notes','pub_time'];
+let missingCols=new Set(JSON.parse(ls.get('studio:missingCols')||'[]')), pushing=false, pushAgain=false, lastErr='';
+const REC_KEY='studio:rec:v1';
+function stripRow(r){ missingCols.forEach(c=>delete r[c]); return r; }
+function saveRecLocal(){ // backup do dia de gravação no aparelho quando o banco não tem a coluna
+  if(!missingCols.has('rec_date')) return;
+  const m={}; items.forEach(i=>{ if(i.recDate||i.recDone) m[i.id]=[i.recDate,i.recDone]; }); ls.set(REC_KEY,JSON.stringify(m));
+}
+function loadRecLocal(){
+  if(!missingCols.has('rec_date')) return;
+  try{ const m=JSON.parse(ls.get(REC_KEY)||'{}'); items.forEach(i=>{ if(m[i.id]){ i.recDate=m[i.id][0]||''; i.recDone=!!m[i.id][1]; } }); }catch(e){}
+}
+function colFromErr(e){
+  const t=(e&&(e.message||''))+' '+(e&&e.details||'');
+  const m=t.match(/'(\w+)' column/)||t.match(/column "?(\w+)"? (?:of relation "?\w+"? )?does not exist/)||t.match(/column \w+\.(\w+) does not exist/);
+  return m&&OPT_COLS.includes(m[1])?m[1]:null;
+}
+const errMsg=e=>(e&&(e.message||e.error_description||e.hint))||String(e||'erro');
+async function up(table,rows){
+  for(let k=0;k<OPT_COLS.length+1;k++){
+    const r=await sb.from(table).upsert(rows.map(x=>stripRow({...x})));
+    if(!r.error) return;
+    const col=colFromErr(r.error);
+    if(col&&!missingCols.has(col)){ missingCols.add(col); ls.set('studio:missingCols',JSON.stringify([...missingCols])); console.warn('coluna ausente no banco:',col); continue; }
+    throw r.error;
+  }
 }
 async function push(){
   if(!sb||!user) return;
-  setSync('busy');
+  if(pushing){ pushAgain=true; return; }
+  pushing=true; setSync('busy');
   try{
     const delI=[...syncedI].filter(id=>!items.some(x=>x.id===id));
     const delT=[...syncedT].filter(id=>!topics.some(x=>x.id===id));
     if(delI.length){const r=await sb.from('items').delete().in('id',delI); if(r.error) throw r.error;}
     if(delT.length){const r=await sb.from('topics').delete().in('id',delT); if(r.error) throw r.error;}
-    if(channels.length){const r=await sb.from('channels').upsert(channels.map(c=>({id:c.id,user_id:user.id,name:c.name,color:c.color}))); if(r.error) throw r.error;}
-    if(topics.length){const r=await sb.from('topics').upsert(topics.map(t=>({id:t.id,user_id:user.id,name:t.name,color:t.color}))); if(r.error) throw r.error;}
-    if(items.length){const r=await sb.from('items').upsert(items.map(itemRow)); if(r.error) throw r.error;}
+    if(channels.length) await up('channels',channels.map(c=>({id:c.id,user_id:user.id,name:c.name,color:c.color})));
+    if(topics.length) await up('topics',topics.map(t=>({id:t.id,user_id:user.id,name:t.name,color:t.color})));
+    if(items.length) await up('items',items.map(itemRow));
     syncedI=new Set(items.map(x=>x.id)); syncedC=new Set(channels.map(x=>x.id)); syncedT=new Set(topics.map(x=>x.id));
-    setSync('ok');
-  }catch(e){ setSync('err'); toast('Falha ao salvar na nuvem'); console.error(e); }
+    saveRecLocal(); lastErr='';
+    setSync(missingCols.has('rec_date')?'warn':'ok');
+  }catch(e){
+    lastErr=errMsg(e); setSync('err'); console.error(e);
+    const auth=/jwt|token|auth|expired|401/i.test(lastErr);
+    toast(auth?'Sessão expirou — saia e entre de novo':'Falha ao salvar: '+lastErr.slice(0,90));
+    saveRecLocal();
+  }finally{
+    pushing=false;
+    if(pushAgain){ pushAgain=false; setTimeout(push,200); }
+  }
 }
 function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(push,300); }
 function ensureChannels(){
@@ -1021,9 +1064,12 @@ function edChips(){
   $('#eRec span').innerHTML=r?`🎬 Grava ${fmtD(r)}`:'🎬 <small>Gravar</small> —';
   $('#ePub span').innerHTML=p?`📅 Posta ${fmtD(p)}`:'📅 <small>Postar</small> —';
   $('#eRec').classList.toggle('hide',f.k==='estatico'&&!r);
+  $('#clrRec').classList.toggle('hide',!r); $('#clrPub').classList.toggle('hide',!p);
   ['#eTp','#eRec','#ePub'].forEach(id=>$(id).classList.toggle('empty-d',!(id==='#eTp'?tp:id==='#eRec'?r:p)));
 }
-['#edFmt','#edSt','#edTp','#edRec','#edPub'].forEach(s=>$(s).onchange=edChips);
+['#edFmt','#edSt','#edTp','#edRec','#edPub'].forEach(s=>{$(s).onchange=edChips;$(s).oninput=edChips;});
+$('#clrRec').onclick=()=>{$('#edRec').value='';edChips()};
+$('#clrPub').onclick=()=>{$('#edPub').value='';edChips()};
 const autoGrow=el=>{el.style.height='auto';el.style.height=el.scrollHeight+'px'};
 $('#edTitle').oninput=e=>autoGrow(e.target);
 $('#edTitle').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#edNotes').focus()}};
@@ -1065,6 +1111,11 @@ $('#edDel').onclick=()=>{
 /* ===================== CONTA ===================== */
 function openMe(){ renderMe(); $('#wipeBox').classList.add('hide'); $('#wipeIn').value=''; $('#wipeGo').disabled=true; $('#meVeil').classList.add('on'); }
 function renderMe(){
+  const w=$('#dbWarn'), wt=$('#dbWarnTxt');
+  if(lastErr){ w.classList.remove('hide'); w.style.background='#FFF1F0'; wt.style.color='#8A1C14'; wt.innerHTML='<b>Erro ao salvar:</b> '+esc(lastErr); }
+  else if(missingCols.has('rec_date')){ w.classList.remove('hide'); w.style.background='#FFF8E6'; wt.style.color='#7A5300';
+    wt.innerHTML='<b>Tudo salvando normal.</b> Só o <b>dia de gravar</b> fica guardado neste aparelho, porque falta uma coluna no banco. Rode o arquivo <b>schema-rec.sql</b> no Supabase (SQL Editor) pra sincronizar ele também.'; }
+  else w.classList.add('hide');
   const e=(user&&user.email)||'—';
   $('#meMail2').textContent=e;
   $('#meTopics').innerHTML=(topics.length?topics.map(t=>`<div class="gi"><span class="dot" style="background:${t.color}"></span><b>${esc(t.name)}</b>
@@ -1169,6 +1220,12 @@ $('#logout').onclick=async()=>{
 };
 
 addEventListener('resize',()=>{clearTimeout(window._rz);window._rz=setTimeout(()=>{if(view==='cal')fitPills($('#v-cal'))},150)});
+/* clique em qualquer botão de data abre o calendário (no computador o campo invisível não abria sozinho) */
+document.addEventListener('click',e=>{
+  const lab=e.target.closest('.echip,.datechip,.sa'); if(!lab) return;
+  const inp=lab.querySelector('input[type=date]'); if(!inp) return;
+  if(typeof inp.showPicker==='function'){ e.preventDefault(); try{ inp.showPicker(); }catch(err){ inp.focus(); } }
+},true);
 /* ===================== BOOT ===================== */
 buildNav(); go('hoje');
 (async()=>{
