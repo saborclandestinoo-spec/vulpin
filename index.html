@@ -1005,14 +1005,14 @@ function fitPills(root){
 function wireGrid(root){
   fitPills(root);
   root.querySelectorAll('.pill').forEach(el=>wireDrag(el,true));
-  root.querySelectorAll('[data-addday]').forEach(b=>b.onclick=e=>{e.stopPropagation();openEditor(null,{date:b.dataset.addday})});
+  root.querySelectorAll('[data-addday]').forEach(b=>b.onclick=e=>{e.stopPropagation();openEditor(null,{date:b.dataset.addday,...platFmt()})});
   root.querySelectorAll('.day[data-date]').forEach(day=>{
     day.ondragover=e=>{e.preventDefault();day.classList.add('drop')};
     day.ondragleave=()=>day.classList.remove('drop');
     day.ondrop=e=>{e.preventDefault();day.classList.remove('drop');calDropOk=true;
       const it=items.find(x=>x.id===e.dataTransfer.getData('text/plain'));
       if(it){it.date=day.dataset.date; if(!it.time) it.time='19:00'; save(); renderAll(); toast('Posta '+relDay(it.date)+' ('+fmtD(it.date)+')');}};
-    day.onclick=async()=>{ if(!(await cycleDay(day.dataset.date))) openEditor(null,{date:day.dataset.date}); };
+    day.onclick=async()=>{ if(!(await cycleDay(day.dataset.date))) openEditor(null,{date:day.dataset.date,...platFmt()}); };
   });
 }
 function blockHTML(off){const d=new Date(calDate.getFullYear(),calDate.getMonth()+off,1);
@@ -1168,7 +1168,9 @@ function wireCommon(root){
   $$(root+' [data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   $$(root+' [data-new]').forEach(b=>b.onclick=()=>openEditor(null,newPre()));
 }
-function newPre(){ return view==='gravar'?{status:'gravacao',recDate:today()}:{}; }
+// filtro YouTube/Instagram ativo já define o formato da ideia nova
+function platFmt(){ const f=view==='cal'?platCal:view==='ideias'?platIdeas:'all'; return f==='yt'?{format:'Vídeo longo'}:f==='ig'?{format:'Reels'}:{}; }
+function newPre(){ return Object.assign(view==='gravar'?{status:'gravacao',recDate:today()}:{},platFmt()); }
 function badges(){
   const t=today(), n=items.filter(i=>needsRec(i)&&i.recDate&&i.recDate<=t&&!i.recDone).length;
   $$('[data-nb]').forEach(b=>b.textContent=n?String(n):'');
