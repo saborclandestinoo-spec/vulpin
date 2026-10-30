@@ -305,6 +305,11 @@ button.gi:hover{background:#FAFAFC}
 body.selecting .icard .sel{display:grid}
 body.selecting .icard{padding-right:56px}
 body.selecting .icard .spill{pointer-events:none}
+.icard .cdel{all:unset;cursor:pointer;position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;color:var(--txt-3);transition:.12s;z-index:2}
+.icard .cdel svg{width:15px;height:15px;stroke-width:2.4}
+.icard .cdel:hover{background:#FFEDEC;color:var(--red)}
+.icard:not(:has(.top:empty)) .top{padding-right:34px}
+body.selecting .icard .cdel{display:none}
 .icard.picked{box-shadow:0 0 0 2.5px var(--blue),var(--sh);background:#F7FAFF}
 .icard.picked .sel{background:var(--blue);border-color:var(--blue)}
 .icard.picked .sel svg{opacity:1}
@@ -847,7 +852,7 @@ function renderIdeias(){
   l.sort((a,b)=>ord(a.status)-ord(b.status)||(b.id>a.id?1:-1));
   $('#ideasN').textContent=items.length||'';
   $('#ideasList').innerHTML=l.length?l.map((i,k)=>{const s=stage(i.status),tp=topic(i.topic);
-    return `<div class="icard ${picked.has(i.id)?'picked':''}" data-open="${i.id}"><span class="sel">${ICON.check}</span>
+    return `<div class="icard ${picked.has(i.id)?'picked':''}" data-open="${i.id}"><button class="cdel" data-cdel="${i.id}" title="Excluir ideia" aria-label="Excluir ideia">${ICON.x}</button><span class="sel">${ICON.check}</span>
       <div class="top"><button class="spill" data-cyc="${i.id}" style="background:${s.c}1F;color:${s.c}" title="Toque pra avançar"><i style="background:${s.c}"></i>${s.n}</button>
         ${kbHTML(i)}${tp?`<span class="tp">${esc(tp.name)}</span>`:''}</div>
       <h3>${esc(i.title)||'<span style="color:var(--txt-3)">Sem título</span>'}</h3>
@@ -858,6 +863,7 @@ function renderIdeias(){
       :`<div class="card empty"><div class="em">💡</div><b>Nenhuma ideia ainda</b><p>Toque em <b style="display:inline;font-size:inherit">+</b> pra anotar a primeira.</p>
         <button class="btn btn-blue btn-sm" data-new>Anotar ideia</button></div>`);
   $$('#ideasList [data-cyc]').forEach(b=>b.onclick=e=>{e.stopPropagation();cycleItem(b.dataset.cyc)});
+  $$('#ideasList [data-cdel]').forEach(b=>b.onclick=e=>{e.stopPropagation();delIdea(b.dataset.cdel)});
   wireCommon('#v-ideias');
   lastVisible=l.map(i=>i.id);
   $$('#ideasList .icard').forEach(c=>{
@@ -870,6 +876,16 @@ function renderIdeias(){
     c.addEventListener('click',e=>{if(!selecting&&(e.ctrlKey||e.metaKey||e.shiftKey)){e.preventDefault();e.stopImmediatePropagation();setSelecting(true);togglePick(id);}},true);
   });
   syncSelbar();
+}
+
+/* ---------- excluir ideia direto do card (com desfazer) ---------- */
+function delIdea(id){
+  const k=items.findIndex(x=>x.id===id); if(k<0) return;
+  const it=items[k];
+  items.splice(k,1); save(); renderAll();
+  toast('Excluído: '+(it.title||'sem título'),'Desfazer',()=>{
+    items.splice(Math.min(k,items.length),0,it); save(); renderAll(); toast('Restaurado ✓');
+  });
 }
 
 /* ---------- seleção múltipla ---------- */
