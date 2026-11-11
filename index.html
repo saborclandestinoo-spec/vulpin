@@ -396,6 +396,41 @@ body.selecting .fab{display:none}
   .sh-top .grab{display:block;position:absolute;top:8px;left:50%;transform:translateX(-50%);height:5px;width:38px;border-radius:99px;background:#D6D6DC}
   .ed-notes{min-height:34vh}
 }
+
+/* ===== ANÁLISE / IA ===== */
+.ed-m{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.ed-m .gin{margin-bottom:10px}
+.ed-m-t{font-size:14px;font-weight:700;margin-bottom:10px}
+.ed-m-t small{font-weight:500;color:var(--txt-3);margin-left:6px;font-size:12px}
+.ed-m-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ed-m-g label{font-size:11.5px;font-weight:600;color:var(--txt-2)}
+.ed-m-g .gin{margin:4px 0 0;padding:11px 12px;font-size:15px}
+.an-k{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.an-k>div{background:var(--card);border-radius:var(--r-m);box-shadow:var(--sh);padding:14px 16px;min-width:0}
+.an-k b{display:block;font-size:24px;font-weight:800;letter-spacing:-.03em}
+.an-k span{font-size:12.5px;color:var(--txt-2);font-weight:500}
+.an-r{display:grid;grid-template-columns:minmax(90px,34%) 1fr auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.an-l{font-size:14px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.an-l small{display:block;font-size:11.5px;font-weight:500;color:var(--txt-3)}
+.an-b{height:10px;border-radius:99px;background:var(--fill);overflow:hidden}
+.an-b i{display:block;height:100%;border-radius:99px}
+.an-r>b{font-size:14px;font-weight:700;min-width:44px;text-align:right}
+.an-chip{font-size:12px;font-weight:600;color:var(--txt-2);background:var(--fill);padding:2px 8px;border-radius:99px}
+.an-add{font-size:12px;font-weight:600;color:var(--orange)}
+.an-warn{background:#FFF8E6}
+.an-warn b{font-size:14.5px}
+.an-warn p{font-size:13.5px;color:#7A5300;margin-top:4px;line-height:1.5}
+.ai-s{font-size:13.5px;color:var(--txt-2);line-height:1.5}
+.ai-btns{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px}
+.ai-ask{display:flex;gap:8px;align-items:center}
+.ai-ask .gin{margin:0;flex:1;padding:11px 14px;font-size:15px}
+.ai-busy{font-size:14px;font-weight:600;color:var(--blue);margin-top:12px}
+.ai-out h4{font-size:15.5px;font-weight:700;margin:18px 0 6px;letter-spacing:-.01em}
+.ai-out h4:first-child{margin-top:0}
+.ai-out p,.ai-out li{font-size:14.5px;line-height:1.65}
+.ai-out ul{padding-left:20px;margin:6px 0}
+.ai-out li{margin:5px 0}
+@media(max-width:700px){.an-k b{font-size:19px}.an-r{grid-template-columns:minmax(80px,38%) 1fr auto;gap:9px}.ai-ask{flex-wrap:wrap}.ai-ask .gin{flex:1 1 100%}}
 </style>
 </head>
 <body>
@@ -464,6 +499,12 @@ body.selecting .fab{display:none}
         </div>
       </div>
     </section>
+    <!-- ANÁLISE -->
+    <section class="view" id="v-analise">
+      <div class="hd"><div><div class="sub">Desempenho dos posts</div><h1>Análise</h1></div><button class="av" data-me>?</button></div>
+      <div class="seg plat" id="platAn" style="margin-bottom:14px;max-width:420px"></div>
+      <div id="anBody"></div>
+    </section>
   </main>
 </div>
 
@@ -477,6 +518,18 @@ body.selecting .fab{display:none}
     <div class="sh-body">
       <textarea class="ed-title" id="edTitle" rows="1" placeholder="Título da ideia"></textarea>
       <textarea class="ed-notes" id="edNotes" placeholder="Roteiro, gancho, anotações…"></textarea>
+      <div class="ed-m hide" id="edM">
+        <div class="ed-m-t">📊 Desempenho <small>preencha depois de postar</small></div>
+        <input class="gin" id="edLink" type="url" inputmode="url" placeholder="Link do vídeo (opcional)">
+        <div class="ed-m-g">
+          <label>Views<input class="gin" id="edViews" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>Likes<input class="gin" id="edLikes" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>Comentários<input class="gin" id="edComm" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>Salvos<input class="gin" id="edSaves" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>Compart.<input class="gin" id="edShares" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+          <label>Alcance<input class="gin" id="edReach" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+        </div>
+      </div>
     </div>
     <div class="ed-chips">
       <label class="echip" id="eFmt"><span></span><select id="edFmt"></select></label>
@@ -582,9 +635,10 @@ const ICON={
   gravar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="13" height="12" rx="3"/><path d="M15 10.5l6-3.5v10l-6-3.5z"/></svg>',
   cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>'
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  analise:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
 };
-const VIEWS=[{id:'hoje',n:'Hoje'},{id:'ideias',n:'Ideias'},{id:'gravar',n:'Gravar'},{id:'cal',n:'Agenda'}];
+const VIEWS=[{id:'hoje',n:'Hoje'},{id:'ideias',n:'Ideias'},{id:'gravar',n:'Gravar'},{id:'cal',n:'Agenda'},{id:'analise',n:'Análise'}];
 
 /* ===================== STATE ===================== */
 let items=[], channels=[], topics=[];
@@ -592,6 +646,7 @@ let view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all', p
 let calDate=new Date(), calMode='grid', calDropOk=false, calFrom=0, calTo=1;
 let editId=null, edPre={};
 let selecting=false, picked=new Set(), lastVisible=[], lpAt=0;
+let platAn='all', aiBusy=false, aiMode='', aiOut=null, aiQ='';
 
 /* ===================== HELPERS ===================== */
 const $=s=>document.querySelector(s);
@@ -644,11 +699,13 @@ function chanFor(platform){
 }
 const itemRow=i=>({id:i.id,user_id:user.id,channel_id:i.channel||chanFor(fmtOf(i).p),topic_id:i.topic||null,
   title:i.title||'',notes:i.notes||'',platform:fmtOf(i).p,format:i.format,status:i.status,
-  pub_date:i.date||null,pub_time:i.date?(i.time||'19:00'):null,rec_date:i.recDate||null,rec_done:!!i.recDone});
+  pub_date:i.date||null,pub_time:i.date?(i.time||'19:00'):null,rec_date:i.recDate||null,rec_done:!!i.recDone,
+  video_url:i.link||null,views:i.views??null,likes:i.likes??null,comments:i.comments??null,saves:i.saves??null,shares:i.shares??null,reach:i.reach??null});
 const rowItem=r=>({id:r.id,channel:r.channel_id,topic:r.topic_id||'',title:r.title||'',notes:r.notes||'',
   format:FORMATS.some(f=>f.v===r.format)?r.format:(r.platform==='youtube'?'Vídeo longo':'Reels'),
   status:STAGES.some(s=>s.id===r.status)?r.status:(LEGACY[r.status]||'ideia'),
-  date:r.pub_date||'',time:r.pub_time||'',recDate:r.rec_date||'',recDone:!!r.rec_done});
+  date:r.pub_date||'',time:r.pub_time||'',recDate:r.rec_date||'',recDone:!!r.rec_done,
+  link:r.video_url||'',views:r.views??null,likes:r.likes??null,comments:r.comments??null,saves:r.saves??null,shares:r.shares??null,reach:r.reach??null});
 
 function setSync(st){
   const m={ok:['#00B368','salvo'],busy:['#FFB800','salvando…'],err:['#FF3B30','erro ao salvar'],warn:['#FFB800','salvo · dia de gravar só neste aparelho']}[st]||['#00B368','salvo'];
@@ -667,10 +724,11 @@ async function pull(){
   syncedC=new Set(channels.map(x=>x.id)); syncedT=new Set(topics.map(x=>x.id)); syncedI=new Set(items.map(x=>x.id));
   if(i.data&&i.data.length&&!('rec_date' in i.data[0])){ missingCols.add('rec_date'); missingCols.add('rec_done'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
   else if(i.data&&i.data.length&&('rec_date' in i.data[0])&&missingCols.has('rec_date')){ missingCols.delete('rec_date'); missingCols.delete('rec_done'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
-  loadRecLocal();
+  loadRecLocal(); syncMetCols(i.data); loadMetLocal();
 }
 // colunas que o banco não tem (ex.: rec_date se o SQL de gravação não rodou) — o app pula elas
-const OPT_COLS=['rec_date','rec_done','notes','pub_time'];
+const MET_COLS=['video_url','views','likes','comments','saves','shares','reach'];
+const OPT_COLS=['rec_date','rec_done','notes','pub_time',...MET_COLS];
 let missingCols=new Set(JSON.parse(ls.get('studio:missingCols')||'[]')), pushing=false, pushAgain=false, lastErr='';
 const REC_KEY='studio:rec:v1';
 function stripRow(r){ missingCols.forEach(c=>delete r[c]); return r; }
@@ -710,13 +768,13 @@ async function push(){
     if(topics.length) await up('topics',topics.map(t=>({id:t.id,user_id:user.id,name:t.name,color:t.color})));
     if(items.length) await up('items',items.map(itemRow));
     syncedI=new Set(items.map(x=>x.id)); syncedC=new Set(channels.map(x=>x.id)); syncedT=new Set(topics.map(x=>x.id));
-    saveRecLocal(); lastErr='';
+    saveRecLocal(); saveMetLocal(); lastErr='';
     setSync(missingCols.has('rec_date')?'warn':'ok');
   }catch(e){
     lastErr=errMsg(e); setSync('err'); console.error(e);
     const auth=/jwt|token|auth|expired|401/i.test(lastErr);
     toast(auth?'Sessão expirou — saia e entre de novo':'Falha ao salvar: '+lastErr.slice(0,90));
-    saveRecLocal();
+    saveRecLocal(); saveMetLocal();
   }finally{
     pushing=false;
     if(pushAgain){ pushAgain=false; setTimeout(push,200); }
@@ -734,7 +792,8 @@ function ensureChannels(){
 function newItem(pre){
   pre=pre||{};
   return {id:uid(),title:'',notes:'',format:pre.format||'Reels',status:pre.status||'ideia',topic:pre.topic||'',
-    date:pre.date||'',time:pre.date?'19:00':'',recDate:pre.recDate||'',recDone:false,channel:null};
+    date:pre.date||'',time:pre.date?'19:00':'',recDate:pre.recDate||'',recDone:false,channel:null,
+    link:'',views:null,likes:null,comments:null,saves:null,shares:null,reach:null};
 }
 async function cycleItem(id){
   const it=items.find(x=>x.id===id); if(!it) return;
@@ -776,7 +835,7 @@ async function planWeek(){
 
 /* ===================== NAV ===================== */
 function buildNav(){
-  const ic={hoje:ICON.hoje,ideias:ICON.ideias,gravar:ICON.gravar,cal:ICON.cal};
+  const ic={hoje:ICON.hoje,ideias:ICON.ideias,gravar:ICON.gravar,cal:ICON.cal,analise:ICON.analise};
   $('#railNav').innerHTML=VIEWS.map(v=>`<button data-v="${v.id}">${ic[v.id]}${v.n}${v.id==='gravar'?'<span class="nb" data-nb></span>':''}</button>`).join('');
   $('#tabbar').innerHTML=VIEWS.map(v=>`<button data-v="${v.id}">${ic[v.id]}<span>${v.n}</span>${v.id==='gravar'?'<i class="nb" data-nb></i>':''}</button>`).join('');
   $$('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));
@@ -1083,6 +1142,7 @@ function edChips(){
   $('#eRec span').innerHTML=r?`🎬 Grava ${fmtD(r)}`:'🎬 <small>Gravar</small> —';
   $('#ePub span').innerHTML=p?`📅 Posta ${fmtD(p)}`:'📅 <small>Postar</small> —';
   $('#eRec').classList.toggle('hide',f.k==='estatico'&&!r);
+  $('#edM').classList.toggle('hide',$('#edSt').value!=='postado');
   $('#clrRec').classList.toggle('hide',!r); $('#clrPub').classList.toggle('hide',!p);
   ['#eTp','#eRec','#ePub'].forEach(id=>$(id).classList.toggle('empty-d',!(id==='#eTp'?tp:id==='#eRec'?r:p)));
 }
@@ -1102,6 +1162,8 @@ function openEditor(id,pre){
   $('#edTp').innerHTML='<option value="">Sem item</option>'+topics.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
   $('#edTp').value=it?(it.topic||''):(pre.topic||(topicFilter!=='all'?topicFilter:''));
   $('#edRec').value=it?it.recDate:(pre.recDate||''); $('#edPub').value=it?it.date:(pre.date||'');
+  $('#edLink').value=it?it.link||'':'';
+  [['#edViews','views'],['#edLikes','likes'],['#edComm','comments'],['#edSaves','saves'],['#edShares','shares'],['#edReach','reach']].forEach(([sel,k])=>{$(sel).value=it&&it[k]!=null?it[k]:'';});
   $('#edDel').classList.toggle('hide',!it);
   edChips();
   $('#edVeil').classList.add('on');
@@ -1117,6 +1179,8 @@ $('#edSave').onclick=()=>{
   const wasRec=it.recDate;
   it.title=title; it.notes=notes; it.format=$('#edFmt').value; it.status=$('#edSt').value; it.topic=$('#edTp').value;
   it.recDate=$('#edRec').value; it.date=$('#edPub').value; if(it.date&&!it.time) it.time='19:00';
+  it.link=$('#edLink').value.trim();
+  [['#edViews','views'],['#edLikes','likes'],['#edComm','comments'],['#edSaves','saves'],['#edShares','shares'],['#edReach','reach']].forEach(([sel,k])=>{it[k]=anNum($(sel).value);});
   if(it.recDate&&!wasRec&&it.status==='ideia') it.status='gravacao';
   if(it.status==='edicao'||it.status==='postado') it.recDone=!!it.recDate; else it.recDone=false;
   it.channel=chanFor(fmtOf(it).p);
@@ -1126,6 +1190,135 @@ $('#edDel').onclick=()=>{
   if(!editId) return; const it=items.find(x=>x.id===editId);
   items=items.filter(x=>x.id!==editId); save(); closeEditor(); renderAll(); toast('Excluído: '+((it&&it.title)||'sem título'));
 };
+
+/* ===================== ANÁLISE + IA ===================== */
+const AI_KEY='studio:ai:last:v1', MET_KEY='studio:met:v1';
+const anNum=v=>(v===''||v==null||isNaN(+v))?null:Math.max(0,Math.round(+v));
+const hasM=i=>i.views!=null;
+const hasAnyM=i=>!!i.link||[i.views,i.likes,i.comments,i.saves,i.shares,i.reach].some(v=>v!=null);
+const anEng=i=>i.views>0?((i.likes||0)+(i.comments||0)+(i.saves||0)+(i.shares||0))/i.views:0;
+const anFmt=n=>{if(n==null)return '—';const f=(x,d)=>x.toFixed(d).replace(/\.0$/,'').replace('.',',');return n>=1e6?f(n/1e6,1)+' mi':n>=1e4?Math.round(n/1e3)+' mil':n>=1e3?f(n/1e3,1)+' mil':String(Math.round(n));};
+const anPct=x=>(x*100).toFixed(1).replace('.',',')+'%';
+const metMissing=()=>MET_COLS.some(c=>missingCols.has(c));
+function syncMetCols(rows){
+  if(!rows||!rows.length) return;
+  let ch=false;
+  MET_COLS.forEach(c=>{ if(c in rows[0]){ if(missingCols.has(c)){missingCols.delete(c);ch=true;} } else if(!missingCols.has(c)){missingCols.add(c);ch=true;} });
+  if(ch) ls.set('studio:missingCols',JSON.stringify([...missingCols]));
+}
+function saveMetLocal(){ // backup das métricas no aparelho enquanto o banco não tem as colunas
+  if(!metMissing()) return;
+  const m={}; items.forEach(i=>{ if(hasAnyM(i)) m[i.id]=[i.link,i.views,i.likes,i.comments,i.saves,i.shares,i.reach]; }); ls.set(MET_KEY,JSON.stringify(m));
+}
+function loadMetLocal(){
+  if(!metMissing()) return;
+  try{ const m=JSON.parse(ls.get(MET_KEY)||'{}'); items.forEach(i=>{ const a=m[i.id]; if(a){ [i.link,i.views,i.likes,i.comments,i.saves,i.shares,i.reach]=a; i.link=i.link||''; } }); }catch(e){}
+}
+function groupStats(list,keyFn){
+  const m=new Map();
+  list.forEach(i=>{ const k=keyFn(i); if(k==null||k==='') return; if(!m.has(k)) m.set(k,{k,n:0,v:0,e:0}); const g=m.get(k); g.n++; g.v+=i.views; g.e+=anEng(i); });
+  return [...m.values()].map(g=>({k:g.k,n:g.n,v:g.v/g.n,e:g.e/g.n})).sort((a,b)=>b.v-a.v);
+}
+function barsCard(title,ic,rows,labelFn){
+  if(rows.length<2) return '';
+  const mx=Math.max(...rows.map(r=>r.v))||1;
+  return `<div class="card"><div class="card-h"><div class="ic" style="background:#E8EFFD">${ic}</div><h2>${title}</h2></div>`+
+    rows.map((r,ix)=>`<div class="an-r"><div class="an-l">${esc(labelFn(r.k))}<small>${r.n} post${r.n>1?'s':''} · eng. ${anPct(r.e)}</small></div><div class="an-b"><i style="width:${Math.max(3,r.v/mx*100)}%;background:${ix===0?'var(--green)':'var(--blue)'}"></i></div><b>${anFmt(r.v)}</b></div>`).join('')+
+    `<div class="card-f">Média de views por post. Verde = o que mais rende.</div></div>`;
+}
+function mdLite(t){
+  const inl=x=>esc(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  let out='',ul=false;
+  String(t||'').split('\n').forEach(raw=>{
+    const l=raw.trim();
+    if(/^[-•*] /.test(l)){ if(!ul){out+='<ul>';ul=true;} out+='<li>'+inl(l.slice(2))+'</li>'; return; }
+    if(ul){out+='</ul>';ul=false;}
+    if(!l) return;
+    const m=l.match(/^#{1,4}\s+(.*)/);
+    out+=m?'<h4>'+inl(m[1])+'</h4>':'<p>'+inl(l)+'</p>';
+  });
+  return out+(ul?'</ul>':'');
+}
+const AI_TITLES={geral:'📈 O que funciona',porque:'🔍 Por que uns foram melhores',ideias:'💡 Ideias e títulos',pergunta:'💬 Sua pergunta'};
+const AI_MIN={geral:3,porque:4,ideias:3,pergunta:2};
+function renderAnalise(){
+  const root=$('#anBody'); if(!root) return;
+  platSeg('#platAn',platAn,v=>{platAn=v;renderAnalise();});
+  const posted=items.filter(i=>i.status==='postado'&&platOk(i,platAn));
+  const com=posted.filter(hasM);
+  let h=metMissing()?`<div class="card an-warn"><b>Falta uma coisa no banco</b><p>Rode o arquivo <code>setup.sql</code> no SQL Editor do Supabase. Até lá, as métricas ficam salvas só neste aparelho.</p></div>`:'';
+  if(!posted.length){
+    root.innerHTML=h+`<div class="card"><div class="empty"><div class="em">📊</div><b>Nenhum post publicado ainda</b><p>Marque um conteúdo como <b>Postado</b> e preencha as métricas dele. Aí a análise começa.</p></div></div>`;
+    wireCommon('#v-analise'); return;
+  }
+  const avgV=com.length?com.reduce((a,i)=>a+i.views,0)/com.length:0;
+  const avgE=com.length?com.reduce((a,i)=>a+anEng(i),0)/com.length:0;
+  const best=com.slice().sort((a,b)=>b.views-a.views)[0];
+  h+=`<div class="an-k"><div><b>${com.length}/${posted.length}</b><span>com métricas</span></div><div><b>${com.length?anFmt(avgV):'—'}</b><span>views por post</span></div><div><b>${com.length?anPct(avgE):'—'}</b><span>engajamento</span></div></div>`;
+  if(best&&com.length>1) h+=`<div class="card" style="padding:14px 18px"><div style="font-size:12.5px;color:var(--txt-2);font-weight:600">🏆 Melhor post</div><div class="row" style="padding:6px 0 0;border:0"><div class="tx" data-open="${best.id}"><p>${esc(best.title)||'Sem título'}</p><small>${kbHTML(best)}<span class="an-chip">👁 ${anFmt(best.views)}</span></small></div></div></div>`;
+  if(com.length>=2){
+    const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+    h+=barsCard('Por item / tópico','🏷️',groupStats(com,i=>topic(i.topic)?topic(i.topic).name:'Sem item'),x=>x);
+    h+=barsCard('Por formato','🎬',groupStats(com,i=>fmtOf(i).n),x=>x);
+    h+=barsCard('Por dia da semana','📅',groupStats(com.filter(i=>i.date),i=>DOWL[new Date(i.date+'T12:00').getDay()]),cap);
+    const hrs=new Set(com.filter(i=>i.date&&i.time).map(i=>i.time.slice(0,2)));
+    if(hrs.size>1) h+=barsCard('Por horário','⏰',groupStats(com.filter(i=>i.date&&i.time),i=>i.time.slice(0,2)+'h'),x=>x);
+  }
+  // IA
+  const busy=aiBusy;
+  h+=`<div class="card"><div class="card-h"><div class="ic" style="background:#F1E9FB">✨</div><h2>Análise com IA</h2></div>
+    <p class="ai-s">A IA lê os seus posts e as métricas e responde com base nos seus números${platAn!=='all'?' ('+(platAn==='yt'?'YouTube':'Instagram')+')':''}. Precisa de pelo menos 3 posts com métricas.</p>
+    <div class="ai-btns">${['geral','porque','ideias'].map(m=>`<button class="btn btn-soft btn-sm" data-ai="${m}" ${busy?'disabled':''}>${AI_TITLES[m]}</button>`).join('')}</div>
+    <div class="ai-ask"><input class="gin" id="aiQ" placeholder="Ou pergunte: qual tema devo repetir?" maxlength="300" value="${esc(aiQ)}"><button class="btn btn-blue btn-sm" id="aiGo" ${busy?'disabled':''}>Perguntar</button></div>
+    ${busy?`<div class="ai-busy">⏳ Analisando ${com.length} post${com.length>1?'s':''}… leva uns 10 a 30 segundos</div>`:''}</div>`;
+  if(aiOut&&!busy){
+    const when=new Date(aiOut.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    h+=`<div class="card"><div class="card-h"><h2>${AI_TITLES[aiOut.mode]||'Resultado'}</h2><button class="lnk" id="aiCopy">Copiar</button></div>
+      <div class="ai-out">${mdLite(aiOut.text)}</div>
+      <div class="card-f">${when} · ${aiOut.n||'?'} posts analisados · A IA pode errar. Com poucos posts, são sinais e não certezas.</div></div>`;
+  }
+  // lista
+  const lst=posted.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  h+=`<div class="card"><div class="card-h"><div class="ic" style="background:#E9F8F1">✅</div><h2>Posts publicados</h2><span class="n">${posted.length}</span></div>`+
+    lst.slice(0,40).map(i=>`<div class="row"><div class="tx" data-open="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small>${kbHTML(i)}${i.date?`<span>${fmtD(i.date)}</span>`:''}${hasM(i)?`<span class="an-chip">👁 ${anFmt(i.views)}</span>${i.likes!=null?`<span class="an-chip">❤ ${anFmt(i.likes)}</span>`:''}${i.comments!=null?`<span class="an-chip">💬 ${anFmt(i.comments)}</span>`:''}`:`<span class="an-add">＋ preencher métricas</span>`}</small></div></div>`).join('')+
+    (lst.length>40?`<div class="card-f">Mostrando os 40 mais recentes.</div>`:'')+`</div>`;
+  root.innerHTML=h;
+  wireCommon('#v-analise');
+  $$('#anBody [data-ai]').forEach(b=>b.onclick=()=>askAI(b.dataset.ai));
+  const q=$('#aiQ'); if(q){ q.oninput=e=>{aiQ=e.target.value}; q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#aiGo').click();}}; }
+  const gb=$('#aiGo'); if(gb) gb.onclick=()=>{ if(!aiQ.trim()){toast('Digite a pergunta');return;} askAI('pergunta',aiQ); };
+  const cp=$('#aiCopy'); if(cp) cp.onclick=()=>{ try{navigator.clipboard.writeText(aiOut.text);toast('Copiado ✓');}catch(e){toast('Não consegui copiar');} };
+}
+async function fnErr(e){
+  try{ if(e&&e.context&&e.context.json){ const b=await e.context.json(); if(b&&b.error) return b.error; } }catch(_){}
+  const m=errMsg(e);
+  if(/Failed to send|not found|404|NetworkError|fetch/i.test(m)) return 'Função analisar-ia não encontrada no Supabase. Falta instalar (veja o passo a passo).';
+  return m;
+}
+async function askAI(mode,question){
+  if(aiBusy) return;
+  if(!sb||!user){ toast('Entre na conta primeiro'); return; }
+  const com=items.filter(i=>i.status==='postado'&&hasM(i)&&platOk(i,platAn));
+  const min=AI_MIN[mode]||3;
+  if(com.length<min){ toast(`Preencha métricas de pelo menos ${min} posts publicados`); return; }
+  aiBusy=true; aiMode=mode; renderAnalise();
+  try{
+    const posts=com.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,120).map(i=>({
+      titulo:(i.title||'').slice(0,160), roteiro:(i.notes||'').slice(0,300), formato:fmtOf(i).n, plataforma:platOf(i)==='yt'?'YouTube':'Instagram',
+      item:(topic(i.topic)||{}).name||'', data:i.date||'', dia_semana:i.date?DOWL[new Date(i.date+'T12:00').getDay()]:'', hora:i.date&&i.time?i.time.slice(0,5):'',
+      views:i.views, likes:i.likes, comentarios:i.comments, salvos:i.saves, compartilhamentos:i.shares, alcance:i.reach, engajamento_pct:+(anEng(i)*100).toFixed(2)
+    }));
+    const ideas=items.filter(i=>i.status!=='postado'&&i.title).slice(0,40).map(i=>i.title.slice(0,120));
+    const {data,error}=await sb.functions.invoke('analisar-ia',{body:{mode,question:(question||'').slice(0,300),platform:platAn==='yt'?'YouTube':platAn==='ig'?'Instagram':'Todas',posts,ideas}});
+    if(error) throw error;
+    if(!data||!data.text) throw new Error((data&&data.error)||'Resposta vazia');
+    aiOut={mode,text:data.text,at:Date.now(),n:posts.length}; ls.set(AI_KEY,JSON.stringify(aiOut));
+  }catch(e){
+    const m=await fnErr(e); toast('IA: '+String(m).slice(0,140)); console.error(e);
+  }finally{
+    aiBusy=false; renderAnalise();
+  }
+}
 
 /* ===================== CONTA ===================== */
 function openMe(){ renderMe(); $('#wipeBox').classList.add('hide'); $('#wipeIn').value=''; $('#wipeGo').disabled=true; $('#meVeil').classList.add('on'); }
@@ -1153,7 +1346,7 @@ $$('[data-me]').forEach(b=>b.onclick=openMe);
 
 $('#csvBtn').onclick=()=>{
   const q=v=>'"'+String(v||'').replace(/"/g,'""')+'"';
-  const rows=[['Título','Roteiro','Formato','Etapa','Item','Gravar','Postar']].concat(items.map(i=>[i.title,i.notes,fmtOf(i).n,stage(i.status).n,(topic(i.topic)||{}).name,i.recDate,i.date]));
+  const rows=[['Título','Roteiro','Formato','Etapa','Item','Gravar','Postar','Link','Views','Likes','Comentários','Salvos','Compartilhamentos','Alcance']].concat(items.map(i=>[i.title,i.notes,fmtOf(i).n,stage(i.status).n,(topic(i.topic)||{}).name,i.recDate,i.date,i.link,i.views,i.likes,i.comments,i.saves,i.shares,i.reach]));
   const blob=new Blob(['﻿'+rows.map(r=>r.map(q).join(';')).join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='studio-ideias.csv'; a.click();
 };
@@ -1197,7 +1390,7 @@ function badges(){
   $$('.av').forEach(x=>x.textContent=a);
   $('#meMail').textContent=(user&&user.email)||'—';
 }
-function renderAll(){ fillBulk(); renderHoje(); wireCommon('#v-hoje'); renderIdeias(); renderGravar(); renderCal(); badges(); }
+function renderAll(){ fillBulk(); renderHoje(); wireCommon('#v-hoje'); renderIdeias(); renderGravar(); renderCal(); renderAnalise(); badges(); }
 
 $('#q').oninput=e=>{query=e.target.value.toLowerCase().trim();renderIdeias()};
 $('#fab').onclick=()=>openEditor(null,newPre());
@@ -1213,6 +1406,7 @@ const gate=()=>$('#gate');
 function gErr(m){const e=$('#logErr'); e.textContent=m||''; e.style.display=m?'block':'none';}
 async function startSession(u){
   user=u;
+  try{ aiOut=JSON.parse(ls.get(AI_KEY)||'null'); }catch(e){ aiOut=null; }
   try{ await pull(); }catch(e){ toast('Erro ao carregar dados'); console.error(e); }
   if(!channels.length){ ensureChannels(); await push(); }
   setSync('ok'); gate().classList.remove('on'); renderAll();
@@ -1236,7 +1430,7 @@ $('#doAuth').onclick=async()=>{
 $('#logPass').onkeydown=e=>{if(e.key==='Enter')$('#doAuth').click()};
 $('#logout').onclick=async()=>{
   if(sb) await sb.auth.signOut();
-  user=null; items=[]; channels=[]; topics=[]; syncedI=new Set(); syncedC=new Set(); syncedT=new Set();
+  user=null; items=[]; channels=[]; topics=[]; aiOut=null; ls.del(AI_KEY); syncedI=new Set(); syncedC=new Set(); syncedT=new Set();
   $('#meVeil').classList.remove('on'); renderAll(); gate().classList.add('on');
 };
 
