@@ -605,7 +605,7 @@ body{font-size:13px}
 <!-- EDITOR -->
 <div class="veil" id="edVeil">
   <div class="sheet">
-    <div class="sh-top"><span class="grab"></span><button class="tbtn" id="edCancel">Cancelar</button><h4 id="edHead">Nova ideia</h4><button class="tbtn r" id="edSave">Salvar</button></div>
+    <div class="sh-top"><span class="grab"></span><button class="tbtn" id="edCancel">Fechar</button><h4 id="edHead">Nova ideia</h4><button class="tbtn r" id="edSave">Salvar</button></div>
     <div class="sh-body">
       <textarea class="ed-title" id="edTitle" rows="1" placeholder="Título da ideia"></textarea>
       <textarea class="ed-notes" id="edNotes" placeholder="Roteiro, gancho, anotações…"></textarea>
@@ -1349,6 +1349,7 @@ async function runAI(){
     const {data,error}=await Promise.race([sb.functions.invoke('analisar-ideia',{body:{ideia,historico}}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('A IA demorou demais (60s). Tente de novo em 1 minuto.')),60000))]);
     if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
     edAI={...data,at:today(),de:title||notes.slice(0,60),env:'1 ideia'+(historico.length?' + '+historico.length+' post(s) já postado(s) só como referência':' (nenhum outro post enviado)')}; renderAI(); try{$('#aiOut').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
+    edSaveCore(false); toast('Análise salva na ideia ✓');
   }catch(e){ console.error(e); let msg=String((e&&e.message)||e);
     try{ if(e&&e.context&&e.context.clone){ const t=await e.context.clone().text(); try{ const j=JSON.parse(t); msg=j.erro||j.message||j.msg||t; }catch(_){ msg=t||msg; } if(e.context.status) msg='['+e.context.status+'] '+msg; } }catch(_){}
     $('#aiOut').innerHTML='<div class="aiblk" style="color:#b91c1c;margin-top:10px"><b>Erro da IA</b>'+esc(msg)+'</div>'; toast('IA: '+msg.slice(0,110)); try{$('#aiOut').scrollIntoView({behavior:'smooth',block:'center'});}catch(_){} }
@@ -1356,12 +1357,12 @@ async function runAI(){
 }
 $('#aiBtn').onclick=runAI;
 function closeEditor(){ $('#edVeil').classList.remove('on'); editId=null; }
-$('#edCancel').onclick=closeEditor;
-$('#edVeil').onclick=e=>{if(e.target.id==='edVeil')closeEditor()};
-$('#edSave').onclick=()=>{
+$('#edCancel').onclick=()=>edSaveCore(true);
+$('#edVeil').onclick=e=>{if(e.target.id==='edVeil')edSaveCore(true)};
+function edSaveCore(close){
   const title=$('#edTitle').value.trim(), notes=$('#edNotes').value;
   let it=editId?items.find(x=>x.id===editId):null;
-  if(!it){ if(!title&&!notes.trim()){closeEditor();return;} it=newItem(); items.push(it); }
+  if(!it){ if(!title&&!notes.trim()){ if(close) closeEditor(); return; } it=newItem(); items.push(it); }
   const wasRec=it.recDate;
   it.title=title; it.notes=notes; it.format=$('#edFmt').value; it.status=$('#edSt').value; it.topic=$('#edTp').value;
   it.recDate=$('#edRec').value; it.date=$('#edPub').value; if(it.date&&!it.time) it.time='19:00';
@@ -1370,8 +1371,10 @@ $('#edSave').onclick=()=>{
   it.net=$('#edNet').value; it.link=$('#edLink').value.trim(); it.caption=$('#edCap').value; it.tags=$('#edTags').value.trim(); it.approved=$('#edApr').checked; it.hook=$('#edHook').value.trim();
   it.ai=edAI; it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
   it.channel=chanFor(fmtOf(it).p);
-  const wasEdit=!!editId; save(); closeEditor(); renderAll(); toast(wasEdit?'Salvo':'Ideia anotada ✓');
-};
+  const wasEdit=!!editId; editId=it.id; save(); $('#edDel').classList.remove('hide');
+  if(close){ closeEditor(); toast(wasEdit?'Salvo':'Ideia anotada ✓'); } renderAll();
+}
+$('#edSave').onclick=()=>edSaveCore(true);
 $('#edDel').onclick=()=>{
   if(!editId) return; const it=items.find(x=>x.id===editId);
   items=items.filter(x=>x.id!==editId); save(); closeEditor(); renderAll(); toast('Excluído: '+((it&&it.title)||'sem título'));
@@ -1455,7 +1458,7 @@ $('#q').oninput=e=>{query=e.target.value.toLowerCase().trim();renderIdeias()};
 $('#fab').onclick=()=>openEditor(null,newPre());
 $('#railNew').onclick=()=>openEditor(null,newPre());
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ if(!$('#edVeil').classList.contains('on')&&!$('#meVeil').classList.contains('on')&&selecting) setSelecting(false); closeEditor();$('#meVeil').classList.remove('on')}
+  if(e.key==='Escape'){ if(!$('#edVeil').classList.contains('on')&&!$('#meVeil').classList.contains('on')&&selecting) setSelecting(false); if($('#edVeil').classList.contains('on')) edSaveCore(true); $('#meVeil').classList.remove('on')}
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='n'){e.preventDefault();openEditor(null,newPre())}
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&$('#edVeil').classList.contains('on')){e.preventDefault();$('#edSave').click()}
 });
