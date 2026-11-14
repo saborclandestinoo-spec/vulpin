@@ -821,6 +821,10 @@ async function pull(){
   else if(i.data&&i.data.length&&('rec_date' in i.data[0])&&missingCols.has('rec_date')){ missingCols.delete('rec_date'); missingCols.delete('rec_done'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
   if(i.data&&i.data.length){ if(!('extra' in i.data[0])) missingCols.add('extra'); else missingCols.delete('extra'); ls.set('studio:missingCols',JSON.stringify([...missingCols])); }
   loadRecLocal();
+  // migração: quando o banco ganha a coluna 'extra', sobe o que estava só neste aparelho
+  if(!missingCols.has('extra')){ try{ const m=JSON.parse(ls.get(EX_KEY)||'{}'); let n=0;
+    items.forEach(i=>{ const l=m[i.id]; if(!l) return; const has=i.caption||i.tags||i.link||i.net||i.hook||i.ai||Object.values(i.m||{}).some(v=>+v); if(!has){ Object.assign(i,exRead(l)); n++; } });
+    if(n){ ls.set(EX_KEY,'{}'); setTimeout(()=>{ try{ save(); toast(n+' ideia(s) com dados enviados pro banco ✓'); }catch(e){} },600); } }catch(e){} }
 }
 // colunas que o banco não tem (ex.: rec_date se o SQL de gravação não rodou) — o app pula elas
 const OPT_COLS=['rec_date','rec_done','notes','pub_time','extra'];
@@ -866,7 +870,7 @@ async function push(){
     if(items.length) await up('items',items.map(itemRow));
     syncedI=new Set(items.map(x=>x.id)); syncedC=new Set(channels.map(x=>x.id)); syncedT=new Set(topics.map(x=>x.id));
     saveRecLocal(); lastErr='';
-    setSync(missingCols.has('rec_date')?'warn':'ok');
+    setSync(missingCols.has('rec_date')||missingCols.has('extra')?'warn':'ok');
   }catch(e){
     lastErr=errMsg(e); setSync('err'); console.error(e);
     const auth=/jwt|token|auth|expired|401/i.test(lastErr);
