@@ -637,7 +637,7 @@ body{font-size:13px}
           <div id="mCmp"></div></div>
         <div class="f"><label>Transcrição do vídeo</label>
           <div style="margin:6px 0"><button type="button" class="btn btn-soft btn-sm" id="trBtn">🎙️ Transcrever vídeo</button><input type="file" id="trFile" accept="video/*,audio/*" style="display:none"><span id="trMsg" style="font-size:11px;color:#999;margin-left:8px"></span></div>
-          <textarea id="edTrans" placeholder="Envie o arquivo do vídeo (até ~2 min e meia) ou cole a transcrição aqui"></textarea></div>
+          <textarea id="edTrans" placeholder="Envie o arquivo do vídeo (4K funciona, mas lê só os primeiros 2:30) ou cole a transcrição aqui"></textarea></div>
         <div class="f"><label>Por que teve esse desempenho?</label>
           <div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button type="button" class="btn btn-soft btn-sm" id="whyBtn">🔍 Analisar desempenho</button><button type="button" class="btn btn-soft btn-sm" id="whyImgBtn">📷 + prints (retenção, origem)</button><input type="file" id="whyFiles" accept="image/*" multiple style="display:none"><span id="whyMsg" style="font-size:11px;color:#999"></span></div>
           <div id="whyOut"></div></div>
@@ -1383,22 +1383,46 @@ async function readShot(file){
 let edWhy=null, whyImgs=[];
 async function fnMsg(e){ let msg=String((e&&e.message)||e); try{ if(e&&e.context&&e.context.clone){ const t=await e.context.clone().text(); try{ msg=JSON.parse(t).erro||t; }catch(_){ msg=t||msg; } } }catch(_){} return msg; }
 const withTmo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('Demorou demais. Tente de novo em 1 minuto.')),ms))]);
-async function audioFromVideo(file,maxSec=150){
-  if(file.size>250*1024*1024) throw new Error('Arquivo muito grande (máx. ~250 MB). Use um vídeo menor.');
-  const buf=await file.arrayBuffer(), AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); let dec;
-  try{ dec=await ac.decodeAudioData(buf); }catch(e){ throw new Error('Não consegui ler o áudio deste arquivo. Tente um .mp4 ou .mov comum.'); }finally{ try{ac.close()}catch(_){} }
+async function wavB64(dec,maxSec,totalDur){
   const sr=8000, sec=Math.min(dec.duration,maxSec), oc=new OfflineAudioContext(1,Math.ceil(sec*sr),sr), src=oc.createBufferSource();
   src.buffer=dec; src.connect(oc.destination); src.start(0);
   const pcm=(await oc.startRendering()).getChannelData(0), n=pcm.length, ab=new ArrayBuffer(44+n*2), dv=new DataView(ab), W=(o,t)=>{for(let i=0;i<t.length;i++)dv.setUint8(o+i,t.charCodeAt(i))};
   W(0,'RIFF');dv.setUint32(4,36+n*2,true);W(8,'WAVE');W(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);W(36,'data');dv.setUint32(40,n*2,true);
   for(let i=0;i<n;i++){const v=Math.max(-1,Math.min(1,pcm[i]));dv.setInt16(44+i*2,v<0?v*0x8000:v*0x7FFF,true);}
   const u8=new Uint8Array(ab); let bin=''; for(let i=0;i<u8.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));
-  return {data:btoa(bin),cut:dec.duration>maxSec,dur:Math.round(dec.duration)};
+  return {data:btoa(bin),cut:totalDur>maxSec+1,dur:Math.round(totalDur)};
+}
+// vídeo grande (4K 60fps etc.): toca o vídeo em silêncio e grava só o áudio, sem carregar o arquivo inteiro na memória
+async function captureRT(file,maxSec,say){
+  const url=URL.createObjectURL(file), v=document.createElement('video');
+  v.playsInline=true; v.preload='auto'; v.src=url;
+  await new Promise((res,rej)=>{ v.onloadedmetadata=res; v.onerror=()=>rej(new Error('O navegador não conseguiu abrir este vídeo.')); });
+  const dur=v.duration||maxSec, AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); try{ await ac.resume(); }catch(_){}
+  const src=ac.createMediaElementSource(v), proc=ac.createScriptProcessor(4096,1,1), mute=ac.createGain(); mute.gain.value=0;
+  const chunks=[]; let total=0; const lim=Math.floor(Math.min(dur,maxSec)*ac.sampleRate);
+  proc.onaudioprocess=e=>{ if(total<lim){ chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); total+=4096; } };
+  src.connect(proc); proc.connect(mute); mute.connect(ac.destination);
+  try{ await v.play(); }catch(e){ throw new Error('O navegador bloqueou a leitura do vídeo. Tente no computador.'); }
+  await new Promise(res=>{ const iv=setInterval(()=>{ say('Lendo o áudio em tempo real… '+Math.round(total/ac.sampleRate)+'s de '+Math.round(Math.min(dur,maxSec))+'s (deixe a tela ligada)'); if(total>=lim||v.ended){ clearInterval(iv); res(); } },400); });
+  v.pause(); URL.revokeObjectURL(url);
+  if(total<ac.sampleRate) throw new Error('Não captei áudio deste vídeo (sem som ou bloqueado pelo navegador). Tente no computador.');
+  const buf=ac.createBuffer(1,total,ac.sampleRate); let o=0; chunks.forEach(c=>{ buf.copyToChannel(c,0,o); o+=c.length; });
+  try{ ac.close(); }catch(_){}
+  return {buf,dur};
+}
+async function audioFromVideo(file,maxSec=150,say=()=>{}){
+  if(file.size<=120*1024*1024){
+    try{ const ac=new (window.AudioContext||window.webkitAudioContext)(); const dec=await ac.decodeAudioData(await file.arrayBuffer()); try{ac.close()}catch(_){} return await wavB64(dec,maxSec,dec.duration); }
+    catch(e){ console.warn('decodificação direta falhou, lendo em tempo real',e); }
+  }
+  say('Vídeo grande: lendo o áudio em tempo real…');
+  const {buf,dur}=await captureRT(file,maxSec,say);
+  return wavB64(buf,maxSec,dur);
 }
 async function runTrans(file){
   const m=$('#trMsg'),b=$('#trBtn'); b.disabled=true; m.textContent='Extraindo o áudio…';
   try{
-    const a=await audioFromVideo(file); m.textContent='Transcrevendo…';
+    const a=await audioFromVideo(file,150,t=>{m.textContent=t}); m.textContent='Transcrevendo…';
     const {data,error}=await withTmo(sb.functions.invoke('analisar-ideia',{body:{audio:{mime:'audio/wav',data:a.data}}}),100000);
     if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
     $('#edTrans').value=data.transcricao||''; m.textContent='✓ Pronto'+(a.cut?` (só os primeiros 2:30 de ${a.dur}s)`:'')+' — confira o texto';
