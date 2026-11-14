@@ -628,6 +628,12 @@ body{font-size:13px}
           <div style="margin:6px 0"><button type="button" class="btn btn-soft btn-sm" id="shotBtn">📷 Ler print do Insights</button><input type="file" id="shotFile" accept="image/*" style="display:none"><span id="shotMsg" style="font-size:11px;color:#999;margin-left:8px"></span></div><div class="m">
           <label>Views<input type="number" min="0" id="edM_views" placeholder="0"></label><label>Curtidas<input type="number" min="0" id="edM_likes" placeholder="0"></label><label>Comentários<input type="number" min="0" id="edM_comments" placeholder="0"></label><label>Compartilh.<input type="number" min="0" id="edM_shares" placeholder="0"></label><label>Salvos<input type="number" min="0" id="edM_saves" placeholder="0"></label></div>
           <div id="mCmp"></div></div>
+        <div class="f"><label>Transcrição do vídeo</label>
+          <div style="margin:6px 0"><button type="button" class="btn btn-soft btn-sm" id="trBtn">🎙️ Transcrever vídeo</button><input type="file" id="trFile" accept="video/*,audio/*" style="display:none"><span id="trMsg" style="font-size:11px;color:#999;margin-left:8px"></span></div>
+          <textarea id="edTrans" placeholder="Envie o arquivo do vídeo (até ~2 min e meia) ou cole a transcrição aqui"></textarea></div>
+        <div class="f"><label>Por que teve esse desempenho?</label>
+          <div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button type="button" class="btn btn-soft btn-sm" id="whyBtn">🔍 Analisar desempenho</button><button type="button" class="btn btn-soft btn-sm" id="whyImgBtn">📷 + prints (retenção, origem)</button><input type="file" id="whyFiles" accept="image/*" multiple style="display:none"><span id="whyMsg" style="font-size:11px;color:#999"></span></div>
+          <div id="whyOut"></div></div>
       </div>
     </div>
     <div class="ed-chips">
@@ -767,8 +773,8 @@ const NETS=[{id:'instagram',n:'Instagram',c:'#e1306c'},{id:'youtube',n:'YouTube'
 const netOf=i=>i.net||(fmtOf(i).k==='video'?'youtube':'instagram');
 const platOf=netOf;
 const netOb=i=>NETS.find(n=>n.id===netOf(i))||NETS[0];
-const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,hook:x.hook||'',ai:x.ai||null,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
-const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,hook:i.hook||'',ai:i.ai||null,m:i.m||{}});
+const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,hook:x.hook||'',trans:x.trans||'',why:x.why||null,ai:x.ai||null,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
+const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,hook:i.hook||'',trans:i.trans||'',why:i.why||null,ai:i.ai||null,m:i.m||{}});
 const sumM=(l,k)=>l.reduce((t,i)=>t+(+((i.m||{})[k])||0),0);
 const fmtN=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(n);
 const PLATS=[{id:'all',n:'Todas as redes'}].concat(NETS);
@@ -1324,7 +1330,7 @@ function openEditor(id,pre){
   const x=it||exRead(); $('#edNet').value=it?netOf(it):(pre.net||netOf({format:$('#edFmt').value}));
   $('#edLink').value=x.link; $('#edCap').value=x.caption; $('#edTags').value=x.tags; $('#edApr').checked=x.approved; $('#edHook').value=x.hook||''; $('#aiBio').value=ls.get('studio:bio')||'';
   ['views','likes','comments','shares','saves'].forEach(k=>$('#edM_'+k).value=x.m[k]||'');
-  renderCmp();
+  renderCmp(); $('#edTrans').value=x.trans||''; edWhy=x.why||null; whyImgs=[]; $('#whyMsg').textContent=''; $('#trMsg').textContent=''; renderWhy();
   edAI=x.ai||null; renderAI(); $('#aiBtn').disabled=false; $('#aiBtn').textContent='✨ Analisar com IA';
   edChips();
   $('#edVeil').classList.add('on');
@@ -1367,6 +1373,65 @@ async function readShot(file){
     m.textContent='Erro: '+msg.slice(0,120); }
   b.disabled=false; $('#shotFile').value='';
 }
+let edWhy=null, whyImgs=[];
+async function fnMsg(e){ let msg=String((e&&e.message)||e); try{ if(e&&e.context&&e.context.clone){ const t=await e.context.clone().text(); try{ msg=JSON.parse(t).erro||t; }catch(_){ msg=t||msg; } } }catch(_){} return msg; }
+const withTmo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('Demorou demais. Tente de novo em 1 minuto.')),ms))]);
+async function audioFromVideo(file,maxSec=150){
+  if(file.size>250*1024*1024) throw new Error('Arquivo muito grande (máx. ~250 MB). Use um vídeo menor.');
+  const buf=await file.arrayBuffer(), AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); let dec;
+  try{ dec=await ac.decodeAudioData(buf); }catch(e){ throw new Error('Não consegui ler o áudio deste arquivo. Tente um .mp4 ou .mov comum.'); }finally{ try{ac.close()}catch(_){} }
+  const sr=8000, sec=Math.min(dec.duration,maxSec), oc=new OfflineAudioContext(1,Math.ceil(sec*sr),sr), src=oc.createBufferSource();
+  src.buffer=dec; src.connect(oc.destination); src.start(0);
+  const pcm=(await oc.startRendering()).getChannelData(0), n=pcm.length, ab=new ArrayBuffer(44+n*2), dv=new DataView(ab), W=(o,t)=>{for(let i=0;i<t.length;i++)dv.setUint8(o+i,t.charCodeAt(i))};
+  W(0,'RIFF');dv.setUint32(4,36+n*2,true);W(8,'WAVE');W(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,sr,true);dv.setUint32(28,sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);W(36,'data');dv.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const v=Math.max(-1,Math.min(1,pcm[i]));dv.setInt16(44+i*2,v<0?v*0x8000:v*0x7FFF,true);}
+  const u8=new Uint8Array(ab); let bin=''; for(let i=0;i<u8.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));
+  return {data:btoa(bin),cut:dec.duration>maxSec,dur:Math.round(dec.duration)};
+}
+async function runTrans(file){
+  const m=$('#trMsg'),b=$('#trBtn'); b.disabled=true; m.textContent='Extraindo o áudio…';
+  try{
+    const a=await audioFromVideo(file); m.textContent='Transcrevendo…';
+    const {data,error}=await withTmo(sb.functions.invoke('analisar-ideia',{body:{audio:{mime:'audio/wav',data:a.data}}}),100000);
+    if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
+    $('#edTrans').value=data.transcricao||''; m.textContent='✓ Pronto'+(a.cut?` (só os primeiros 2:30 de ${a.dur}s)`:'')+' — confira o texto';
+    edSaveCore(false);
+  }catch(e){ console.error(e); m.textContent='Erro: '+(await fnMsg(e)).slice(0,140); }
+  b.disabled=false; $('#trFile').value='';
+}
+function renderWhy(){
+  const o=$('#whyOut'), w=edWhy; if(!w){ o.innerHTML=''; return; }
+  const c=/acima/i.test(w.desempenho||'')?'#16a34a':/abaixo/i.test(w.desempenho||'')?'#dc2626':'#ca8a04', L=x=>(x||[]).length?'<ul>'+x.map(t=>`<li>${esc(String(t))}</li>`).join('')+'</ul>':'—';
+  o.innerHTML=`<div class="aiscore"><div class="n" style="background:${c};width:104px;font-size:12px;text-align:center;padding:4px;line-height:1.25">${esc(w.desempenho||'')}</div><div style="font-size:13px;line-height:1.5;color:#333;text-transform:none;letter-spacing:0;font-weight:400">${esc(w.resumo||'')}</div></div>
+   <div class="aiblk"><b>O que provavelmente ajudou</b>${L(w.positivos)}</div><div class="aiblk"><b>O que provavelmente atrapalhou</b>${L(w.negativos)}</div>
+   ${(w.hipoteses||[]).length?`<div class="aiblk"><b>Hipóteses e a evidência de cada uma</b><ul>${w.hipoteses.map(h=>`<li><span style="color:#111;font-weight:600">${esc(h.motivo||'')}</span> — ${esc(h.evidencia||'')} <i>(confiança ${esc(h.confianca||'?')})</i></li>`).join('')}</ul></div>`:''}
+   ${w.trecho_critico?`<div class="aiblk"><b>Trecho crítico do vídeo</b>${esc(w.trecho_critico)}</div>`:''}
+   ${(w.testar_proximo||[]).length?`<div class="aiblk"><b>Testar no próximo vídeo</b>${L(w.testar_proximo)}</div>`:''}
+   ${w.limites?`<div class="aiblk"><b>Limites desta análise</b>${esc(w.limites)}</div>`:''}
+   <div style="font-size:11px;color:#aaa">São hipóteses a partir dos dados, não certeza do motivo real.</div>`;
+}
+async function runWhy(){
+  const g=k=>+$('#edM_'+k).value||0, cur={views:g('views'),likes:g('likes'),comments:g('comments'),shares:g('shares'),saves:g('saves')};
+  if(!cur.views&&!cur.likes){ toast('Preencha as métricas (ou leia o print) primeiro'); return; }
+  const b=$('#whyBtn'), m=$('#whyMsg'); b.disabled=true; m.textContent='Analisando…';
+  try{
+    const f=FORMATS.find(x=>x.v===$('#edFmt').value)||FORMATS[0], cu=items.find(i=>i.id===editId)||{}, K=['views','likes','comments','shares','saves'];
+    const hk=i=>(i.hook||(i.notes||'').split('\n')[0]||i.title||'').slice(0,120);
+    const oth=items.filter(i=>i.id!==editId&&i.status==='postado'&&((+(i.m||{}).views||0)||(+(i.m||{}).likes||0))).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const med={n_posts:oth.length}; K.forEach(k=>med[k]=oth.length?Math.round(oth.reduce((t,i)=>t+(+(i.m||{})[k]||0),0)/oth.length):null);
+    const post={titulo:$('#edTitle').value.trim().slice(0,200),gancho:$('#edHook').value.trim().slice(0,300),roteiro:$('#edNotes').value.trim().slice(0,2500),legenda:$('#edCap').value.slice(0,800),hashtags:$('#edTags').value.slice(0,300),formato:f.n,rede:$('#edNet').value,data_post:cu.date||null,hora_post:cu.time||null,metricas:cur,transcricao:$('#edTrans').value.slice(0,5000),prints_anexados:whyImgs.length};
+    const historico=oth.slice(0,10).map(i=>({titulo:(i.title||'').slice(0,100),formato:fmtOf(i).n,rede:netOf(i),data:i.date||null,hora:i.time||null,gancho:hk(i),legenda_tem_cta:/bio|link|comente|salve|compartilhe|segue/i.test(i.caption||''),trecho_inicial_falado:(i.trans||'').slice(0,160),views:+i.m.views||0,curtidas:+i.m.likes||0,comentarios:+i.m.comments||0,compart:+i.m.shares||0,salvos:+i.m.saves||0}));
+    const {data,error}=await withTmo(sb.functions.invoke('analisar-ideia',{body:{post,medias:med,historico,imagens:whyImgs}}),100000);
+    if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
+    edWhy={...data,at:today()}; renderWhy(); m.textContent='';
+    try{$('#whyOut').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
+    edSaveCore(false); toast('Análise de desempenho salva ✓');
+  }catch(e){ console.error(e); const msg=await fnMsg(e); m.textContent='Erro: '+msg.slice(0,140); toast('IA: '+msg.slice(0,110)); }
+  b.disabled=false;
+}
+$('#trBtn').onclick=()=>$('#trFile').click(); $('#trFile').onchange=e=>{ const f=e.target.files[0]; if(f) runTrans(f); };
+$('#whyBtn').onclick=runWhy; $('#whyImgBtn').onclick=()=>$('#whyFiles').click();
+$('#whyFiles').onchange=async e=>{ const fs=[...e.target.files].slice(0,3); try{ whyImgs=[]; for(const f of fs) whyImgs.push({mime:'image/jpeg',data:await shrinkImg(f,1280)}); $('#whyMsg').textContent=whyImgs.length+' print(s) anexado(s) — agora clique em Analisar desempenho'; }catch(err){ $('#whyMsg').textContent='Erro ao ler a imagem'; } e.target.value=''; };
 $('#shotBtn').onclick=()=>$('#shotFile').click();
 $('#shotFile').onchange=e=>{ const f=e.target.files[0]; if(f) readShot(f); };
 function renderAI(){
@@ -1421,7 +1486,7 @@ function edSaveCore(close){
   if(it.recDate&&!wasRec&&it.status==='ideia') it.status='gravacao';
   if(it.status==='edicao'||it.status==='postado') it.recDone=!!it.recDate; else it.recDone=false;
   it.net=$('#edNet').value; it.link=$('#edLink').value.trim(); it.caption=$('#edCap').value; it.tags=$('#edTags').value.trim(); it.approved=$('#edApr').checked; it.hook=$('#edHook').value.trim();
-  it.ai=edAI; it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
+  it.ai=edAI; it.why=edWhy; it.trans=$('#edTrans').value; it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
   it.channel=chanFor(fmtOf(it).p);
   const wasEdit=!!editId; editId=it.id; save(); $('#edDel').classList.remove('hide');
   if(close){ closeEditor(); toast(wasEdit?'Salvo':'Ideia anotada ✓'); } renderAll();
