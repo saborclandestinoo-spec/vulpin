@@ -1348,10 +1348,10 @@ async function runAI(){
     }
     const {data,error}=await Promise.race([sb.functions.invoke('analisar-ideia',{body:{ideia,historico}}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('A IA demorou demais (60s). Tente de novo em 1 minuto.')),60000))]);
     if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
-    edAI={...data,at:today(),de:title||notes.slice(0,60),env:'1 ideia'+(historico.length?' + '+historico.length+' post(s) já postado(s) só como referência':' (nenhum outro post enviado)')}; renderAI();
+    edAI={...data,at:today(),de:title||notes.slice(0,60),env:'1 ideia'+(historico.length?' + '+historico.length+' post(s) já postado(s) só como referência':' (nenhum outro post enviado)')}; renderAI(); try{$('#aiOut').scrollIntoView({behavior:'smooth',block:'start'});}catch(_){}
   }catch(e){ console.error(e); let msg=String((e&&e.message)||e);
     try{ if(e&&e.context&&e.context.clone){ const t=await e.context.clone().text(); try{ const j=JSON.parse(t); msg=j.erro||j.message||j.msg||t; }catch(_){ msg=t||msg; } if(e.context.status) msg='['+e.context.status+'] '+msg; } }catch(_){}
-    $('#aiOut').innerHTML='<div class="aiblk" style="color:#b91c1c;margin-top:10px"><b>Erro da IA</b>'+esc(msg)+'</div>'; toast('IA indisponível — veja o erro no editor'); }
+    $('#aiOut').innerHTML='<div class="aiblk" style="color:#b91c1c;margin-top:10px"><b>Erro da IA</b>'+esc(msg)+'</div>'; toast('IA: '+msg.slice(0,110)); try{$('#aiOut').scrollIntoView({behavior:'smooth',block:'center'});}catch(_){} }
   b.disabled=false; b.textContent='✨ Analisar com IA';
 }
 $('#aiBtn').onclick=runAI;
