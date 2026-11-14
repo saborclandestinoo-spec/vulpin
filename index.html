@@ -1311,7 +1311,7 @@ function openEditor(id,pre){
   const x=it||exRead(); $('#edNet').value=it?netOf(it):(pre.net||netOf({format:$('#edFmt').value}));
   $('#edLink').value=x.link; $('#edCap').value=x.caption; $('#edTags').value=x.tags; $('#edApr').checked=x.approved; $('#edHook').value=x.hook||''; $('#aiBio').value=ls.get('studio:bio')||'';
   ['views','likes','comments','shares','saves'].forEach(k=>$('#edM_'+k).value=x.m[k]||'');
-  edAI=x.ai||null; renderAI();
+  edAI=x.ai||null; renderAI(); $('#aiBtn').disabled=false; $('#aiBtn').textContent='✨ Analisar com IA';
   edChips();
   $('#edVeil').classList.add('on');
   setTimeout(()=>{autoGrow($('#edTitle')); if(!it) $('#edTitle').focus();},60);
@@ -1346,7 +1346,7 @@ async function runAI(){
         .filter(h=>h.views||h.curtidas).sort((a,b)=>b.views-a.views);
       historico=hist.slice(0,3).concat(hist.length>3?hist.slice(-1):[]);
     }
-    const {data,error}=await sb.functions.invoke('analisar-ideia',{body:{ideia,historico}});
+    const {data,error}=await Promise.race([sb.functions.invoke('analisar-ideia',{body:{ideia,historico}}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('A IA demorou demais (60s). Tente de novo em 1 minuto.')),60000))]);
     if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
     edAI={...data,at:today(),de:title||notes.slice(0,60),env:'1 ideia'+(historico.length?' + '+historico.length+' post(s) já postado(s) só como referência':' (nenhum outro post enviado)')}; renderAI();
   }catch(e){ console.error(e); let msg=String((e&&e.message)||e);
