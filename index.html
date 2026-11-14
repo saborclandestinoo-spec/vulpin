@@ -637,7 +637,7 @@ body{font-size:13px}
           <div id="mCmp"></div></div>
         <div class="f"><label>Transcrição do vídeo</label>
           <div style="margin:6px 0"><button type="button" class="btn btn-soft btn-sm" id="trBtn">🎙️ Transcrever vídeo</button><input type="file" id="trFile" accept="video/*,audio/*" style="display:none"><span id="trMsg" style="font-size:11px;color:#999;margin-left:8px"></span></div>
-          <textarea id="edTrans" placeholder="Envie o arquivo do vídeo (4K funciona, mas lê só os primeiros 2:30) ou cole a transcrição aqui"></textarea></div>
+          <textarea id="edTrans" placeholder="Envie o vídeo (aceita 4K, sem exportar de novo) ou cole a transcrição aqui"></textarea></div>
         <div class="f"><label>Por que teve esse desempenho?</label>
           <div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button type="button" class="btn btn-soft btn-sm" id="whyBtn">🔍 Analisar desempenho</button><button type="button" class="btn btn-soft btn-sm" id="whyImgBtn">📷 + prints (retenção, origem)</button><input type="file" id="whyFiles" accept="image/*" multiple style="display:none"><span id="whyMsg" style="font-size:11px;color:#999"></span></div>
           <div id="whyOut"></div></div>
@@ -1438,15 +1438,45 @@ async function audioFromVideo(file,maxSec=150,say=()=>{}){
   const {buf,dur}=await captureRT(file,maxSec,say);
   say('Preparando o áudio…'); return wavB64(buf,maxSec,dur);
 }
+async function transcribeViaFiles(file,say){
+  const mime=(/quicktime/i.test(file.type)||/\.mov$/i.test(file.name))?'video/mov':(file.type||'video/mp4');
+  const call=async body=>{ const {data,error}=await sb.functions.invoke('analisar-ideia',{body}); if(error) throw error; if(data&&data.erro) throw new Error(data.erro); return data; };
+  say('Preparando o envio…');
+  const s0=await call({modo:'iniciar_upload',tamanho:file.size,mime,nome:file.name});
+  const info=await new Promise((res,rej)=>{
+    const x=new XMLHttpRequest(); x.open('POST',s0.upload_url);
+    x.setRequestHeader('X-Goog-Upload-Offset','0'); x.setRequestHeader('X-Goog-Upload-Command','upload, finalize');
+    x.upload.onprogress=e=>{ if(e.lengthComputable) say('Enviando o vídeo… '+Math.round(e.loaded/e.total*100)+'% ('+Math.round(e.loaded/1048576)+' de '+Math.round(e.total/1048576)+' MB) — use Wi-Fi e deixe a tela ligada'); };
+    x.onload=()=>{ if(x.status<300){ try{ res(JSON.parse(x.responseText).file); }catch(_){ rej(new Error('Resposta inesperada do envio')); } } else rej(new Error('Falha no envio ('+x.status+'): '+String(x.responseText).slice(0,120))); };
+    x.onerror=()=>rej(new Error('Falha de rede no envio. Confira o Wi-Fi e tente de novo.'));
+    x.send(file);
+  });
+  let st=info.state, uri=info.uri; const t0=Date.now();
+  while(st!=='ACTIVE'){
+    if(st==='FAILED') throw new Error('O Gemini não conseguiu processar este vídeo.');
+    if(Date.now()-t0>180000) throw new Error('O Gemini demorou demais processando o vídeo.');
+    say('Processando o vídeo no Gemini…'); await new Promise(r=>setTimeout(r,4000));
+    const d=await call({modo:'status_arquivo',nome:info.name}); st=d.state; uri=d.uri||uri;
+  }
+  say('Transcrevendo…');
+  const {data,error}=await withTmo(sb.functions.invoke('analisar-ideia',{body:{video:{uri,mime,nome:info.name}}}),130000);
+  if(error) throw error; if(data&&data.erro) throw new Error(data.erro); return data;
+}
 async function runTrans(file){
-  const m=$('#trMsg'),b=$('#trBtn'); b.disabled=true; m.textContent='Extraindo o áudio…';
+  const m=$('#trMsg'),b=$('#trBtn'); b.disabled=true; m.textContent='Começando…';
   try{
-    const a=await audioFromVideo(file,150,t=>{m.textContent=t}); m.textContent='Transcrevendo…';
-    const {data,error}=await withTmo(sb.functions.invoke('analisar-ideia',{body:{audio:{mime:'audio/wav',data:a.data}}}),100000);
-    if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
-    $('#edTrans').value=data.transcricao||''; m.textContent='✓ Pronto'+(a.cut?` (só os primeiros 2:30 de ${a.dur}s)`:'')+' — confira o texto';
+    let data, cut=false, dur=0;
+    if(/^video\//.test(file.type)||/\.(mp4|mov|m4v|webm|avi|3gp)$/i.test(file.name)){
+      data=await transcribeViaFiles(file,t=>{m.textContent=t});
+    }else{
+      const a=await audioFromVideo(file,150,t=>{m.textContent=t}); cut=a.cut; dur=a.dur; m.textContent='Transcrevendo…';
+      const r=await withTmo(sb.functions.invoke('analisar-ideia',{body:{audio:{mime:'audio/wav',data:a.data}}}),100000);
+      if(r.error) throw r.error; if(r.data&&r.data.erro) throw new Error(r.data.erro); data=r.data;
+    }
+    let txt=data.transcricao||''; if(data.visual) txt+='\n\n[Visual] '+data.visual; if(data.texto_na_tela) txt+='\n[Texto na tela] '+data.texto_na_tela;
+    $('#edTrans').value=txt; m.textContent='✓ Pronto'+(cut?` (só os primeiros 2:30 de ${dur}s)`:'')+' — confira o texto';
     edSaveCore(false);
-  }catch(e){ console.error(e); m.textContent='Erro: '+(await fnMsg(e)).slice(0,140); }
+  }catch(e){ console.error(e); m.textContent='Erro: '+(await fnMsg(e)).slice(0,160); }
   b.disabled=false; $('#trFile').value='';
 }
 function renderWhy(){
