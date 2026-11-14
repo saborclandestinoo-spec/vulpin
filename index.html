@@ -1394,30 +1394,44 @@ async function wavB64(dec,maxSec,totalDur){
 }
 // vídeo grande (4K 60fps etc.): toca o vídeo em silêncio e grava só o áudio, sem carregar o arquivo inteiro na memória
 async function captureRT(file,maxSec,say){
-  const url=URL.createObjectURL(file), v=document.createElement('video');
+  const url=URL.createObjectURL(file), v=document.createElement('video'), AC=window.AudioContext||window.webkitAudioContext; let ac=null;
   v.playsInline=true; v.preload='auto'; v.src=url;
-  await new Promise((res,rej)=>{ v.onloadedmetadata=res; v.onerror=()=>rej(new Error('O navegador não conseguiu abrir este vídeo.')); });
-  const dur=v.duration||maxSec, AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); try{ await ac.resume(); }catch(_){}
-  const src=ac.createMediaElementSource(v), proc=ac.createScriptProcessor(4096,1,1), mute=ac.createGain(); mute.gain.value=0;
-  const chunks=[]; let total=0; const lim=Math.floor(Math.min(dur,maxSec)*ac.sampleRate);
-  proc.onaudioprocess=e=>{ if(total<lim){ chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); total+=4096; } };
-  src.connect(proc); proc.connect(mute); mute.connect(ac.destination);
-  try{ await v.play(); }catch(e){ throw new Error('O navegador bloqueou a leitura do vídeo. Tente no computador.'); }
-  await new Promise(res=>{ const iv=setInterval(()=>{ say('Lendo o áudio em tempo real… '+Math.round(total/ac.sampleRate)+'s de '+Math.round(Math.min(dur,maxSec))+'s (deixe a tela ligada)'); if(total>=lim||v.ended){ clearInterval(iv); res(); } },400); });
-  v.pause(); URL.revokeObjectURL(url);
-  if(total<ac.sampleRate) throw new Error('Não captei áudio deste vídeo (sem som ou bloqueado pelo navegador). Tente no computador.');
-  const buf=ac.createBuffer(1,total,ac.sampleRate); let o=0; chunks.forEach(c=>{ buf.copyToChannel(c,0,o); o+=c.length; });
-  try{ ac.close(); }catch(_){}
-  return {buf,dur};
+  try{
+    say('Abrindo o vídeo…');
+    await new Promise((res,rej)=>{ const t=setTimeout(()=>rej(new Error('O navegador não conseguiu abrir este vídeo (4K/HEVC costuma falhar no celular). Use o computador ou exporte em 1080p.')),12000); v.onloadedmetadata=()=>{clearTimeout(t);res();}; v.onerror=()=>{clearTimeout(t);rej(new Error('O navegador não conseguiu abrir este vídeo (formato 4K/HEVC?). Use o computador ou exporte em 1080p.'));}; });
+    const dur=v.duration||maxSec; ac=new AC(); try{ await ac.resume(); }catch(_){}
+    const src=ac.createMediaElementSource(v), proc=ac.createScriptProcessor(4096,1,1), mute=ac.createGain(); mute.gain.value=0;
+    const chunks=[]; let total=0; const lim=Math.floor(Math.min(dur,maxSec)*ac.sampleRate);
+    proc.onaudioprocess=e=>{ if(total<lim){ chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); total+=4096; } };
+    src.connect(proc); proc.connect(mute); mute.connect(ac.destination);
+    try{ await v.play(); }catch(e){ throw new Error('O navegador bloqueou a leitura do vídeo. Tente no computador.'); }
+    const t0=Date.now(); let last=0, lastT=Date.now();
+    await new Promise((res,rej)=>{
+      v.onerror=()=>{ clearInterval(iv); rej(new Error('O navegador não conseguiu reproduzir este vídeo (formato 4K/HEVC?). Use o computador ou exporte em 1080p.')); };
+      const iv=setInterval(()=>{
+        say('Lendo o áudio em tempo real… '+Math.round(total/ac.sampleRate)+'s de '+Math.round(Math.min(dur,maxSec))+'s (deixe a tela ligada)');
+        if(total!==last){ last=total; lastT=Date.now(); }
+        if(total>=lim||v.ended){ clearInterval(iv); res(); return; }
+        if(Date.now()-lastT>8000){ clearInterval(iv); rej(new Error(total?'A leitura do áudio parou no meio. Tente de novo ou use o computador.':'O vídeo tocou, mas o navegador não entregou o áudio (comum no iPhone com vídeo 4K). Use o computador, exporte em 1080p ou cole a transcrição.')); return; }
+        if(Date.now()-t0>(maxSec+40)*1000){ clearInterval(iv); rej(new Error('Demorou demais lendo o vídeo. Use um arquivo menor.')); }
+      },400);
+    });
+    if(total<ac.sampleRate) throw new Error('Não captei áudio deste vídeo (sem som ou bloqueado pelo navegador). Tente no computador.');
+    const buf=ac.createBuffer(1,total,ac.sampleRate); let o=0; chunks.forEach(c=>{ buf.copyToChannel(c,0,o); o+=c.length; });
+    return {buf,dur};
+  } finally { try{v.pause()}catch(_){} try{URL.revokeObjectURL(url)}catch(_){} try{ac&&ac.close()}catch(_){} }
 }
 async function audioFromVideo(file,maxSec=150,say=()=>{}){
-  if(file.size<=120*1024*1024){
-    try{ const ac=new (window.AudioContext||window.webkitAudioContext)(); const dec=await ac.decodeAudioData(await file.arrayBuffer()); try{ac.close()}catch(_){} return await wavB64(dec,maxSec,dec.duration); }
-    catch(e){ console.warn('decodificação direta falhou, lendo em tempo real',e); }
+  if(file.size<=60*1024*1024){
+    try{
+      say('Lendo o arquivo…');
+      const dec=await withTmo((async()=>{ const ac=new (window.AudioContext||window.webkitAudioContext)(); const d=await ac.decodeAudioData(await file.arrayBuffer()); try{ac.close()}catch(_){} return d; })(),30000);
+      say('Preparando o áudio…'); return await wavB64(dec,maxSec,dec.duration);
+    }catch(e){ console.warn('decodificação direta falhou, lendo em tempo real',e); }
   }
-  say('Vídeo grande: lendo o áudio em tempo real…');
+  say('Vídeo grande: lendo o áudio em tempo real (pode levar até 2:30)…');
   const {buf,dur}=await captureRT(file,maxSec,say);
-  return wavB64(buf,maxSec,dur);
+  say('Preparando o áudio…'); return wavB64(buf,maxSec,dur);
 }
 async function runTrans(file){
   const m=$('#trMsg'),b=$('#trBtn'); b.disabled=true; m.textContent='Extraindo o áudio…';
