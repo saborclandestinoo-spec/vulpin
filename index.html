@@ -615,7 +615,7 @@ body{font-size:13px}
         <label class="f">Legenda<textarea id="edCap" placeholder="Texto que vai na publicação"></textarea></label>
         <label class="f">Hashtags<input type="text" id="edTags" placeholder="#confeitaria #cookies"></label>
         <label class="ck f"><input type="checkbox" id="edApr"> Aprovado para publicar</label>
-        <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><div id="aiOut"></div></div>
+        <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><label class="ck" style="margin-top:8px;font-size:12px;font-weight:500"><input type="checkbox" id="aiHist" checked> Comparar com meus posts já postados (só até 4)</label><div id="aiOut"></div></div>
         <div class="f"><label>Métricas (depois de postar)</label><div class="m">
           <input type="number" min="0" id="edM_views" placeholder="Views"><input type="number" min="0" id="edM_likes" placeholder="Curtidas"><input type="number" min="0" id="edM_comments" placeholder="Coment."><input type="number" min="0" id="edM_shares" placeholder="Compart."><input type="number" min="0" id="edM_saves" placeholder="Salvos"></div></div>
       </div>
@@ -1331,10 +1331,13 @@ async function runAI(){
   const b=$('#aiBtn'); b.disabled=true; b.textContent='Analisando…';
   try{
     const f=FORMATS.find(x=>x.v===$('#edFmt').value)||FORMATS[0];
-    const ideia={titulo:title,roteiro:notes,formato:f.n,rede:$('#edNet').value,legenda:$('#edCap').value,hashtags:$('#edTags').value};
-    const hist=items.filter(i=>i.id!==editId&&i.status==='postado').map(i=>({titulo:i.title,formato:fmtOf(i).n,rede:netOf(i),roteiro:(i.notes||'').slice(0,300),views:+i.m.views||0,curtidas:+i.m.likes||0,comentarios:+i.m.comments||0,salvos:+i.m.saves||0,compart:+i.m.shares||0}))
-      .filter(h=>h.views||h.curtidas).sort((a,b)=>b.views-a.views);
-    const historico=hist.slice(0,5).concat(hist.length>8?hist.slice(-3):hist.slice(5));
+    const ideia={titulo:title.slice(0,200),roteiro:notes.slice(0,3000),formato:f.n,rede:$('#edNet').value,legenda:$('#edCap').value.slice(0,1000),hashtags:$('#edTags').value.slice(0,300)};
+    let historico=[];
+    if($('#aiHist').checked){
+      const hist=items.filter(i=>i.id!==editId&&i.status==='postado').map(i=>({titulo:(i.title||'').slice(0,100),formato:fmtOf(i).n,rede:netOf(i),views:+i.m.views||0,curtidas:+i.m.likes||0,comentarios:+i.m.comments||0,salvos:+i.m.saves||0,compart:+i.m.shares||0}))
+        .filter(h=>h.views||h.curtidas).sort((a,b)=>b.views-a.views);
+      historico=hist.slice(0,3).concat(hist.length>3?hist.slice(-1):[]);
+    }
     const {data,error}=await sb.functions.invoke('analisar-ideia',{body:{ideia,historico}});
     if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
     edAI={...data,at:today()}; renderAI();
