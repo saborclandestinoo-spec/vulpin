@@ -617,7 +617,8 @@ body{font-size:13px}
         <label class="f">Hashtags<input type="text" id="edTags" placeholder="#confeitaria #cookies"></label>
         <label class="ck f"><input type="checkbox" id="edApr"> Aprovado para publicar</label>
         <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><input type="text" id="aiBio" placeholder="O que tem no link da bio? (ex: cardápio de cookies no WhatsApp)" style="margin-top:10px"><label class="ck" style="margin-top:8px;font-size:12px;font-weight:500"><input type="checkbox" id="aiHist"> Comparar com meus posts já postados (opcional, até 4)</label><div id="aiOut"></div></div>
-        <div class="f"><label>Métricas (depois de postar)</label><div class="m">
+        <div class="f"><label>Métricas (depois de postar)</label>
+          <div style="margin:6px 0"><button type="button" class="btn btn-soft btn-sm" id="shotBtn">📷 Ler print do Insights</button><input type="file" id="shotFile" accept="image/*" style="display:none"><span id="shotMsg" style="font-size:11px;color:#999;margin-left:8px"></span></div><div class="m">
           <input type="number" min="0" id="edM_views" placeholder="Views"><input type="number" min="0" id="edM_likes" placeholder="Curtidas"><input type="number" min="0" id="edM_comments" placeholder="Coment."><input type="number" min="0" id="edM_shares" placeholder="Compart."><input type="number" min="0" id="edM_saves" placeholder="Salvos"></div></div>
       </div>
     </div>
@@ -1317,6 +1318,27 @@ function openEditor(id,pre){
   setTimeout(()=>{autoGrow($('#edTitle')); if(!it) $('#edTitle').focus();},60);
 }
 let edAI=null;
+function shrinkImg(file,max=1280){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.82).split(',')[1]);};
+  im.onerror=()=>rej(new Error('Não consegui abrir a imagem'));im.src=u;});}
+async function readShot(file){
+  const m=$('#shotMsg'),b=$('#shotBtn'); b.disabled=true; m.textContent='Lendo…';
+  try{
+    const data=await shrinkImg(file);
+    const {data:r,error}=await Promise.race([sb.functions.invoke('analisar-ideia',{body:{imagem:{mime:'image/jpeg',data}}}),new Promise((_,rej)=>setTimeout(()=>rej(new Error('Demorou demais. Tente de novo.')),60000))]);
+    if(error) throw error; if(r&&r.erro) throw new Error(r.erro);
+    const map={views:'views',likes:'likes',comments:'comments',shares:'shares',saves:'saves'}; let n=0;
+    for(const k in map){ const v=r[k]; if(v!=null&&!isNaN(+v)){ $('#edM_'+map[k]).value=Math.round(+v); n++; } }
+    m.textContent=n?`✓ ${n} números lidos — confira e salve`:'Não achei números nesse print'; if(r.obs) m.title=r.obs;
+    if(n) edSaveCore(false);
+  }catch(e){ console.error(e); let msg=String((e&&e.message)||e);
+    try{ if(e&&e.context&&e.context.clone){ const t=await e.context.clone().text(); try{ msg=JSON.parse(t).erro||t; }catch(_){ msg=t||msg; } } }catch(_){}
+    m.textContent='Erro: '+msg.slice(0,120); }
+  b.disabled=false; $('#shotFile').value='';
+}
+$('#shotBtn').onclick=()=>$('#shotFile').click();
+$('#shotFile').onchange=e=>{ const f=e.target.files[0]; if(f) readShot(f); };
 function renderAI(){
   const o=$('#aiOut'), a=edAI; if(!a){o.innerHTML='';return;}
   const c=a.nota>=7?'#16a34a':a.nota>=5?'#ca8a04':'#dc2626', L=x=>(x||[]).length?'<ul>'+x.map(t=>`<li>${esc(String(t))}</li>`).join('')+'</ul>':'—';
