@@ -487,6 +487,36 @@ body{font-size:13px}
  .toast{right:12px;left:12px;bottom:calc(var(--tab) + 92px + env(safe-area-inset-bottom))}
  .kb-board{grid-template-columns:repeat(4,78vw)}.nrow span{display:none}.ex .m{grid-template-columns:repeat(3,1fr)}
 }
+
+.dots{display:none}
+@media(max-width:820px){
+ #v-cal .hd{margin-bottom:12px}
+ .cal-top{gap:6px}.cal-top h2{flex-basis:100%;font-size:20px;margin:0 0 2px}
+ .cal-top .rnd{width:36px;height:36px}.cal-top .btn{flex:1}
+ #platCal{max-width:none!important}#platCal button{padding:7px 12px}
+ .cal{gap:4px}
+ .dow{font-size:9px;letter-spacing:0;font-weight:700}
+ .day{height:58px;padding:5px 2px;border-radius:10px;align-items:center;gap:2px;border-width:2px;background:#fff!important}
+ .day[style*="border-color"]{border-color:transparent!important}
+ .day.sel{border-color:#dc2626!important;background:#fff5f5!important}
+ .day.out{background:transparent!important}
+ .dn{justify-content:center}
+ .pills{display:none}
+ .dots{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;max-width:100%;padding:0 3px}
+ .dots i{width:7px;height:7px;border-radius:50%}
+ .dots em{font-size:8px;font-style:normal;color:#999;font-weight:700;line-height:7px}
+ .cal-scroll .day{height:54px}
+ .legend{gap:10px;font-size:11px}.legend span:last-child{display:none}
+ .tray{margin-top:14px}
+ .titem{cursor:pointer}
+}
+.aiscore{display:flex;align-items:center;gap:14px;margin:12px 0}
+.aiscore .n{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:26px;font-weight:800;color:#fff;flex:none}
+.aiscore .sub{display:flex;gap:6px;flex-wrap:wrap}
+.aiscore .sub span{font-size:11px;font-weight:700;background:#f5f5f5;border-radius:20px;padding:3px 10px;color:#555}
+.aiblk{background:#fafafa;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:12.5px;line-height:1.5;color:#333;text-transform:none;letter-spacing:0;font-weight:400}
+.aiblk b{display:block;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#999;margin-bottom:4px}
+.aiblk ul{padding-left:16px}
 </style>
 </head>
 <body>
@@ -557,6 +587,7 @@ body{font-size:13px}
           <div class="cal" id="cal"></div>
           <div class="cal-scroll hide" id="calScroll"></div>
           <div class="legend" id="legend"></div>
+          <div id="dayPanel"></div>
         </div>
         <div class="tray" id="trayBox">
           <h3>Sem data</h3>
@@ -584,6 +615,7 @@ body{font-size:13px}
         <label class="f">Legenda<textarea id="edCap" placeholder="Texto que vai na publicação"></textarea></label>
         <label class="f">Hashtags<input type="text" id="edTags" placeholder="#confeitaria #cookies"></label>
         <label class="ck f"><input type="checkbox" id="edApr"> Aprovado para publicar</label>
+        <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><div id="aiOut"></div></div>
         <div class="f"><label>Métricas (depois de postar)</label><div class="m">
           <input type="number" min="0" id="edM_views" placeholder="Views"><input type="number" min="0" id="edM_likes" placeholder="Curtidas"><input type="number" min="0" id="edM_comments" placeholder="Coment."><input type="number" min="0" id="edM_shares" placeholder="Compart."><input type="number" min="0" id="edM_saves" placeholder="Salvos"></div></div>
       </div>
@@ -699,7 +731,7 @@ const VIEWS=[{id:'hoje',n:'Painel'},{id:'ideias',n:'Ideias'},{id:'kanban',n:'Pip
 
 /* ===================== STATE ===================== */
 let items=[], channels=[], topics=[];
-let platKan='all', view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all', platIdeas='all', platCal='all';
+let selDay=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')})(), platKan='all', view='hoje', query='', stFilter='all', topicFilter='all', recFilter='all', platIdeas='all', platCal='all';
 let calDate=new Date(), calMode='grid', calDropOk=false, calFrom=0, calTo=1;
 let editId=null, edPre={};
 let selecting=false, picked=new Set(), lastVisible=[], lpAt=0;
@@ -725,8 +757,8 @@ const NETS=[{id:'instagram',n:'Instagram',c:'#e1306c'},{id:'youtube',n:'YouTube'
 const netOf=i=>i.net||(fmtOf(i).k==='video'?'youtube':'instagram');
 const platOf=netOf;
 const netOb=i=>NETS.find(n=>n.id===netOf(i))||NETS[0];
-const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
-const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,m:i.m||{}});
+const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,ai:x.ai||null,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
+const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,ai:i.ai||null,m:i.m||{}});
 const sumM=(l,k)=>l.reduce((t,i)=>t+(+((i.m||{})[k])||0),0);
 const fmtN=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(n);
 const PLATS=[{id:'all',n:'Todas as redes'}].concat(NETS);
@@ -1090,7 +1122,7 @@ function renderKanban(){
     ${c.map(i=>{const N=netOb(i),tp=topic(i.topic),late=i.date&&i.date<t&&i.status!=='postado';
       return `<div class="kb-c" draggable="${isTouch?'false':'true'}" data-kid="${i.id}"><button class="go" data-kgo="${i.id}" title="Avançar etapa">›</button>
       <div style="display:flex;gap:6px;flex-wrap:wrap;padding-right:26px">${kbHTML(i)}<span class="tp"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${N.c};margin-right:5px"></i>${N.n}</span></div>
-      <p>${esc(i.title)||'Sem título'}</p><small>${tp?`<span>${esc(tp.name)}</span>`:''}${i.recDate?`<span>🎬 ${fmtD(i.recDate)}</span>`:''}${i.date?`<span class="${late?'late':''}">📅 ${fmtD(i.date)}</span>`:''}${i.approved?'<span style="color:#16a34a">✓ aprovado</span>':''}</small></div>`}).join('')||'<div class="kb-e">vazio</div>'}</div>`}).join('');
+      <p>${esc(i.title)||'Sem título'}</p><small>${tp?`<span>${esc(tp.name)}</span>`:''}${i.recDate?`<span>🎬 ${fmtD(i.recDate)}</span>`:''}${i.date?`<span class="${late?'late':''}">📅 ${fmtD(i.date)}</span>`:''}${i.approved?'<span style="color:#16a34a">✓ aprovado</span>':''}${i.ai?`<span style="color:${i.ai.nota>=7?'#16a34a':i.ai.nota>=5?'#ca8a04':'#dc2626'};font-weight:700">✨ ${i.ai.nota}/10</span>`:''}</small></div>`}).join('')||'<div class="kb-e">vazio</div>'}</div>`}).join('');
   $$('#kbBoard .kb-c').forEach(el=>{
     el.onclick=()=>openEditor(el.dataset.kid);
     el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.kid)};
@@ -1153,10 +1185,10 @@ function gridHTML(y,m){
     const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const l=items.filter(i=>i.date===ds&&platOk(i,platCal)).reverse();
     const c=l.length?stage(l[0].status).c:null;
-    h+=`<div class="day ${ds===t?'today':''}" data-date="${ds}" style="${c?`border-color:${c};background:${c}24`:''}"
+    h+=`<div class="day ${ds===t?'today':''} ${ds===selDay?'sel':''}" data-date="${ds}" style="${c?`border-color:${c};background:${c}24`:''}"
         title="${l.length?'Clique no dia pra avançar a etapa':'Clique pra criar ideia neste dia'}">
       <div class="dn"><b>${d}</b><button class="plus" data-addday="${ds}" title="Nova ideia neste dia">+</button></div>
-      <div class="pills">${l.map(i=>`<div class="pill" draggable="${isTouch?'false':'true'}" data-pid="${i.id}" title="${esc(i.title)}" style="border-left-color:${netOb(i).c}">${esc(i.title)||'Sem título'}</div>`).join('')}</div>
+      <div class="dots">${l.slice(0,6).map(i=>`<i style="background:${stage(i.status).c}"></i>`).join('')}${l.length>6?`<em>+${l.length-6}</em>`:''}</div><div class="pills">${l.map(i=>`<div class="pill" draggable="${isTouch?'false':'true'}" data-pid="${i.id}" title="${esc(i.title)}" style="border-left-color:${netOb(i).c}">${esc(i.title)||'Sem título'}</div>`).join('')}</div>
     </div>`;
   }
   const rest=(7-((first+days)%7))%7;
@@ -1179,6 +1211,16 @@ function fitPills(root){
     if(over()){ el.style.hyphens='auto'; el.style.overflowWrap='anywhere'; } // último recurso: palavra gigante
   });
 }
+const isMob=()=>matchMedia('(max-width:820px)').matches;
+function renderDayPanel(){
+  const el=$('#dayPanel'); if(!isMob()){el.innerHTML='';return;}
+  const l=items.filter(i=>i.date===selDay&&platOk(i,platCal)), dt=new Date(selDay+'T12:00');
+  el.innerHTML=`<div class="card" style="margin-top:14px"><div class="card-h"><h2 style="text-transform:capitalize">${DOWL[dt.getDay()]}, ${fmtD(selDay)}</h2><button class="btn btn-blue btn-sm" style="margin-left:auto" id="dpAdd">+ Post</button></div>`
+   +(l.length?l.map(i=>{const s2=stage(i.status),N=netOb(i);return `<div class="row"><div class="tx" data-dp="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small><i style="width:8px;height:8px;border-radius:50%;background:${N.c};display:inline-block"></i>${N.n}${kbHTML(i)}</small></div><button class="spill" data-dpc="${i.id}" style="background:${s2.c}1F;color:${s2.c}"><i style="background:${s2.c}"></i>${s2.n}</button></div>`}).join(''):'<div class="empty" style="padding:10px 0"><p>Nada agendado neste dia.</p></div>')+'</div>';
+  $('#dpAdd').onclick=()=>openEditor(null,{date:selDay,...platFmt()});
+  el.querySelectorAll('[data-dp]').forEach(b=>b.onclick=()=>openEditor(b.dataset.dp));
+  el.querySelectorAll('[data-dpc]').forEach(b=>b.onclick=()=>cycleItem(b.dataset.dpc));
+}
 function wireGrid(root){
   fitPills(root);
   root.querySelectorAll('.pill').forEach(el=>wireDrag(el,true));
@@ -1189,7 +1231,7 @@ function wireGrid(root){
     day.ondrop=e=>{e.preventDefault();day.classList.remove('drop');calDropOk=true;
       const it=items.find(x=>x.id===e.dataTransfer.getData('text/plain'));
       if(it){it.date=day.dataset.date; if(!it.time) it.time='19:00'; save(); renderAll(); toast('Posta '+relDay(it.date)+' ('+fmtD(it.date)+')');}};
-    day.onclick=async()=>{ if(!(await cycleDay(day.dataset.date))) openEditor(null,{date:day.dataset.date,...platFmt()}); };
+    day.onclick=async()=>{ if(isMob()){ selDay=day.dataset.date; renderCal(); return; } if(!(await cycleDay(day.dataset.date))) openEditor(null,{date:day.dataset.date,...platFmt()}); };
   });
 }
 function blockHTML(off){const d=new Date(calDate.getFullYear(),calDate.getMonth()+off,1);
@@ -1212,11 +1254,13 @@ function renderCal(){
     };
   }
   $('#legend').innerHTML=STAGES.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('')+'<span style="color:var(--txt-3)">· clique no dia pra avançar</span>';
+  renderDayPanel();
   const nd=items.filter(i=>!i.date&&i.status!=='postado'&&platOk(i,platCal)).reverse();
   $('#trayHint').textContent=isTouch?'Abra a ideia e escolha o dia de postar.':'Arraste pra um dia pra agendar.';
   $('#tray').innerHTML=nd.length?nd.map(i=>`<div class="titem" draggable="${isTouch?'false':'true'}" data-pid="${i.id}"><p>${esc(i.title)||'Sem título'}</p><small>${esc(fmtOf(i).n)} · ${stage(i.status).n}</small></div>`).join('')
     :`<div class="empty" style="padding:14px 0"><p>Tudo agendado 🎉</p></div>`;
   $$('#tray .titem').forEach(el=>wireDrag(el,false));
+  $('#hojeDate')&&0;
 }
 $('#main').addEventListener('scroll',()=>{
   if(view!=='cal'||calMode==='grid') return;
@@ -1266,10 +1310,38 @@ function openEditor(id,pre){
   const x=it||exRead(); $('#edNet').value=it?netOf(it):(pre.net||netOf({format:$('#edFmt').value}));
   $('#edLink').value=x.link; $('#edCap').value=x.caption; $('#edTags').value=x.tags; $('#edApr').checked=x.approved;
   ['views','likes','comments','shares','saves'].forEach(k=>$('#edM_'+k).value=x.m[k]||'');
+  edAI=x.ai||null; renderAI();
   edChips();
   $('#edVeil').classList.add('on');
   setTimeout(()=>{autoGrow($('#edTitle')); if(!it) $('#edTitle').focus();},60);
 }
+let edAI=null;
+function renderAI(){
+  const o=$('#aiOut'), a=edAI; if(!a){o.innerHTML='';return;}
+  const c=a.nota>=7?'#16a34a':a.nota>=5?'#ca8a04':'#dc2626', L=x=>(x||[]).length?'<ul>'+x.map(t=>`<li>${esc(String(t))}</li>`).join('')+'</ul>':'—';
+  o.innerHTML=`<div class="aiscore"><div class="n" style="background:${c}">${a.nota}</div><div class="sub"><span>Gancho ${a.gancho}</span><span>Clareza ${a.clareza}</span><span>CTA ${a.cta}</span></div></div>
+   <div class="aiblk"><b>Pontos fortes</b>${L(a.fortes)}</div><div class="aiblk"><b>Pontos fracos</b>${L(a.fracos)}</div><div class="aiblk"><b>Sugestões</b>${L(a.sugestoes)}</div>
+   ${a.titulo_alt?`<div class="aiblk"><b>Título alternativo</b>${esc(a.titulo_alt)}</div>`:''}${a.gancho_alt?`<div class="aiblk"><b>Gancho (3 primeiros segundos)</b>${esc(a.gancho_alt)}</div>`:''}
+   ${a.comparacao?`<div class="aiblk"><b>Comparado ao seu histórico</b>${esc(a.comparacao)}</div>`:''}
+   <div style="font-size:11px;color:#aaa">Guia de qualidade, não garantia de resultado. Salve a ideia pra guardar a nota.</div>`;
+}
+async function runAI(){
+  const title=$('#edTitle').value.trim(), notes=$('#edNotes').value.trim();
+  if(!title&&!notes){ toast('Escreva o título ou o roteiro primeiro'); return; }
+  const b=$('#aiBtn'); b.disabled=true; b.textContent='Analisando…';
+  try{
+    const f=FORMATS.find(x=>x.v===$('#edFmt').value)||FORMATS[0];
+    const ideia={titulo:title,roteiro:notes,formato:f.n,rede:$('#edNet').value,legenda:$('#edCap').value,hashtags:$('#edTags').value};
+    const hist=items.filter(i=>i.id!==editId&&i.status==='postado').map(i=>({titulo:i.title,formato:fmtOf(i).n,rede:netOf(i),roteiro:(i.notes||'').slice(0,300),views:+i.m.views||0,curtidas:+i.m.likes||0,comentarios:+i.m.comments||0,salvos:+i.m.saves||0,compart:+i.m.shares||0}))
+      .filter(h=>h.views||h.curtidas).sort((a,b)=>b.views-a.views);
+    const historico=hist.slice(0,5).concat(hist.length>8?hist.slice(-3):hist.slice(5));
+    const {data,error}=await sb.functions.invoke('analisar-ideia',{body:{ideia,historico}});
+    if(error) throw error; if(data&&data.erro) throw new Error(data.erro);
+    edAI={...data,at:today()}; renderAI();
+  }catch(e){ console.error(e); toast('IA indisponível: '+String((e&&e.message)||e).slice(0,80)); }
+  b.disabled=false; b.textContent='✨ Analisar com IA';
+}
+$('#aiBtn').onclick=runAI;
 function closeEditor(){ $('#edVeil').classList.remove('on'); editId=null; }
 $('#edCancel').onclick=closeEditor;
 $('#edVeil').onclick=e=>{if(e.target.id==='edVeil')closeEditor()};
@@ -1283,7 +1355,7 @@ $('#edSave').onclick=()=>{
   if(it.recDate&&!wasRec&&it.status==='ideia') it.status='gravacao';
   if(it.status==='edicao'||it.status==='postado') it.recDone=!!it.recDate; else it.recDone=false;
   it.net=$('#edNet').value; it.link=$('#edLink').value.trim(); it.caption=$('#edCap').value; it.tags=$('#edTags').value.trim(); it.approved=$('#edApr').checked;
-  it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
+  it.ai=edAI; it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
   it.channel=chanFor(fmtOf(it).p);
   const wasEdit=!!editId; save(); closeEditor(); renderAll(); toast(wasEdit?'Salvo':'Ideia anotada ✓');
 };
