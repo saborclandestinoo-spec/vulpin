@@ -612,10 +612,11 @@ body{font-size:13px}
       <div class="ex">
         <label>Rede<select id="edNet"></select></label>
         <label>Link do post<input type="text" id="edLink" placeholder="https://…"></label>
+        <label class="f">Gancho (primeiros 3 segundos)<input type="text" id="edHook" placeholder="A frase de abertura do vídeo"></label>
         <label class="f">Legenda<textarea id="edCap" placeholder="Texto que vai na publicação"></textarea></label>
         <label class="f">Hashtags<input type="text" id="edTags" placeholder="#confeitaria #cookies"></label>
         <label class="ck f"><input type="checkbox" id="edApr"> Aprovado para publicar</label>
-        <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><label class="ck" style="margin-top:8px;font-size:12px;font-weight:500"><input type="checkbox" id="aiHist" checked> Comparar com meus posts já postados (só até 4)</label><div id="aiOut"></div></div>
+        <div class="f"><button type="button" class="btn btn-soft btn-sm" id="aiBtn">✨ Analisar com IA</button><input type="text" id="aiBio" placeholder="O que tem no link da bio? (ex: cardápio de cookies no WhatsApp)" style="margin-top:10px"><label class="ck" style="margin-top:8px;font-size:12px;font-weight:500"><input type="checkbox" id="aiHist" checked> Comparar com meus posts já postados (só até 4)</label><div id="aiOut"></div></div>
         <div class="f"><label>Métricas (depois de postar)</label><div class="m">
           <input type="number" min="0" id="edM_views" placeholder="Views"><input type="number" min="0" id="edM_likes" placeholder="Curtidas"><input type="number" min="0" id="edM_comments" placeholder="Coment."><input type="number" min="0" id="edM_shares" placeholder="Compart."><input type="number" min="0" id="edM_saves" placeholder="Salvos"></div></div>
       </div>
@@ -757,8 +758,8 @@ const NETS=[{id:'instagram',n:'Instagram',c:'#e1306c'},{id:'youtube',n:'YouTube'
 const netOf=i=>i.net||(fmtOf(i).k==='video'?'youtube':'instagram');
 const platOf=netOf;
 const netOb=i=>NETS.find(n=>n.id===netOf(i))||NETS[0];
-const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,ai:x.ai||null,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
-const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,ai:i.ai||null,m:i.m||{}});
+const exRead=x=>{x=x||{};return{net:x.net||'',caption:x.caption||'',tags:x.tags||'',link:x.link||'',approved:!!x.approved,hook:x.hook||'',ai:x.ai||null,m:Object.assign({views:0,likes:0,comments:0,shares:0,saves:0},x.m||{})}};
+const exWrite=i=>({net:i.net||'',caption:i.caption||'',tags:i.tags||'',link:i.link||'',approved:!!i.approved,hook:i.hook||'',ai:i.ai||null,m:i.m||{}});
 const sumM=(l,k)=>l.reduce((t,i)=>t+(+((i.m||{})[k])||0),0);
 const fmtN=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(n);
 const PLATS=[{id:'all',n:'Todas as redes'}].concat(NETS);
@@ -1308,7 +1309,7 @@ function openEditor(id,pre){
   $('#edRec').value=it?it.recDate:(pre.recDate||''); $('#edPub').value=it?it.date:(pre.date||'');
   $('#edDel').classList.toggle('hide',!it);
   const x=it||exRead(); $('#edNet').value=it?netOf(it):(pre.net||netOf({format:$('#edFmt').value}));
-  $('#edLink').value=x.link; $('#edCap').value=x.caption; $('#edTags').value=x.tags; $('#edApr').checked=x.approved;
+  $('#edLink').value=x.link; $('#edCap').value=x.caption; $('#edTags').value=x.tags; $('#edApr').checked=x.approved; $('#edHook').value=x.hook||''; $('#aiBio').value=ls.get('studio:bio')||'';
   ['views','likes','comments','shares','saves'].forEach(k=>$('#edM_'+k).value=x.m[k]||'');
   edAI=x.ai||null; renderAI();
   edChips();
@@ -1321,9 +1322,15 @@ function renderAI(){
   const c=a.nota>=7?'#16a34a':a.nota>=5?'#ca8a04':'#dc2626', L=x=>(x||[]).length?'<ul>'+x.map(t=>`<li>${esc(String(t))}</li>`).join('')+'</ul>':'—';
   o.innerHTML=`<div class="aiscore"><div class="n" style="background:${c}">${a.nota}</div><div class="sub"><span>Gancho ${a.gancho}</span><span>Clareza ${a.clareza}</span><span>CTA ${a.cta}</span></div></div>
    <div class="aiblk"><b>Pontos fortes</b>${L(a.fortes)}</div><div class="aiblk"><b>Pontos fracos</b>${L(a.fracos)}</div><div class="aiblk"><b>Sugestões</b>${L(a.sugestoes)}</div>
+   ${a.gancho_analise?`<div class="aiblk"><b>Seu gancho · ${esc(a.gancho_analise.tipo||'')}</b>${esc(a.gancho_analise.avaliacao||'')}<br><br><b>Comparado aos padrões do mercado</b>${esc(a.gancho_analise.vs_mercado||'')}</div>`:''}
+   ${(a.ganchos_mercado||[]).length?`<div class="aiblk"><b>Ganchos que costumam funcionar (padrões)</b><ul>${a.ganchos_mercado.map(g=>`<li><i>${esc(g.tipo||'')}:</i> ${esc(g.texto||'')}</li>`).join('')}</ul></div>`:''}
+   ${a.roteiro_sugerido?`<div class="aiblk"><b>Roteiro sugerido</b><div style="white-space:pre-wrap">${esc(a.roteiro_sugerido)}</div><button type="button" class="btn btn-soft btn-sm" id="aiUseRot" style="margin-top:8px">Usar como roteiro</button></div>`:''}
+   ${a.cta_bio?`<div class="aiblk"><b>CTA para a bio</b>${esc(a.cta_bio)}<br><button type="button" class="btn btn-soft btn-sm" id="aiUseCta" style="margin-top:8px">Adicionar à legenda</button></div>`:''}
    ${a.titulo_alt?`<div class="aiblk"><b>Título alternativo</b>${esc(a.titulo_alt)}</div>`:''}${a.gancho_alt?`<div class="aiblk"><b>Gancho (3 primeiros segundos)</b>${esc(a.gancho_alt)}</div>`:''}
    ${a.comparacao?`<div class="aiblk"><b>Comparado ao seu histórico</b>${esc(a.comparacao)}</div>`:''}
    <div style="font-size:11px;color:#aaa">Guia de qualidade, não garantia de resultado. Salve a ideia pra guardar a nota.</div>`;
+  const ur=$('#aiUseRot'); if(ur) ur.onclick=()=>{ if($('#edNotes').value.trim()&&!confirm('Substituir o roteiro atual?')) return; $('#edNotes').value=a.roteiro_sugerido; toast('Roteiro colocado — edite do seu jeito'); };
+  const uc=$('#aiUseCta'); if(uc) uc.onclick=()=>{ const c=$('#edCap'); c.value=(c.value?c.value+'\n\n':'')+a.cta_bio; toast('CTA adicionado à legenda'); };
 }
 async function runAI(){
   const title=$('#edTitle').value.trim(), notes=$('#edNotes').value.trim();
@@ -1331,7 +1338,8 @@ async function runAI(){
   const b=$('#aiBtn'); b.disabled=true; b.textContent='Analisando…';
   try{
     const f=FORMATS.find(x=>x.v===$('#edFmt').value)||FORMATS[0];
-    const ideia={titulo:title.slice(0,200),roteiro:notes.slice(0,3000),formato:f.n,rede:$('#edNet').value,legenda:$('#edCap').value.slice(0,1000),hashtags:$('#edTags').value.slice(0,300)};
+    const bio=$('#aiBio').value.trim().slice(0,200); ls.set('studio:bio',bio);
+    const ideia={gancho:$('#edHook').value.trim().slice(0,300),bio,titulo:title.slice(0,200),roteiro:notes.slice(0,3000),formato:f.n,rede:$('#edNet').value,legenda:$('#edCap').value.slice(0,1000),hashtags:$('#edTags').value.slice(0,300)};
     let historico=[];
     if($('#aiHist').checked){
       const hist=items.filter(i=>i.id!==editId&&i.status==='postado').map(i=>({titulo:(i.title||'').slice(0,100),formato:fmtOf(i).n,rede:netOf(i),views:+i.m.views||0,curtidas:+i.m.likes||0,comentarios:+i.m.comments||0,salvos:+i.m.saves||0,compart:+i.m.shares||0}))
@@ -1359,7 +1367,7 @@ $('#edSave').onclick=()=>{
   it.recDate=$('#edRec').value; it.date=$('#edPub').value; if(it.date&&!it.time) it.time='19:00';
   if(it.recDate&&!wasRec&&it.status==='ideia') it.status='gravacao';
   if(it.status==='edicao'||it.status==='postado') it.recDone=!!it.recDate; else it.recDone=false;
-  it.net=$('#edNet').value; it.link=$('#edLink').value.trim(); it.caption=$('#edCap').value; it.tags=$('#edTags').value.trim(); it.approved=$('#edApr').checked;
+  it.net=$('#edNet').value; it.link=$('#edLink').value.trim(); it.caption=$('#edCap').value; it.tags=$('#edTags').value.trim(); it.approved=$('#edApr').checked; it.hook=$('#edHook').value.trim();
   it.ai=edAI; it.m={}; ['views','likes','comments','shares','saves'].forEach(k=>it.m[k]=+$('#edM_'+k).value||0);
   it.channel=chanFor(fmtOf(it).p);
   const wasEdit=!!editId; save(); closeEditor(); renderAll(); toast(wasEdit?'Salvo':'Ideia anotada ✓');
