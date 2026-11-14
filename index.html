@@ -1395,10 +1395,15 @@ async function wavB64(dec,maxSec,totalDur){
 // vídeo grande (4K 60fps etc.): toca o vídeo em silêncio e grava só o áudio, sem carregar o arquivo inteiro na memória
 async function captureRT(file,maxSec,say){
   const url=URL.createObjectURL(file), v=document.createElement('video'), AC=window.AudioContext||window.webkitAudioContext; let ac=null;
-  v.playsInline=true; v.preload='auto'; v.src=url;
+  v.playsInline=true; v.setAttribute('playsinline',''); v.preload='auto';
+  v.style.cssText='position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+  document.body.appendChild(v); v.src=url;
   try{
-    say('Abrindo o vídeo…');
-    await new Promise((res,rej)=>{ const t=setTimeout(()=>rej(new Error('O navegador não conseguiu abrir este vídeo (4K/HEVC costuma falhar no celular). Use o computador ou exporte em 1080p.')),12000); v.onloadedmetadata=()=>{clearTimeout(t);res();}; v.onerror=()=>{clearTimeout(t);rej(new Error('O navegador não conseguiu abrir este vídeo (formato 4K/HEVC?). Use o computador ou exporte em 1080p.'));}; });
+    say('Abrindo o vídeo… (arquivo grande, pode levar uns segundos)');
+    const bad='O navegador não conseguiu abrir este vídeo (4K/HEVC costuma falhar no celular). Use o computador, exporte em 1080p ou cole a transcrição.';
+    v.play().catch(()=>{}); // no iPhone o vídeo só começa a carregar depois do play
+    await new Promise((res,rej)=>{ const t=setTimeout(()=>rej(new Error(bad)),30000); const ok=()=>{clearTimeout(t);res();}; if(v.readyState>=1) ok(); v.onloadedmetadata=ok; v.onplaying=ok; v.onerror=()=>{clearTimeout(t);rej(new Error(bad));}; });
+    v.pause(); try{ v.currentTime=0; }catch(_){}
     const dur=v.duration||maxSec; ac=new AC(); try{ await ac.resume(); }catch(_){}
     const src=ac.createMediaElementSource(v), proc=ac.createScriptProcessor(4096,1,1), mute=ac.createGain(); mute.gain.value=0;
     const chunks=[]; let total=0; const lim=Math.floor(Math.min(dur,maxSec)*ac.sampleRate);
@@ -1419,7 +1424,7 @@ async function captureRT(file,maxSec,say){
     if(total<ac.sampleRate) throw new Error('Não captei áudio deste vídeo (sem som ou bloqueado pelo navegador). Tente no computador.');
     const buf=ac.createBuffer(1,total,ac.sampleRate); let o=0; chunks.forEach(c=>{ buf.copyToChannel(c,0,o); o+=c.length; });
     return {buf,dur};
-  } finally { try{v.pause()}catch(_){} try{URL.revokeObjectURL(url)}catch(_){} try{ac&&ac.close()}catch(_){} }
+  } finally { try{v.pause()}catch(_){} try{v.remove()}catch(_){} try{URL.revokeObjectURL(url)}catch(_){} try{ac&&ac.close()}catch(_){} }
 }
 async function audioFromVideo(file,maxSec=150,say=()=>{}){
   if(file.size<=60*1024*1024){
